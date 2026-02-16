@@ -14,6 +14,8 @@ High-precision spacing governance for CSS and design systems.
 
 `stylelint-plugin-rhythmguard` enforces spacing discipline across margin, padding, gap, inset, scroll spacing, and translate motion offsets.
 
+I built Rhythmguard after 20 years of watching teams ignore spacing scales and ship arbitrary pixel values everywhere.
+
 It is built for teams that want:
 
 - zero random spacing values in production CSS
