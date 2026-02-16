@@ -1,0 +1,27 @@
+'use strict';
+
+const js = require('@eslint/js');
+
+module.exports = [
+  {
+    ignores: ['coverage/**', 'node_modules/**'],
+  },
+  js.configs.recommended,
+  {
+    files: ['**/*.js'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      globals: {
+        __dirname: 'readonly',
+        console: 'readonly',
+        module: 'readonly',
+        process: 'readonly',
+        require: 'readonly',
+      },
+      sourceType: 'commonjs',
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
+];
