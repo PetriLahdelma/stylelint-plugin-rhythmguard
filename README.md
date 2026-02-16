@@ -225,6 +225,22 @@ npm test
 npm run test:coverage
 ```
 
+## Performance Benchmarking
+
+Compare runtime against `stylelint-scales` on a deterministic spacing corpus:
+
+```bash
+npm run bench:perf
+```
+
+Benchmark with autofix enabled:
+
+```bash
+npm run bench:perf:fix
+```
+
+Detailed methodology and custom args are documented in [`docs/BENCHMARKING.md`](./docs/BENCHMARKING.md).
+
 ## Release Workflow
 
 1. Create a GitHub release.

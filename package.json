@@ -28,6 +28,8 @@
     "LICENSE"
   ],
   "scripts": {
+    "bench:perf": "node scripts/bench/compare.mjs",
+    "bench:perf:fix": "node scripts/bench/compare.mjs --fix",
     "lint": "eslint .",
     "test": "node --test test/*.test.js",
     "test:watch": "node --test --watch test/*.test.js",
@@ -50,7 +52,8 @@
     "eslint": "^9.22.0",
     "geist": "^1.7.0",
     "postcss-value-parser": "^4.2.0",
-    "stylelint": "^16.15.0"
+    "stylelint": "^16.15.0",
+    "stylelint-scales": "^5.0.0"
   },
   "engines": {
     "node": ">=18.18.0"

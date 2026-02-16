@@ -24,4 +24,18 @@ module.exports = [
       'no-console': 'off',
     },
   },
+  {
+    files: ['**/*.mjs'],
+    languageOptions: {
+      ecmaVersion: 'latest',
+      globals: {
+        console: 'readonly',
+        process: 'readonly',
+      },
+      sourceType: 'module',
+    },
+    rules: {
+      'no-console': 'off',
+    },
+  },
 ];
