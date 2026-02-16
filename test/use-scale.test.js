@@ -80,6 +80,35 @@ test('use-scale supports built-in presets', async () => {
   assert.match(result.warnings[0].text, /12px/);
 });
 
+test('use-scale supports product and editorial presets', async () => {
+  const productPreset = await lintCss({
+    code: '.layout { padding: 56px; }',
+    rules: {
+      'rhythmguard/use-scale': [
+        true,
+        {
+          preset: 'product-material-8dp',
+        },
+      ],
+    },
+  });
+
+  const editorialPreset = await lintCss({
+    code: '.article { margin-bottom: 30px; }',
+    rules: {
+      'rhythmguard/use-scale': [
+        true,
+        {
+          preset: 'editorial-baseline-6',
+        },
+      ],
+    },
+  });
+
+  assert.equal(productPreset.warnings.length, 0);
+  assert.equal(editorialPreset.warnings.length, 0);
+});
+
 test('use-scale supports preset aliases', async () => {
   const result = await lintCss({
     code: '.card { margin: 16px; }',
