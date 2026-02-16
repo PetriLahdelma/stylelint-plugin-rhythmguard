@@ -59,6 +59,11 @@ npm install --save-dev stylelint stylelint-plugin-rhythmguard
 }
 ```
 
+Stable shared config entry points:
+
+- `stylelint-plugin-rhythmguard/configs/recommended`
+- `stylelint-plugin-rhythmguard/configs/strict`
+
 ### Full custom setup
 
 ```json

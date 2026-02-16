@@ -16,8 +16,22 @@ async function lintCss({ code, fix = false, rules }) {
   });
 
   const result = lintResult.results[0];
+  let fixedCode = code;
+
+  if (fix) {
+    if (typeof lintResult.code === 'string' && lintResult.code.length > 0) {
+      fixedCode = lintResult.code;
+    } else if (
+      Object.prototype.hasOwnProperty.call(lintResult, 'output') &&
+      typeof lintResult.output === 'string' &&
+      lintResult.output.length > 0
+    ) {
+      fixedCode = lintResult.output;
+    }
+  }
+
   return {
-    code: lintResult.code || code,
+    code: fixedCode,
     errored: result.errored,
     warnings: result.warnings,
   };

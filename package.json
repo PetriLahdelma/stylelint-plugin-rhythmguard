@@ -26,6 +26,7 @@
     "assets",
     "src",
     "README.md",
+    "CHANGELOG.md",
     "LICENSE"
   ],
   "scripts": {
@@ -33,6 +34,7 @@
     "bench:perf:fix": "node scripts/bench/compare.mjs --fix",
     "lint": "eslint .",
     "test": "node --test test/*.test.js",
+    "test:compat-floor": "node --test test/floor-compat.test.js",
     "test:watch": "node --test --watch test/*.test.js",
     "test:coverage": "c8 --reporter=text --reporter=lcov node --test test/*.test.js"
   },
