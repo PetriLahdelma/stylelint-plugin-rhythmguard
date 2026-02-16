@@ -68,7 +68,7 @@ npm install --save-dev stylelint stylelint-plugin-rhythmguard
     "rhythmguard/use-scale": [
       true,
       {
-        "scale": [0, 4, 8, 12, 16, 24, 32, 40, 48, 64],
+        "preset": "rhythmic-4",
         "units": ["px", "rem", "em"],
         "baseFontSize": 16,
         "tokenPattern": "^--space-",
@@ -100,6 +100,58 @@ npm install --save-dev stylelint stylelint-plugin-rhythmguard
   }
 }
 ```
+
+### Presets and custom scales
+
+Preset-based setup:
+
+```json
+{
+  "rules": {
+    "rhythmguard/use-scale": [true, { "preset": "fibonacci" }]
+  }
+}
+```
+
+Custom scale setup:
+
+```json
+{
+  "rules": {
+    "rhythmguard/use-scale": [true, { "customScale": [0, 6, 12, 18, 24, 36, 48] }]
+  }
+}
+```
+
+Scale resolution precedence:
+
+1. `customScale` (highest priority)
+2. `scale`
+3. `preset`
+4. default `rhythmic-4` scale
+
+## Built-in Scale Presets
+
+| Preset | Pattern | Scale |
+| --- | --- | --- |
+| `rhythmic-4` | 4pt rhythm | `[0,4,8,12,16,24,32,40,48,64]` |
+| `rhythmic-8` | 8pt rhythm | `[0,8,16,24,32,40,48,64,80,96]` |
+| `compact` | dense UI spacing | `[0,2,4,6,8,12,16,20,24,32]` |
+| `fibonacci` | Fibonacci progression | `[0,2,3,5,8,13,21,34,55,89]` |
+| `powers-of-two` | geometric doubling | `[0,2,4,8,16,32,64,128]` |
+| `golden-ratio` | ratio 1.618 | generated modular sequence |
+| `modular-minor-third` | ratio 1.2 | generated modular sequence |
+| `modular-major-third` | ratio 1.25 | generated modular sequence |
+| `modular-perfect-fourth` | ratio 1.333 | generated modular sequence |
+
+Aliases:
+
+- `4pt` → `rhythmic-4`
+- `8pt` → `rhythmic-8`
+- `golden` → `golden-ratio`
+- `minor-third` → `modular-minor-third`
+- `major-third` → `modular-major-third`
+- `perfect-fourth` → `modular-perfect-fourth`
 
 ## Rule Details
 
@@ -135,7 +187,9 @@ Options:
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `scale` | `Array<number|string>` | `[0,4,8,12,16,24,32]` | Allowed spacing values |
+| `preset` | `string` | `rhythmic-4` | Selects a built-in spacing scale |
+| `customScale` | `Array<number|string>` | `undefined` | Highest-priority custom scale override |
+| `scale` | `Array<number|string>` | `[0,4,8,12,16,24,32,40,48,64]` | Allowed spacing values |
 | `units` | `string[]` | `['px','rem','em']` | Units considered for scale enforcement |
 | `baseFontSize` | `number` | `16` | Used for `rem`/`em` conversion |
 | `tokenPattern` | `string` | `^--space-` | Regex for accepted token variable names |
@@ -173,7 +227,9 @@ Options:
 | `tokenPattern` | `string` | `^--space-` | Regex for accepted token variable names |
 | `tokenFunctions` | `string[]` | `['var','theme','token']` | Functions treated as tokenized values |
 | `allowNumericScale` | `boolean` | `false` | Temporary migration mode to permit on-scale literals |
-| `scale` | `Array<number|string>` | `[0,4,8,12,16,24,32]` | Used when `allowNumericScale` is enabled |
+| `preset` | `string` | `rhythmic-4` | Selects a built-in scale used in migration mode |
+| `customScale` | `Array<number|string>` | `undefined` | Highest-priority custom scale override |
+| `scale` | `Array<number|string>` | `[0,4,8,12,16,24,32,40,48,64]` | Used when `allowNumericScale` is enabled |
 | `baseFontSize` | `number` | `16` | Used for scale checks with `rem`/`em` |
 | `tokenMap` | `Record<string,string>` | `{}` | Enables autofix from raw value to token |
 | `ignoreValues` | `string[]` | CSS global keywords + `auto` | Skips keyword literals |
@@ -200,6 +256,15 @@ Example:
 Options:
 
 `rhythmguard/no-offscale-transform` accepts the same scale options as `rhythmguard/use-scale`, but only for transform translation properties.
+
+## Programmatic Presets
+
+```js
+const rhythmguard = require('stylelint-plugin-rhythmguard');
+
+console.log(rhythmguard.presets.listScalePresetNames());
+console.log(rhythmguard.presets.scales['rhythmic-4']);
+```
 
 ## Autofix Philosophy
 

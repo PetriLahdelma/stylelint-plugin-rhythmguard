@@ -26,6 +26,8 @@ const {
 const ruleName = 'rhythmguard/use-scale';
 
 const messages = stylelint.utils.ruleMessages(ruleName, {
+  invalidPreset: (presetName, presetNames) =>
+    `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
   rejected: (value, lower, upper) =>
     `Unexpected off-scale spacing value "${value}". Use spacing scale values (nearest: ${lower} or ${upper}).`,
 });
@@ -117,6 +119,15 @@ const ruleFunction = (primary, secondaryOptions) => {
     }
 
     const options = buildScaleOptions(secondaryOptions);
+    if (options.invalidPreset) {
+      stylelint.utils.report({
+        message: messages.invalidPreset(options.invalidPreset, options.presetNames),
+        node: root,
+        result,
+        ruleName,
+      });
+    }
+
     const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);
     const scalePx = normalizeScale(options.scale, options.baseFontSize);
 

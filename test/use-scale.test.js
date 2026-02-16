@@ -62,3 +62,87 @@ test('use-scale autofixes simple off-scale values', async () => {
 
   assert.equal(result.code, '.card { margin: 12px; }');
 });
+
+test('use-scale supports built-in presets', async () => {
+  const result = await lintCss({
+    code: '.card { margin: 16px; padding: 12px; }',
+    rules: {
+      'rhythmguard/use-scale': [
+        true,
+        {
+          preset: 'rhythmic-8',
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0].text, /12px/);
+});
+
+test('use-scale supports preset aliases', async () => {
+  const result = await lintCss({
+    code: '.card { margin: 16px; }',
+    rules: {
+      'rhythmguard/use-scale': [
+        true,
+        {
+          preset: '8pt',
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
+
+test('use-scale customScale overrides preset', async () => {
+  const result = await lintCss({
+    code: '.card { margin: 12px; }',
+    rules: {
+      'rhythmguard/use-scale': [
+        true,
+        {
+          customScale: [0, 12, 24],
+          preset: 'rhythmic-8',
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
+
+test('use-scale reports unknown presets', async () => {
+  const result = await lintCss({
+    code: '.card { margin: 12px; }',
+    rules: {
+      'rhythmguard/use-scale': [
+        true,
+        {
+          preset: 'unknown-grid',
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0].text, /Unknown scale preset/);
+});
+
+test('use-scale does not report invalid preset when custom scale is provided', async () => {
+  const result = await lintCss({
+    code: '.card { margin: 12px; }',
+    rules: {
+      'rhythmguard/use-scale': [
+        true,
+        {
+          customScale: [0, 12, 24],
+          preset: 'does-not-matter',
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 0);
+});

@@ -19,6 +19,8 @@ const {
 
 const ruleName = 'rhythmguard/no-offscale-transform';
 const messages = stylelint.utils.ruleMessages(ruleName, {
+  invalidPreset: (presetName, presetNames) =>
+    `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
   rejected: (value, lower, upper) =>
     `Unexpected transform translation value "${value}". Use scale values (nearest: ${lower} or ${upper}).`,
 });
@@ -51,6 +53,15 @@ const ruleFunction = (primary, secondaryOptions) => {
     }
 
     const options = buildScaleOptions(secondaryOptions);
+    if (options.invalidPreset) {
+      stylelint.utils.report({
+        message: messages.invalidPreset(options.invalidPreset, options.presetNames),
+        node: root,
+        result,
+        ruleName,
+      });
+    }
+
     const scalePx = normalizeScale(options.scale, options.baseFontSize);
 
     root.walkDecls((decl) => {

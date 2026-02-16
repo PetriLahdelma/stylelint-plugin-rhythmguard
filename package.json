@@ -17,6 +17,7 @@
     ".": "./src/index.js",
     "./configs/recommended": "./src/configs/recommended.js",
     "./configs/strict": "./src/configs/strict.js",
+    "./presets": "./src/presets/index.js",
     "./rules/use-scale": "./src/rules/use-scale/index.js",
     "./rules/prefer-token": "./src/rules/prefer-token/index.js",
     "./rules/no-offscale-transform": "./src/rules/no-offscale-transform/index.js"

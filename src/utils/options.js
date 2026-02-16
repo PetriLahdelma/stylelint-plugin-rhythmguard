@@ -4,9 +4,17 @@ const {
   DEFAULT_IGNORE_KEYWORDS,
   SPACING_PROPERTY_PATTERNS,
 } = require('./constants');
+const {
+  getScalePreset,
+  listScalePresetNames,
+  resolveScaleSelection,
+} = require('../presets/scales');
+
+const DEFAULT_SCALE = getScalePreset('rhythmic-4') || [0, 4, 8, 12, 16, 24, 32];
 
 function buildScaleOptions(rawOptions) {
   const options = rawOptions || {};
+  const scaleSelection = resolveScaleSelection(options, DEFAULT_SCALE);
 
   return {
     allowNegative: options.allowNegative !== false,
@@ -22,10 +30,13 @@ function buildScaleOptions(rawOptions) {
     ignoreValues: Array.isArray(options.ignoreValues)
       ? options.ignoreValues.map((value) => String(value).toLowerCase())
       : DEFAULT_IGNORE_KEYWORDS,
+    invalidPreset: scaleSelection.invalidPreset,
+    preset: scaleSelection.selectedPreset,
+    presetNames: listScalePresetNames(),
     properties: Array.isArray(options.properties)
       ? options.properties
       : SPACING_PROPERTY_PATTERNS,
-    scale: Array.isArray(options.scale) ? options.scale : [0, 4, 8, 12, 16, 24, 32],
+    scale: scaleSelection.scale,
     tokenFunctions: Array.isArray(options.tokenFunctions)
       ? options.tokenFunctions.map((value) => String(value).toLowerCase())
       : ['var', 'theme', 'token'],
@@ -41,6 +52,7 @@ function buildScaleOptions(rawOptions) {
 
 function buildTokenOptions(rawOptions) {
   const options = rawOptions || {};
+  const scaleSelection = resolveScaleSelection(options, DEFAULT_SCALE);
 
   return {
     allowNumericScale: options.allowNumericScale === true,
@@ -53,10 +65,13 @@ function buildTokenOptions(rawOptions) {
     ignoreValues: Array.isArray(options.ignoreValues)
       ? options.ignoreValues.map((value) => String(value).toLowerCase())
       : DEFAULT_IGNORE_KEYWORDS,
+    invalidPreset: scaleSelection.invalidPreset,
+    preset: scaleSelection.selectedPreset,
+    presetNames: listScalePresetNames(),
     properties: Array.isArray(options.properties)
       ? options.properties
       : SPACING_PROPERTY_PATTERNS,
-    scale: Array.isArray(options.scale) ? options.scale : [0, 4, 8, 12, 16, 24, 32],
+    scale: scaleSelection.scale,
     tokenFunctions: Array.isArray(options.tokenFunctions)
       ? options.tokenFunctions.map((value) => String(value).toLowerCase())
       : ['var', 'theme', 'token'],

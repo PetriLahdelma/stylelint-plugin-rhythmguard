@@ -23,6 +23,8 @@ const {
 const ruleName = 'rhythmguard/prefer-token';
 
 const messages = stylelint.utils.ruleMessages(ruleName, {
+  invalidPreset: (presetName, presetNames) =>
+    `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
   rejected: (value) =>
     `Unexpected raw spacing value "${value}". Use design tokens for spacing decisions.`,
 });
@@ -52,6 +54,15 @@ const ruleFunction = (primary, secondaryOptions) => {
     }
 
     const options = buildTokenOptions(secondaryOptions);
+    if (options.invalidPreset) {
+      stylelint.utils.report({
+        message: messages.invalidPreset(options.invalidPreset, options.presetNames),
+        node: root,
+        result,
+        ruleName,
+      });
+    }
+
     const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);
     const scalePx = normalizeScale(options.scale, options.baseFontSize);
 

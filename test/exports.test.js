@@ -13,4 +13,7 @@ test('plugin exports rules and shared configs', () => {
   assert.ok(plugin.rules['rhythmguard/no-offscale-transform']);
   assert.ok(plugin.configs.recommended);
   assert.ok(plugin.configs.strict);
+  assert.ok(plugin.presets);
+  assert.ok(plugin.presets.scales['rhythmic-4']);
+  assert.ok(Array.isArray(plugin.presets.listScalePresetNames()));
 });

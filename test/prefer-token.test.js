@@ -69,3 +69,39 @@ test('prefer-token can autofix with tokenMap', async () => {
 
   assert.equal(result.code, '.stack { gap: var(--space-3); }');
 });
+
+test('prefer-token supports built-in preset scales in migration mode', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: 21px; margin: 22px; }',
+    rules: {
+      'rhythmguard/prefer-token': [
+        true,
+        {
+          allowNumericScale: true,
+          preset: 'fibonacci',
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0].text, /22px/);
+});
+
+test('prefer-token custom scale overrides preset in migration mode', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: 18px; }',
+    rules: {
+      'rhythmguard/prefer-token': [
+        true,
+        {
+          allowNumericScale: true,
+          customScale: [0, 6, 12, 18, 24],
+          preset: 'fibonacci',
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
