@@ -16,7 +16,13 @@ High-precision spacing governance for CSS and design systems.
 
 ## 60-second Demo
 
-- WebM: [rhythmguard-campaign-60s.webm](https://raw.githubusercontent.com/PetriLahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-campaign-60s.webm)
+<p align="center">
+  <a href="https://raw.githubusercontent.com/PetriLahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-campaign-60s.webm">
+    <img src="https://raw.githubusercontent.com/PetriLahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-campaign-60s.gif" width="100%" alt="Rhythmguard 60-second campaign demo" />
+  </a>
+</p>
+
+- Full video (WebM): [rhythmguard-campaign-60s.webm](https://raw.githubusercontent.com/PetriLahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-campaign-60s.webm)
 
 I built Rhythmguard after 20 years of watching teams ignore spacing scales and ship arbitrary pixel values everywhere.
 
