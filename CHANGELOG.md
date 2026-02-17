@@ -15,6 +15,7 @@ The format follows Keep a Changelog principles and semantic versioning.
 - `rhythmguard/prefer-token` now supports `enforceInsideMathFunctions` for optional math-function enforcement.
 - Hardened `var()` token argument detection to parse the first argument structurally (rather than comma string splitting).
 - npm README link integrity: docs links now resolve to absolute GitHub URLs from the npm package page.
+- Release workflow now detects missing `NPM_TOKEN` and skips publish cleanly with an explicit notice instead of failing.
 
 ### Added
 

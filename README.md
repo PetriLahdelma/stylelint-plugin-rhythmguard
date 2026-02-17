@@ -441,8 +441,9 @@ Detailed methodology and custom args are documented in [`docs/BENCHMARKING.md`](
 1. Create a GitHub release.
 2. `release.yml` runs the Node/Stylelint matrix validation.
 3. A tarball smoke test validates package exports and install behavior.
-4. The package is published to npm with provenance (`npm publish --provenance`).
-5. `post-publish-smoke.yml` verifies the published npm version can be installed and run in a clean project.
+4. If `NPM_TOKEN` is configured in repository secrets, the package is published to npm with provenance (`npm publish --provenance`).
+5. If `NPM_TOKEN` is not configured, publish is skipped with an explicit workflow notice.
+6. `post-publish-smoke.yml` verifies the published npm version can be installed and run in a clean project (and skips cleanly if the version is not on npm).
 
 ## Support and Bug Reports
 

@@ -56,8 +56,26 @@ jobs:
         if: matrix.node-version == '20.x' && matrix.stylelint-version == '16'
         run: npm run test:pack-smoke
 
-  publish:
+  publish-gate:
     needs: verify
+    runs-on: ubuntu-latest
+    outputs:
+      has_npm_token: ${{ steps.token.outputs.has_npm_token }}
+    steps:
+      - name: Detect npm token availability
+        id: token
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [ -n "$NPM_TOKEN" ]; then
+            echo "has_npm_token=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_npm_token=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  publish:
+    needs: [verify, publish-gate]
+    if: ${{ needs.publish-gate.outputs.has_npm_token == 'true' }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -80,3 +98,13 @@ jobs:
         run: npm publish --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-skipped:
+    needs: [verify, publish-gate]
+    if: ${{ needs.publish-gate.outputs.has_npm_token != 'true' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip publish because NPM_TOKEN is not configured
+        run: |
+          echo "NPM_TOKEN is not configured in repository secrets."
+          echo "Release verification completed; npm publish step was skipped."

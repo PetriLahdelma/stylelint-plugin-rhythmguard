@@ -28,8 +28,21 @@ jobs:
         id: pkg
         run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
 
-      - name: Verify package is visible on npm registry
-        run: npm view stylelint-plugin-rhythmguard@${{ steps.pkg.outputs.version }} version
+      - name: Check package visibility on npm registry
+        id: registry
+        run: |
+          if npm view stylelint-plugin-rhythmguard@${{ steps.pkg.outputs.version }} version >/dev/null 2>&1; then
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "available=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Skip smoke because package is not published
+        if: steps.registry.outputs.available != 'true'
+        run: |
+          echo "Package stylelint-plugin-rhythmguard@${{ steps.pkg.outputs.version }} is not on npm."
+          echo "Skipping npm-registry smoke test."
 
       - name: npm install + lint smoke test
+        if: steps.registry.outputs.available == 'true'
         run: node scripts/ci/npm-registry-smoke.mjs --package stylelint-plugin-rhythmguard --version ${{ steps.pkg.outputs.version }}
