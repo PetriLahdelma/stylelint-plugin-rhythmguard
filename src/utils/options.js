@@ -1,6 +1,7 @@
 'use strict';
 
 const stylelint = require('stylelint');
+const { all: knownCssProperties = [] } = require('known-css-properties');
 const {
   DEFAULT_IGNORE_KEYWORDS,
   SPACING_PROPERTY_PATTERNS,
@@ -16,17 +17,6 @@ const DEFAULT_SCALE = getScalePreset('rhythmic-4') || [0, 4, 8, 12, 16, 24, 32];
 const VALID_UNITS = new Set(['px', 'rem', 'em']);
 const VALIDATE_ALWAYS = () => true;
 
-let knownCssProperties = [];
-try {
-  const knownCssPropertiesPackage = require('known-css-properties');
-  if (Array.isArray(knownCssPropertiesPackage.all)) {
-    knownCssProperties = knownCssPropertiesPackage.all;
-  }
-} catch {
-  knownCssProperties = [];
-}
-
-const hasKnownCssProperties = knownCssProperties.length > 0;
 const supportedSpacingProperties = new Set(
   knownCssProperties.filter((property) =>
     SPACING_PROPERTY_PATTERNS.some((pattern) => pattern.test(property)),
@@ -91,11 +81,6 @@ function isPropertyPatternEntry(value) {
   }
 
   const normalized = value.trim().toLowerCase();
-
-  if (!hasKnownCssProperties) {
-    return SPACING_PROPERTY_PATTERNS.some((pattern) => pattern.test(normalized));
-  }
-
   return supportedSpacingProperties.has(normalized);
 }
 

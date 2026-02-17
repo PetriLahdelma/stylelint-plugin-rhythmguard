@@ -61,6 +61,7 @@
     "stylelint": "^16.0.0"
   },
   "dependencies": {
+    "known-css-properties": "^0.37.0",
     "stylelint-config-tailwindcss": "^1.0.1"
   },
   "devDependencies": {
