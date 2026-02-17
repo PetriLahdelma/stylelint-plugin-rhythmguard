@@ -6,6 +6,13 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- Tailwind integration guidance in README:
+  - exact enforcement boundary (CSS declarations vs class strings)
+  - recommended layered setup with `stylelint-config-tailwindcss`, `eslint-plugin-tailwindcss`, and `prettier-plugin-tailwindcss`
+  - architecture direction for thorough Tailwind coverage.
+
 ## [1.1.0] - 2026-02-17
 
 ### Added

@@ -317,6 +317,60 @@ Options:
 
 `rhythmguard/no-offscale-transform` accepts the same scale options as `rhythmguard/use-scale`, but only for transform translation properties.
 
+## Tailwind CSS Integration
+
+Rhythmguard works well in Tailwind projects, but it enforces what Stylelint can parse: CSS declarations.
+
+### What Rhythmguard covers in Tailwind projects
+
+- custom CSS in `globals.css`, `components.css`, `utilities.css`
+- CSS Modules (for example `*.module.css`)
+- declarations inside `@layer` blocks
+
+### What Rhythmguard does not cover
+
+- Tailwind class strings in templates/JSX/TSX, for example:
+  - `class="p-4 gap-2"`
+  - `class="p-[13px] translate-y-[18px]"`
+
+Those are not Stylelint declaration nodes, so they are outside this plugin's scope.
+
+### Recommended stack for full Tailwind enforcement
+
+Use both layers:
+
+1. Stylelint + Rhythmguard for CSS declaration governance.
+2. Tailwind-aware class-string linting/formatting for template utility usage.
+
+Suggested setup:
+
+```json
+{
+  "extends": [
+    "stylelint-config-tailwindcss",
+    "stylelint-plugin-rhythmguard/configs/strict"
+  ]
+}
+```
+
+Then pair with:
+
+- `eslint-plugin-tailwindcss` for class-string rules (including arbitrary-value governance).
+- `prettier-plugin-tailwindcss` for deterministic class ordering.
+
+### Tailwind token function support
+
+By default, `tokenFunctions` includes `theme`, so values like `theme(spacing.4)` are treated as tokenized values.
+
+### Product direction
+
+We should extend Tailwind coverage thoroughly, but in the right architecture:
+
+- keep `stylelint-plugin-rhythmguard` focused on CSS declaration enforcement
+- add a complementary Tailwind class-string layer (ESLint/plugin side) for utility classes
+
+This avoids brittle parsing hacks and gives full coverage without compromising rule quality.
+
 ## Programmatic Presets
 
 ```js
