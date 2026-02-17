@@ -1,0 +1,10 @@
+{
+  "name": "product-decimal-10",
+  "description": "Decimal-friendly product spacing scale for dashboard-heavy enterprise UIs.",
+  "base": 10,
+  "steps": [0, 2, 4, 6, 8, 10, 12, 16, 20, 24, 32, 40, 48, 64, 80],
+  "aliases": ["decimal-10", "enterprise-10"],
+  "tags": ["product", "dashboard", "community"],
+  "contributor": "Petri Lahdelma",
+  "contributorUrl": "https://github.com/PetriLahdelma"
+}

@@ -16,7 +16,26 @@ Optional checks:
 npm run test:compat-floor
 npm run test:coverage
 npm run test:pack-smoke
+npm run scales:validate
 ```
+
+## Community Scale Contributions
+
+Rhythmguard accepts community presets through JSON files in `scales/community`.
+
+Create a new scale file:
+
+```bash
+npm run scales:add -- --name my-team-scale --base 8 --steps 0,4,8,12,16,24,32
+```
+
+Then validate:
+
+```bash
+npm run scales:validate
+```
+
+Scale files must pass schema and collision checks. See [`docs/COMMUNITY_SCALES.md`](./docs/COMMUNITY_SCALES.md) for the full spec and policy.
 
 ## Semver Rules
 

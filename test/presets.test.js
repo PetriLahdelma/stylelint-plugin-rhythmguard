@@ -16,11 +16,13 @@ test('presets expose known names and aliases', () => {
   assert.ok(names.includes('product-material-8dp'));
   assert.ok(names.includes('editorial-baseline-6'));
   assert.ok(names.includes('modular-perfect-fifth'));
+  assert.ok(names.includes('product-decimal-10'));
 
   assert.deepEqual(getScalePreset('8pt'), getScalePreset('rhythmic-8'));
   assert.deepEqual(getScalePreset('major-third'), getScalePreset('modular-major-third'));
   assert.deepEqual(getScalePreset('material'), getScalePreset('product-material-8dp'));
   assert.deepEqual(getScalePreset('baseline-6'), getScalePreset('editorial-baseline-6'));
+  assert.deepEqual(getScalePreset('decimal-10'), getScalePreset('product-decimal-10'));
 });
 
 test('resolveScaleSelection applies correct precedence', () => {

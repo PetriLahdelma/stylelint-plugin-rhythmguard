@@ -1,0 +1,31 @@
+name: Community Scales
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scales/community/**'
+      - 'schemas/community-scale.schema.json'
+      - 'scripts/scales/**'
+      - '.github/workflows/community-scales.yml'
+  pull_request:
+    paths:
+      - 'scales/community/**'
+      - 'schemas/community-scale.schema.json'
+      - 'scripts/scales/**'
+      - '.github/workflows/community-scales.yml'
+
+jobs:
+  validate-community-scales:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Validate community scales
+        run: node scripts/scales/validate-community-scales.mjs

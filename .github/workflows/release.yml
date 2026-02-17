@@ -26,6 +26,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Validate community scales
+        run: npm run scales:validate
+
       - name: Pin Stylelint version from matrix
         run: npm install --no-save stylelint@${{ matrix.stylelint-version }}
 

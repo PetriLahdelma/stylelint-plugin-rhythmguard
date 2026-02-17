@@ -11,6 +11,20 @@ The format follows Keep a Changelog principles and semantic versioning.
 - `CODEOWNERS` for repository ownership and review routing.
 - Post-publish npm smoke workflow to validate clean-project install and lint execution from the registry.
 - Non-blocking full-suite observability on Stylelint `16.0.0` in CI/release verification.
+- Community scale registry with JSON schema, CI validation, and scaffolding script.
+- Community contribution workflow assets:
+  - `docs/COMMUNITY_SCALES.md`
+  - `scales/community/*.json`
+  - `scripts/scales/add-scale.mjs`
+  - `scripts/scales/validate-community-scales.mjs`
+  - scale request issue template.
+
+### Changed
+
+- Preset loader now includes validated community scale files from `scales/community`.
+- Exported preset helpers now include:
+  - `listCommunityScalePresetNames()`
+  - `getCommunityScaleMetadata(name)`
 
 ## [1.0.0] - 2026-02-17
 

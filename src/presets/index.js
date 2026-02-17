@@ -1,13 +1,19 @@
 'use strict';
 
 const {
+  COMMUNITY_SCALE_METADATA,
   SCALE_PRESETS,
+  getCommunityScaleMetadata,
   getScalePreset,
+  listCommunityScalePresetNames,
   listScalePresetNames,
 } = require('./scales');
 
 module.exports = {
-  scales: SCALE_PRESETS,
+  communityScaleMetadata: COMMUNITY_SCALE_METADATA,
+  getCommunityScaleMetadata,
   getScalePreset,
+  listCommunityScalePresetNames,
   listScalePresetNames,
+  scales: SCALE_PRESETS,
 };

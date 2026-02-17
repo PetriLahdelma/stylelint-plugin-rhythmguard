@@ -1,0 +1,69 @@
+name: Scale request
+about: Propose a new community spacing scale preset for Rhythmguard.
+title: "scale: "
+labels:
+  - scale-request
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for proposing a community scale. Please keep it practical and production-oriented.
+
+  - type: input
+    id: use-case
+    attributes:
+      label: Design context
+      description: What kind of product or design system is this for?
+      placeholder: enterprise dashboard / editorial layout / mobile-first app
+    validations:
+      required: true
+
+  - type: input
+    id: base
+    attributes:
+      label: Base unit
+      description: Baseline unit in px.
+      placeholder: "4 or 8"
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Scale steps
+      description: Comma-separated list in ascending order, starting at 0.
+      placeholder: 0, 4, 8, 12, 16, 24, 32, 40, 48, 64
+    validations:
+      required: true
+
+  - type: input
+    id: aliases
+    attributes:
+      label: Optional aliases
+      description: Comma-separated aliases if needed.
+      placeholder: compact-4, dashboard-4
+
+  - type: textarea
+    id: rationale
+    attributes:
+      label: Practical rationale
+      description: Why is this scale useful in production?
+      placeholder: Our team uses this in ... and it prevents ...
+    validations:
+      required: true
+
+  - type: input
+    id: contributor
+    attributes:
+      label: Attribution name
+      description: Name to show in the README gallery.
+      placeholder: Your Name
+    validations:
+      required: true
+
+  - type: input
+    id: contributor-url
+    attributes:
+      label: Attribution link (optional)
+      description: GitHub profile or website.
+      placeholder: https://github.com/your-handle

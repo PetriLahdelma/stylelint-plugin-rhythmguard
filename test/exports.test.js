@@ -15,5 +15,8 @@ test('plugin exports rules and shared configs', () => {
   assert.ok(plugin.configs.strict);
   assert.ok(plugin.presets);
   assert.ok(plugin.presets.scales['rhythmic-4']);
+  assert.ok(plugin.presets.scales['product-decimal-10']);
   assert.ok(Array.isArray(plugin.presets.listScalePresetNames()));
+  assert.ok(Array.isArray(plugin.presets.listCommunityScalePresetNames()));
+  assert.ok(plugin.presets.getCommunityScaleMetadata('product-decimal-10'));
 });

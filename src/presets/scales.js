@@ -1,5 +1,16 @@
 'use strict';
 
+const fs = require('node:fs');
+const path = require('node:path');
+
+function normalizePresetName(name) {
+  if (typeof name !== 'string') {
+    return '';
+  }
+
+  return name.trim().toLowerCase();
+}
+
 function createModularScale({ base, ratio, steps }) {
   const values = [0];
   let current = base;
@@ -12,7 +23,7 @@ function createModularScale({ base, ratio, steps }) {
   return [...new Set(values)].sort((a, b) => a - b);
 }
 
-const SCALE_PRESETS = Object.freeze({
+const CORE_SCALE_PRESETS = Object.freeze({
   'rhythmic-4': Object.freeze([0, 4, 8, 12, 16, 24, 32, 40, 48, 64]),
   'rhythmic-8': Object.freeze([0, 8, 16, 24, 32, 40, 48, 64, 80, 96]),
   'product-material-8dp': Object.freeze([0, 4, 8, 12, 16, 24, 32, 40, 48, 56, 64, 72, 80]),
@@ -32,7 +43,7 @@ const SCALE_PRESETS = Object.freeze({
   'modular-perfect-fifth': Object.freeze(createModularScale({ base: 4, ratio: 1.5, steps: 12 })),
 });
 
-const PRESET_ALIASES = Object.freeze({
+const CORE_PRESET_ALIASES = Object.freeze({
   '4pt': 'rhythmic-4',
   '8pt': 'rhythmic-8',
   'atlassian-8': 'product-atlassian-8px',
@@ -49,9 +60,150 @@ const PRESET_ALIASES = Object.freeze({
   'perfect-fourth': 'modular-perfect-fourth',
 });
 
-function normalizePresetName(name) {
-  return String(name).trim().toLowerCase();
+function normalizeCommunitySteps(steps) {
+  if (!Array.isArray(steps) || steps.length === 0) {
+    return null;
+  }
+
+  const normalized = [];
+  let previous = null;
+
+  for (const value of steps) {
+    if (typeof value !== 'number' || !Number.isFinite(value) || value < 0) {
+      return null;
+    }
+
+    if (previous !== null && value <= previous) {
+      return null;
+    }
+
+    normalized.push(value);
+    previous = value;
+  }
+
+  if (normalized[0] !== 0) {
+    return null;
+  }
+
+  return Object.freeze(normalized);
 }
+
+function loadCommunityScales() {
+  const communityDirectory = path.resolve(__dirname, '../../scales/community');
+  if (!fs.existsSync(communityDirectory)) {
+    return [];
+  }
+
+  const namesInUse = new Set(Object.keys(CORE_SCALE_PRESETS));
+  const aliasesInUse = new Set([...Object.keys(CORE_SCALE_PRESETS), ...Object.keys(CORE_PRESET_ALIASES)]);
+
+  const fileNames = fs
+    .readdirSync(communityDirectory, { withFileTypes: true })
+    .filter((entry) => entry.isFile() && entry.name.endsWith('.json'))
+    .map((entry) => entry.name)
+    .sort((a, b) => a.localeCompare(b));
+
+  const definitions = [];
+
+  for (const fileName of fileNames) {
+    const absolutePath = path.join(communityDirectory, fileName);
+
+    let parsed;
+    try {
+      parsed = JSON.parse(fs.readFileSync(absolutePath, 'utf8'));
+    } catch {
+      continue;
+    }
+
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      continue;
+    }
+
+    const presetName = normalizePresetName(parsed.name);
+    if (!presetName || namesInUse.has(presetName)) {
+      continue;
+    }
+
+    const steps = normalizeCommunitySteps(parsed.steps);
+    if (!steps) {
+      continue;
+    }
+
+    const aliases = [];
+    if (Array.isArray(parsed.aliases)) {
+      for (const aliasEntry of parsed.aliases) {
+        const alias = normalizePresetName(aliasEntry);
+        if (!alias || alias === presetName || aliasesInUse.has(alias)) {
+          continue;
+        }
+
+        aliases.push(alias);
+        aliasesInUse.add(alias);
+      }
+    }
+
+    namesInUse.add(presetName);
+    aliasesInUse.add(presetName);
+
+    definitions.push(
+      Object.freeze({
+        aliases: Object.freeze(aliases),
+        base: typeof parsed.base === 'number' && Number.isFinite(parsed.base) ? parsed.base : null,
+        contributor: typeof parsed.contributor === 'string' ? parsed.contributor : null,
+        contributorUrl: typeof parsed.contributorUrl === 'string' ? parsed.contributorUrl : null,
+        description: typeof parsed.description === 'string' ? parsed.description : null,
+        fileName,
+        name: presetName,
+        steps,
+        tags: Object.freeze(Array.isArray(parsed.tags) ? parsed.tags.filter((tag) => typeof tag === 'string') : []),
+      }),
+    );
+  }
+
+  return definitions;
+}
+
+const COMMUNITY_SCALE_DEFINITIONS = Object.freeze(loadCommunityScales());
+
+const COMMUNITY_SCALE_PRESETS = Object.freeze(
+  Object.fromEntries(COMMUNITY_SCALE_DEFINITIONS.map((definition) => [definition.name, definition.steps])),
+);
+
+const COMMUNITY_PRESET_ALIASES = Object.freeze(
+  Object.assign(
+    {},
+    ...COMMUNITY_SCALE_DEFINITIONS.map((definition) =>
+      Object.fromEntries(definition.aliases.map((alias) => [alias, definition.name])),
+    ),
+  ),
+);
+
+const COMMUNITY_SCALE_METADATA = Object.freeze(
+  Object.fromEntries(
+    COMMUNITY_SCALE_DEFINITIONS.map((definition) => [
+      definition.name,
+      Object.freeze({
+        aliases: definition.aliases,
+        base: definition.base,
+        contributor: definition.contributor,
+        contributorUrl: definition.contributorUrl,
+        description: definition.description,
+        fileName: definition.fileName,
+        tags: definition.tags,
+      }),
+    ]),
+  ),
+);
+
+const SCALE_PRESETS = Object.freeze({
+  ...CORE_SCALE_PRESETS,
+  ...COMMUNITY_SCALE_PRESETS,
+});
+
+const PRESET_ALIASES = Object.freeze({
+  ...CORE_PRESET_ALIASES,
+  ...COMMUNITY_PRESET_ALIASES,
+});
 
 function resolvePresetName(name) {
   if (typeof name !== 'string' || name.trim().length === 0) {
@@ -72,7 +224,20 @@ function getScalePreset(name) {
 }
 
 function listScalePresetNames() {
-  return Object.keys(SCALE_PRESETS);
+  return Object.keys(SCALE_PRESETS).sort((a, b) => a.localeCompare(b));
+}
+
+function listCommunityScalePresetNames() {
+  return Object.keys(COMMUNITY_SCALE_PRESETS).sort((a, b) => a.localeCompare(b));
+}
+
+function getCommunityScaleMetadata(name) {
+  const normalizedName = resolvePresetName(name);
+  if (!normalizedName) {
+    return null;
+  }
+
+  return COMMUNITY_SCALE_METADATA[normalizedName] || null;
 }
 
 function resolveScaleSelection(options, defaultScale) {
@@ -115,8 +280,16 @@ function resolveScaleSelection(options, defaultScale) {
 }
 
 module.exports = {
+  COMMUNITY_SCALE_DEFINITIONS,
+  COMMUNITY_SCALE_METADATA,
+  COMMUNITY_SCALE_PRESETS,
+  CORE_PRESET_ALIASES,
+  CORE_SCALE_PRESETS,
+  PRESET_ALIASES,
   SCALE_PRESETS,
+  getCommunityScaleMetadata,
   getScalePreset,
+  listCommunityScalePresetNames,
   listScalePresetNames,
   resolveScaleSelection,
 };

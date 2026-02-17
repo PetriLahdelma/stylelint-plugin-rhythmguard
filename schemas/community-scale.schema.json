@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/schemas/community-scale.schema.json",
+  "title": "Rhythmguard Community Scale",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "name",
+    "description",
+    "base",
+    "steps"
+  ],
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Preset identifier used with the `preset` option.",
+      "pattern": "^[a-z0-9][a-z0-9-]{2,63}$"
+    },
+    "description": {
+      "type": "string",
+      "description": "Short purpose statement for docs and gallery.",
+      "minLength": 12,
+      "maxLength": 220
+    },
+    "base": {
+      "type": "number",
+      "description": "Primary grid base in px.",
+      "minimum": 0
+    },
+    "steps": {
+      "type": "array",
+      "description": "Ascending px scale values. Must start at 0.",
+      "minItems": 3,
+      "maxItems": 48,
+      "uniqueItems": true,
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 2048
+      }
+    },
+    "aliases": {
+      "type": "array",
+      "description": "Optional shorthand aliases for preset lookup.",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+      },
+      "default": []
+    },
+    "tags": {
+      "type": "array",
+      "description": "Discovery tags shown in docs/gallery.",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+      },
+      "default": []
+    },
+    "contributor": {
+      "type": "string",
+      "description": "Contributor name used in gallery attribution.",
+      "minLength": 2,
+      "maxLength": 120
+    },
+    "contributorUrl": {
+      "type": "string",
+      "description": "Optional contributor profile URL.",
+      "format": "uri"
+    }
+  }
+}

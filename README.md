@@ -183,6 +183,36 @@ Aliases:
 - Theory presets expose mathematically-derived modular scales from design theory and typographic proportion systems.
 - Full research notes and sources are documented in [`docs/SCALE_RESEARCH.md`](./docs/SCALE_RESEARCH.md).
 
+## Community Scale Registry
+
+Rhythmguard supports community-contributed scale presets from `scales/community/*.json`.
+
+### Current community scales
+
+| Preset | Base | Pattern | Contributor |
+| --- | --- | --- | --- |
+| `product-decimal-10` | `10` | Decimal-friendly dashboard/product cadence | [Petri Lahdelma](https://github.com/PetriLahdelma) |
+
+### Contribute a scale
+
+1. Scaffold a new scale file:
+
+```bash
+npm run scales:add -- --name my-team-scale --base 8 --steps 0,4,8,12,16,24,32
+```
+
+2. Validate:
+
+```bash
+npm run scales:validate
+```
+
+3. Open a PR with your scale JSON.
+
+Full specification and policy: [`docs/COMMUNITY_SCALES.md`](./docs/COMMUNITY_SCALES.md).
+
+If your scale is private or very niche, keep it in your project config with `customScale` instead of contributing it to the shared registry.
+
 ## Rule Details
 
 ### `rhythmguard/use-scale`
@@ -293,6 +323,8 @@ Options:
 const rhythmguard = require('stylelint-plugin-rhythmguard');
 
 console.log(rhythmguard.presets.listScalePresetNames());
+console.log(rhythmguard.presets.listCommunityScalePresetNames());
+console.log(rhythmguard.presets.getCommunityScaleMetadata('product-decimal-10'));
 console.log(rhythmguard.presets.scales['rhythmic-4']);
 ```
 

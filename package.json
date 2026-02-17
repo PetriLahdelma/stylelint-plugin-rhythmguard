@@ -8,6 +8,7 @@
     "css",
     "design-system",
     "design-tokens",
+    "spacing-scale",
     "spacing",
     "linting"
   ],
@@ -24,15 +25,21 @@
   },
   "files": [
     "assets",
+    "scales",
+    "schemas",
     "src",
     "README.md",
     "CHANGELOG.md",
+    "CONTRIBUTING.md",
+    "SECURITY.md",
     "LICENSE"
   ],
   "scripts": {
     "bench:perf": "node scripts/bench/compare.mjs",
     "bench:perf:fix": "node scripts/bench/compare.mjs --fix",
     "lint": "eslint .",
+    "scales:add": "node scripts/scales/add-scale.mjs",
+    "scales:validate": "node scripts/scales/validate-community-scales.mjs",
     "test:pack-smoke": "node scripts/ci/pack-smoke.mjs",
     "test:npm-smoke": "node scripts/ci/npm-registry-smoke.mjs --package stylelint-plugin-rhythmguard --version latest",
     "test": "node --test test/*.test.js",
