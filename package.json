@@ -1,7 +1,7 @@
 {
   "name": "stylelint-plugin-rhythmguard",
-  "version": "0.1.0",
-  "description": "Enterprise-grade Stylelint plugin for spacing scale and token enforcement",
+  "version": "0.1.1",
+  "description": "Stylelint plugin for spacing scale and token enforcement",
   "keywords": [
     "stylelint",
     "stylelint-plugin",
@@ -33,6 +33,7 @@
     "bench:perf": "node scripts/bench/compare.mjs",
     "bench:perf:fix": "node scripts/bench/compare.mjs --fix",
     "lint": "eslint .",
+    "test:pack-smoke": "node scripts/ci/pack-smoke.mjs",
     "test": "node --test test/*.test.js",
     "test:compat-floor": "node --test test/floor-compat.test.js",
     "test:watch": "node --test --watch test/*.test.js",

@@ -45,3 +45,7 @@ jobs:
       - name: Coverage (single reference run)
         if: matrix.node-version == '20.x' && matrix.stylelint-version == '16'
         run: npm run test:coverage
+
+      - name: Pack smoke test (single reference run)
+        if: matrix.node-version == '20.x' && matrix.stylelint-version == '16'
+        run: npm run test:pack-smoke

@@ -339,12 +339,10 @@ Detailed methodology and custom args are documented in [`docs/BENCHMARKING.md`](
 ## Release Workflow
 
 1. Create a GitHub release.
-2. `release.yml` runs lint + tests.
-3. The package is published to npm with provenance (`npm publish --provenance`).
+2. `release.yml` runs the Node/Stylelint matrix validation.
+3. A tarball smoke test validates package exports and install behavior.
+4. The package is published to npm with provenance (`npm publish --provenance`).
 
-## Visual System Note
-
-The repository visuals are SVG-only, black/white only (`#000` / `#fff`), and use the locally installed **Vercel Geist Pixel** font.
 
 ## License
 
