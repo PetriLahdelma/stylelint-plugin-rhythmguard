@@ -14,7 +14,7 @@ Please do **not** open public GitHub issues for security reports.
 Use one of these channels:
 
 1. GitHub private vulnerability reporting (preferred): open a GitHub Security Advisory draft in this repository.
-2. Email: `petri.lahdelma@gmail.com`
+2. Email: `hello@petrilahdelma.com`
 
 Please include:
 

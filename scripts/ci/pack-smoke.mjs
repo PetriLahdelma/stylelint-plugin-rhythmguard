@@ -19,6 +19,7 @@ function run(cmd, args, options = {}) {
 
 const repoRoot = process.cwd();
 const tempDir = mkdtempSync(path.join(tmpdir(), 'rhythmguard-pack-smoke-'));
+let tarballPath = null;
 
 try {
   const packResult = run('npm', ['pack', '--json'], { cwd: repoRoot });
@@ -34,7 +35,7 @@ try {
     throw new Error('Unable to determine tarball filename from npm pack output.');
   }
 
-  const tarballPath = path.join(repoRoot, tarballName);
+  tarballPath = path.join(repoRoot, tarballName);
 
   const initResult = run('npm', ['init', '-y'], { cwd: tempDir });
   if (initResult.status !== 0) {
@@ -84,5 +85,8 @@ try {
 
   console.log('Pack smoke test passed.');
 } finally {
+  if (tarballPath) {
+    rmSync(tarballPath, { force: true });
+  }
   rmSync(tempDir, { force: true, recursive: true });
 }

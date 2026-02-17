@@ -1,6 +1,6 @@
 {
   "name": "stylelint-plugin-rhythmguard",
-  "version": "0.1.1",
+  "version": "1.0.0",
   "description": "Stylelint plugin for spacing scale and token enforcement",
   "keywords": [
     "stylelint",
@@ -45,7 +45,8 @@
   },
   "homepage": "https://github.com/petrilahdelma/stylelint-plugin-rhythmguard#readme",
   "bugs": {
-    "url": "https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/issues"
+    "url": "https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/issues",
+    "email": "hello@petrilahdelma.com"
   },
   "peerDependencies": {
     "stylelint": "^16.0.0"

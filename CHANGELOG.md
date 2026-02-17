@@ -4,6 +4,14 @@ All notable changes to `stylelint-plugin-rhythmguard` will be documented in this
 
 The format follows Keep a Changelog principles and semantic versioning.
 
+## [1.0.0] - 2026-02-17
+
+### Changed
+
+- Promoted the package to `1.0.0` to signal production-ready stability for rule behavior, config entry points, and autofix determinism.
+- Added explicit public bug-report/support contact: `hello@petrilahdelma.com`.
+- Added npm metadata bug-report email for direct reporting via package details.
+
 ## [0.1.1] - 2026-02-16
 
 ### Changed

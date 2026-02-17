@@ -343,6 +343,10 @@ Detailed methodology and custom args are documented in [`docs/BENCHMARKING.md`](
 3. A tarball smoke test validates package exports and install behavior.
 4. The package is published to npm with provenance (`npm publish --provenance`).
 
+## Support and Bug Reports
+
+- Open an issue: <https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/issues>
+- Security reports and direct contact: `hello@petrilahdelma.com`
 
 ## License
 
