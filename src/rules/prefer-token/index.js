@@ -109,7 +109,8 @@ const ruleFunction = (primary, secondaryOptions) => {
 
         if (
           parentFunctionName &&
-          isMathFunction(parentFunctionName)
+          isMathFunction(parentFunctionName) &&
+          !options.enforceInsideMathFunctions
         ) {
           return false;
         }
@@ -120,6 +121,10 @@ const ruleFunction = (primary, secondaryOptions) => {
         }
 
         if (parsedLength.number === 0) {
+          return false;
+        }
+
+        if (parsedLength.unit === '') {
           return false;
         }
 
@@ -148,7 +153,7 @@ const ruleFunction = (primary, secondaryOptions) => {
               return true;
             }
 
-            if (isMathFunction(node.value)) {
+            if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
               return true;
             }
 
@@ -169,7 +174,7 @@ const ruleFunction = (primary, secondaryOptions) => {
               return true;
             }
 
-            if (isMathFunction(node.value)) {
+            if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
               return true;
             }
 

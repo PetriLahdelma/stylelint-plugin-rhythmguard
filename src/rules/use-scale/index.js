@@ -66,6 +66,10 @@ function checkLengthValue({
     return false;
   }
 
+  if (parsedLength.unit === '') {
+    return false;
+  }
+
   if (parsedLength.unit === '%' && options.allowPercentages) {
     return false;
   }

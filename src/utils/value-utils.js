@@ -50,7 +50,16 @@ function isTokenFunction(node, tokenFunctions, tokenRegex) {
     return true;
   }
 
-  const firstArg = valueParser.stringify(node.nodes).split(',')[0].trim();
+  const firstArgNodes = [];
+  for (const child of node.nodes) {
+    if (child.type === 'div' && child.value === ',') {
+      break;
+    }
+
+    firstArgNodes.push(child);
+  }
+
+  const firstArg = valueParser.stringify(firstArgNodes).trim();
   return tokenRegex.test(firstArg);
 }
 

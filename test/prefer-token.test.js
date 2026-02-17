@@ -114,3 +114,39 @@ test('prefer-token custom scale overrides preset in migration mode', async () =>
 
   assert.equal(result.warnings.length, 0);
 });
+
+test('prefer-token ignores unitless non-zero values', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: 13; }',
+    rules: baseRule,
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
+
+test('prefer-token skips math internals by default', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: calc(12px + 1px); }',
+    rules: baseRule,
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
+
+test('prefer-token can lint inside math functions when enabled', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: calc(12px + 1px); }',
+    rules: {
+      'rhythmguard/prefer-token': [
+        true,
+        {
+          tokenPattern: '^--space-',
+          enforceInsideMathFunctions: true,
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 2);
+  assert.ok(result.warnings.every((warning) => warning.rule === 'rhythmguard/prefer-token'));
+});

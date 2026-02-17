@@ -62,6 +62,7 @@ function buildTokenOptions(rawOptions) {
       options.baseFontSize > 0
         ? options.baseFontSize
         : 16,
+    enforceInsideMathFunctions: options.enforceInsideMathFunctions === true,
     ignoreValues: Array.isArray(options.ignoreValues)
       ? options.ignoreValues.map((value) => String(value).toLowerCase())
       : DEFAULT_IGNORE_KEYWORDS,

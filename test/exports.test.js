@@ -25,3 +25,21 @@ test('plugin exports rules and shared configs', () => {
   assert.ok(Array.isArray(plugin.presets.listCommunityScalePresetNames()));
   assert.ok(plugin.presets.getCommunityScaleMetadata('product-decimal-10'));
 });
+
+test('strict config avoids transform overlap in use-scale', () => {
+  const strict = plugin.configs.strict;
+  const useScale = strict.rules['rhythmguard/use-scale'];
+  const noOffscaleTransform = strict.rules['rhythmguard/no-offscale-transform'];
+
+  assert.ok(useScale);
+  assert.ok(noOffscaleTransform);
+
+  const useScaleOptions = useScale[1] || {};
+  const properties = useScaleOptions.properties || [];
+
+  assert.ok(Array.isArray(properties));
+  assert.equal(
+    properties.some((pattern) => String(pattern) === '/^transform$/'),
+    false,
+  );
+});

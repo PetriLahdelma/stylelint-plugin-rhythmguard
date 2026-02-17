@@ -108,6 +108,10 @@ const ruleFunction = (primary, secondaryOptions) => {
           return;
         }
 
+        if (parsedLength.unit === '') {
+          return;
+        }
+
         if (parsedLength.unit === '%' && options.allowPercentages) {
           return;
         }

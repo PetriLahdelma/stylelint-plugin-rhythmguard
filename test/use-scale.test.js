@@ -43,6 +43,15 @@ test('use-scale allows token functions', async () => {
   assert.equal(result.warnings.length, 0);
 });
 
+test('use-scale allows var tokens with complex fallback content', async () => {
+  const result = await lintCss({
+    code: '.card { margin: var(--space-3, clamp(8px, min(12px, 3vw), 16px)); }',
+    rules: ruleConfig,
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
+
 test('use-scale checks translate values in transform', async () => {
   const result = await lintCss({
     code: '.card { transform: translateX(13px) scale(1.05); }',
@@ -88,6 +97,15 @@ test('use-scale autofixes simple off-scale values', async () => {
   });
 
   assert.equal(result.code, '.card { margin: 12px; }');
+});
+
+test('use-scale ignores unitless non-zero values', async () => {
+  const result = await lintCss({
+    code: '.card { margin: 13; }',
+    rules: ruleConfig,
+  });
+
+  assert.equal(result.warnings.length, 0);
 });
 
 test('use-scale supports built-in presets', async () => {

@@ -68,3 +68,12 @@ test('no-offscale-transform lints nested calc values in transform when enabled',
   assert.equal(result.warnings.length, 2);
   assert.ok(result.warnings.every((warning) => warning.rule === 'rhythmguard/no-offscale-transform'));
 });
+
+test('no-offscale-transform ignores unitless non-zero values', async () => {
+  const result = await lintCss({
+    code: '.chip { transform: translateY(18); }',
+    rules: ruleConfig,
+  });
+
+  assert.equal(result.warnings.length, 0);
+});

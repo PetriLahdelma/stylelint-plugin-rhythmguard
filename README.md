@@ -47,7 +47,6 @@ npm install --save-dev stylelint stylelint-plugin-rhythmguard
 
 ```json
 {
-  "plugins": ["stylelint-plugin-rhythmguard"],
   "extends": ["stylelint-plugin-rhythmguard/configs/recommended"]
 }
 ```
@@ -56,16 +55,16 @@ npm install --save-dev stylelint stylelint-plugin-rhythmguard
 
 ```json
 {
-  "plugins": ["stylelint-plugin-rhythmguard"],
   "extends": ["stylelint-plugin-rhythmguard/configs/strict"]
 }
 ```
+
+`strict` intentionally delegates transform translation enforcement to `rhythmguard/no-offscale-transform` to reduce overlapping warnings from `use-scale`.
 
 ### Tailwind config
 
 ```json
 {
-  "plugins": ["stylelint-plugin-rhythmguard"],
   "extends": ["stylelint-plugin-rhythmguard/configs/tailwind"]
 }
 ```
@@ -191,7 +190,7 @@ Aliases:
 - Product presets are based on widely-used design-system spacing frameworks.
 - Editorial presets model baseline-grid cadence used in long-form typography and column layouts.
 - Theory presets expose mathematically-derived modular scales from design theory and typographic proportion systems.
-- Full research notes and sources are documented in [`docs/SCALE_RESEARCH.md`](./docs/SCALE_RESEARCH.md).
+- Full research notes and sources are documented in [`docs/SCALE_RESEARCH.md`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/SCALE_RESEARCH.md).
 
 ## Community Scale Registry
 
@@ -219,7 +218,7 @@ npm run scales:validate
 
 3. Open a PR with your scale JSON.
 
-Full specification and policy: [`docs/COMMUNITY_SCALES.md`](./docs/COMMUNITY_SCALES.md).
+Full specification and policy: [`docs/COMMUNITY_SCALES.md`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/COMMUNITY_SCALES.md).
 
 If your scale is private or very niche, keep it in your project config with `customScale` instead of contributing it to the shared registry.
 
@@ -301,6 +300,7 @@ Options:
 | `customScale` | `Array<number|string>` | `undefined` | Highest-priority custom scale override |
 | `scale` | `Array<number|string>` | `[0,4,8,12,16,24,32,40,48,64]` | Used when `allowNumericScale` is enabled |
 | `baseFontSize` | `number` | `16` | Used for scale checks with `rem`/`em` |
+| `enforceInsideMathFunctions` | `boolean` | `false` | Lints `calc()/clamp()/min()/max()` internals |
 | `tokenMap` | `Record<string,string>` | `{}` | Enables autofix from raw value to token |
 | `ignoreValues` | `string[]` | CSS global keywords + `auto` | Skips keyword literals |
 | `properties` | `Array<string|RegExp>` | built-in spacing patterns | Override targeted property set |
@@ -365,7 +365,7 @@ Then pair with:
 - `eslint-plugin-tailwindcss` for class-string rules (including arbitrary-value governance).
 - `prettier-plugin-tailwindcss` for deterministic class ordering.
 
-Detailed setup reference: [`docs/TAILWIND.md`](./docs/TAILWIND.md).
+Detailed setup reference: [`docs/TAILWIND.md`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/TAILWIND.md).
 
 ### Tailwind token function support
 
@@ -430,7 +430,11 @@ Benchmark with autofix enabled:
 npm run bench:perf:fix
 ```
 
-Detailed methodology and custom args are documented in [`docs/BENCHMARKING.md`](./docs/BENCHMARKING.md).
+Detailed methodology and custom args are documented in [`docs/BENCHMARKING.md`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/BENCHMARKING.md).
+
+## Article
+
+- Dev.to: [Enforcing your spacing standards with Rhythmguard](https://dev.to/petrilahdelma/enforcing-your-spacing-standards-with-rhythmguard-a-custom-stylelint-plugin-1ojj)
 
 ## Release Workflow
 

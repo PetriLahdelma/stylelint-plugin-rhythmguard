@@ -6,6 +6,25 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-02-17
+
+### Fixed
+
+- Ignore invalid unitless non-zero literals (`margin: 13`) across all rules instead of treating them like `px` and autofixing them.
+- Reduced strict-mode transform overlap by scoping `rhythmguard/use-scale` away from transform properties in the shared strict config.
+- `rhythmguard/prefer-token` now supports `enforceInsideMathFunctions` for optional math-function enforcement.
+- Hardened `var()` token argument detection to parse the first argument structurally (rather than comma string splitting).
+- npm README link integrity: docs links now resolve to absolute GitHub URLs from the npm package page.
+
+### Added
+
+- Dev.to article link in README resources:
+  - https://dev.to/petrilahdelma/enforcing-your-spacing-standards-with-rhythmguard-a-custom-stylelint-plugin-1ojj
+- Regression tests covering:
+  - unitless non-zero handling in all three rules
+  - strict transform overlap guard
+  - prefer-token math-function enforcement toggle
+
 ## [1.2.0] - 2026-02-17
 
 ### Added
