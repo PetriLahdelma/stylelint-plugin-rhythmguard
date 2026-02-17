@@ -34,6 +34,7 @@
     "bench:perf:fix": "node scripts/bench/compare.mjs --fix",
     "lint": "eslint .",
     "test:pack-smoke": "node scripts/ci/pack-smoke.mjs",
+    "test:npm-smoke": "node scripts/ci/npm-registry-smoke.mjs --package stylelint-plugin-rhythmguard --version latest",
     "test": "node --test test/*.test.js",
     "test:compat-floor": "node --test test/floor-compat.test.js",
     "test:watch": "node --test --watch test/*.test.js",

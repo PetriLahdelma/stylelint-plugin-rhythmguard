@@ -4,6 +4,14 @@ All notable changes to `stylelint-plugin-rhythmguard` will be documented in this
 
 The format follows Keep a Changelog principles and semantic versioning.
 
+## [Unreleased]
+
+### Added
+
+- `CODEOWNERS` for repository ownership and review routing.
+- Post-publish npm smoke workflow to validate clean-project install and lint execution from the registry.
+- Non-blocking full-suite observability on Stylelint `16.0.0` in CI/release verification.
+
 ## [1.0.0] - 2026-02-17
 
 ### Changed

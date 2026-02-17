@@ -1,0 +1,35 @@
+name: Post Publish Smoke
+
+on:
+  workflow_run:
+    workflows: ['Release']
+    types: [completed]
+
+jobs:
+  npm-smoke:
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout published commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Read package version
+        id: pkg
+        run: echo "version=$(node -p \"require('./package.json').version\")" >> "$GITHUB_OUTPUT"
+
+      - name: Verify package is visible on npm registry
+        run: npm view stylelint-plugin-rhythmguard@${{ steps.pkg.outputs.version }} version
+
+      - name: npm install + lint smoke test
+        run: node scripts/ci/npm-registry-smoke.mjs --package stylelint-plugin-rhythmguard --version ${{ steps.pkg.outputs.version }}

@@ -38,6 +38,11 @@ jobs:
         if: matrix.stylelint-version == '16.0.0'
         run: npm run test:compat-floor
 
+      - name: Observe full suite behavior on Stylelint floor (non-blocking)
+        if: matrix.stylelint-version == '16.0.0'
+        continue-on-error: true
+        run: npm test
+
       - name: Test (full suite)
         if: matrix.stylelint-version != '16.0.0'
         run: npm test

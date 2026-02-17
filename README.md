@@ -310,6 +310,7 @@ It will not guess token mappings without your map.
 - Stylelint: `^16.0.0`
 - Node.js: `>=18.18.0`
 - Module format: CommonJS plugin package
+- Note: Stylelint `16.0.0` has known autofix/API behavior differences; CI enforces floor compatibility and runs non-blocking full-suite observability on the floor version.
 
 ## Development
 
@@ -342,6 +343,7 @@ Detailed methodology and custom args are documented in [`docs/BENCHMARKING.md`](
 2. `release.yml` runs the Node/Stylelint matrix validation.
 3. A tarball smoke test validates package exports and install behavior.
 4. The package is published to npm with provenance (`npm publish --provenance`).
+5. `post-publish-smoke.yml` verifies the published npm version can be installed and run in a clean project.
 
 ## Support and Bug Reports
 
