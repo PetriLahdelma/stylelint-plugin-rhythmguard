@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-02-17
+
 ### Added
 
 - Tailwind integration guidance in README:
