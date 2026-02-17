@@ -170,7 +170,35 @@ const ruleFunction = (primary, secondaryOptions) => {
       let changed = false;
 
       if (prop === 'transform') {
-        walkTransformTranslateNodes(parsed, (node) => {
+        walkTransformTranslateNodes(parsed, (node, parentFunctionName) => {
+          if (node.type === 'function') {
+            if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
+              return true;
+            }
+
+            if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
+              return true;
+            }
+
+            return false;
+          }
+
+          if (node.type !== 'word') {
+            return false;
+          }
+
+          if (isKeyword(node.value, options.ignoreValues)) {
+            return false;
+          }
+
+          if (
+            parentFunctionName &&
+            isMathFunction(parentFunctionName) &&
+            !options.enforceInsideMathFunctions
+          ) {
+            return false;
+          }
+
           changed =
             checkLengthValue({
               decl,
@@ -179,6 +207,8 @@ const ruleFunction = (primary, secondaryOptions) => {
               report,
               scalePx,
             }) || changed;
+
+          return false;
         });
       } else {
         walkRootValueNodes(parsed, (node, parentFunctionName) => {

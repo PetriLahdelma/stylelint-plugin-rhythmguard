@@ -9,6 +9,7 @@ const plugin = require('../src');
 test('floor-compat: plugin exports shared configs', () => {
   assert.ok(plugin.configs.recommended);
   assert.ok(plugin.configs.strict);
+  assert.ok(plugin.configs.tailwind);
 });
 
 test('floor-compat: use-scale reports off-scale spacing', async () => {

@@ -70,6 +70,15 @@ test('prefer-token can autofix with tokenMap', async () => {
   assert.equal(result.code, '.stack { gap: var(--space-3); }');
 });
 
+test('prefer-token allows token functions inside transform translate values', async () => {
+  const result = await lintCss({
+    code: '.stack { transform: translateY(theme(spacing.4)); }',
+    rules: baseRule,
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
+
 test('prefer-token supports built-in preset scales in migration mode', async () => {
   const result = await lintCss({
     code: '.stack { gap: 21px; margin: 22px; }',

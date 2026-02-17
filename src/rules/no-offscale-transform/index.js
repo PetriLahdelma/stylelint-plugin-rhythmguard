@@ -14,6 +14,8 @@ const {
 const { buildScaleOptions } = require('../../utils/options');
 const {
   declarationValueIndex,
+  isMathFunction,
+  walkRootValueNodes,
   walkTransformTranslateNodes,
 } = require('../../utils/value-utils');
 
@@ -138,15 +140,55 @@ const ruleFunction = (primary, secondaryOptions) => {
       };
 
       if (prop === 'transform') {
-        walkTransformTranslateNodes(parsed, (node) => {
+        walkTransformTranslateNodes(parsed, (node, parentFunctionName) => {
+          if (node.type === 'function') {
+            if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
+              return true;
+            }
+
+            return false;
+          }
+
+          if (node.type !== 'word') {
+            return false;
+          }
+
+          if (
+            parentFunctionName &&
+            isMathFunction(parentFunctionName) &&
+            !options.enforceInsideMathFunctions
+          ) {
+            return false;
+          }
+
           checkNode(node);
+          return false;
         });
       } else {
-        for (const node of parsed.nodes) {
-          if (node.type === 'word') {
-            checkNode(node);
+        walkRootValueNodes(parsed, (node, parentFunctionName) => {
+          if (node.type === 'function') {
+            if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
+              return true;
+            }
+
+            return false;
           }
-        }
+
+          if (node.type !== 'word') {
+            return false;
+          }
+
+          if (
+            parentFunctionName &&
+            isMathFunction(parentFunctionName) &&
+            !options.enforceInsideMathFunctions
+          ) {
+            return false;
+          }
+
+          checkNode(node);
+          return false;
+        });
       }
 
       if (changed) {

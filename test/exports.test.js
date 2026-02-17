@@ -13,6 +13,11 @@ test('plugin exports rules and shared configs', () => {
   assert.ok(plugin.rules['rhythmguard/no-offscale-transform']);
   assert.ok(plugin.configs.recommended);
   assert.ok(plugin.configs.strict);
+  assert.ok(plugin.configs.tailwind);
+  assert.deepEqual(plugin.configs.tailwind.extends, [
+    'stylelint-config-tailwindcss',
+    'stylelint-plugin-rhythmguard/configs/strict',
+  ]);
   assert.ok(plugin.presets);
   assert.ok(plugin.presets.scales['rhythmic-4']);
   assert.ok(plugin.presets.scales['product-decimal-10']);

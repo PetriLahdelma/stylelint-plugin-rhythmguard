@@ -53,6 +53,33 @@ test('use-scale checks translate values in transform', async () => {
   assert.match(result.warnings[0].text, /off-scale/);
 });
 
+test('use-scale allows token functions inside transform translate values', async () => {
+  const result = await lintCss({
+    code: '.card { transform: translateY(theme(spacing.4)); }',
+    rules: ruleConfig,
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
+
+test('use-scale can lint nested calc values in transform when enabled', async () => {
+  const result = await lintCss({
+    code: '.card { transform: translateY(calc(10px + 3px)); }',
+    rules: {
+      'rhythmguard/use-scale': [
+        true,
+        {
+          scale: [0, 4, 8, 12, 16, 24, 32],
+          enforceInsideMathFunctions: true,
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 2);
+  assert.ok(result.warnings.every((warning) => warning.rule === 'rhythmguard/use-scale'));
+});
+
 test('use-scale autofixes simple off-scale values', async () => {
   const result = await lintCss({
     code: '.card { margin: 13px; }',

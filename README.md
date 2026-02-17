@@ -61,10 +61,20 @@ npm install --save-dev stylelint stylelint-plugin-rhythmguard
 }
 ```
 
+### Tailwind config
+
+```json
+{
+  "plugins": ["stylelint-plugin-rhythmguard"],
+  "extends": ["stylelint-plugin-rhythmguard/configs/tailwind"]
+}
+```
+
 Stable shared config entry points:
 
 - `stylelint-plugin-rhythmguard/configs/recommended`
 - `stylelint-plugin-rhythmguard/configs/strict`
+- `stylelint-plugin-rhythmguard/configs/tailwind`
 
 ### Full custom setup
 
@@ -346,10 +356,7 @@ Suggested setup:
 
 ```json
 {
-  "extends": [
-    "stylelint-config-tailwindcss",
-    "stylelint-plugin-rhythmguard/configs/strict"
-  ]
+  "extends": ["stylelint-plugin-rhythmguard/configs/tailwind"]
 }
 ```
 
@@ -357,6 +364,8 @@ Then pair with:
 
 - `eslint-plugin-tailwindcss` for class-string rules (including arbitrary-value governance).
 - `prettier-plugin-tailwindcss` for deterministic class ordering.
+
+Detailed setup reference: [`docs/TAILWIND.md`](./docs/TAILWIND.md).
 
 ### Tailwind token function support
 

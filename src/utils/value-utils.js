@@ -77,6 +77,23 @@ function walkRootValueNodes(parsed, walkNode, state) {
 }
 
 function walkTransformTranslateNodes(parsed, walkNode) {
+  const walkNodes = (nodes, parentFunctionName) => {
+    for (const node of nodes) {
+      if (node.type === 'function') {
+        const fnName = node.value.toLowerCase();
+        const skipChildren = walkNode(node, parentFunctionName);
+        if (skipChildren) {
+          continue;
+        }
+
+        walkNodes(node.nodes, fnName);
+        continue;
+      }
+
+      walkNode(node, parentFunctionName);
+    }
+  };
+
   for (const node of parsed.nodes) {
     if (node.type !== 'function') {
       continue;
@@ -86,11 +103,7 @@ function walkTransformTranslateNodes(parsed, walkNode) {
       continue;
     }
 
-    for (const child of node.nodes) {
-      if (child.type === 'word') {
-        walkNode(child, node.value.toLowerCase());
-      }
-    }
+    walkNodes(node.nodes, node.value.toLowerCase());
   }
 }
 

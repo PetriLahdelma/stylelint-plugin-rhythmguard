@@ -12,6 +12,13 @@ The format follows Keep a Changelog principles and semantic versioning.
   - exact enforcement boundary (CSS declarations vs class strings)
   - recommended layered setup with `stylelint-config-tailwindcss`, `eslint-plugin-tailwindcss`, and `prettier-plugin-tailwindcss`
   - architecture direction for thorough Tailwind coverage.
+- New shared config entry point: `stylelint-plugin-rhythmguard/configs/tailwind`.
+- Tailwind-oriented test coverage for transform token functions and nested translate values.
+
+### Changed
+
+- Hardened transform translate parsing to handle nested function values consistently.
+- `use-scale` and `no-offscale-transform` now respect `enforceInsideMathFunctions` in transform translation contexts.
 
 ## [1.1.0] - 2026-02-17
 

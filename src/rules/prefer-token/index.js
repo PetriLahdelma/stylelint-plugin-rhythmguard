@@ -142,8 +142,25 @@ const ruleFunction = (primary, secondaryOptions) => {
       };
 
       if (prop === 'transform') {
-        walkTransformTranslateNodes(parsed, (node) => {
-          changed = checkWordNode(node) || changed;
+        walkTransformTranslateNodes(parsed, (node, parentFunctionName) => {
+          if (node.type === 'function') {
+            if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
+              return true;
+            }
+
+            if (isMathFunction(node.value)) {
+              return true;
+            }
+
+            return false;
+          }
+
+          if (node.type !== 'word') {
+            return false;
+          }
+
+          changed = checkWordNode(node, parentFunctionName) || changed;
+          return false;
         });
       } else {
         walkRootValueNodes(parsed, (node, parentFunctionName) => {

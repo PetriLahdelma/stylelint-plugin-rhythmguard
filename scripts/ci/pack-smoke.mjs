@@ -55,7 +55,7 @@ try {
     'node',
     [
       '-e',
-      "require('stylelint-plugin-rhythmguard/configs/recommended'); require('stylelint-plugin-rhythmguard/configs/strict');",
+      "require('stylelint-plugin-rhythmguard/configs/recommended'); require('stylelint-plugin-rhythmguard/configs/strict'); require('stylelint-plugin-rhythmguard/configs/tailwind');",
     ],
     { cwd: tempDir },
   );
