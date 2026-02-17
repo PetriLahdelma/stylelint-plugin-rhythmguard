@@ -11,7 +11,10 @@ const {
   parseLengthToken,
   toPx,
 } = require('../../utils/length');
-const { buildScaleOptions } = require('../../utils/options');
+const {
+  buildScaleOptions,
+  validateNoOffscaleTransformSecondaryOptions,
+} = require('../../utils/options');
 const {
   declarationValueIndex,
   isMathFunction,
@@ -51,6 +54,15 @@ const ruleFunction = (primary, secondaryOptions) => {
     });
 
     if (!valid) {
+      return;
+    }
+
+    const validSecondaryOptions = validateNoOffscaleTransformSecondaryOptions(
+      result,
+      ruleName,
+      secondaryOptions,
+    );
+    if (!validSecondaryOptions) {
       return;
     }
 

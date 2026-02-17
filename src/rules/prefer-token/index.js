@@ -8,7 +8,10 @@ const {
   parseLengthToken,
   toPx,
 } = require('../../utils/length');
-const { buildTokenOptions } = require('../../utils/options');
+const {
+  buildTokenOptions,
+  validatePreferTokenSecondaryOptions,
+} = require('../../utils/options');
 const {
   createTokenRegex,
   declarationValueIndex,
@@ -50,6 +53,15 @@ const ruleFunction = (primary, secondaryOptions) => {
     });
 
     if (!valid) {
+      return;
+    }
+
+    const validSecondaryOptions = validatePreferTokenSecondaryOptions(
+      result,
+      ruleName,
+      secondaryOptions,
+    );
+    if (!validSecondaryOptions) {
       return;
     }
 

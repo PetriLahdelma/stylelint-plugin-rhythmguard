@@ -11,7 +11,10 @@ const {
   parseLengthToken,
   toPx,
 } = require('../../utils/length');
-const { buildScaleOptions } = require('../../utils/options');
+const {
+  buildScaleOptions,
+  validateUseScaleSecondaryOptions,
+} = require('../../utils/options');
 const {
   createTokenRegex,
   declarationValueIndex,
@@ -119,6 +122,15 @@ const ruleFunction = (primary, secondaryOptions) => {
     });
 
     if (!valid) {
+      return;
+    }
+
+    const validSecondaryOptions = validateUseScaleSecondaryOptions(
+      result,
+      ruleName,
+      secondaryOptions,
+    );
+    if (!validSecondaryOptions) {
       return;
     }
 

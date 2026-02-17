@@ -33,6 +33,7 @@ async function lintCss({ code, fix = false, rules }) {
   return {
     code: fixedCode,
     errored: result.errored,
+    invalidOptionWarnings: result.invalidOptionWarnings,
     warnings: result.warnings,
   };
 }
