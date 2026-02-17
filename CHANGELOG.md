@@ -6,6 +6,23 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-02-17
+
+### Added
+
+- Strict `secondaryOptions` validation for all three rules:
+  - `rhythmguard/use-scale`
+  - `rhythmguard/prefer-token`
+  - `rhythmguard/no-offscale-transform`
+- Invalid option names (for example `sevverity`) now fail with Stylelint invalid option warnings instead of silently being ignored.
+- Type/shape validation for option payloads (for example `properties` must be an array, `tokenMap` must be an object).
+- Regression tests for invalid secondary option names and option value shapes.
+
+### Changed
+
+- Added `known-css-properties` as a direct runtime dependency to guarantee `properties` option validation in consumer installs.
+- `properties` option validation now checks supported spacing property names against known CSS property metadata (plus `translate-x`, `translate-y`, `translate-z`).
+
 ## [1.2.1] - 2026-02-17
 
 ### Fixed

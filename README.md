@@ -156,6 +156,24 @@ Scale resolution precedence:
 3. `preset`
 4. default `rhythmic-4` scale
 
+## Option Validation
+
+Rhythmguard validates `secondaryOptions` for each rule before linting declarations.
+
+- Unknown option names fail fast with Stylelint invalid option warnings.
+- Invalid option shapes fail fast (for example string vs array mismatches).
+- `properties` string entries are validated against supported CSS spacing property names, plus `translate-x`, `translate-y`, and `translate-z`.
+
+Example typo that now fails immediately:
+
+```json
+{
+  "rules": {
+    "rhythmguard/use-scale": [true, { "sevverity": "warning" }]
+  }
+}
+```
+
 ## Built-in Scale Presets
 
 | Preset | Pattern | Scale |
@@ -277,7 +295,7 @@ Options:
 | `allowPercentages` | `boolean` | `true` | Allows `%` values without scale checks |
 | `fixToScale` | `boolean` | `true` | Enables nearest-value autofix |
 | `enforceInsideMathFunctions` | `boolean` | `false` | Lints `calc()/clamp()/min()/max()` internals |
-| `properties` | `Array<string|RegExp>` | built-in spacing patterns | Override targeted property set |
+| `properties` | `Array<string|RegExp>` | built-in spacing patterns | Override targeted property set; string values must be supported spacing property names |
 
 ### `rhythmguard/prefer-token`
 
@@ -313,7 +331,7 @@ Options:
 | `enforceInsideMathFunctions` | `boolean` | `false` | Lints `calc()/clamp()/min()/max()` internals |
 | `tokenMap` | `Record<string,string>` | `{}` | Enables autofix from raw value to token |
 | `ignoreValues` | `string[]` | CSS global keywords + `auto` | Skips keyword literals |
-| `properties` | `Array<string|RegExp>` | built-in spacing patterns | Override targeted property set |
+| `properties` | `Array<string|RegExp>` | built-in spacing patterns | Override targeted property set; string values must be supported spacing property names |
 
 ### `rhythmguard/no-offscale-transform`
 
@@ -335,7 +353,7 @@ Example:
 
 Options:
 
-`rhythmguard/no-offscale-transform` accepts the same scale options as `rhythmguard/use-scale`, but only for transform translation properties.
+`rhythmguard/no-offscale-transform` accepts the same scale options as `rhythmguard/use-scale`, but only for transform translation properties. Its secondary options are also validated for unknown keys and invalid value shapes.
 
 ## Tailwind CSS Integration
 
