@@ -1,7 +1,7 @@
 {
   "name": "stylelint-plugin-rhythmguard",
   "version": "1.3.0",
-  "description": "Stylelint plugin for spacing scale and token enforcement",
+  "description": "Stylelint plugin for spacing scale, token enforcement, and Tailwind class-string governance",
   "keywords": [
     "stylelint",
     "stylelint-plugin",
@@ -10,19 +10,62 @@
     "design-tokens",
     "spacing-scale",
     "spacing",
-    "linting"
+    "linting",
+    "tailwindcss",
+    "eslint-plugin",
+    "logical-css"
   ],
   "type": "commonjs",
   "main": "src/index.js",
   "exports": {
-    ".": "./src/index.js",
-    "./configs/recommended": "./src/configs/recommended.js",
-    "./configs/strict": "./src/configs/strict.js",
-    "./configs/tailwind": "./src/configs/tailwind.js",
-    "./presets": "./src/presets/index.js",
-    "./rules/use-scale": "./src/rules/use-scale/index.js",
-    "./rules/prefer-token": "./src/rules/prefer-token/index.js",
-    "./rules/no-offscale-transform": "./src/rules/no-offscale-transform/index.js"
+    ".": {
+      "require": "./src/index.js",
+      "import": "./src/index.mjs"
+    },
+    "./configs/recommended": {
+      "require": "./src/configs/recommended.js",
+      "import": "./src/configs/recommended.mjs"
+    },
+    "./configs/strict": {
+      "require": "./src/configs/strict.js",
+      "import": "./src/configs/strict.mjs"
+    },
+    "./configs/tailwind": {
+      "require": "./src/configs/tailwind.js",
+      "import": "./src/configs/tailwind.mjs"
+    },
+    "./configs/expanded": {
+      "require": "./src/configs/expanded.js",
+      "import": "./src/configs/expanded.mjs"
+    },
+    "./configs/logical": {
+      "require": "./src/configs/logical.js",
+      "import": "./src/configs/logical.mjs"
+    },
+    "./configs/migration": {
+      "require": "./src/configs/migration.js",
+      "import": "./src/configs/migration.mjs"
+    },
+    "./presets": {
+      "require": "./src/presets/index.js",
+      "import": "./src/presets/index.mjs"
+    },
+    "./rules/use-scale": {
+      "require": "./src/rules/use-scale/index.js",
+      "import": "./src/rules/use-scale/index.mjs"
+    },
+    "./rules/prefer-token": {
+      "require": "./src/rules/prefer-token/index.js",
+      "import": "./src/rules/prefer-token/index.mjs"
+    },
+    "./rules/no-offscale-transform": {
+      "require": "./src/rules/no-offscale-transform/index.js",
+      "import": "./src/rules/no-offscale-transform/index.mjs"
+    },
+    "./eslint": {
+      "require": "./src/eslint/index.js",
+      "import": "./src/eslint/index.mjs"
+    }
   },
   "files": [
     "assets",
@@ -58,11 +101,12 @@
     "email": "hello@petrilahdelma.com"
   },
   "peerDependencies": {
-    "stylelint": "^16.0.0"
+    "stylelint": "^16.0.0 || ^17.0.0"
   },
   "dependencies": {
     "known-css-properties": "^0.37.0",
-    "stylelint-config-tailwindcss": "^1.0.1"
+    "stylelint-config-tailwindcss": "^1.0.1",
+    "stylelint-plugin-logical-css": "^2.0.2"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
@@ -71,7 +115,8 @@
     "geist": "^1.7.0",
     "postcss-value-parser": "^4.2.0",
     "stylelint": "^16.15.0",
-    "stylelint-scales": "^5.0.0"
+    "stylelint-scales": "^5.0.0",
+    "stylelint-plugin-logical-css": "^2.0.2"
   },
   "engines": {
     "node": ">=18.18.0"

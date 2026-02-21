@@ -4,8 +4,8 @@ This guide describes the production setup for Rhythmguard in Tailwind-based code
 
 ## Scope Model
 
-- Rhythmguard enforces CSS declaration values that Stylelint can parse.
-- Tailwind class strings in markup (`class="p-4"` / `className="p-[13px]"`) are out of scope for Stylelint rules.
+- Rhythmguard Stylelint rules enforce CSS declaration values that Stylelint can parse.
+- Rhythmguard ESLint companion rules enforce Tailwind class-string arbitrary values in templates.
 
 ## Recommended Layered Setup
 
@@ -24,9 +24,26 @@ This gives:
 
 ### 2) Template class-string layer
 
-Use an ESLint plugin for Tailwind utility class strings:
+Use the built-in Rhythmguard ESLint companion for arbitrary spacing classes:
 
-- `eslint-plugin-tailwindcss` for class-string governance and arbitrary-value controls.
+```js
+import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';
+
+export default [
+  {
+    plugins: {
+      'rhythmguard-tailwind': rhythmguard,
+    },
+    rules: {
+      'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { scale: [0, 4, 8, 12, 16, 24, 32] }],
+    },
+  },
+];
+```
+
+Then layer on:
+
+- `eslint-plugin-tailwindcss` for broader class-string governance and conventions.
 
 Use Prettier for deterministic ordering:
 

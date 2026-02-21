@@ -7,12 +7,14 @@ const {
   fromPx,
   nearestScaleValues,
   normalizeScale,
+  normalizeScaleByUnit,
   numbersEqual,
   parseLengthToken,
   toPx,
 } = require('../../utils/length');
 const {
   buildScaleOptions,
+  resolvePropertyScale,
   validateUseScaleSecondaryOptions,
 } = require('../../utils/options');
 const {
@@ -22,6 +24,7 @@ const {
   isMathFunction,
   isTokenFunction,
   propertyMatches,
+  shouldLintMathArgument,
   walkRootValueNodes,
   walkTransformTranslateNodes,
 } = require('../../utils/value-utils');
@@ -43,6 +46,11 @@ function getFixedNodeValue(parsedLength, nearestPx, options) {
   }
 
   const signedNearest = parsedLength.number < 0 ? -Math.abs(nearestPx) : nearestPx;
+
+  if (options.unitStrategy === 'exact') {
+    return formatLength(signedNearest, parsedLength.unit || 'px');
+  }
+
   const converted = fromPx(signedNearest, unit, options.baseFontSize);
 
   if (converted === null) {
@@ -57,6 +65,7 @@ function checkLengthValue({
   node,
   options,
   report,
+  scaleByUnit,
   scalePx,
 }) {
   const parsedLength = parseLengthToken(node.value);
@@ -78,7 +87,7 @@ function checkLengthValue({
   }
 
   if (!options.allowNegative && parsedLength.number < 0) {
-    report(node.value, decl, node);
+    report(node.value, decl, node, null, null, parsedLength.unit || 'px');
     return false;
   }
 
@@ -88,6 +97,33 @@ function checkLengthValue({
     !options.units.includes(parsedLength.unit)
   ) {
     return false;
+  }
+
+  if (options.unitStrategy === 'exact') {
+    const unit = parsedLength.unit || 'px';
+    const unitScale = scaleByUnit.get(unit);
+
+    if (!unitScale || unitScale.length === 0) {
+      return false;
+    }
+
+    const absoluteValue = Math.abs(parsedLength.number);
+    const isOnScale = unitScale.some((entry) => numbersEqual(entry, absoluteValue));
+    if (isOnScale) {
+      return false;
+    }
+
+    const nearest = nearestScaleValues(absoluteValue, unitScale);
+    if (!nearest) {
+      return false;
+    }
+
+    const fixedValue = options.fixToScale
+      ? getFixedNodeValue(parsedLength, nearest.nearest, options)
+      : null;
+
+    report(node.value, decl, node, nearest, fixedValue, unit);
+    return true;
   }
 
   const pxValue = toPx(Math.abs(parsedLength.number), parsedLength.unit, options.baseFontSize);
@@ -110,7 +146,7 @@ function checkLengthValue({
     ? getFixedNodeValue(parsedLength, nearest.nearest, options)
     : null;
 
-  report(node.value, decl, node, nearest, fixedValue);
+  report(node.value, decl, node, nearest, fixedValue, 'px');
   return true;
 }
 
@@ -145,13 +181,29 @@ const ruleFunction = (primary, secondaryOptions) => {
     }
 
     const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);
-    const scalePx = normalizeScale(options.scale, options.baseFontSize);
+    const scaleCache = new Map();
 
-    const report = (value, decl, node, nearest, fixedValue = null) => {
+    const getScaleStateForProperty = (prop) => {
+      const cached = scaleCache.get(prop);
+      if (cached) {
+        return cached;
+      }
+
+      const selectedScale = resolvePropertyScale(prop, options);
+      const next = {
+        scaleByUnit: normalizeScaleByUnit(selectedScale),
+        scalePx: normalizeScale(selectedScale, options.baseFontSize),
+      };
+
+      scaleCache.set(prop, next);
+      return next;
+    };
+
+    const report = (value, decl, node, nearest, fixedValue = null, nearestUnit = 'px') => {
       const index = declarationValueIndex(decl) + node.sourceIndex;
       const endIndex = index + node.value.length;
-      const lower = nearest ? formatLength(nearest.lower, 'px') : 'n/a';
-      const upper = nearest ? formatLength(nearest.upper, 'px') : 'n/a';
+      const lower = nearest ? formatLength(nearest.lower, nearestUnit) : 'n/a';
+      const upper = nearest ? formatLength(nearest.upper, nearestUnit) : 'n/a';
 
       const payload = {
         endIndex,
@@ -182,11 +234,13 @@ const ruleFunction = (primary, secondaryOptions) => {
         return;
       }
 
+      const { scaleByUnit, scalePx } = getScaleStateForProperty(prop);
       const parsed = valueParser(decl.value);
       let changed = false;
 
       if (prop === 'transform') {
-        walkTransformTranslateNodes(parsed, (node, parentFunctionName) => {
+        walkTransformTranslateNodes(parsed, (node, context) => {
+
           if (node.type === 'function') {
             if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
               return true;
@@ -207,11 +261,7 @@ const ruleFunction = (primary, secondaryOptions) => {
             return false;
           }
 
-          if (
-            parentFunctionName &&
-            isMathFunction(parentFunctionName) &&
-            !options.enforceInsideMathFunctions
-          ) {
+          if (!shouldLintMathArgument(context, options)) {
             return false;
           }
 
@@ -221,13 +271,15 @@ const ruleFunction = (primary, secondaryOptions) => {
               node,
               options,
               report,
+              scaleByUnit,
               scalePx,
             }) || changed;
 
           return false;
         });
       } else {
-        walkRootValueNodes(parsed, (node, parentFunctionName) => {
+        walkRootValueNodes(parsed, (node, context) => {
+
           if (node.type === 'function') {
             if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
               return true;
@@ -251,11 +303,7 @@ const ruleFunction = (primary, secondaryOptions) => {
             return false;
           }
 
-          if (
-            parentFunctionName &&
-            isMathFunction(parentFunctionName) &&
-            !options.enforceInsideMathFunctions
-          ) {
+          if (!shouldLintMathArgument(context, options)) {
             return false;
           }
 
@@ -265,6 +313,7 @@ const ruleFunction = (primary, secondaryOptions) => {
               node,
               options,
               report,
+              scaleByUnit,
               scalePx,
             }) || changed;
 

@@ -12,7 +12,7 @@ High-precision spacing governance for CSS and design systems.
 [![License: MIT](https://img.shields.io/badge/license-MIT-white.svg)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.18-black.svg)](https://nodejs.org/)
 
-`stylelint-plugin-rhythmguard` enforces spacing discipline across margin, padding, gap, inset, scroll spacing, and translate motion offsets.
+`stylelint-plugin-rhythmguard` enforces scale and token discipline across spacing, radius, typography, size, and translate motion offsets.
 
 ## 60-second Demo
 
@@ -29,6 +29,7 @@ I built Rhythmguard after 20 years of watching teams ignore spacing scales and s
 It is built for teams that want:
 
 - zero random spacing values in production CSS
+- consistent numeric scales for radius, typography, and sizing primitives
 - token-first spacing workflows
 - predictable autofix behavior for large migrations
 - consistent layout rhythm across web surfaces
@@ -79,11 +80,44 @@ npm install --save-dev stylelint stylelint-plugin-rhythmguard
 }
 ```
 
+### Expanded config
+
+```json
+{
+  "extends": ["stylelint-plugin-rhythmguard/configs/expanded"]
+}
+```
+
+`expanded` enables scale enforcement for spacing + radius + typography + size property groups.
+
+### Logical config
+
+```json
+{
+  "extends": ["stylelint-plugin-rhythmguard/configs/logical"]
+}
+```
+
+`logical` composes Rhythmguard strict mode with `stylelint-plugin-logical-css` recommended rules.
+
+### Migration config
+
+```json
+{
+  "extends": ["stylelint-plugin-rhythmguard/configs/migration"]
+}
+```
+
+`migration` keeps on-scale numeric values temporarily while auto-building token mappings from CSS custom properties and optional Tailwind spacing config.
+
 Stable shared config entry points:
 
 - `stylelint-plugin-rhythmguard/configs/recommended`
 - `stylelint-plugin-rhythmguard/configs/strict`
 - `stylelint-plugin-rhythmguard/configs/tailwind`
+- `stylelint-plugin-rhythmguard/configs/expanded`
+- `stylelint-plugin-rhythmguard/configs/logical`
+- `stylelint-plugin-rhythmguard/configs/migration`
 
 ### Full custom setup
 
@@ -95,13 +129,22 @@ Stable shared config entry points:
       true,
       {
         "preset": "rhythmic-4",
+        "propertyGroups": ["spacing", "radius"],
+        "propertyScales": {
+          "font-size": [12, 14, 16, 20, 24]
+        },
         "units": ["px", "rem", "em"],
+        "unitStrategy": "convert",
         "baseFontSize": 16,
         "tokenPattern": "^--space-",
         "tokenFunctions": ["var", "theme", "token"],
         "allowNegative": true,
         "allowPercentages": true,
-        "fixToScale": true
+        "fixToScale": true,
+        "enforceInsideMathFunctions": true,
+        "mathFunctionArguments": {
+          "clamp": [1, 3]
+        }
       }
     ],
     "rhythmguard/prefer-token": [
@@ -109,6 +152,9 @@ Stable shared config entry points:
       {
         "tokenPattern": "^--space-",
         "allowNumericScale": false,
+        "tokenMapFromCssCustomProperties": true,
+        "tokenMapFromTailwindSpacing": true,
+        "tailwindConfigPath": "./tailwind.config.mjs",
         "tokenMap": {
           "4px": "var(--space-1)",
           "8px": "var(--space-2)",
@@ -162,7 +208,9 @@ Rhythmguard validates `secondaryOptions` for each rule before linting declaratio
 
 - Unknown option names fail fast with Stylelint invalid option warnings.
 - Invalid option shapes fail fast (for example string vs array mismatches).
-- `properties` string entries are validated against supported CSS spacing property names, plus `translate-x`, `translate-y`, and `translate-z`.
+- `properties` string entries are validated against supported scale-targetable CSS property names.
+- `propertyGroups` values are validated against built-in groups: `spacing`, `radius`, `typography`, and `size`.
+- Math function argument maps are validated per function (`calc`, `clamp`, `min`, `max`) and positive 1-based argument indexes.
 
 Example typo that now fails immediately:
 
@@ -263,6 +311,10 @@ Checks:
 - `inset*`, `scroll-margin*`, `scroll-padding*`
 - `translate`, `translate-x`, `translate-y`, `translate-z`
 - `transform` translation functions (`translate`, `translateX`, `translateY`, `translateZ`, `translate3d`)
+- optional property groups:
+  - `radius` (`border-radius*`, corner radii, `outline-offset`)
+  - `typography` (`font-size`, `line-height`, `letter-spacing`, `word-spacing`)
+  - `size` (`width`, `height`, min/max size, logical `inline-size`/`block-size`)
 
 Example:
 
@@ -288,6 +340,7 @@ Options:
 | `customScale` | `Array<number|string>` | `undefined` | Highest-priority custom scale override |
 | `scale` | `Array<number|string>` | `[0,4,8,12,16,24,32,40,48,64]` | Allowed spacing values |
 | `units` | `string[]` | `['px','rem','em']` | Units considered for scale enforcement |
+| `unitStrategy` | `'convert' \| 'exact'` | `'convert'` | `convert`: compare via px conversion (`px/rem/em`). `exact`: compare against same-unit scale values (for example `vw`, `cqi`) |
 | `baseFontSize` | `number` | `16` | Used for `rem`/`em` conversion |
 | `tokenPattern` | `string` | `^--space-` | Regex for accepted token variable names |
 | `tokenFunctions` | `string[]` | `['var','theme','token']` | Functions treated as tokenized values |
@@ -295,7 +348,11 @@ Options:
 | `allowPercentages` | `boolean` | `true` | Allows `%` values without scale checks |
 | `fixToScale` | `boolean` | `true` | Enables nearest-value autofix |
 | `enforceInsideMathFunctions` | `boolean` | `false` | Lints `calc()/clamp()/min()/max()` internals |
+| `mathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Restricts linting to specific 1-based argument indexes per math function |
+| `ignoreMathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Excludes specific 1-based argument indexes per math function |
+| `propertyGroups` | `Array<'spacing' \| 'radius' \| 'typography' \| 'size'>` | `['spacing']` | Selects built-in property groups when `properties` is not provided |
 | `properties` | `Array<string|RegExp>` | built-in spacing patterns | Override targeted property set; string values must be supported spacing property names |
+| `propertyScales` | `Record<propertyOrRegex, scaleOrPreset>` | `{}` | Per-property scale overrides (supports exact names or `/regex/flags` keys) |
 
 ### `rhythmguard/prefer-token`
 
@@ -328,10 +385,20 @@ Options:
 | `customScale` | `Array<number|string>` | `undefined` | Highest-priority custom scale override |
 | `scale` | `Array<number|string>` | `[0,4,8,12,16,24,32,40,48,64]` | Used when `allowNumericScale` is enabled |
 | `baseFontSize` | `number` | `16` | Used for scale checks with `rem`/`em` |
+| `unitStrategy` | `'convert' \| 'exact'` | `'convert'` | Matching strategy when `allowNumericScale` is enabled |
+| `units` | `string[]` | `['px','rem','em']` | Units considered for numeric scale checks |
 | `enforceInsideMathFunctions` | `boolean` | `false` | Lints `calc()/clamp()/min()/max()` internals |
+| `mathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Restricts linting to specific 1-based argument indexes per math function |
+| `ignoreMathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Excludes specific 1-based argument indexes per math function |
 | `tokenMap` | `Record<string,string>` | `{}` | Enables autofix from raw value to token |
+| `tokenMapFile` | `string` | `null` | JSON file path to merge additional token mappings |
+| `tokenMapFromCssCustomProperties` | `boolean` | `false` | Auto-builds mappings from matching custom property declarations in the same stylesheet |
+| `tokenMapFromTailwindSpacing` | `boolean` | `false` | Auto-builds mappings from `theme.spacing` and `theme.extend.spacing` in Tailwind config |
+| `tailwindConfigPath` | `string` | `null` | Path to Tailwind config used by `tokenMapFromTailwindSpacing` (`.js`, `.cjs`, `.mjs`) |
 | `ignoreValues` | `string[]` | CSS global keywords + `auto` | Skips keyword literals |
+| `propertyGroups` | `Array<'spacing' \| 'radius' \| 'typography' \| 'size'>` | `['spacing']` | Selects built-in property groups when `properties` is not provided |
 | `properties` | `Array<string|RegExp>` | built-in spacing patterns | Override targeted property set; string values must be supported spacing property names |
+| `propertyScales` | `Record<propertyOrRegex, scaleOrPreset>` | `{}` | Per-property scale overrides for numeric migration mode |
 
 ### `rhythmguard/no-offscale-transform`
 
@@ -353,7 +420,7 @@ Example:
 
 Options:
 
-`rhythmguard/no-offscale-transform` accepts the same scale options as `rhythmguard/use-scale`, but only for transform translation properties. Its secondary options are also validated for unknown keys and invalid value shapes.
+`rhythmguard/no-offscale-transform` accepts the same scale options as `rhythmguard/use-scale` (including `unitStrategy`, math argument targeting, and deterministic autofix), but only for transform translation properties. Its secondary options are also validated for unknown keys and invalid value shapes.
 
 ## Tailwind CSS Integration
 
@@ -371,7 +438,29 @@ Rhythmguard works well in Tailwind projects, but it enforces what Stylelint can 
   - `class="p-4 gap-2"`
   - `class="p-[13px] translate-y-[18px]"`
 
-Those are not Stylelint declaration nodes, so they are outside this plugin's scope.
+Those are not Stylelint declaration nodes, so they are outside Stylelint rule scope.
+
+### Companion ESLint layer for class strings
+
+Rhythmguard now ships an ESLint companion export for class-string governance:
+
+```js
+// eslint.config.js (flat config)
+import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';
+
+export default [
+  {
+    plugins: {
+      'rhythmguard-tailwind': rhythmguard,
+    },
+    rules: {
+      'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { scale: [0, 4, 8, 12, 16, 24, 32] }],
+    },
+  },
+];
+```
+
+This rule targets arbitrary spacing utilities such as `p-[13px]`, `gap-[18px]`, `translate-x-[10px]`, and autofixes to the nearest configured scale value.
 
 ### Recommended stack for full Tailwind enforcement
 
@@ -390,7 +479,8 @@ Suggested setup:
 
 Then pair with:
 
-- `eslint-plugin-tailwindcss` for class-string rules (including arbitrary-value governance).
+- `stylelint-plugin-rhythmguard/eslint` for arbitrary spacing class-string scale enforcement.
+- `eslint-plugin-tailwindcss` for broader class-string linting and conventions.
 - `prettier-plugin-tailwindcss` for deterministic class ordering.
 
 Detailed setup reference: [`docs/TAILWIND.md`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/TAILWIND.md).
@@ -399,14 +489,7 @@ Detailed setup reference: [`docs/TAILWIND.md`](https://github.com/PetriLahdelma/
 
 By default, `tokenFunctions` includes `theme`, so values like `theme(spacing.4)` are treated as tokenized values.
 
-### Product direction
-
-We should extend Tailwind coverage thoroughly, but in the right architecture:
-
-- keep `stylelint-plugin-rhythmguard` focused on CSS declaration enforcement
-- add a complementary Tailwind class-string layer (ESLint/plugin side) for utility classes
-
-This avoids brittle parsing hacks and gives full coverage without compromising rule quality.
+This keeps CSS declaration enforcement and template class-string enforcement separated but coordinated.
 
 ## Programmatic Presets
 
@@ -417,6 +500,7 @@ console.log(rhythmguard.presets.listScalePresetNames());
 console.log(rhythmguard.presets.listCommunityScalePresetNames());
 console.log(rhythmguard.presets.getCommunityScaleMetadata('product-decimal-10'));
 console.log(rhythmguard.presets.scales['rhythmic-4']);
+console.log(Object.keys(rhythmguard.eslint.rules));
 ```
 
 ## Autofix Philosophy
@@ -430,9 +514,9 @@ It will not guess token mappings without your map.
 
 ## Compatibility
 
-- Stylelint: `^16.0.0`
+- Stylelint: `^16.0.0 || ^17.0.0`
 - Node.js: `>=18.18.0`
-- Module format: CommonJS plugin package
+- Module format: dual `require` + `import` entry points (CommonJS + ESM wrappers)
 - Note: Stylelint `16.0.0` has known autofix/API behavior differences; CI enforces floor compatibility and runs non-blocking full-suite observability on the floor version.
 
 ## Development

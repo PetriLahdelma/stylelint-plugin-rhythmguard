@@ -1,6 +1,6 @@
 'use strict';
 
-const LENGTH_RE = /^(-?(?:\d+|\d*\.\d+))(px|rem|em|%)?$/i;
+const LENGTH_RE = /^(-?(?:\d+|\d*\.\d+))(?:([a-zA-Z%]+))?$/i;
 const EPSILON = 0.0001;
 
 function parseLengthToken(rawValue) {
@@ -99,27 +99,64 @@ function normalizeScale(scale, baseFontSize) {
   return [...new Set(normalized)].sort((a, b) => a - b);
 }
 
-function nearestScaleValues(targetPx, scalePx) {
-  if (scalePx.length === 0) {
+function normalizeScaleByUnit(scale) {
+  const byUnit = new Map();
+
+  for (const entry of scale) {
+    if (typeof entry === 'number') {
+      const key = 'px';
+      if (!byUnit.has(key)) {
+        byUnit.set(key, []);
+      }
+
+      byUnit.get(key).push(entry);
+      continue;
+    }
+
+    const parsed = parseLengthToken(String(entry));
+    if (!parsed) {
+      continue;
+    }
+
+    const unit = parsed.unit || 'px';
+    if (!byUnit.has(unit)) {
+      byUnit.set(unit, []);
+    }
+
+    byUnit.get(unit).push(parsed.number);
+  }
+
+  for (const [unit, values] of byUnit.entries()) {
+    byUnit.set(
+      unit,
+      [...new Set(values)].sort((a, b) => a - b),
+    );
+  }
+
+  return byUnit;
+}
+
+function nearestScaleValues(target, scale) {
+  if (scale.length === 0) {
     return null;
   }
 
-  let lower = scalePx[0];
-  let upper = scalePx[scalePx.length - 1];
+  let lower = scale[0];
+  let upper = scale[scale.length - 1];
 
-  for (const value of scalePx) {
-    if (value <= targetPx) {
+  for (const value of scale) {
+    if (value <= target) {
       lower = value;
     }
 
-    if (value >= targetPx) {
+    if (value >= target) {
       upper = value;
       break;
     }
   }
 
   const nearest =
-    Math.abs(targetPx - lower) <= Math.abs(upper - targetPx) ? lower : upper;
+    Math.abs(target - lower) <= Math.abs(upper - target) ? lower : upper;
 
   return {
     lower,
@@ -130,10 +167,11 @@ function nearestScaleValues(targetPx, scalePx) {
 
 module.exports = {
   formatLength,
+  fromPx,
+  nearestScaleValues,
   normalizeScale,
+  normalizeScaleByUnit,
   numbersEqual,
   parseLengthToken,
   toPx,
-  fromPx,
-  nearestScaleValues,
 };
