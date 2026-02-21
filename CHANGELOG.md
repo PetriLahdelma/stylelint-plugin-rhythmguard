@@ -6,6 +6,16 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-02-21
+
+### Fixed
+
+- `properties` now correctly supports regex-like string entries (for example `"/^(margin|padding)$/"`) in rule options.
+- Property matcher behavior is now deterministic for regex matchers with stateful `g`/`y` flags by normalizing stateful behavior during matching.
+- Generic rule messaging for expanded property groups:
+  - `rhythmguard/use-scale` now reports off-scale values without spacing-only wording.
+  - `rhythmguard/prefer-token` now reports raw scale values without spacing-only wording.
+
 ## [1.4.0] - 2026-02-21
 
 ### Added

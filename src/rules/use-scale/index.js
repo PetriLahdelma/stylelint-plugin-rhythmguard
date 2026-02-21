@@ -35,7 +35,7 @@ const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
   rejected: (value, lower, upper) =>
-    `Unexpected off-scale spacing value "${value}". Use spacing scale values (nearest: ${lower} or ${upper}).`,
+    `Unexpected off-scale value "${value}". Use scale values (nearest: ${lower} or ${upper}).`,
 });
 
 function getFixedNodeValue(parsedLength, nearestPx, options) {

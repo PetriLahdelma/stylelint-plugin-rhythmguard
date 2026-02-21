@@ -11,6 +11,10 @@ function propertyMatches(prop, patterns) {
   const normalized = prop.toLowerCase();
   return patterns.some((pattern) => {
     if (pattern instanceof RegExp) {
+      if (pattern.global || pattern.sticky) {
+        pattern.lastIndex = 0;
+      }
+
       return pattern.test(normalized);
     }
 

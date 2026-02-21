@@ -34,7 +34,7 @@ const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
   rejected: (value) =>
-    `Unexpected raw spacing value "${value}". Use design tokens for spacing decisions.`,
+    `Unexpected raw scale value "${value}". Use design tokens for scale decisions.`,
 });
 
 function applyNegativeToken(replacement, parsedLength) {

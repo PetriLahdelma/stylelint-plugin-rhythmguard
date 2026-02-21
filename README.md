@@ -349,8 +349,8 @@ Options:
 | `mathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Restricts linting to specific 1-based argument indexes per math function |
 | `ignoreMathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Excludes specific 1-based argument indexes per math function |
 | `propertyGroups` | `Array<'spacing' \| 'radius' \| 'typography' \| 'size'>` | `['spacing']` | Selects built-in property groups when `properties` is not provided |
-| `properties` | `Array<string|RegExp>` | built-in spacing patterns | Override targeted property set; string values must be supported spacing property names |
-| `propertyScales` | `Record<propertyOrRegex, scaleOrPreset>` | `{}` | Per-property scale overrides (supports exact names or `/regex/flags` keys) |
+| `properties` | `Array<string|RegExp>` | built-in spacing patterns | Override targeted property set; string values may be supported property names or regex-like strings (`/pattern/flags`) |
+| `propertyScales` | `Record<propertyOrRegex, scaleOrPreset>` | `{}` | Per-property scale overrides (supports exact names or `/regex/flags` keys; stateful `g`/`y` flags are normalized for deterministic matching) |
 
 ### `rhythmguard/prefer-token`
 
@@ -395,8 +395,8 @@ Options:
 | `tailwindConfigPath` | `string` | `null` | Path to Tailwind config used by `tokenMapFromTailwindSpacing` (`.js`, `.cjs`, `.mjs`) |
 | `ignoreValues` | `string[]` | CSS global keywords + `auto` | Skips keyword literals |
 | `propertyGroups` | `Array<'spacing' \| 'radius' \| 'typography' \| 'size'>` | `['spacing']` | Selects built-in property groups when `properties` is not provided |
-| `properties` | `Array<string|RegExp>` | built-in spacing patterns | Override targeted property set; string values must be supported spacing property names |
-| `propertyScales` | `Record<propertyOrRegex, scaleOrPreset>` | `{}` | Per-property scale overrides for numeric migration mode |
+| `properties` | `Array<string|RegExp>` | built-in spacing patterns | Override targeted property set; string values may be supported property names or regex-like strings (`/pattern/flags`) |
+| `propertyScales` | `Record<propertyOrRegex, scaleOrPreset>` | `{}` | Per-property scale overrides for numeric migration mode (stateful `g`/`y` flags are normalized for deterministic matching) |
 
 ### `rhythmguard/no-offscale-transform`
 

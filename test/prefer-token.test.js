@@ -22,6 +22,7 @@ test('prefer-token rejects raw spacing values', async () => {
 
   assert.equal(result.warnings.length, 1);
   assert.equal(result.warnings[0].rule, 'rhythmguard/prefer-token');
+  assert.match(result.warnings[0].text, /raw scale value/);
 });
 
 test('prefer-token accepts tokenized values', async () => {

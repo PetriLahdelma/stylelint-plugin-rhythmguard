@@ -31,6 +31,7 @@ test('use-scale rejects off-scale spacing values', async () => {
 
   assert.equal(result.warnings.length, 1);
   assert.equal(result.warnings[0].rule, 'rhythmguard/use-scale');
+  assert.match(result.warnings[0].text, /off-scale value/);
   assert.match(result.warnings[0].text, /13px/);
 });
 

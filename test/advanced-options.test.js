@@ -82,3 +82,56 @@ test('use-scale supports math argument targeting', async () => {
   assert.equal(result.warnings.length, 2);
   assert.ok(result.warnings.every((warning) => warning.rule === 'rhythmguard/use-scale'));
 });
+
+test('use-scale supports regex-like string patterns in properties', async () => {
+  const result = await lintCss({
+    code: '.card { margin: 13px; padding: 13px; }',
+    rules: {
+      'rhythmguard/use-scale': [
+        true,
+        {
+          properties: ['/^(margin|padding)$/'],
+          scale: [0, 4, 8, 12, 16],
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 2);
+});
+
+test('use-scale handles stateful global regex in properties deterministically', async () => {
+  const result = await lintCss({
+    code: '.card { margin: 13px; padding: 13px; }',
+    rules: {
+      'rhythmguard/use-scale': [
+        true,
+        {
+          properties: [/^(margin|padding)$/g],
+          scale: [0, 4, 8, 12, 16],
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 2);
+});
+
+test('use-scale handles stateful global regex in propertyScales deterministically', async () => {
+  const result = await lintCss({
+    code: '.card { margin: 8px; padding: 8px; }',
+    rules: {
+      'rhythmguard/use-scale': [
+        true,
+        {
+          propertyScales: {
+            '/^(margin|padding)$/g': [0, 4],
+          },
+          scale: [0, 4, 8, 12],
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 2);
+});

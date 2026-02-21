@@ -102,6 +102,19 @@ function parseRegexLikeString(value) {
   }
 }
 
+function toStableRegex(regex) {
+  if (!(regex instanceof RegExp)) {
+    return null;
+  }
+
+  if (!regex.global && !regex.sticky) {
+    return regex;
+  }
+
+  const stableFlags = regex.flags.replace(/[gy]/g, '');
+  return new RegExp(regex.source, stableFlags);
+}
+
 function isPropertyPatternEntry(value) {
   if (value instanceof RegExp) {
     return true;
@@ -300,7 +313,9 @@ function normalizePropertyGroups(rawGroups) {
 
 function resolvePropertyPatterns(options) {
   if (Array.isArray(options.properties)) {
-    return options.properties;
+    return options.properties
+      .map((entry) => compilePropertyMatcher(entry))
+      .filter((entry) => entry !== null);
   }
 
   const groups = normalizePropertyGroups(options.propertyGroups);
@@ -315,7 +330,7 @@ function resolvePropertyPatterns(options) {
 
 function compilePropertyMatcher(entry) {
   if (entry instanceof RegExp) {
-    return entry;
+    return toStableRegex(entry);
   }
 
   if (!isNonEmptyString(entry)) {
@@ -325,7 +340,7 @@ function compilePropertyMatcher(entry) {
   const trimmed = entry.trim();
   const parsedRegex = parseRegexLikeString(trimmed);
   if (parsedRegex) {
-    return parsedRegex;
+    return toStableRegex(parsedRegex);
   }
 
   return trimmed.toLowerCase();
@@ -655,6 +670,10 @@ function resolvePropertyScale(prop, options) {
 
   for (const override of options.propertyScaleOverrides) {
     if (override.matcher instanceof RegExp) {
+      if (override.matcher.global || override.matcher.sticky) {
+        override.matcher.lastIndex = 0;
+      }
+
       if (override.matcher.test(prop)) {
         return override.scale;
       }
