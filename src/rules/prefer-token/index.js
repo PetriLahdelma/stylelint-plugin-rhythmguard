@@ -3,13 +3,16 @@
 const stylelint = require('stylelint');
 const valueParser = require('postcss-value-parser');
 const {
+  formatLength,
   normalizeScale,
+  normalizeScaleByUnit,
   numbersEqual,
   parseLengthToken,
   toPx,
 } = require('../../utils/length');
 const {
   buildTokenOptions,
+  resolvePropertyScale,
   validatePreferTokenSecondaryOptions,
 } = require('../../utils/options');
 const {
@@ -19,9 +22,11 @@ const {
   isMathFunction,
   isTokenFunction,
   propertyMatches,
+  shouldLintMathArgument,
   walkRootValueNodes,
   walkTransformTranslateNodes,
 } = require('../../utils/value-utils');
+const { buildEffectiveTokenMap } = require('../../utils/token-map');
 
 const ruleName = 'rhythmguard/prefer-token';
 
@@ -32,14 +37,46 @@ const messages = stylelint.utils.ruleMessages(ruleName, {
     `Unexpected raw spacing value "${value}". Use design tokens for spacing decisions.`,
 });
 
-function resolveTokenReplacement(tokenMap, raw, normalizedPx) {
-  if (Object.prototype.hasOwnProperty.call(tokenMap, raw)) {
-    return tokenMap[raw];
+function applyNegativeToken(replacement, parsedLength) {
+  if (!replacement || parsedLength.number >= 0) {
+    return replacement;
   }
 
-  const pxKey = `${normalizedPx}px`;
-  if (Object.prototype.hasOwnProperty.call(tokenMap, pxKey)) {
-    return tokenMap[pxKey];
+  if (replacement.startsWith('-')) {
+    return replacement;
+  }
+
+  if (
+    replacement.startsWith('var(') ||
+    replacement.startsWith('theme(') ||
+    replacement.startsWith('token(') ||
+    replacement.startsWith('$') ||
+    replacement.startsWith('@')
+  ) {
+    return `-${replacement}`;
+  }
+
+  return `calc(${replacement} * -1)`;
+}
+
+function resolveTokenReplacement(tokenMap, raw, parsedLength, options) {
+  if (Object.prototype.hasOwnProperty.call(tokenMap, raw)) {
+    return applyNegativeToken(tokenMap[raw], parsedLength);
+  }
+
+  const absoluteRaw = formatLength(Math.abs(parsedLength.number), parsedLength.unit || 'px');
+  if (Object.prototype.hasOwnProperty.call(tokenMap, absoluteRaw)) {
+    return applyNegativeToken(tokenMap[absoluteRaw], parsedLength);
+  }
+
+  if (options.unitStrategy === 'convert') {
+    const absPx = toPx(Math.abs(parsedLength.number), parsedLength.unit, options.baseFontSize);
+    if (absPx !== null) {
+      const pxKey = `${absPx}px`;
+      if (Object.prototype.hasOwnProperty.call(tokenMap, pxKey)) {
+        return applyNegativeToken(tokenMap[pxKey], parsedLength);
+      }
+    }
   }
 
   return null;
@@ -76,7 +113,29 @@ const ruleFunction = (primary, secondaryOptions) => {
     }
 
     const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);
-    const scalePx = normalizeScale(options.scale, options.baseFontSize);
+    const tokenMap = buildEffectiveTokenMap({
+      options,
+      root,
+      tokenRegex,
+    });
+
+    const scaleCache = new Map();
+
+    const getScaleStateForProperty = (prop) => {
+      const cached = scaleCache.get(prop);
+      if (cached) {
+        return cached;
+      }
+
+      const selectedScale = resolvePropertyScale(prop, options);
+      const next = {
+        scaleByUnit: normalizeScaleByUnit(selectedScale),
+        scalePx: normalizeScale(selectedScale, options.baseFontSize),
+      };
+
+      scaleCache.set(prop, next);
+      return next;
+    };
 
     root.walkDecls((decl) => {
       const prop = decl.prop.toLowerCase();
@@ -89,6 +148,7 @@ const ruleFunction = (primary, secondaryOptions) => {
       }
 
       const parsed = valueParser(decl.value);
+      const { scaleByUnit, scalePx } = getScaleStateForProperty(prop);
       let changed = false;
 
       const reportNode = (node, replacement = null) => {
@@ -114,16 +174,12 @@ const ruleFunction = (primary, secondaryOptions) => {
         stylelint.utils.report(payload);
       };
 
-      const checkWordNode = (node, parentFunctionName) => {
+      const checkWordNode = (node, context) => {
         if (isKeyword(node.value, options.ignoreValues)) {
           return false;
         }
 
-        if (
-          parentFunctionName &&
-          isMathFunction(parentFunctionName) &&
-          !options.enforceInsideMathFunctions
-        ) {
+        if (!shouldLintMathArgument(context, options)) {
           return false;
         }
 
@@ -140,26 +196,45 @@ const ruleFunction = (primary, secondaryOptions) => {
           return false;
         }
 
-        const absPx = toPx(Math.abs(parsedLength.number), parsedLength.unit, options.baseFontSize);
-        if (absPx === null) {
+        if (
+          parsedLength.unit &&
+          parsedLength.unit !== '%' &&
+          !options.units.includes(parsedLength.unit)
+        ) {
           return false;
         }
 
         if (options.allowNumericScale) {
-          const onScale = scalePx.some((entry) => numbersEqual(entry, absPx));
-          if (onScale) {
-            return false;
+          if (options.unitStrategy === 'exact') {
+            const unit = parsedLength.unit || 'px';
+            const unitScale = scaleByUnit.get(unit);
+            if (unitScale && unitScale.length > 0) {
+              const onScale = unitScale.some((entry) =>
+                numbersEqual(entry, Math.abs(parsedLength.number)),
+              );
+              if (onScale) {
+                return false;
+              }
+            }
+          } else {
+            const absPx = toPx(Math.abs(parsedLength.number), parsedLength.unit, options.baseFontSize);
+            if (absPx !== null) {
+              const onScale = scalePx.some((entry) => numbersEqual(entry, absPx));
+              if (onScale) {
+                return false;
+              }
+            }
           }
         }
 
-        const replacement = resolveTokenReplacement(options.tokenMap, node.value, absPx);
+        const replacement = resolveTokenReplacement(tokenMap, node.value, parsedLength, options);
 
         reportNode(node, replacement);
         return true;
       };
 
       if (prop === 'transform') {
-        walkTransformTranslateNodes(parsed, (node, parentFunctionName) => {
+        walkTransformTranslateNodes(parsed, (node, context) => {
           if (node.type === 'function') {
             if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
               return true;
@@ -176,11 +251,11 @@ const ruleFunction = (primary, secondaryOptions) => {
             return false;
           }
 
-          changed = checkWordNode(node, parentFunctionName) || changed;
+          changed = checkWordNode(node, context) || changed;
           return false;
         });
       } else {
-        walkRootValueNodes(parsed, (node, parentFunctionName) => {
+        walkRootValueNodes(parsed, (node, context) => {
           if (node.type === 'function') {
             if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
               return true;
@@ -197,7 +272,7 @@ const ruleFunction = (primary, secondaryOptions) => {
             return false;
           }
 
-          changed = checkWordNode(node, parentFunctionName) || changed;
+          changed = checkWordNode(node, context) || changed;
           return false;
         });
       }

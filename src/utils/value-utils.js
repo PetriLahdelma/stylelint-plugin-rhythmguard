@@ -63,43 +63,96 @@ function isTokenFunction(node, tokenFunctions, tokenRegex) {
   return tokenRegex.test(firstArg);
 }
 
+function normalizeWalkContext(context) {
+  if (!context) {
+    return {
+      parentFunctionArgIndex: null,
+      parentFunctionName: null,
+    };
+  }
+
+  if (typeof context === 'string') {
+    return {
+      parentFunctionArgIndex: null,
+      parentFunctionName: context,
+    };
+  }
+
+  return {
+    parentFunctionArgIndex:
+      Number.isInteger(context.parentFunctionArgIndex) && context.parentFunctionArgIndex > 0
+        ? context.parentFunctionArgIndex
+        : null,
+    parentFunctionName:
+      typeof context.parentFunctionName === 'string' && context.parentFunctionName.length > 0
+        ? context.parentFunctionName
+        : null,
+  };
+}
+
 function walkRootValueNodes(parsed, walkNode, state) {
-  const walkNodes = (nodes, parentFunctionName) => {
+  const initialContext = normalizeWalkContext(state);
+
+  const walkNodes = (nodes, parentFunction) => {
+    let argIndex = 1;
+
     for (const node of nodes) {
+      if (node.type === 'div' && node.value === ',') {
+        argIndex += 1;
+        continue;
+      }
+
+      const context = {
+        parentFunctionArgIndex: parentFunction ? argIndex : null,
+        parentFunctionName: parentFunction ? parentFunction.name : initialContext.parentFunctionName,
+      };
+
       if (node.type === 'function') {
         const fnName = node.value.toLowerCase();
-        const skipChildren = walkNode(node, parentFunctionName);
+        const skipChildren = walkNode(node, context);
 
         if (skipChildren) {
           continue;
         }
 
-        walkNodes(node.nodes, fnName);
+        walkNodes(node.nodes, { name: fnName });
         continue;
       }
 
-      walkNode(node, parentFunctionName);
+      walkNode(node, context);
     }
   };
 
-  walkNodes(parsed.nodes, state || null);
+  walkNodes(parsed.nodes, null);
 }
 
 function walkTransformTranslateNodes(parsed, walkNode) {
-  const walkNodes = (nodes, parentFunctionName) => {
+  const walkNodes = (nodes, parentFunction) => {
+    let argIndex = 1;
+
     for (const node of nodes) {
+      if (node.type === 'div' && node.value === ',') {
+        argIndex += 1;
+        continue;
+      }
+
+      const context = {
+        parentFunctionArgIndex: parentFunction ? argIndex : null,
+        parentFunctionName: parentFunction ? parentFunction.name : null,
+      };
+
       if (node.type === 'function') {
         const fnName = node.value.toLowerCase();
-        const skipChildren = walkNode(node, parentFunctionName);
+        const skipChildren = walkNode(node, context);
         if (skipChildren) {
           continue;
         }
 
-        walkNodes(node.nodes, fnName);
+        walkNodes(node.nodes, { name: fnName });
         continue;
       }
 
-      walkNode(node, parentFunctionName);
+      walkNode(node, context);
     }
   };
 
@@ -112,7 +165,7 @@ function walkTransformTranslateNodes(parsed, walkNode) {
       continue;
     }
 
-    walkNodes(node.nodes, node.value.toLowerCase());
+    walkNodes(node.nodes, { name: node.value.toLowerCase() });
   }
 }
 
@@ -122,6 +175,31 @@ function isMathFunction(functionName) {
   }
 
   return MATH_FUNCTIONS.has(functionName.toLowerCase());
+}
+
+function shouldLintMathArgument(context, options) {
+  const functionName = (context && context.parentFunctionName) || null;
+  const argumentIndex = (context && context.parentFunctionArgIndex) || null;
+
+  if (!functionName || !isMathFunction(functionName)) {
+    return true;
+  }
+
+  if (!options.enforceInsideMathFunctions) {
+    return false;
+  }
+
+  const include = options.mathFunctionArguments[functionName];
+  if (include && include.length > 0) {
+    return include.includes(argumentIndex);
+  }
+
+  const ignore = options.ignoreMathFunctionArguments[functionName];
+  if (ignore && ignore.length > 0) {
+    return !ignore.includes(argumentIndex);
+  }
+
+  return true;
 }
 
 function declarationValueIndex(decl) {
@@ -137,6 +215,7 @@ module.exports = {
   isMathFunction,
   isTokenFunction,
   propertyMatches,
+  shouldLintMathArgument,
   walkRootValueNodes,
   walkTransformTranslateNodes,
 };

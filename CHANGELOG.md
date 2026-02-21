@@ -6,6 +6,34 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- New shared configs:
+  - `stylelint-plugin-rhythmguard/configs/expanded`
+  - `stylelint-plugin-rhythmguard/configs/logical`
+  - `stylelint-plugin-rhythmguard/configs/migration`
+- New ESLint companion export: `stylelint-plugin-rhythmguard/eslint` with rule:
+  - `rhythmguard-tailwind/tailwind-class-use-scale`
+- Token migration source automation for `rhythmguard/prefer-token`:
+  - `tokenMapFromCssCustomProperties`
+  - `tokenMapFile`
+  - `tokenMapFromTailwindSpacing` + `tailwindConfigPath`
+- ESM wrapper entry points for package root, configs, presets, rules, and ESLint companion.
+
+### Changed
+
+- Broadened scale enforcement model with built-in property groups:
+  - `spacing`, `radius`, `typography`, `size`
+- New per-property override options:
+  - `propertyGroups`
+  - `propertyScales`
+- New math-function targeting options:
+  - `mathFunctionArguments`
+  - `ignoreMathFunctionArguments`
+- New `unitStrategy` option (`convert` or `exact`) for non-convertible unit workflows.
+- Compatibility updated to support Stylelint `^16 || ^17`.
+- Tailwind token-map extraction now supports `.js`, `.cjs`, and `.mjs` config files and merges `theme.spacing` with `theme.extend.spacing`.
+
 ## [1.3.0] - 2026-02-17
 
 ### Added
