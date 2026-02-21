@@ -1,0 +1,324 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rhythmguard 60s Campaign Frame</title>
+    <style>
+      @font-face {
+        font-family: "GeistPixel";
+        src: url("../node_modules/geist/dist/fonts/geist-pixel/GeistPixel-Line.woff2") format("woff2");
+        font-weight: 400;
+        font-style: normal;
+      }
+
+      :root {
+        --bg: #000;
+        --fg: #fff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        width: 1920px;
+        height: 1080px;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: "GeistPixel", monospace;
+      }
+
+      body {
+        padding: 28px;
+      }
+
+      .frame {
+        width: 100%;
+        height: 100%;
+        border: 4px solid var(--fg);
+        display: grid;
+        grid-template-rows: 118px 1fr 110px;
+      }
+
+      .header {
+        border-bottom: 2px solid var(--fg);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 30px;
+        font-size: 34px;
+        letter-spacing: 0.5px;
+      }
+
+      .main {
+        display: grid;
+        grid-template-columns: minmax(0, 2.1fr) minmax(0, 1fr);
+        gap: 28px;
+        padding: 28px 30px;
+      }
+
+      .hero {
+        border: 2px solid var(--fg);
+        padding: 26px;
+        display: grid;
+        grid-template-rows: auto auto auto 1fr;
+        gap: 18px;
+      }
+
+      .kicker {
+        font-size: 30px;
+        letter-spacing: 0.8px;
+        margin: 0;
+      }
+
+      .title {
+        font-size: 96px;
+        letter-spacing: 1px;
+        line-height: 1;
+        margin: 0;
+      }
+
+      .subtitle {
+        font-size: 42px;
+        letter-spacing: 0.8px;
+        margin: 0;
+      }
+
+      .terminal {
+        border: 2px solid var(--fg);
+        display: grid;
+        grid-template-rows: 50px 1fr;
+        min-height: 360px;
+      }
+
+      .terminal-bar {
+        border-bottom: 2px solid var(--fg);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 16px;
+        font-size: 24px;
+      }
+
+      .terminal-dots {
+        display: flex;
+        gap: 10px;
+      }
+
+      .terminal-dot {
+        width: 12px;
+        height: 12px;
+        border: 2px solid var(--fg);
+      }
+
+      pre {
+        margin: 0;
+        padding: 16px;
+        font-family: "GeistPixel", monospace;
+        font-size: 30px;
+        line-height: 1.45;
+        white-space: pre-wrap;
+      }
+
+      .side {
+        display: grid;
+        grid-template-rows: 1fr 1fr;
+        gap: 18px;
+      }
+
+      .card {
+        border: 2px solid var(--fg);
+        padding: 18px;
+        display: grid;
+        grid-template-rows: auto 1fr;
+        gap: 12px;
+      }
+
+      .card h2 {
+        margin: 0;
+        font-size: 36px;
+        letter-spacing: 0.8px;
+      }
+
+      .rules {
+        margin: 0;
+        padding-left: 24px;
+        font-size: 31px;
+        line-height: 1.5;
+      }
+
+      .meta {
+        margin: 0;
+        font-size: 30px;
+        line-height: 1.5;
+      }
+
+      .footer {
+        border-top: 2px solid var(--fg);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 30px;
+        font-size: 30px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="frame">
+      <header class="header">
+        <div id="step">STEP 1 / 6</div>
+        <div>RHYTHMGUARD CAMPAIGN // 60S</div>
+      </header>
+      <main class="main">
+        <section class="hero">
+          <p class="kicker" id="kicker">INSTALL + STRICT CONFIG</p>
+          <h1 class="title" id="title">NO RANDOM 13PX.</h1>
+          <p class="subtitle" id="subtitle">SCALE OR TOKEN. PERIOD.</p>
+          <div class="terminal">
+            <div class="terminal-bar">
+              <div class="terminal-dots">
+                <span class="terminal-dot"></span>
+                <span class="terminal-dot"></span>
+                <span class="terminal-dot"></span>
+              </div>
+              <span id="terminal-title">terminal // setup</span>
+            </div>
+            <pre id="code"></pre>
+          </div>
+        </section>
+        <aside class="side">
+          <section class="card">
+            <h2>RULES</h2>
+            <ul class="rules">
+              <li>use-scale</li>
+              <li>prefer-token</li>
+              <li>no-offscale-transform</li>
+            </ul>
+          </section>
+          <section class="card">
+            <h2>WHY</h2>
+            <p class="meta" id="why"></p>
+          </section>
+        </aside>
+      </main>
+      <footer class="footer">
+        <div id="segment">SEGMENT 1 / 6</div>
+        <div>stylelint-plugin-rhythmguard</div>
+      </footer>
+    </div>
+
+    <script>
+      const scenes = [
+        {
+          kicker: "INSTALL + STRICT CONFIG",
+          title: "NO RANDOM 13PX.",
+          subtitle: "SCALE OR TOKEN. PERIOD.",
+          terminalTitle: "terminal // setup",
+          code: [
+            "$ npm i -D stylelint stylelint-plugin-rhythmguard",
+            "$ cat .stylelintrc.json",
+            "{",
+            '  "extends": ["stylelint-plugin-rhythmguard/configs/strict"]',
+            "}",
+            '$ npx stylelint "src/**/*.css"',
+          ],
+          why: "Shared config replaces ad-hoc spacing rules across files.",
+        },
+        {
+          kicker: "RULE 1 // USE-SCALE",
+          title: "LOCK TO SCALE.",
+          subtitle: "EVERY SPACING VALUE GETS CHECKED.",
+          terminalTitle: "report // use-scale",
+          code: [
+            "Button.css:12",
+            "  Expected spacing from configured scale.",
+            "  ✕ margin-top: 13px",
+            "  ✓ margin-top: 12px",
+            "",
+            "Autofix maps to nearest safe scale step.",
+          ],
+          why: "Scale discipline keeps layouts predictable in large systems.",
+        },
+        {
+          kicker: "RULE 2 // PREFER-TOKEN",
+          title: "TOKENS FIRST.",
+          subtitle: "RAW PIXELS BECOME DESIGN TOKENS.",
+          terminalTitle: "report // prefer-token",
+          code: [
+            "Card.css:8",
+            "  Expected token, not raw literal.",
+            "  ✕ padding: 16px",
+            "  ✓ padding: var(--space-4)",
+            "",
+            "tokenMap applies safe automatic replacements.",
+          ],
+          why: "Token usage makes theme changes and audits low-risk.",
+        },
+        {
+          kicker: "RULE 3 // TRANSFORM OFFSETS",
+          title: "MOTION IN RHYTHM.",
+          subtitle: "TRANSLATES STAY ON THE SAME SCALE.",
+          terminalTitle: "report // no-offscale-transform",
+          code: [
+            "Toast.css:22",
+            "  Off-scale translate value detected.",
+            "  ✕ transform: translateY(7px)",
+            "  ✓ transform: translateY(8px)",
+            "",
+            "Motion offsets align with layout spacing values.",
+          ],
+          why: "Spacing + motion consistency improves visual quality.",
+        },
+        {
+          kicker: "AUTOFIX WORKFLOW",
+          title: "FIX FAST, SAFELY.",
+          subtitle: "MIGRATE LEGACY CSS WITHOUT DRAMA.",
+          terminalTitle: "autofix // migration",
+          code: [
+            "$ npx stylelint \"src/**/*.css\" --fix",
+            "Applied fixes:",
+            "  - use-scale: 124",
+            "  - prefer-token: 98",
+            "  - no-offscale-transform: 19",
+            "",
+            "Review diff and ship.",
+          ],
+          why: "Autofix handles repetitive cleanup at production scale.",
+        },
+        {
+          kicker: "READY TO SHIP",
+          title: "RHYTHMGUARD",
+          subtitle: "SPACING GOVERNANCE FOR REAL-WORLD TEAMS.",
+          terminalTitle: "next // adopt",
+          code: [
+            "Extends available:",
+            "  - configs/recommended",
+            "  - configs/strict",
+            "  - configs/tailwind",
+            "",
+            "No random spacing values in production CSS.",
+          ],
+          why: "Consistent spacing rules reduce regressions release after release.",
+        },
+      ];
+
+      const sceneQuery = Number(new URLSearchParams(window.location.search).get("scene") || "1");
+      const index = Math.min(Math.max(sceneQuery, 1), scenes.length) - 1;
+      const scene = scenes[index];
+
+      document.getElementById("step").textContent = `STEP ${index + 1} / ${scenes.length}`;
+      document.getElementById("kicker").textContent = scene.kicker;
+      document.getElementById("title").textContent = scene.title;
+      document.getElementById("subtitle").textContent = scene.subtitle;
+      document.getElementById("terminal-title").textContent = scene.terminalTitle;
+      document.getElementById("code").textContent = scene.code.join("\n");
+      document.getElementById("why").textContent = scene.why;
+      document.getElementById("segment").textContent = `SEGMENT ${index + 1} / ${scenes.length}`;
+    </script>
+  </body>
+</html>
