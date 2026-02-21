@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-02-21
+
 ### Added
 
 - New shared configs:
