@@ -14,15 +14,13 @@ High-precision spacing governance for CSS and design systems.
 
 `stylelint-plugin-rhythmguard` enforces scale and token discipline across spacing, radius, typography, size, and translate motion offsets.
 
-## 60-second Demo
+## Demo
 
 <p align="center">
   <a href="./assets/rhythmguard-campaign-60s.webm">
     <img src="./assets/rhythmguard-campaign-60s.gif" width="100%" alt="Rhythmguard 60-second demo" />
   </a>
 </p>
-
-- Full video (WebM): [assets/rhythmguard-campaign-60s.webm](./assets/rhythmguard-campaign-60s.webm)
 
 I built Rhythmguard after 20 years of watching teams ignore spacing scales and ship arbitrary pixel values everywhere.
 
