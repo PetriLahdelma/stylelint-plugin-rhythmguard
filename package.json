@@ -1,6 +1,6 @@
 {
   "name": "stylelint-plugin-rhythmguard",
-  "version": "1.4.1",
+  "version": "1.4.2",
   "description": "Stylelint plugin for spacing scale, token enforcement, and Tailwind class-string governance",
   "keywords": [
     "stylelint",
@@ -68,7 +68,6 @@
     }
   },
   "files": [
-    "assets",
     "scales",
     "schemas",
     "src",

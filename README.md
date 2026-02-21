@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="./assets/rhythmguard-banner.svg" width="100%" alt="Rhythmguard banner in Geist Pixel" />
+  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-banner.svg" width="100%" alt="Rhythmguard banner in Geist Pixel" />
 </p>
 
 # stylelint-plugin-rhythmguard
@@ -17,8 +17,8 @@ High-precision spacing governance for CSS and design systems.
 ## Demo
 
 <p align="center">
-  <a href="./assets/rhythmguard-campaign-60s.webm">
-    <img src="./assets/rhythmguard-campaign-60s.gif" width="100%" alt="Rhythmguard 60-second demo" />
+  <a href="https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/assets/rhythmguard-campaign-60s.webm">
+    <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-campaign-60s.gif" width="100%" alt="Rhythmguard 60-second demo" />
   </a>
 </p>
 
@@ -35,7 +35,7 @@ It is built for teams that want:
 ## Rule Matrix
 
 <p align="center">
-  <img src="./assets/rhythmguard-rules.svg" width="100%" alt="Rhythmguard rule matrix visual" />
+  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-rules.svg" width="100%" alt="Rhythmguard rule matrix visual" />
 </p>
 
 | Rule | What it does | Autofix |
@@ -48,6 +48,20 @@ It is built for teams that want:
 
 ```bash
 npm install --save-dev stylelint stylelint-plugin-rhythmguard
+```
+
+## Drop-In for Existing Projects (Recommended)
+
+If your project already uses Stylelint, you only need one command and one config block:
+
+```bash
+npm install --save-dev stylelint-plugin-rhythmguard
+```
+
+```json
+{
+  "extends": ["stylelint-plugin-rhythmguard/configs/recommended"]
+}
 ```
 
 ## Quick Start
@@ -116,6 +130,12 @@ Stable shared config entry points:
 - `stylelint-plugin-rhythmguard/configs/expanded`
 - `stylelint-plugin-rhythmguard/configs/logical`
 - `stylelint-plugin-rhythmguard/configs/migration`
+
+## Comparison and Migration Recipes
+
+- Side-by-side tool fit guide with migration snippets: [`docs/COMPARISON.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/COMPARISON.md)
+- Real-world before/after excerpts from public repos: [`docs/ADOPTION_DIFFS.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/ADOPTION_DIFFS.md)
+- Distribution submissions to Stylelint discovery surfaces: [`docs/DISTRIBUTION.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/DISTRIBUTION.md)
 
 ### Full custom setup
 
@@ -545,6 +565,21 @@ Detailed methodology and custom args are documented in [`docs/BENCHMARKING.md`](
 ## Article
 
 - Dev.to: [Enforcing your spacing standards with Rhythmguard](https://dev.to/petrilahdelma/enforcing-your-spacing-standards-with-rhythmguard-a-custom-stylelint-plugin-1ojj)
+- Original article update note (Feb 21, 2026): [`docs/DEVTO_ORIGINAL_UPDATE_NOTE_2026-02-21.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/DEVTO_ORIGINAL_UPDATE_NOTE_2026-02-21.md)
+- Continuation draft (ready to publish): [`docs/DEVTO_CONTINUATION_2026-02-21.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/DEVTO_CONTINUATION_2026-02-21.md)
+
+## Used by and Community Examples
+
+Public codebases currently used for production migration examples:
+
+- [PetriLahdelma/digitaltableteur-nextjs](https://github.com/PetriLahdelma/digitaltableteur-nextjs)
+- [PetriLahdelma/digitaltableteur](https://github.com/PetriLahdelma/digitaltableteur)
+
+Want your team listed here?
+
+1. Open an issue with `used-by` in the title.
+2. Include one before/after diff and your Rhythmguard config.
+3. Add migration notes (false positives, rules enabled, rollout phase).
 
 ## Release Workflow
 

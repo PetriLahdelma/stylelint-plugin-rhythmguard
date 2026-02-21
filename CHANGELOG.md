@@ -6,6 +6,20 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [1.4.2] - 2026-02-21
+
+### Changed
+
+- npm package artifact is now leaner by excluding non-runtime media assets from published files.
+- README media links now use absolute GitHub URLs so npm README rendering remains intact without bundling local media files.
+- Added a dedicated "Drop-In for Existing Projects" path with a single install command and a single config block.
+- Added comparison and migration guidance:
+  - `docs/COMPARISON.md` (`defensive-css` vs `logical-css` vs Rhythmguard + migration recipes)
+  - `docs/ADOPTION_DIFFS.md` (real before/after excerpts from public codebases)
+- Added Dev.to publishing assets:
+  - `docs/DEVTO_ORIGINAL_UPDATE_NOTE_2026-02-21.md`
+  - `docs/DEVTO_CONTINUATION_2026-02-21.md`
+
 ## [1.4.1] - 2026-02-21
 
 ### Fixed
