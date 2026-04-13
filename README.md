@@ -483,6 +483,12 @@ Rhythmguard works well in Tailwind projects, but it enforces what Stylelint can 
 - CSS Modules (for example `*.module.css`)
 - declarations inside `@layer` blocks
 
+### Tailwind v4 @theme tokens
+
+The `tailwind` config preset automatically extracts spacing tokens from Tailwind v4 `@theme` blocks and uses them for `prefer-token` enforcement. Raw values like `padding: 16px` are autofixed to `padding: var(--spacing-4)`.
+
+See [`docs/TAILWIND.md`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/TAILWIND.md) for full setup.
+
 ### What Rhythmguard does not cover
 
 - Tailwind class strings in templates/JSX/TSX, for example:
