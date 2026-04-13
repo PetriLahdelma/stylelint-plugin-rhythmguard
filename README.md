@@ -483,6 +483,12 @@ Rhythmguard works well in Tailwind projects, but it enforces what Stylelint can 
 - CSS Modules (for example `*.module.css`)
 - declarations inside `@layer` blocks
 
+### Tailwind v4 @theme tokens
+
+The `tailwind` config preset automatically extracts spacing tokens from Tailwind v4 `@theme` blocks and uses them for `prefer-token` enforcement. Raw values like `padding: 16px` are autofixed to `padding: var(--spacing-4)`.
+
+See [`docs/TAILWIND.md`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/TAILWIND.md) for full setup.
+
 ### What Rhythmguard does not cover
 
 - Tailwind class strings in templates/JSX/TSX, for example:
@@ -512,6 +518,18 @@ export default [
 ```
 
 This rule targets arbitrary spacing utilities such as `p-[13px]`, `gap-[18px]`, `translate-x-[10px]`, and autofixes to the nearest configured scale value.
+
+#### Supported patterns
+
+The rule checks every string literal in your code, so it works automatically with common utility functions:
+
+- `cn("p-[13px]")` / `cn("p-[13px]", condition && "m-[7px]")`
+- `clsx("p-[13px]", "gap-[18px]")`
+- `twMerge("p-[13px]", otherClasses)`
+- `cva("base", { variants: { size: { sm: "p-[5px]" } } })`
+- `<div className={cn("p-[13px]")} />`
+
+No extra config needed — if the string contains an arbitrary spacing value, it gets caught and autofixed.
 
 ### Recommended stack for full Tailwind enforcement
 

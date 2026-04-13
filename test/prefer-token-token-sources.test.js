@@ -97,6 +97,97 @@ test('prefer-token can load spacing values from ESM Tailwind config', async () =
   assert.equal(result.code, '.stack { gap: theme(spacing.5); }');
 });
 
+// @theme block tests
+
+test('prefer-token builds token map from @theme block declarations', async () => {
+  const result = await lintCss({
+    code: '@theme { --spacing-4: 16px; --spacing-3: 12px; } .stack { padding: 16px; gap: 12px; }',
+    fix: true,
+    rules: {
+      'rhythmguard/prefer-token': [
+        true,
+        {
+          tokenMapFromCssCustomProperties: true,
+          tokenPattern: '^--spacing-',
+        },
+      ],
+    },
+  });
+
+  assert.equal(
+    result.code,
+    '@theme { --spacing-4: 16px; --spacing-3: 12px; } .stack { padding: var(--spacing-4); gap: var(--spacing-3); }',
+  );
+});
+
+test('prefer-token builds token map from mixed @theme and :root declarations', async () => {
+  const result = await lintCss({
+    code: '@theme { --spacing-4: 16px; } :root { --spacing-2: 8px; } .stack { padding: 16px; margin: 8px; }',
+    fix: true,
+    rules: {
+      'rhythmguard/prefer-token': [
+        true,
+        {
+          tokenMapFromCssCustomProperties: true,
+          tokenPattern: '^--spacing-',
+        },
+      ],
+    },
+  });
+
+  assert.equal(
+    result.code,
+    '@theme { --spacing-4: 16px; } :root { --spacing-2: 8px; } .stack { padding: var(--spacing-4); margin: var(--spacing-2); }',
+  );
+});
+
+test('prefer-token ignores non-spacing @theme variables based on tokenPattern', async () => {
+  const result = await lintCss({
+    code: '@theme { --spacing-4: 16px; --color-primary: #3b82f6; } .stack { padding: 16px; }',
+    fix: true,
+    rules: {
+      'rhythmguard/prefer-token': [
+        true,
+        {
+          tokenMapFromCssCustomProperties: true,
+          tokenPattern: '^--spacing-',
+        },
+      ],
+    },
+  });
+
+  assert.equal(
+    result.code,
+    '@theme { --spacing-4: 16px; --color-primary: #3b82f6; } .stack { padding: var(--spacing-4); }',
+  );
+});
+
+test('explicit tokenMap takes precedence over @theme-derived tokens', async () => {
+  const result = await lintCss({
+    code: '@theme { --spacing-4: 16px; } .stack { padding: 16px; }',
+    fix: true,
+    rules: {
+      'rhythmguard/prefer-token': [
+        true,
+        {
+          tokenMapFromCssCustomProperties: true,
+          tokenPattern: '^--spacing-',
+          tokenMap: {
+            '16px': 'var(--custom-space-4)',
+          },
+        },
+      ],
+    },
+  });
+
+  assert.equal(
+    result.code,
+    '@theme { --spacing-4: 16px; } .stack { padding: var(--custom-space-4); }',
+  );
+});
+
+// DTCG format tests
+
 test('prefer-token loads DTCG flat format with $value', async () => {
   const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-dtcg-flat-'));
   const tokenMapPath = path.join(tempDir, 'tokens.json');

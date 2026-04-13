@@ -5,4 +5,13 @@ module.exports = {
     'stylelint-config-tailwindcss',
     'stylelint-plugin-rhythmguard/configs/strict',
   ],
+  rules: {
+    'rhythmguard/prefer-token': [
+      true,
+      {
+        tokenPattern: '^--spacing-',
+        tokenMapFromCssCustomProperties: true,
+      },
+    ],
+  },
 };

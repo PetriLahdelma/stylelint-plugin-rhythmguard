@@ -7,6 +7,33 @@ This guide describes the production setup for Rhythmguard in Tailwind-based code
 - Rhythmguard Stylelint rules enforce CSS declaration values that Stylelint can parse.
 - Rhythmguard ESLint companion rules enforce Tailwind class-string arbitrary values in templates.
 
+## Tailwind v4 (@theme support)
+
+Tailwind v4 defines spacing tokens as CSS custom properties inside `@theme` blocks:
+
+```css
+@theme {
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+}
+```
+
+The `tailwind` config preset automatically extracts these as token mappings. No extra config needed:
+
+```json
+{
+  "extends": ["stylelint-plugin-rhythmguard/configs/tailwind"]
+}
+```
+
+With this config, `padding: 16px` will be flagged and autofixed to `padding: var(--spacing-4)`.
+
+### Tailwind v3 compatibility
+
+Tailwind v3 projects using `tailwind.config.js` can continue using `tokenMapFromTailwindSpacing` with `tailwindConfigPath`. Both sources can coexist — explicit `tokenMap` and file-based maps always take precedence.
+
 ## Recommended Layered Setup
 
 ### 1) Stylelint layer (CSS declarations)
