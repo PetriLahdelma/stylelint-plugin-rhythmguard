@@ -155,14 +155,27 @@ npm install --save-dev stylelint-plugin-rhythmguard
 
 `migration` keeps on-scale numeric values temporarily while auto-building token mappings from CSS custom properties and optional Tailwind spacing config.
 
+### React / Next.js + Tailwind config
+
+```json
+{
+  "extends": ["stylelint-plugin-rhythmguard/configs/react-tailwind"]
+}
+```
+
+`react-tailwind` extends the tailwind config with CSS Modules overrides (spacing + radius enforcement) and ignores Next.js build directories.
+
 Stable shared config entry points:
 
 - `stylelint-plugin-rhythmguard/configs/recommended`
 - `stylelint-plugin-rhythmguard/configs/strict`
 - `stylelint-plugin-rhythmguard/configs/tailwind`
+- `stylelint-plugin-rhythmguard/configs/react-tailwind`
 - `stylelint-plugin-rhythmguard/configs/expanded`
 - `stylelint-plugin-rhythmguard/configs/logical`
 - `stylelint-plugin-rhythmguard/configs/migration`
+
+Framework-specific setup for Vue, Lit, Astro, and SvelteKit: [`docs/FRAMEWORKS.md`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/FRAMEWORKS.md)
 
 ## Comparison and Migration Recipes
 
