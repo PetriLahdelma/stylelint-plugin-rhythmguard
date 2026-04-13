@@ -1,10 +1,10 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-banner.svg" width="100%" alt="Rhythmguard banner in Geist Pixel" />
+  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-banner.svg" width="100%" alt="Rhythmguard banner showing spacing scale ruler and lint output" />
 </p>
 
 # stylelint-plugin-rhythmguard
 
-High-precision spacing governance for CSS and design systems.
+Token governance for CSS and Tailwind. Enforce spacing scales, require design tokens, and catch arbitrary values before they ship.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/petrilahdelma/stylelint-plugin-rhythmguard/ci.yml?branch=main&label=ci)](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/actions/workflows/ci.yml)
 [![npm version](https://img.shields.io/npm/v/stylelint-plugin-rhythmguard.svg)](https://www.npmjs.com/package/stylelint-plugin-rhythmguard)
@@ -12,25 +12,48 @@ High-precision spacing governance for CSS and design systems.
 [![License: MIT](https://img.shields.io/badge/license-MIT-white.svg)](./LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D18.18-black.svg)](https://nodejs.org/)
 
-`stylelint-plugin-rhythmguard` enforces scale and token discipline across spacing, radius, typography, size, and translate motion offsets.
+Rhythmguard enforces scale and token discipline across spacing, radius, typography, size, and motion offsets — in CSS declarations and Tailwind class strings.
 
-## Demo
+Built for teams that want:
 
-<p align="center">
-  <a href="https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/assets/rhythmguard-campaign-60s.webm">
-    <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-campaign-60s.gif" width="100%" alt="Rhythmguard 60-second demo" />
-  </a>
-</p>
+- zero random spacing values in production
+- token-first workflows with autofix migration
+- Tailwind arbitrary value governance (`p-[13px]` → `p-[12px]`)
+- consistent layout rhythm across components and pages
 
-I built Rhythmguard after 20 years of watching teams ignore spacing scales and ship arbitrary pixel values everywhere.
+## Quick Start: Next.js + Tailwind
 
-It is built for teams that want:
+```bash
+npm install --save-dev stylelint stylelint-plugin-rhythmguard
+```
 
-- zero random spacing values in production CSS
-- consistent numeric scales for radius, typography, and sizing primitives
-- token-first spacing workflows
-- predictable autofix behavior for large migrations
-- consistent layout rhythm across web surfaces
+**.stylelintrc.json:**
+
+```json
+{
+  "extends": ["stylelint-plugin-rhythmguard/configs/tailwind"]
+}
+```
+
+**eslint.config.js** (for Tailwind class-string governance):
+
+```js
+import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';
+
+export default [
+  {
+    plugins: { 'rhythmguard-tailwind': rhythmguard },
+    rules: {
+      'rhythmguard-tailwind/tailwind-class-use-scale': [
+        'error',
+        { scale: [0, 4, 8, 12, 16, 24, 32] }
+      ],
+    },
+  },
+];
+```
+
+This gives you spacing governance in both CSS files and JSX/TSX templates.
 
 ## Rule Matrix
 
@@ -43,6 +66,16 @@ It is built for teams that want:
 | `rhythmguard/use-scale` | Enforces spacing values must be on your configured scale | Yes, nearest safe value |
 | `rhythmguard/prefer-token` | Enforces token usage over raw spacing literals | Yes, with `tokenMap` |
 | `rhythmguard/no-offscale-transform` | Enforces scale-aligned `translate*` motion offsets | Yes, nearest safe value |
+
+## Demo
+
+<p align="center">
+  <a href="https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/assets/rhythmguard-campaign-60s.webm">
+    <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-campaign-60s.gif" width="100%" alt="Rhythmguard 60-second demo" />
+  </a>
+</p>
+
+I built Rhythmguard after 20 years of watching teams ignore spacing scales and ship arbitrary pixel values everywhere.
 
 ## Installation
 
@@ -66,6 +99,14 @@ npm install --save-dev stylelint-plugin-rhythmguard
 
 ## Quick Start
 
+### Tailwind config
+
+```json
+{
+  "extends": ["stylelint-plugin-rhythmguard/configs/tailwind"]
+}
+```
+
 ### Recommended config
 
 ```json
@@ -83,14 +124,6 @@ npm install --save-dev stylelint-plugin-rhythmguard
 ```
 
 `strict` intentionally delegates transform translation enforcement to `rhythmguard/no-offscale-transform` to reduce overlapping warnings from `use-scale`.
-
-### Tailwind config
-
-```json
-{
-  "extends": ["stylelint-plugin-rhythmguard/configs/tailwind"]
-}
-```
 
 ### Expanded config
 
