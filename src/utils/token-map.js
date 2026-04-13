@@ -324,7 +324,7 @@ function buildEffectiveTokenMap({
   root,
   tokenRegex,
 }) {
-  let tokenMap = mergeExplicitTokenMap({}, options.tokenMap);
+  let tokenMap = {};
 
   if (options.tokenMapFile) {
     tokenMap = mergeTokenMapFromFile({
@@ -349,6 +349,9 @@ function buildEffectiveTokenMap({
       tailwindConfigPath: options.tailwindConfigPath,
     });
   }
+
+  // Explicit tokenMap applied last so it takes precedence over auto-derived tokens
+  tokenMap = mergeExplicitTokenMap(tokenMap, options.tokenMap);
 
   return tokenMap;
 }
