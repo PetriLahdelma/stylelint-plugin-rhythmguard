@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-banner.svg?v=2" width="100%" alt="Rhythmguard banner showing spacing scale ruler and lint output" />
+  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-banner.svg?v=3" width="100%" alt="Rhythmguard banner showing spacing scale ruler and lint output" />
 </p>
 
 # stylelint-plugin-rhythmguard
