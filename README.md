@@ -442,7 +442,7 @@ Options:
 | `mathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Restricts linting to specific 1-based argument indexes per math function |
 | `ignoreMathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Excludes specific 1-based argument indexes per math function |
 | `tokenMap` | `Record<string,string>` | `{}` | Enables autofix from raw value to token |
-| `tokenMapFile` | `string` | `null` | JSON file path to merge additional token mappings |
+| `tokenMapFile` | `string` | `null` | JSON file path to merge additional token mappings (supports flat, Style Dictionary, and W3C DTCG formats) |
 | `tokenMapFromCssCustomProperties` | `boolean` | `false` | Auto-builds mappings from matching custom property declarations in the same stylesheet |
 | `tokenMapFromTailwindSpacing` | `boolean` | `false` | Auto-builds mappings from `theme.spacing` and `theme.extend.spacing` in Tailwind config |
 | `tailwindConfigPath` | `string` | `null` | Path to Tailwind config used by `tokenMapFromTailwindSpacing` (`.js`, `.cjs`, `.mjs`) |
@@ -553,6 +553,35 @@ console.log(rhythmguard.presets.getCommunityScaleMetadata('product-decimal-10'))
 console.log(rhythmguard.presets.scales['rhythmic-4']);
 console.log(Object.keys(rhythmguard.eslint.rules));
 ```
+
+## Token File Formats
+
+The `tokenMapFile` option supports multiple JSON formats:
+
+**Flat token-to-value:**
+
+```json
+{ "--spacing-4": "16px", "--spacing-3": "12px" }
+```
+
+**Style Dictionary:**
+
+```json
+{ "--spacing-4": { "value": "16px" } }
+```
+
+**W3C DTCG (Design Token Community Group):**
+
+```json
+{
+  "spacing": {
+    "4": { "$value": "16px", "$type": "dimension" },
+    "2": { "$value": "8px", "$type": "dimension" }
+  }
+}
+```
+
+Nested DTCG groups are walked recursively. The key path becomes the CSS variable name: `spacing.4` → `var(--spacing-4)`. Non-length values (colors, fonts) are ignored automatically.
 
 ## Autofix Philosophy
 

@@ -79,6 +79,31 @@ function mergeExplicitTokenMap(target, source) {
   return target;
 }
 
+function walkTokenGroup(map, group, prefix, baseFontSize) {
+  for (const [key, value] of Object.entries(group)) {
+    const tokenName = `${prefix}-${key}`;
+
+    if (!isPlainObject(value)) {
+      continue;
+    }
+
+    // Leaf node with $value (DTCG)
+    if (typeof value.$value === 'string') {
+      addLengthValueMapping(map, value.$value, tokenName, baseFontSize);
+      continue;
+    }
+
+    // Leaf node with value (Style Dictionary)
+    if (typeof value.value === 'string') {
+      addLengthValueMapping(map, value.value, tokenName, baseFontSize);
+      continue;
+    }
+
+    // Nested group — recurse deeper
+    walkTokenGroup(map, value, tokenName, baseFontSize);
+  }
+}
+
 function mergeTokenMapFromFile({
   baseFontSize,
   currentMap,
@@ -130,8 +155,21 @@ function mergeTokenMapFromFile({
       continue;
     }
 
-    if (isPlainObject(entryValue) && typeof entryValue.value === 'string') {
-      addLengthValueMapping(nextMap, entryValue.value, entryKey, baseFontSize);
+    if (isPlainObject(entryValue)) {
+      // Style Dictionary format: { value: "16px" }
+      if (typeof entryValue.value === 'string') {
+        addLengthValueMapping(nextMap, entryValue.value, entryKey, baseFontSize);
+        continue;
+      }
+
+      // W3C DTCG format: { $value: "16px", $type: "dimension" }
+      if (typeof entryValue.$value === 'string') {
+        addLengthValueMapping(nextMap, entryValue.$value, entryKey, baseFontSize);
+        continue;
+      }
+
+      // Nested group — recurse (e.g. { spacing: { 4: { $value: "16px" } } })
+      walkTokenGroup(nextMap, entryValue, entryKey, baseFontSize);
     }
   }
 
