@@ -46,6 +46,10 @@
       "require": "./src/configs/migration.js",
       "import": "./src/configs/migration.mjs"
     },
+    "./configs/react-tailwind": {
+      "require": "./src/configs/react-tailwind.js",
+      "import": "./src/configs/react-tailwind.mjs"
+    },
     "./presets": {
       "require": "./src/presets/index.js",
       "import": "./src/presets/index.mjs"
