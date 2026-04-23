@@ -9,7 +9,7 @@
         font-weight: 400;
         font-style: normal;
       }
-      .bg { fill: #000; }
+      .brand { font-family: 'GeistPixel', monospace; font-size: 24px; }
       .fg { fill: #fff; }
       .stroke { stroke: #fff; stroke-width: 2; fill: none; }
       .title { font-family: 'GeistPixel', monospace; font-size: 46px; }
@@ -18,10 +18,10 @@
     </style>
   </defs>
 
-  <rect class="bg" x="0" y="0" width="1400" height="560"/>
   <rect class="stroke" x="18" y="18" width="1364" height="524"/>
 
-  <text class="title fg" x="42" y="76">RHYTHMGUARD RULE MATRIX</text>
+  <text class="title fg" x="42" y="76">RULE MATRIX</text>
+  <text class="brand fg" x="1358" y="76" text-anchor="end">|Rhythmguard|</text>
 
   <rect class="stroke" x="42" y="110" width="1316" height="96"/>
   <text class="label fg" x="68" y="158">RULE</text>
