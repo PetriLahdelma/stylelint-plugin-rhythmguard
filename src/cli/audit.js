@@ -115,47 +115,69 @@ async function run() {
     ? Math.round((filesWithIssues / totalFiles) * 100)
     : 0;
 
+  const offScaleTotal = Object.values(offScaleValues).reduce((a, b) => a + b, 0);
+  const tokenTotal = Object.values(tokenOpportunities).reduce((a, b) => a + b, 0);
+  const scorePct = totalFiles > 0 ? 100 - pct : 100;
+
+  // Report header
   const lines = [
     '',
-    `Rhythmguard Audit: ${dir}`,
+    `  ┌─ RHYTHMGUARD AUDIT ─────────────────────────────────────────┐`,
+    `  │  ${dir.padEnd(58)}│`,
+    `  └─────────────────────────────────────────────────────────────┘`,
     '',
-    `Files scanned:     ${totalFiles}`,
-    `Files with issues: ${filesWithIssues} (${pct}%)`,
+    `  Files scanned       ${String(totalFiles).padStart(4)}`,
+    `  Files with issues   ${String(filesWithIssues).padStart(4)}  (${pct}%)`,
+    `  Scale cleanliness   ${scoreBar(scorePct)}  ${scorePct}%`,
     '',
   ];
 
+  // Off-scale histogram
   if (sortedOffScale.length > 0) {
-    const offScaleTotal = Object.values(offScaleValues).reduce(
-      (a, b) => a + b,
-      0,
-    );
-    lines.push(`Off-scale values: ${offScaleTotal}`);
+    lines.push(`  ── OFF-SCALE VALUES ──  ${offScaleTotal} total`);
+    lines.push('');
+    const maxCount = Math.max(...sortedOffScale.map(([, c]) => c));
     for (const [value, count] of sortedOffScale) {
-      lines.push(`  ${value.padEnd(10)} ×${count}`);
+      lines.push(`  ${value.padEnd(14)} ${histBar(count, maxCount)} ${count}`);
     }
     lines.push('');
   }
 
+  // Token opportunities histogram
   if (sortedTokenOps.length > 0) {
-    const tokenTotal = Object.values(tokenOpportunities).reduce(
-      (a, b) => a + b,
-      0,
-    );
-    lines.push(`Token opportunities: ${tokenTotal}`);
+    lines.push(`  ── TOKEN OPPORTUNITIES ──  ${tokenTotal} total`);
+    lines.push('');
+    const maxCount = Math.max(...sortedTokenOps.map(([, c]) => c));
     for (const [value, count] of sortedTokenOps) {
-      lines.push(`  ${value.padEnd(10)} ×${count}`);
+      lines.push(`  ${value.padEnd(14)} ${histBar(count, maxCount)} ${count}`);
     }
     lines.push('');
   }
 
+  // Footer
   if (totalWarnings === 0) {
-    lines.push('No issues found. Your spacing is on scale.');
+    lines.push('  ✓ No issues found. Your spacing is on scale.');
   } else {
-    lines.push('Run "npx stylelint --fix" to auto-correct.');
+    lines.push('  → Run "npx stylelint --fix" to auto-correct.');
+    lines.push('  → Paste this output in a PR to make the case for adoption.');
   }
-
   lines.push('');
+  lines.push('  https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/');
+  lines.push('');
+
   process.stdout.write(lines.join('\n'));
+}
+
+function histBar(count, maxCount) {
+  const width = 30;
+  const filled = Math.round((count / maxCount) * width);
+  return '█'.repeat(filled) + '░'.repeat(width - filled);
+}
+
+function scoreBar(pct) {
+  const width = 20;
+  const filled = Math.round((pct / 100) * width);
+  return '█'.repeat(filled) + '░'.repeat(width - filled);
 }
 
 run();

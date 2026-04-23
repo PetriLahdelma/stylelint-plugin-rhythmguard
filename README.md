@@ -77,6 +77,10 @@ This gives you spacing governance in both CSS files and JSX/TSX templates.
 
 I built Rhythmguard after 20 years of watching teams ignore spacing scales and ship arbitrary pixel values everywhere.
 
+## Try It in Your Browser
+
+**[petrilahdelma.github.io/stylelint-plugin-rhythmguard](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/)** — paste CSS, see violations and token opportunities live. No install, no config.
+
 ## Installation
 
 ```bash
