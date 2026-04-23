@@ -662,8 +662,6 @@ Detailed methodology and custom args are documented in [`docs/BENCHMARKING.md`](
 ## Article
 
 - Dev.to: [Enforcing your spacing standards with Rhythmguard](https://dev.to/petrilahdelma/enforcing-your-spacing-standards-with-rhythmguard-a-custom-stylelint-plugin-1ojj)
-- Original article update note (Feb 21, 2026): [`docs/DEVTO_ORIGINAL_UPDATE_NOTE_2026-02-21.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/DEVTO_ORIGINAL_UPDATE_NOTE_2026-02-21.md)
-- Continuation draft (ready to publish): [`docs/DEVTO_CONTINUATION_2026-02-21.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/DEVTO_CONTINUATION_2026-02-21.md)
 
 ## Used by and Community Examples
 
