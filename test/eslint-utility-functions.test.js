@@ -82,3 +82,38 @@ test('eslint rule detects arbitrary spacing in JSX className with cn()', () => {
     ],
   });
 });
+
+test('eslint rule detects arbitrary spacing after Tailwind variants and important modifiers', () => {
+  tester.run('tailwind-class-use-scale', rule, {
+    valid: [],
+    invalid: [
+      {
+        code: 'const cls = "md:p-[13px] hover:!gap-[18px] lg:p-[13px]!";',
+        output: 'const cls = "md:p-[12px] hover:!gap-[16px] lg:p-[12px]!";',
+        errors: [
+          { message: /Unexpected Tailwind arbitrary spacing/ },
+          { message: /Unexpected Tailwind arbitrary spacing/ },
+          { message: /Unexpected Tailwind arbitrary spacing/ },
+        ],
+      },
+    ],
+  });
+});
+
+test('eslint rule ignores arbitrary variants while checking their spacing utilities', () => {
+  tester.run('tailwind-class-use-scale', rule, {
+    valid: [
+      'const cls = "data-[state=open]:pb-8 aria-[sort=ascending]:text-sm";',
+    ],
+    invalid: [
+      {
+        code: 'const cls = "has-[>button]:ml-[-0.3rem] data-[state=open]:pb-8 [&:nth-child(3)]:mt-[13px]";',
+        output: 'const cls = "has-[>button]:ml-[-0.25rem] data-[state=open]:pb-8 [&:nth-child(3)]:mt-[12px]";',
+        errors: [
+          { message: /Unexpected Tailwind arbitrary spacing/ },
+          { message: /Unexpected Tailwind arbitrary spacing/ },
+        ],
+      },
+    ],
+  });
+});

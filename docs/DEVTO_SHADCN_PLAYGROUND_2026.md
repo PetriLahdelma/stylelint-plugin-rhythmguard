@@ -53,7 +53,7 @@ $ grep -rE '-\[.*(rem|px)\]' apps/v4 --include="*.css" \
 <div className="pl-2 has-[>button]:ml-[-0.3rem] has-[>kbd]:ml-[-0.15rem]" />
 ```
 
-Stylelint doesn't see these. Prettier doesn't see these. `eslint-plugin-tailwindcss` doesn't see these either — it governs class names, not the numbers inside `[arbitrary]` brackets.
+Stylelint doesn't see these. Prettier doesn't see these. `eslint-plugin-tailwindcss` can be configured to ban arbitrary brackets entirely, but that is a blanket policy. It does not give spacing-specific scale checks and nearest-value fixes for the numbers inside `[arbitrary]` brackets.
 
 Full audit writeup with sources: [gist.github.com/PetriLahdelma/2ad44d6dc2022f48c67f839c6440745c](https://gist.github.com/PetriLahdelma/2ad44d6dc2022f48c67f839c6440745c)
 
