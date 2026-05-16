@@ -172,9 +172,9 @@ Framework configs for [React/Next.js, Vue, Lit, Astro, SvelteKit](https://github
 
 **Prettier** orders your classes. It doesn't know if `p-[13px]` is on your scale.
 
-**eslint-plugin-tailwindcss** checks class name conventions. It doesn't enforce *which values* are allowed in arbitrary brackets.
+**eslint-plugin-tailwindcss** checks class name conventions and can reject arbitrary brackets entirely with `tailwindcss/no-arbitrary-value`. That is useful for teams that want a blanket ban, but it does not answer the scale-governance question: is `p-[13px]` off your allowed spacing rhythm, and what should it become?
 
-**Rhythmguard** is the only tool that governs the actual spacing values — in CSS declarations AND in Tailwind class strings.
+**Rhythmguard** gives you scale-aware spacing governance — in CSS declarations AND in Tailwind class strings.
 
 ## Get started
 

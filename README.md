@@ -506,13 +506,13 @@ The `tailwind` config preset automatically extracts spacing tokens from Tailwind
 
 See [`docs/TAILWIND.md`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/TAILWIND.md) for full setup.
 
-### What Rhythmguard does not cover
+### What the Stylelint layer does not cover
 
 - Tailwind class strings in templates/JSX/TSX, for example:
   - `class="p-4 gap-2"`
   - `class="p-[13px] translate-y-[18px]"`
 
-Those are not Stylelint declaration nodes, so they are outside Stylelint rule scope.
+Those are not Stylelint declaration nodes, so they are outside Stylelint rule scope. Use the ESLint companion rule below for scale-aware class-string enforcement.
 
 ### Companion ESLint layer for class strings
 
@@ -566,7 +566,7 @@ Suggested setup:
 Then pair with:
 
 - `stylelint-plugin-rhythmguard/eslint` for arbitrary spacing class-string scale enforcement.
-- `eslint-plugin-tailwindcss` for broader class-string linting and conventions.
+- `eslint-plugin-tailwindcss` for broader class-string linting and conventions. If your policy is to ban every arbitrary value, enable its `tailwindcss/no-arbitrary-value` rule; use Rhythmguard when you want spacing-specific scale checks and nearest-value fixes.
 - `prettier-plugin-tailwindcss` for deterministic class ordering.
 
 Detailed setup reference: [`docs/TAILWIND.md`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/TAILWIND.md).

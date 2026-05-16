@@ -48,8 +48,63 @@ function findClassSegments(value) {
   return segments;
 }
 
+function findLastVariantSeparator(token) {
+  let bracketDepth = 0;
+  let separatorIndex = -1;
+
+  for (let index = 0; index < token.length; index++) {
+    const character = token[index];
+
+    if (character === '[') {
+      bracketDepth++;
+      continue;
+    }
+
+    if (character === ']' && bracketDepth > 0) {
+      bracketDepth--;
+      continue;
+    }
+
+    if (character === ':' && bracketDepth === 0) {
+      separatorIndex = index;
+    }
+  }
+
+  return separatorIndex;
+}
+
+function parseClassToken(token) {
+  const separatorIndex = findLastVariantSeparator(token);
+  const prefix = separatorIndex === -1
+    ? ''
+    : token.slice(0, separatorIndex + 1);
+  let candidate = separatorIndex === -1
+    ? token
+    : token.slice(separatorIndex + 1);
+  let leadingImportant = '';
+  let trailingImportant = '';
+
+  if (candidate.startsWith('!')) {
+    leadingImportant = '!';
+    candidate = candidate.slice(1);
+  }
+
+  if (candidate.endsWith('!')) {
+    trailingImportant = '!';
+    candidate = candidate.slice(0, -1);
+  }
+
+  return {
+    candidate,
+    leadingImportant,
+    prefix,
+    trailingImportant,
+  };
+}
+
 function analyzeToken(token, options, scalePx) {
-  const match = token.match(ARBITRARY_SPACING_CLASS);
+  const parsedToken = parseClassToken(token);
+  const match = parsedToken.candidate.match(ARBITRARY_SPACING_CLASS);
   if (!match || !match.groups) {
     return null;
   }
@@ -96,7 +151,8 @@ function analyzeToken(token, options, scalePx) {
     : replacementValuePx / options.baseFontSize;
 
   const replacementValue = formatLength(replacementNumber, parsedLength.unit);
-  const fixedToken = token.replace(match.groups.rawValue, replacementValue);
+  const fixedCandidate = parsedToken.candidate.replace(match.groups.rawValue, replacementValue);
+  const fixedToken = `${parsedToken.prefix}${parsedToken.leadingImportant}${fixedCandidate}${parsedToken.trailingImportant}`;
 
   return {
     fixedToken,
@@ -128,12 +184,35 @@ function maybeCheckNodeText(node, sourceCode, context, options, scalePx, allowFi
   if (segments.length === 0) {
     return;
   }
+
+  const findings = [];
+  let fixedValue = value;
+  let fixedValueOffset = 0;
+
   for (const segment of segments) {
     const analysis = analyzeToken(segment.token, options, scalePx);
     if (!analysis) {
       continue;
     }
 
+    findings.push({ analysis, segment });
+
+    if (allowFix && analysis.reason !== 'negative' && node.type === 'Literal') {
+      const replacementStart = segment.start + fixedValueOffset;
+      fixedValue = `${fixedValue.slice(0, replacementStart)}${analysis.fixedToken}${fixedValue.slice(replacementStart + segment.token.length)}`;
+      fixedValueOffset += analysis.fixedToken.length - segment.token.length;
+    }
+  }
+
+  if (findings.length === 0) {
+    return;
+  }
+
+  const fixedText = allowFix && node.type === 'Literal' && fixedValue !== value
+    ? `${quote}${fixedValue.replace(new RegExp(quote, 'g'), `\\${quote}`)}${quote}`
+    : null;
+
+  for (const { analysis, segment } of findings) {
     const lower = analysis.nearest
       ? formatLength(analysis.nearest.lower, 'px')
       : 'n/a';
@@ -147,12 +226,8 @@ function maybeCheckNodeText(node, sourceCode, context, options, scalePx, allowFi
           : `Unexpected Tailwind arbitrary spacing value "${segment.token}". Use scale values (nearest: ${lower} or ${upper}).`,
       node,
       fix:
-        allowFix && analysis.reason !== 'negative' && node.type === 'Literal'
-          ? (fixer) => {
-            const nextValue = `${value.slice(0, segment.start)}${analysis.fixedToken}${value.slice(segment.start + segment.token.length)}`;
-            const escaped = nextValue.replace(new RegExp(quote, 'g'), `\\${quote}`);
-            return fixer.replaceText(node, `${quote}${escaped}${quote}`);
-          }
+        fixedText && analysis.reason !== 'negative'
+          ? (fixer) => fixer.replaceText(node, fixedText)
           : null,
     });
   }
