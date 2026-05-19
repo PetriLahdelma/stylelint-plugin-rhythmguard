@@ -3,7 +3,7 @@
   "version": "1.6.0",
   "description": "Token governance for CSS and Tailwind — enforce spacing scales, require design tokens, catch arbitrary values",
   "bin": {
-    "rhythmguard": "./src/cli/index.js"
+    "rhythmguard": "src/cli/index.js"
   },
   "keywords": [
     "stylelint",
