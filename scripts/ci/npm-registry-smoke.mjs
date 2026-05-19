@@ -42,6 +42,15 @@ function run(cmd, args, options = {}) {
 }
 
 const argv = parseArgs(process.argv.slice(2));
+
+if (argv.package === true) {
+  throw new Error('Missing value for --package.');
+}
+
+if (argv.version === true) {
+  throw new Error('Missing value for --version.');
+}
+
 const pkg = String(argv.package || 'stylelint-plugin-rhythmguard');
 const version = argv.version ? String(argv.version) : 'latest';
 const spec = `${pkg}@${version}`;
