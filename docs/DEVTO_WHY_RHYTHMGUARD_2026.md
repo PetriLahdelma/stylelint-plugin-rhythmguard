@@ -15,6 +15,8 @@ Six months later, `git grep` finds 47 unique spacing values across 200 files. Yo
 
 **This is spacing drift.** It happens in every project that relies on convention instead of enforcement.
 
+**Update, May 19, 2026:** Rhythmguard 1.6.0 now ships Audit 2.0. `npx rhythmguard audit ./src --format markdown` reports CSS declaration drift, Tailwind arbitrary spacing drift, token opportunities, and a PR-ready summary that developers and design-system owners can review together.
+
 ## The problem with Tailwind's arbitrary values
 
 Tailwind v4 made CSS-first configuration the default. That's great for tokens:
