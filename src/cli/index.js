@@ -6,7 +6,7 @@ const command = process.argv[2];
 const HELP = `Usage: rhythmguard <command>
 
 Commands:
-  audit <dir>   Report scale drift and token opportunities
+  audit <dir>   Report design-system drift across CSS and Tailwind class strings
   init          Scaffold a Rhythmguard config for your project
   doctor        Validate your Rhythmguard setup
 
@@ -16,6 +16,7 @@ Options:
 Examples:
   npx rhythmguard audit ./src
   npx rhythmguard audit ./src --json
+  npx rhythmguard audit ./src --format markdown
   npx rhythmguard init
   npx rhythmguard doctor
 `;

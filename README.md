@@ -81,6 +81,30 @@ I built Rhythmguard after 20 years of watching teams ignore spacing scales and s
 
 **[petrilahdelma.github.io/stylelint-plugin-rhythmguard](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/)** — paste CSS, see violations and token opportunities live. No install, no config.
 
+## Audit Before You Enforce
+
+Use the audit CLI to create a design-system drift report before turning rules into hard CI gates:
+
+```bash
+npx rhythmguard audit ./src
+npx rhythmguard audit ./src --format markdown
+npx rhythmguard audit ./src --json
+```
+
+The report covers authored CSS declarations and Tailwind arbitrary spacing values in common template/source files. Markdown output is PR-ready for UX developers, UX designers, and design-system owners:
+
+```md
+# Rhythmguard Design-System Audit
+
+| Metric | Value |
+| --- | ---: |
+| CSS files scanned | 47 |
+| Template files scanned | 83 |
+| Files with issues | 12 |
+| Total findings | 52 |
+| Scale cleanliness | 91% |
+```
+
 ## Installation
 
 ```bash
@@ -184,6 +208,7 @@ Framework-specific setup for Vue, Lit, Astro, and SvelteKit: [`docs/FRAMEWORKS.m
 ## Comparison and Migration Recipes
 
 - Side-by-side tool fit guide with migration snippets: [`docs/COMPARISON.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/COMPARISON.md)
+- Audit 2.0 validation and roadmap: [`docs/AUDIT_2_VALIDATION.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/AUDIT_2_VALIDATION.md)
 - Real-world before/after excerpts from public repos: [`docs/ADOPTION_DIFFS.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/ADOPTION_DIFFS.md)
 - Distribution submissions to Stylelint discovery surfaces: [`docs/DISTRIBUTION.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/DISTRIBUTION.md)
 
