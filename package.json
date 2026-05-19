@@ -99,7 +99,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/petrilahdelma/stylelint-plugin-rhythmguard.git"
+    "url": "https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard"
   },
   "homepage": "https://github.com/petrilahdelma/stylelint-plugin-rhythmguard#readme",
   "bugs": {
