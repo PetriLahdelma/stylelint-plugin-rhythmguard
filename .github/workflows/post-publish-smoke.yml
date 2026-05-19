@@ -4,16 +4,26 @@ on:
   workflow_run:
     workflows: ['Release']
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      version:
+        description: npm package version to smoke test. Defaults to package.json.
+        required: false
+        type: string
+      ref:
+        description: Git ref to check out before running the smoke test. Defaults to the workflow ref.
+        required: false
+        type: string
 
 jobs:
   npm-smoke:
-    if: github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout published commit
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ inputs.ref || github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -26,12 +36,28 @@ jobs:
 
       - name: Read package version
         id: pkg
-        run: echo "version=$(node -p 'require(\"./package.json\").version')" >> "$GITHUB_OUTPUT"
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then
+            version="$INPUT_VERSION"
+          else
+            version="$(node -p "require('./package.json').version")"
+          fi
+
+          if [ -z "$version" ]; then
+            echo "::error::Package version could not be resolved."
+            exit 1
+          fi
+
+          echo "version=$version" >> "$GITHUB_OUTPUT"
 
       - name: Check package visibility on npm registry
         id: registry
+        env:
+          VERSION: ${{ steps.pkg.outputs.version }}
         run: |
-          if npm view stylelint-plugin-rhythmguard@${{ steps.pkg.outputs.version }} version >/dev/null 2>&1; then
+          if npm view "stylelint-plugin-rhythmguard@$VERSION" version >/dev/null 2>&1; then
             echo "available=true" >> "$GITHUB_OUTPUT"
           else
             echo "available=false" >> "$GITHUB_OUTPUT"
@@ -45,4 +71,6 @@ jobs:
 
       - name: npm install + lint smoke test
         if: steps.registry.outputs.available == 'true'
-        run: node scripts/ci/npm-registry-smoke.mjs --package stylelint-plugin-rhythmguard --version ${{ steps.pkg.outputs.version }}
+        env:
+          VERSION: ${{ steps.pkg.outputs.version }}
+        run: node scripts/ci/npm-registry-smoke.mjs --package stylelint-plugin-rhythmguard --version "$VERSION"
