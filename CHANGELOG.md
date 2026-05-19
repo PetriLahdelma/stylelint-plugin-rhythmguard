@@ -6,6 +6,14 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [1.6.0] - 2026-05-19
+
+### Added
+
+- `rhythmguard audit` now reports design-system drift across CSS declarations and Tailwind arbitrary spacing class strings.
+- Added `--format markdown` / `--markdown` audit output for PR-ready design-system health reports.
+- Audit JSON now includes format version, CSS findings, Tailwind class-string findings, scan counts, top affected files, and summary totals while preserving existing top-level count fields.
+
 ## [1.4.2] - 2026-02-21
 
 ### Changed

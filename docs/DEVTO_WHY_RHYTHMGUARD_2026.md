@@ -136,25 +136,23 @@ Not ready to enforce yet? Run an audit first:
 
 ```bash
 npx rhythmguard audit ./src
+npx rhythmguard audit ./src --format markdown
 ```
 
 ```
-Rhythmguard Audit: ./src
+Rhythmguard Design-System Audit
 
-Files scanned:     47
-Files with issues: 12 (25%)
+CSS files scanned:        47
+Template files scanned:   83
+Files with issues:        12
+Scale cleanliness:        91%
 
-Off-scale values: 34
-  13px       ×8
-  7px        ×6
-  15px       ×5
-
-Token opportunities: 18
-  16px → var(--spacing-4)  ×9
-  8px  → var(--spacing-2)  ×5
+CSS off-scale values:     34
+Tailwind class drift:     18
+Token opportunities:      18
 ```
 
-Paste this in a PR description. Your team lead will understand the problem immediately.
+Use the Markdown format in PR descriptions so developers and design-system owners can review the same drift report.
 
 ## Works with your tools
 

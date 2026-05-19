@@ -104,6 +104,7 @@ test('eslint rule ignores arbitrary variants while checking their spacing utilit
   tester.run('tailwind-class-use-scale', rule, {
     valid: [
       'const cls = "data-[state=open]:pb-8 aria-[sort=ascending]:text-sm";',
+      'const snippet = "className=\\"md:p-[13px]\\"";',
     ],
     invalid: [
       {
