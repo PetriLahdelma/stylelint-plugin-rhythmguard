@@ -6,6 +6,15 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [1.8.0] - 2026-05-23
+
+### Added
+
+- Added `.rhythmguardrc.json` audit config loading with `--config` and `--no-config`.
+- Added external audit token sources with `--token-source`, `--token-source-format`, and `--token-kind`.
+- Added token source parsing for CSS custom properties, Tailwind v4 `@theme`, flat JSON, Style Dictionary JSON, and DTCG JSON.
+- Expanded audit token-contract reporting with loaded source metadata, raw values that match known tokens, and conflicting token values.
+
 ## [1.7.0] - 2026-05-23
 
 ### Added

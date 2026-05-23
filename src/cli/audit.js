@@ -6,6 +6,14 @@ const path = require('node:path');
 
 const { formatLength } = require('../utils/length');
 const { createTailwindClassAnalyzer } = require('../utils/tailwind-class-analysis');
+const {
+  addDefinition,
+  createTokenKindMatcher,
+  getNormalizedValueKeys,
+  normalizeTokenKind,
+  normalizeTokenSourceFormat,
+  parseTokenSources,
+} = require('../utils/token-sources');
 
 const args = process.argv.slice(3);
 const pluginPath = path.resolve(__dirname, '..', 'index.js');
@@ -13,8 +21,8 @@ const pluginPath = path.resolve(__dirname, '..', 'index.js');
 const DEFAULT_SCALE = [0, 4, 8, 12, 16, 24, 32];
 const DEFAULT_BASE_FONT_SIZE = 16;
 const DEFAULT_BASELINE_PATH = '.rhythmguard-baseline.json';
+const DEFAULT_CONFIG_PATH = '.rhythmguardrc.json';
 const DEFAULT_IGNORE_PATH = '.rhythmguardignore';
-const DEFAULT_TOKEN_PATTERN = '^--spac(e|ing)-';
 const DEFAULT_TOKEN_CANDIDATE_MIN_COUNT = 2;
 const VALID_FORMATS = new Set(['text', 'json', 'markdown']);
 const SKIP_DIRS = new Set([
@@ -49,6 +57,8 @@ Options:
   --format <text|json|markdown>  Output format (default: text)
   --json                         Alias for --format json
   --markdown                     Alias for --format markdown
+  --config <file>                Load audit config (default: .rhythmguardrc.json when present)
+  --no-config                    Ignore .rhythmguardrc.json discovery
   --ignore <pattern>             Exclude root-relative path/glob (repeatable, comma-separated)
   --ignore-path <file>           Load ignore patterns from file (default: .rhythmguardignore when present)
   --baseline <file>              Baseline file path (default: .rhythmguard-baseline.json)
@@ -59,6 +69,9 @@ Options:
   --min-cleanliness <percent>    Exit 1 when scale cleanliness is lower than this percent
   --since <git-ref>              Scan only changed files since a git ref
   --staged                       Scan only staged files
+  --token-source <file>          External token source (repeatable, comma-separated)
+  --token-source-format <format> Token source format: auto, css, flat-json, style-dictionary, dtcg (default: auto)
+  --token-kind <kind>            Token kind: spacing, radius, typography, size, all (default: spacing)
   --token-candidate-min-count <n> Minimum repeated raw value count for token candidates (default: 2)
   --scale <values>               Comma-separated scale values (default: 0,4,8,12,16,24,32)
   --base-font-size <number>      px base for rem/em conversion (default: 16)
@@ -68,6 +81,9 @@ function parseArgs(argv) {
   const parsed = {
     baselinePath: DEFAULT_BASELINE_PATH,
     baseFontSize: DEFAULT_BASE_FONT_SIZE,
+    cliOptions: new Set(),
+    configExplicit: false,
+    configPath: DEFAULT_CONFIG_PATH,
     dir: null,
     failOnNewDrift: false,
     format: 'text',
@@ -75,11 +91,15 @@ function parseArgs(argv) {
     ignorePatterns: [],
     maxFindings: null,
     minCleanliness: null,
+    noConfig: false,
     scale: DEFAULT_SCALE,
     since: null,
     sinceBaseline: false,
     staged: false,
     tokenCandidateMinCount: DEFAULT_TOKEN_CANDIDATE_MIN_COUNT,
+    tokenKind: 'spacing',
+    tokenSourceFormat: 'auto',
+    tokenSources: [],
     writeBaseline: false,
   };
 
@@ -103,38 +123,63 @@ function parseArgs(argv) {
 
     if (arg === '--ignore') {
       parsed.ignorePatterns.push(...parseIgnorePatterns(argv[++index]));
+      parsed.cliOptions.add('ignore');
       continue;
     }
 
     if (arg.startsWith('--ignore=')) {
       parsed.ignorePatterns.push(...parseIgnorePatterns(arg.slice('--ignore='.length)));
+      parsed.cliOptions.add('ignore');
+      continue;
+    }
+
+    if (arg === '--config') {
+      parsed.configPath = parsePathOption(argv[++index], '--config');
+      parsed.configExplicit = true;
+      continue;
+    }
+
+    if (arg.startsWith('--config=')) {
+      parsed.configPath = parsePathOption(arg.slice('--config='.length), '--config');
+      parsed.configExplicit = true;
+      continue;
+    }
+
+    if (arg === '--no-config') {
+      parsed.noConfig = true;
       continue;
     }
 
     if (arg === '--ignore-path') {
       parsed.ignorePath = parsePathOption(argv[++index], '--ignore-path');
+      parsed.cliOptions.add('ignorePath');
       continue;
     }
 
     if (arg.startsWith('--ignore-path=')) {
       parsed.ignorePath = parsePathOption(arg.slice('--ignore-path='.length), '--ignore-path');
+      parsed.cliOptions.add('ignorePath');
       continue;
     }
 
     if (arg === '--baseline') {
       parsed.baselinePath = parsePathOption(argv[++index], '--baseline');
+      parsed.cliOptions.add('baselinePath');
       continue;
     }
 
     if (arg.startsWith('--baseline=')) {
       parsed.baselinePath = parsePathOption(arg.slice('--baseline='.length), '--baseline');
+      parsed.cliOptions.add('baselinePath');
       continue;
     }
 
     if (arg === '--write-baseline') {
       parsed.writeBaseline = true;
+      parsed.cliOptions.add('writeBaseline');
       if (argv[index + 1] && !argv[index + 1].startsWith('-')) {
         parsed.baselinePath = parsePathOption(argv[++index], '--write-baseline');
+        parsed.cliOptions.add('baselinePath');
       }
       continue;
     }
@@ -142,13 +187,17 @@ function parseArgs(argv) {
     if (arg.startsWith('--write-baseline=')) {
       parsed.writeBaseline = true;
       parsed.baselinePath = parsePathOption(arg.slice('--write-baseline='.length), '--write-baseline');
+      parsed.cliOptions.add('writeBaseline');
+      parsed.cliOptions.add('baselinePath');
       continue;
     }
 
     if (arg === '--since-baseline') {
       parsed.sinceBaseline = true;
+      parsed.cliOptions.add('sinceBaseline');
       if (argv[index + 1] && !argv[index + 1].startsWith('-')) {
         parsed.baselinePath = parsePathOption(argv[++index], '--since-baseline');
+        parsed.cliOptions.add('baselinePath');
       }
       continue;
     }
@@ -156,26 +205,32 @@ function parseArgs(argv) {
     if (arg.startsWith('--since-baseline=')) {
       parsed.sinceBaseline = true;
       parsed.baselinePath = parsePathOption(arg.slice('--since-baseline='.length), '--since-baseline');
+      parsed.cliOptions.add('sinceBaseline');
+      parsed.cliOptions.add('baselinePath');
       continue;
     }
 
     if (arg === '--fail-on-new-drift') {
       parsed.failOnNewDrift = true;
+      parsed.cliOptions.add('failOnNewDrift');
       continue;
     }
 
     if (arg === '--max-findings') {
       parsed.maxFindings = parseNonNegativeInteger(argv[++index], '--max-findings');
+      parsed.cliOptions.add('maxFindings');
       continue;
     }
 
     if (arg.startsWith('--max-findings=')) {
       parsed.maxFindings = parseNonNegativeInteger(arg.slice('--max-findings='.length), '--max-findings');
+      parsed.cliOptions.add('maxFindings');
       continue;
     }
 
     if (arg === '--min-cleanliness') {
       parsed.minCleanliness = parsePercentage(argv[++index], '--min-cleanliness');
+      parsed.cliOptions.add('minCleanliness');
       continue;
     }
 
@@ -184,26 +239,67 @@ function parseArgs(argv) {
         arg.slice('--min-cleanliness='.length),
         '--min-cleanliness',
       );
+      parsed.cliOptions.add('minCleanliness');
       continue;
     }
 
     if (arg === '--since') {
       parsed.since = parsePathOption(argv[++index], '--since');
+      parsed.cliOptions.add('since');
       continue;
     }
 
     if (arg.startsWith('--since=')) {
       parsed.since = parsePathOption(arg.slice('--since='.length), '--since');
+      parsed.cliOptions.add('since');
       continue;
     }
 
     if (arg === '--staged') {
       parsed.staged = true;
+      parsed.cliOptions.add('staged');
+      continue;
+    }
+
+    if (arg === '--token-source') {
+      parsed.tokenSources.push(...parseTokenSourcePaths(argv[++index]));
+      parsed.cliOptions.add('tokenSources');
+      continue;
+    }
+
+    if (arg.startsWith('--token-source=')) {
+      parsed.tokenSources.push(...parseTokenSourcePaths(arg.slice('--token-source='.length)));
+      parsed.cliOptions.add('tokenSources');
+      continue;
+    }
+
+    if (arg === '--token-source-format') {
+      parsed.tokenSourceFormat = normalizeTokenSourceFormat(argv[++index]);
+      parsed.cliOptions.add('tokenSourceFormat');
+      continue;
+    }
+
+    if (arg.startsWith('--token-source-format=')) {
+      parsed.tokenSourceFormat = normalizeTokenSourceFormat(arg.slice('--token-source-format='.length));
+      parsed.cliOptions.add('tokenSourceFormat');
+      continue;
+    }
+
+    if (arg === '--token-kind') {
+      parsed.tokenKind = normalizeTokenKind(argv[++index]);
+      parsed.cliOptions.add('tokenKind');
+      continue;
+    }
+
+    if (arg.startsWith('--token-kind=')) {
+      parsed.tokenKind = normalizeTokenKind(arg.slice('--token-kind='.length));
+      parsed.cliOptions.add('tokenKind');
       continue;
     }
 
     if (arg === '--token-candidate-min-count') {
       parsed.tokenCandidateMinCount = parsePositiveInteger(argv[++index], '--token-candidate-min-count');
+      parsed.cliOptions.add('tokenCandidateMinCount');
       continue;
     }
 
@@ -212,6 +308,7 @@ function parseArgs(argv) {
         arg.slice('--token-candidate-min-count='.length),
         '--token-candidate-min-count',
       );
+      parsed.cliOptions.add('tokenCandidateMinCount');
       continue;
     }
 
@@ -227,21 +324,25 @@ function parseArgs(argv) {
 
     if (arg === '--scale') {
       parsed.scale = parseScale(argv[++index]);
+      parsed.cliOptions.add('scale');
       continue;
     }
 
     if (arg.startsWith('--scale=')) {
       parsed.scale = parseScale(arg.slice('--scale='.length));
+      parsed.cliOptions.add('scale');
       continue;
     }
 
     if (arg === '--base-font-size') {
       parsed.baseFontSize = parseBaseFontSize(argv[++index]);
+      parsed.cliOptions.add('baseFontSize');
       continue;
     }
 
     if (arg.startsWith('--base-font-size=')) {
       parsed.baseFontSize = parseBaseFontSize(arg.slice('--base-font-size='.length));
+      parsed.cliOptions.add('baseFontSize');
       continue;
     }
 
@@ -319,6 +420,22 @@ function parseIgnorePatterns(raw) {
   return patterns;
 }
 
+function parseTokenSourcePaths(raw) {
+  if (!raw) {
+    throw new Error('Missing value for --token-source.');
+  }
+
+  const sources = String(raw).split(',')
+    .map((sourcePath) => sourcePath.trim())
+    .filter(Boolean);
+
+  if (sources.length === 0) {
+    throw new Error('--token-source must include at least one file.');
+  }
+
+  return sources;
+}
+
 function normalizeIgnorePattern(pattern) {
   return String(pattern)
     .trim()
@@ -375,6 +492,145 @@ function assertDirectory(dir) {
   }
 
   return resolvedDir;
+}
+
+function loadAuditConfig(parsed) {
+  if (parsed.noConfig) {
+    return null;
+  }
+
+  const resolvedPath = path.resolve(process.cwd(), parsed.configPath);
+  if (!fs.existsSync(resolvedPath)) {
+    if (parsed.configExplicit) {
+      throw new Error(`Config file not found: ${parsed.configPath}`);
+    }
+    return null;
+  }
+
+  let config;
+  try {
+    config = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
+  } catch (err) {
+    throw new Error(`Invalid Rhythmguard config ${parsed.configPath}: ${err.message}`);
+  }
+
+  if (!config || typeof config !== 'object' || Array.isArray(config)) {
+    throw new Error(`Invalid Rhythmguard config ${parsed.configPath}: expected an object.`);
+  }
+
+  const audit = config.audit || {};
+  if (!audit || typeof audit !== 'object' || Array.isArray(audit)) {
+    throw new Error(`Invalid Rhythmguard config ${parsed.configPath}: "audit" must be an object.`);
+  }
+
+  return {
+    audit,
+    file: formatPath(resolvedPath),
+    rootDir: path.dirname(resolvedPath),
+  };
+}
+
+function applyAuditConfig(parsed, configResult) {
+  const cliOptions = parsed.cliOptions;
+  const next = {
+    ...parsed,
+    config: configResult
+      ? {
+        file: configResult.file,
+      }
+      : null,
+  };
+
+  if (!configResult) {
+    next.tokenSources = normalizeCliTokenSources(parsed.tokenSources, parsed.tokenSourceFormat);
+    delete next.cliOptions;
+    return next;
+  }
+
+  const audit = configResult.audit;
+
+  if (Array.isArray(audit.ignore)) {
+    next.ignorePatterns = [
+      ...audit.ignore.map((pattern) => normalizeIgnorePattern(pattern)).filter(Boolean),
+      ...parsed.ignorePatterns,
+    ];
+  }
+
+  const configuredTokenSources = normalizeConfigTokenSources(
+    audit.tokenSources,
+    configResult.rootDir,
+  );
+  next.tokenSources = [
+    ...configuredTokenSources,
+    ...normalizeCliTokenSources(parsed.tokenSources, parsed.tokenSourceFormat),
+  ];
+
+  applyConfigScalar(next, audit, cliOptions, 'ignorePath', 'ignorePath', parsePathOption);
+  applyConfigScalar(next, audit, cliOptions, 'baselinePath', 'baseline', parsePathOption);
+  applyConfigScalar(next, audit, cliOptions, 'maxFindings', 'maxFindings', parseNonNegativeInteger);
+  applyConfigScalar(next, audit, cliOptions, 'minCleanliness', 'minCleanliness', parsePercentage);
+  applyConfigScalar(next, audit, cliOptions, 'tokenCandidateMinCount', 'tokenCandidateMinCount', parsePositiveInteger);
+  applyConfigScalar(next, audit, cliOptions, 'tokenKind', 'tokenKind', normalizeTokenKind);
+  applyConfigScalar(next, audit, cliOptions, 'baseFontSize', 'baseFontSize', parseBaseFontSize);
+  applyConfigScalar(next, audit, cliOptions, 'scale', 'scale', (value) => {
+    if (Array.isArray(value)) {
+      return value;
+    }
+    return parseScale(String(value));
+  });
+
+  delete next.cliOptions;
+  return next;
+}
+
+function applyConfigScalar(target, audit, cliOptions, targetKey, configKey, parser) {
+  if (cliOptions.has(targetKey) || audit[configKey] === undefined) {
+    return;
+  }
+
+  target[targetKey] = parser(audit[configKey], configKey);
+}
+
+function normalizeCliTokenSources(sources, format) {
+  return sources.map((sourcePath) => ({
+    baseDir: process.cwd(),
+    format,
+    path: sourcePath,
+  }));
+}
+
+function normalizeConfigTokenSources(sources, baseDir) {
+  if (sources === undefined) {
+    return [];
+  }
+
+  if (!Array.isArray(sources)) {
+    throw new Error('Invalid Rhythmguard config: audit.tokenSources must be an array.');
+  }
+
+  return sources.map((source) => {
+    if (typeof source === 'string') {
+      return {
+        baseDir,
+        format: 'auto',
+        path: source,
+      };
+    }
+
+    if (!source || typeof source !== 'object' || Array.isArray(source)) {
+      throw new Error('Invalid Rhythmguard config: audit.tokenSources entries must be strings or objects.');
+    }
+
+    if (typeof source.path !== 'string' || source.path.trim().length === 0) {
+      throw new Error('Invalid Rhythmguard config: token source objects must include a path.');
+    }
+
+    return {
+      baseDir,
+      format: normalizeTokenSourceFormat(source.format || 'auto'),
+      path: source.path,
+    };
+  });
 }
 
 function loadIgnorePatterns(ignorePath) {
@@ -761,11 +1017,21 @@ function offsetToLineColumn(lineStarts, offset) {
   };
 }
 
-function collectTokenContract(cssFiles, cssFindings, tailwindFindings, minCandidateCount) {
+function collectTokenContract({
+  baseFontSize,
+  cssFiles,
+  cssFindings,
+  externalTokenDefinitions,
+  minCandidateCount,
+  tailwindFindings,
+  tokenKind,
+  tokenSourceReports,
+}) {
   const definitions = new Map();
   const uses = new Map();
   const rawValues = new Map();
   const rawValueLocations = new Set();
+  const matchesKind = createTokenKindMatcher(tokenKind);
 
   for (const filePath of cssFiles) {
     let source = '';
@@ -776,8 +1042,20 @@ function collectTokenContract(cssFiles, cssFindings, tailwindFindings, minCandid
     }
 
     const file = formatPath(filePath);
-    collectTokenDefinitions(source, file, definitions);
-    collectTokenUses(source, file, uses);
+    collectTokenDefinitions(source, file, definitions, matchesKind, baseFontSize);
+    collectTokenUses(source, file, uses, matchesKind);
+  }
+
+  for (const entry of externalTokenDefinitions.values()) {
+    for (const value of entry.values || []) {
+      addDefinition(definitions, {
+        baseFontSize,
+        file: Array.from(entry.files)[0] || 'external-token-source',
+        source: Array.from(entry.sources)[0] || Array.from(entry.files)[0] || 'external-token-source',
+        token: entry.token,
+        value,
+      });
+    }
   }
 
   for (const finding of cssFindings) {
@@ -792,6 +1070,8 @@ function collectTokenContract(cssFiles, cssFindings, tailwindFindings, minCandid
   const usedTokens = mapTokenEntries(uses);
   const missingTokens = usedTokens.filter(({ token }) => !definitions.has(token));
   const unusedTokens = definedTokens.filter(({ token }) => !uses.has(token));
+  const rawValueMatches = collectRawValueMatches(rawValues, definitions, baseFontSize);
+  const conflictingTokens = collectConflictingTokens(definitions);
   const rawValueCandidates = Array.from(rawValues.entries())
     .map(([value, entry]) => ({
       count: entry.count,
@@ -803,12 +1083,18 @@ function collectTokenContract(cssFiles, cssFindings, tailwindFindings, minCandid
 
   return {
     definedTokens,
+    conflictingTokens,
     missingTokens,
+    rawValueMatches,
     rawValueCandidates,
+    sources: tokenSourceReports,
     summary: {
+      conflictingTokens: conflictingTokens.length,
       definedTokens: definedTokens.length,
       missingTokens: missingTokens.length,
+      rawValueMatches: rawValueMatches.length,
       rawValueCandidates: rawValueCandidates.length,
+      tokenSources: tokenSourceReports.length,
       unusedTokens: unusedTokens.length,
       usedTokens: usedTokens.length,
     },
@@ -817,34 +1103,33 @@ function collectTokenContract(cssFiles, cssFindings, tailwindFindings, minCandid
   };
 }
 
-function collectTokenDefinitions(source, file, definitions) {
+function collectTokenDefinitions(source, file, definitions, matchesKind, baseFontSize) {
   const declarationPattern = /(--[\w-]+)\s*:\s*([^;{}]+)/g;
   let match;
 
   while ((match = declarationPattern.exec(source)) !== null) {
     const token = match[1];
-    if (!isSpacingToken(token)) {
+    if (!matchesKind(token)) {
       continue;
     }
 
-    const entry = definitions.get(token) || {
-      files: new Set(),
+    addDefinition(definitions, {
+      baseFontSize,
+      file,
+      source: file,
       token,
-      values: new Set(),
-    };
-    entry.files.add(file);
-    entry.values.add(match[2].trim());
-    definitions.set(token, entry);
+      value: match[2].trim(),
+    });
   }
 }
 
-function collectTokenUses(source, file, uses) {
+function collectTokenUses(source, file, uses, matchesKind) {
   const varPattern = /var\(\s*(--[\w-]+)/g;
   let match;
 
   while ((match = varPattern.exec(source)) !== null) {
     const token = match[1];
-    if (!isSpacingToken(token)) {
+    if (!matchesKind(token)) {
       continue;
     }
 
@@ -855,10 +1140,6 @@ function collectTokenUses(source, file, uses) {
     entry.files.add(file);
     uses.set(token, entry);
   }
-}
-
-function isSpacingToken(token) {
-  return new RegExp(DEFAULT_TOKEN_PATTERN).test(token);
 }
 
 function addRawValue(rawValues, rawValueLocations, value, finding) {
@@ -892,20 +1173,90 @@ function mapTokenEntries(entries) {
   return Array.from(entries.values())
     .map((entry) => ({
       files: Array.from(entry.files).sort(),
+      normalizedValues: entry.normalizedValues
+        ? Array.from(entry.normalizedValues).sort()
+        : undefined,
+      sources: entry.sources ? Array.from(entry.sources).sort() : undefined,
       token: entry.token,
       values: entry.values ? Array.from(entry.values).sort() : undefined,
     }))
     .sort((a, b) => a.token.localeCompare(b.token));
 }
 
+function collectRawValueMatches(rawValues, definitions, baseFontSize) {
+  const valueToTokens = createValueToTokensMap(definitions);
+  const matches = [];
+
+  for (const [value, entry] of rawValues.entries()) {
+    const tokens = new Set();
+    for (const key of getNormalizedValueKeys(value, baseFontSize)) {
+      for (const token of valueToTokens.get(key) || []) {
+        tokens.add(token);
+      }
+    }
+
+    if (tokens.size === 0) {
+      continue;
+    }
+
+    matches.push({
+      count: entry.count,
+      files: Array.from(entry.files).sort(),
+      tokens: Array.from(tokens).sort(),
+      value,
+    });
+  }
+
+  return matches.sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
+}
+
+function collectConflictingTokens(definitions) {
+  const valueToTokens = createValueToTokensMap(definitions);
+  const conflicts = [];
+
+  for (const [value, tokens] of valueToTokens.entries()) {
+    const uniqueTokens = Array.from(tokens).sort();
+    if (uniqueTokens.length < 2) {
+      continue;
+    }
+
+    conflicts.push({
+      tokens: uniqueTokens,
+      value,
+    });
+  }
+
+  return conflicts.sort((a, b) => a.value.localeCompare(b.value));
+}
+
+function createValueToTokensMap(definitions) {
+  const valueToTokens = new Map();
+
+  for (const entry of definitions.values()) {
+    for (const value of entry.normalizedValues || []) {
+      const tokens = valueToTokens.get(value) || new Set();
+      tokens.add(entry.token);
+      valueToTokens.set(value, tokens);
+    }
+  }
+
+  return valueToTokens;
+}
+
 function buildReport({
+  baseFontSize,
+  config,
   cssFiles,
   cssFindings,
   dir,
+  externalTokenDefinitions,
   scanScope,
   templateFiles,
   tailwindFindings,
   tokenCandidateMinCount,
+  tokenKind,
+  tokenSourceReports,
+  tokenSourceWarnings,
 }) {
   const offScaleValues = countByValue(cssFindings
     .filter((finding) => finding.type === 'off-scale' && finding.value)
@@ -930,14 +1281,19 @@ function buildReport({
   const scaleCleanliness = totalFiles > 0
     ? Math.max(0, Math.round(((totalFiles - filesWithIssues) / totalFiles) * 100))
     : 100;
-  const tokenContract = collectTokenContract(
+  const tokenContract = collectTokenContract({
+    baseFontSize,
     cssFiles,
     cssFindings,
+    externalTokenDefinitions,
+    minCandidateCount: tokenCandidateMinCount,
     tailwindFindings,
-    tokenCandidateMinCount,
-  );
+    tokenKind,
+    tokenSourceReports,
+  });
 
   return {
+    config,
     cssFilesScanned: cssFiles.length,
     directory: dir,
     filesWithIssues,
@@ -945,7 +1301,7 @@ function buildReport({
       css: cssFindings,
       tailwind: tailwindFindings,
     },
-    formatVersion: 3,
+    formatVersion: 4,
     offScaleValues: Object.fromEntries(sortCountMap(offScaleValues).slice(0, 10)),
     scaleCleanliness,
     scanScope,
@@ -957,17 +1313,20 @@ function buildReport({
     summary: {
       cssWarnings: cssFindings.length,
       filesWithIssues,
+      rawValueMatches: tokenContract.summary.rawValueMatches,
       missingTokens: tokenContract.summary.missingTokens,
       rawValueCandidates: tokenContract.summary.rawValueCandidates,
       scaleCleanliness,
       tailwindArbitrarySpacing: tailwindFindings.length,
       tokenOpportunities: sumCounts(tokenOpportunities),
+      tokenSources: tokenContract.summary.tokenSources,
       totalFindings: totalWarnings,
       unusedTokens: tokenContract.summary.unusedTokens,
     },
     tailwindArbitraryValues: Object.fromEntries(sortCountMap(tailwindArbitraryValues).slice(0, 10)),
     templateFilesScanned: templateFiles.length,
     tokenContract,
+    tokenSourceWarnings,
     tokenOpportunities: Object.fromEntries(sortCountMap(tokenOpportunities).slice(0, 10)),
     topAffectedFiles: topAffectedFiles.map(([file, count]) => ({ count, file })),
     totalFiles,
@@ -1136,13 +1495,35 @@ function renderText(report) {
 }
 
 function appendTokenContractText(lines, tokenContract) {
-  const { missingTokens, rawValueCandidates, unusedTokens } = tokenContract;
-  if (missingTokens.length === 0 && rawValueCandidates.length === 0 && unusedTokens.length === 0) {
+  const {
+    conflictingTokens,
+    missingTokens,
+    rawValueCandidates,
+    rawValueMatches,
+    sources,
+    unusedTokens,
+  } = tokenContract;
+  if (
+    missingTokens.length === 0 &&
+    rawValueCandidates.length === 0 &&
+    rawValueMatches.length === 0 &&
+    unusedTokens.length === 0 &&
+    conflictingTokens.length === 0 &&
+    sources.length === 0
+  ) {
     return;
   }
 
   lines.push('  ── TOKEN CONTRACT ──');
   lines.push('');
+
+  if (sources.length > 0) {
+    lines.push(`  Token sources         ${sources.length}`);
+    for (const source of sources.slice(0, 5)) {
+      const warningSuffix = source.warnings.length > 0 ? ' (warning)' : '';
+      lines.push(`    ${truncate(source.file, 42)} ${source.tokenCount}${warningSuffix}`);
+    }
+  }
 
   if (missingTokens.length > 0) {
     lines.push(`  Missing tokens         ${missingTokens.length}`);
@@ -1162,6 +1543,20 @@ function appendTokenContractText(lines, tokenContract) {
     lines.push(`  Repeated raw values    ${rawValueCandidates.length}`);
     for (const entry of rawValueCandidates.slice(0, 5)) {
       lines.push(`    ${entry.value.padEnd(14)} ${entry.count}`);
+    }
+  }
+
+  if (rawValueMatches.length > 0) {
+    lines.push(`  Raw values matching tokens ${rawValueMatches.length}`);
+    for (const entry of rawValueMatches.slice(0, 5)) {
+      lines.push(`    ${entry.value.padEnd(14)} ${truncate(entry.tokens.join(', '), 34)}`);
+    }
+  }
+
+  if (conflictingTokens.length > 0) {
+    lines.push(`  Conflicting tokens     ${conflictingTokens.length}`);
+    for (const entry of conflictingTokens.slice(0, 5)) {
+      lines.push(`    ${entry.value.padEnd(14)} ${truncate(entry.tokens.join(', '), 34)}`);
     }
   }
 
@@ -1267,13 +1662,38 @@ function renderMarkdown(report) {
 }
 
 function appendTokenContractMarkdown(lines, tokenContract) {
-  const { missingTokens, rawValueCandidates, unusedTokens } = tokenContract;
-  if (missingTokens.length === 0 && rawValueCandidates.length === 0 && unusedTokens.length === 0) {
+  const {
+    conflictingTokens,
+    missingTokens,
+    rawValueCandidates,
+    rawValueMatches,
+    sources,
+    unusedTokens,
+  } = tokenContract;
+  if (
+    missingTokens.length === 0 &&
+    rawValueCandidates.length === 0 &&
+    rawValueMatches.length === 0 &&
+    unusedTokens.length === 0 &&
+    conflictingTokens.length === 0 &&
+    sources.length === 0
+  ) {
     return;
   }
 
   lines.push('## Token Contract');
   lines.push('');
+
+  if (sources.length > 0) {
+    lines.push('### Token Sources');
+    lines.push('');
+    lines.push('| File | Format | Tokens | Warnings |');
+    lines.push('| --- | --- | ---: | --- |');
+    for (const source of sources.slice(0, 10)) {
+      lines.push(`| \`${escapeMarkdown(source.file)}\` | \`${source.format}\` | ${source.tokenCount} | \`${escapeMarkdown(source.warnings.join('; ') || 'none')}\` |`);
+    }
+    lines.push('');
+  }
 
   if (missingTokens.length > 0) {
     lines.push('### Tokens Used But Missing');
@@ -1304,6 +1724,28 @@ function appendTokenContractMarkdown(lines, tokenContract) {
     lines.push('| --- | ---: | --- |');
     for (const entry of rawValueCandidates.slice(0, 10)) {
       lines.push(`| \`${escapeMarkdown(entry.value)}\` | ${entry.count} | \`${escapeMarkdown(entry.files.join(', '))}\` |`);
+    }
+    lines.push('');
+  }
+
+  if (rawValueMatches.length > 0) {
+    lines.push('### Raw Values Matching Known Tokens');
+    lines.push('');
+    lines.push('| Value | Count | Tokens |');
+    lines.push('| --- | ---: | --- |');
+    for (const entry of rawValueMatches.slice(0, 10)) {
+      lines.push(`| \`${escapeMarkdown(entry.value)}\` | ${entry.count} | \`${escapeMarkdown(entry.tokens.join(', '))}\` |`);
+    }
+    lines.push('');
+  }
+
+  if (conflictingTokens.length > 0) {
+    lines.push('### Conflicting Token Values');
+    lines.push('');
+    lines.push('| Value | Tokens |');
+    lines.push('| --- | --- |');
+    for (const entry of conflictingTokens.slice(0, 10)) {
+      lines.push(`| \`${escapeMarkdown(entry.value)}\` | \`${escapeMarkdown(entry.tokens.join(', '))}\` |`);
     }
     lines.push('');
   }
@@ -1400,6 +1842,13 @@ async function run() {
     return;
   }
 
+  try {
+    parsed = applyAuditConfig(parsed, loadAuditConfig(parsed));
+  } catch (err) {
+    process.stderr.write(`${err.message}\n`);
+    process.exit(1);
+  }
+
   const resolvedDir = assertDirectory(parsed.dir);
   let ignorePatterns;
   try {
@@ -1434,14 +1883,26 @@ async function run() {
     process.exit(1);
   }
 
+  const tokenSourceResult = parseTokenSources({
+    baseFontSize: parsed.baseFontSize,
+    sources: parsed.tokenSources,
+    tokenKind: parsed.tokenKind,
+  });
+
   const report = buildReport({
+    baseFontSize: parsed.baseFontSize,
+    config: parsed.config,
     cssFiles,
     cssFindings: collectCssFindings(cssResults),
     dir: parsed.dir,
+    externalTokenDefinitions: tokenSourceResult.definitions,
     scanScope,
     tailwindFindings: collectTailwindFindings(templateFiles, options),
     templateFiles,
     tokenCandidateMinCount: parsed.tokenCandidateMinCount,
+    tokenKind: parsed.tokenKind,
+    tokenSourceReports: tokenSourceResult.sources,
+    tokenSourceWarnings: tokenSourceResult.warnings,
   });
 
   try {

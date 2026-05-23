@@ -68,7 +68,7 @@ test('audit CLI JSON reports CSS and Tailwind design-system drift', () => {
   assert.equal(result.status, 0, result.stderr);
 
   const report = JSON.parse(result.stdout);
-  assert.equal(report.formatVersion, 3);
+  assert.equal(report.formatVersion, 4);
   assert.equal(report.cssFilesScanned, 1);
   assert.equal(report.templateFilesScanned, 1);
   assert.equal(report.offScaleValues['13px'], 1);
@@ -79,6 +79,9 @@ test('audit CLI JSON reports CSS and Tailwind design-system drift', () => {
   assert.equal(report.summary.tailwindArbitrarySpacing, 2);
   assert.equal(report.tokenContract.missingTokens[0].token, '--spacing-missing');
   assert.ok(report.tokenContract.unusedTokens.some(({ token }) => token === '--spacing-4'));
+  assert.ok(report.tokenContract.rawValueMatches.some(({ value, tokens }) =>
+    value === '16px' && tokens.includes('--spacing-4'),
+  ));
   assert.ok(report.tokenContract.rawValueCandidates.some(({ value, count }) => value === '13px' && count === 2));
   assert.ok(report.topAffectedFiles.some(({ file }) => file.endsWith('Button.tsx')));
 });
@@ -160,6 +163,250 @@ test('audit CLI loads ignore patterns from an ignore file', () => {
   const report = JSON.parse(result.stdout);
   assert.equal(report.cssFilesScanned, 1);
   assert.equal(report.findings.css.some(({ file }) => file.includes('legacy/')), false);
+});
+
+test('audit CLI loads external CSS token sources outside the scan directory', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-token-source-css-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(
+    path.join(fixtureDir, 'tokens.css'),
+    '@theme { --spacing-4: 16px; --spacing-8: 32px; }\n',
+  );
+  fs.writeFileSync(
+    path.join(fixtureDir, 'src', 'card.css'),
+    '.card { padding: var(--spacing-4); margin: var(--spacing-missing); gap: 16px; }\n',
+  );
+
+  const result = runAuditCommand(
+    fixtureDir,
+    'src',
+    '--format',
+    'json',
+    '--token-source',
+    'tokens.css',
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.tokenContract.sources.length, 1);
+  assert.equal(report.tokenContract.sources[0].format, 'css');
+  assert.equal(report.tokenContract.sources[0].tokenCount, 2);
+  assert.equal(report.tokenContract.missingTokens.some(({ token }) => token === '--spacing-4'), false);
+  assert.equal(report.tokenContract.missingTokens.some(({ token }) => token === '--spacing-missing'), true);
+  assert.equal(report.tokenContract.unusedTokens.some(({ token }) => token === '--spacing-8'), true);
+  assert.ok(report.tokenContract.rawValueMatches.some(({ value, tokens }) =>
+    value === '16px' && tokens.includes('--spacing-4'),
+  ));
+});
+
+test('audit CLI loads DTCG token sources', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-token-source-dtcg-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(
+    path.join(fixtureDir, 'tokens.json'),
+    JSON.stringify({
+      spacing: {
+        $type: 'dimension',
+        4: { $value: '16px' },
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(fixtureDir, 'src', 'card.css'),
+    '.card { padding: var(--spacing-4); }\n',
+  );
+
+  const result = runAuditCommand(
+    fixtureDir,
+    'src',
+    '--format',
+    'json',
+    '--token-source',
+    'tokens.json',
+    '--token-source-format',
+    'dtcg',
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.tokenContract.sources[0].format, 'dtcg');
+  assert.equal(report.tokenContract.missingTokens.length, 0);
+  assert.ok(report.tokenContract.definedTokens.some(({ token }) => token === '--spacing-4'));
+});
+
+test('audit CLI loads Style Dictionary token sources', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-token-source-sd-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(
+    path.join(fixtureDir, 'tokens.json'),
+    JSON.stringify({
+      spacing: {
+        4: { value: '16px', type: 'dimension' },
+      },
+    }),
+  );
+  fs.writeFileSync(
+    path.join(fixtureDir, 'src', 'card.css'),
+    '.card { padding: var(--spacing-4); }\n',
+  );
+
+  const result = runAuditCommand(
+    fixtureDir,
+    'src',
+    '--format',
+    'json',
+    '--token-source',
+    'tokens.json',
+    '--token-source-format',
+    'style-dictionary',
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.tokenContract.sources[0].format, 'style-dictionary');
+  assert.equal(report.tokenContract.missingTokens.length, 0);
+});
+
+test('audit CLI loads flat JSON token sources', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-token-source-flat-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(
+    path.join(fixtureDir, 'tokens.json'),
+    JSON.stringify({
+      '--spacing-4': '16px',
+    }),
+  );
+  fs.writeFileSync(
+    path.join(fixtureDir, 'src', 'card.css'),
+    '.card { padding: var(--spacing-4); }\n',
+  );
+
+  const result = runAuditCommand(
+    fixtureDir,
+    'src',
+    '--format',
+    'json',
+    '--token-source',
+    'tokens.json',
+    '--token-source-format',
+    'flat-json',
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.tokenContract.sources[0].format, 'flat-json');
+  assert.equal(report.tokenContract.missingTokens.length, 0);
+});
+
+test('audit CLI loads config and lets CLI scalar options override config', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-config-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.mkdirSync(path.join(fixtureDir, 'src', 'ignored'));
+  fs.writeFileSync(
+    path.join(fixtureDir, 'tokens.json'),
+    JSON.stringify({
+      '--spacing-4': '16px',
+    }),
+  );
+  fs.writeFileSync(
+    path.join(fixtureDir, 'src', 'card.css'),
+    '.card { padding: var(--spacing-4); gap: 13px; margin: 13px; }\n',
+  );
+  fs.writeFileSync(
+    path.join(fixtureDir, 'src', 'ignored', 'ignored.css'),
+    '.ignored { padding: 13px; }\n',
+  );
+  fs.writeFileSync(
+    path.join(fixtureDir, '.rhythmguardrc.json'),
+    JSON.stringify({
+      audit: {
+        ignore: ['ignored/**'],
+        tokenCandidateMinCount: 3,
+        tokenKind: 'radius',
+        tokenSources: ['tokens.json'],
+      },
+    }),
+  );
+
+  const result = runAuditCommand(
+    fixtureDir,
+    'src',
+    '--format',
+    'json',
+    '--token-kind',
+    'spacing',
+    '--token-candidate-min-count',
+    '2',
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.config.file, '.rhythmguardrc.json');
+  assert.equal(report.cssFilesScanned, 1);
+  assert.equal(report.tokenContract.missingTokens.length, 0);
+  assert.ok(report.tokenContract.rawValueCandidates.some(({ value, count }) =>
+    value === '13px' && count === 2,
+  ));
+});
+
+test('audit CLI handles repeated token sources without duplicating token definitions', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-duplicate-sources-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'tokens.json'), JSON.stringify({ '--spacing-4': '16px' }));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'card.css'), '.card { padding: var(--spacing-4); }\n');
+
+  const result = runAuditCommand(
+    fixtureDir,
+    'src',
+    '--format',
+    'json',
+    '--token-source',
+    'tokens.json,tokens.json',
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.tokenContract.sources.length, 2);
+  assert.equal(report.tokenContract.definedTokens.filter(({ token }) => token === '--spacing-4').length, 1);
+});
+
+test('audit CLI reports missing token source warnings without failing', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-missing-source-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'card.css'), '.card { padding: 16px; }\n');
+
+  const result = runAuditCommand(
+    fixtureDir,
+    'src',
+    '--format',
+    'json',
+    '--token-source',
+    'missing.json',
+  );
+
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.tokenContract.sources[0].warnings.length, 1);
+  assert.match(report.tokenSourceWarnings[0], /Token source not found/);
+});
+
+test('audit CLI fails on invalid rhythmguard config', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-invalid-config-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'card.css'), '.card { padding: 16px; }\n');
+  fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), '{ invalid json');
+
+  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json');
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /Invalid Rhythmguard config/);
 });
 
 test('audit CLI writes and compares baselines for new drift gating', () => {

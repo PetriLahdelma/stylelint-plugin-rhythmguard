@@ -93,9 +93,11 @@ npx rhythmguard audit . --ignore "apps/legacy/**" --ignore "vendor/**"
 npx rhythmguard audit ./src --write-baseline
 npx rhythmguard audit ./src --since-baseline --fail-on-new-drift
 npx rhythmguard audit ./src --staged --max-findings 0
+npx rhythmguard audit ./src --token-source ./tokens.json
+npx rhythmguard audit ./src --token-source ./theme.css --token-source-format css
 ```
 
-The report covers authored CSS declarations, Tailwind arbitrary spacing values in common template/source files, and token-contract drift such as missing spacing tokens, unused spacing tokens, and repeated raw values that deserve token review. Scan paths are scoped to the directory argument. Use `--ignore`, `.rhythmguardignore`, or `--ignore-path` for generated or legacy subtrees, then add baselines and CI thresholds when you are ready to gate new drift. Markdown output is PR-ready for UX developers, UX designers, and design-system owners:
+The report covers authored CSS declarations, Tailwind arbitrary spacing values in common template/source files, and token-contract drift such as missing spacing tokens, unused spacing tokens, repeated raw values that deserve token review, raw values that match known tokens, and conflicting token values. Scan paths are scoped to the directory argument. Use `--ignore`, `.rhythmguardignore`, or `--ignore-path` for generated or legacy subtrees, then add baselines and CI thresholds when you are ready to gate new drift. Markdown output is PR-ready for UX developers, UX designers, and design-system owners:
 
 ```md
 # Rhythmguard Design-System Audit
@@ -109,6 +111,27 @@ The report covers authored CSS declarations, Tailwind arbitrary spacing values i
 | Scale cleanliness | 91% |
 | New findings | 3 |
 ```
+
+### Audit config and external token sources
+
+For large codebases, put shared audit settings in `.rhythmguardrc.json`:
+
+```json
+{
+  "audit": {
+    "ignore": ["legacy/**", "generated/**"],
+    "tokenSources": [
+      "./tokens.json",
+      { "path": "./src/theme.css", "format": "css" }
+    ],
+    "tokenKind": "spacing",
+    "tokenCandidateMinCount": 2,
+    "minCleanliness": 90
+  }
+}
+```
+
+`rhythmguard audit` loads `.rhythmguardrc.json` automatically when present. Use `--config <file>` for another config, `--no-config` to skip config discovery, and `--token-source <file>` for extra canonical token files. Token source paths in config files resolve from the config file directory; CLI token source paths resolve from the current working directory. Supported source formats are CSS custom properties and Tailwind v4 `@theme`, flat JSON maps, Style Dictionary JSON, and DTCG JSON.
 
 ## Installation
 
