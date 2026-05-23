@@ -13,6 +13,7 @@ test('plugin exports rules, shared configs, presets, and eslint companion', () =
   assert.ok(plugin.rules['rhythmguard/use-scale']);
   assert.ok(plugin.rules['rhythmguard/prefer-token']);
   assert.ok(plugin.rules['rhythmguard/no-offscale-transform']);
+  assert.ok(plugin.rules['rhythmguard/use-motion-scale']);
 
   assert.ok(plugin.configs.recommended);
   assert.ok(plugin.configs.strict);
@@ -20,6 +21,7 @@ test('plugin exports rules, shared configs, presets, and eslint companion', () =
   assert.ok(plugin.configs.expanded);
   assert.ok(plugin.configs.logical);
   assert.ok(plugin.configs.migration);
+  assert.ok(plugin.configs.motion);
 
   assert.deepEqual(plugin.configs.tailwind.extends, [
     'stylelint-config-tailwindcss',
@@ -35,6 +37,7 @@ test('plugin exports rules, shared configs, presets, and eslint companion', () =
 
   assert.ok(plugin.eslint);
   assert.ok(plugin.eslint.rules['tailwind-class-use-scale']);
+  assert.ok(plugin.eslint.rules['tailwind-class-use-motion-scale']);
 });
 
 test('strict config avoids transform overlap in use-scale', () => {
@@ -62,5 +65,7 @@ test('esm entrypoint exposes default plugin object', async () => {
   assert.ok(esm.default);
   assert.ok(esm.default.rules['rhythmguard/use-scale']);
   assert.ok(esm.configs.logical);
+  assert.ok(esm.configs.motion);
   assert.ok(esm.eslint.rules['tailwind-class-use-scale']);
+  assert.ok(esm.eslint.rules['tailwind-class-use-motion-scale']);
 });

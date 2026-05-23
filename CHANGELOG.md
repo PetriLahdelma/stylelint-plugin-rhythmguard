@@ -6,6 +6,15 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [1.9.0] - 2026-05-23
+
+### Added
+
+- Added opt-in `rhythmguard/use-motion-scale` for duration/delay scale enforcement and raw easing reporting.
+- Added `stylelint-plugin-rhythmguard/configs/motion`.
+- Added ESLint companion rule `rhythmguard-tailwind/tailwind-class-use-motion-scale` for Tailwind `duration-[...]`, `delay-[...]`, and `ease-[...]` arbitrary values.
+- Added `rhythmguard audit --include-motion` and `.rhythmguardrc.json` `includeMotion` support.
+
 ## [1.8.0] - 2026-05-23
 
 ### Added

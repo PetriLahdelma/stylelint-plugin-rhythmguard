@@ -10,6 +10,7 @@ test('floor-compat: plugin exports shared configs', () => {
   assert.ok(plugin.configs.recommended);
   assert.ok(plugin.configs.strict);
   assert.ok(plugin.configs.tailwind);
+  assert.ok(plugin.configs.motion);
 });
 
 test('floor-compat: use-scale reports off-scale spacing', async () => {
@@ -46,4 +47,16 @@ test('floor-compat: no-offscale-transform reports off-scale translation', async 
 
   assert.equal(result.errored, true);
   assert.equal(result.warnings[0].rule, 'rhythmguard/no-offscale-transform');
+});
+
+test('floor-compat: use-motion-scale reports off-scale duration', async () => {
+  const result = await lintCss({
+    code: '.chip { transition-duration: 175ms; }',
+    rules: {
+      'rhythmguard/use-motion-scale': [true],
+    },
+  });
+
+  assert.equal(result.errored, true);
+  assert.equal(result.warnings[0].rule, 'rhythmguard/use-motion-scale');
 });

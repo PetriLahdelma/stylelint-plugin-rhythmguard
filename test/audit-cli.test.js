@@ -68,7 +68,7 @@ test('audit CLI JSON reports CSS and Tailwind design-system drift', () => {
   assert.equal(result.status, 0, result.stderr);
 
   const report = JSON.parse(result.stdout);
-  assert.equal(report.formatVersion, 4);
+  assert.equal(report.formatVersion, 5);
   assert.equal(report.cssFilesScanned, 1);
   assert.equal(report.templateFilesScanned, 1);
   assert.equal(report.offScaleValues['13px'], 1);
@@ -455,6 +455,91 @@ test('audit CLI supports threshold exit gates', () => {
   assert.match(result.stderr, /Audit failed:/);
   assert.match(result.stderr, /--max-findings 0/);
   assert.match(result.stderr, /--min-cleanliness 100%/);
+});
+
+test('audit CLI includes motion drift only when requested', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-motion-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(
+    path.join(fixtureDir, 'src', 'motion.css'),
+    '.button { transition: opacity 175ms cubic-bezier(.2, 0, 0, 1); }\n',
+  );
+  fs.writeFileSync(
+    path.join(fixtureDir, 'src', 'Button.tsx'),
+    'export const Button = <button className="duration-[175ms] ease-[cubic-bezier(.2,0,0,1)]" />;\n',
+  );
+
+  const defaultResult = runAuditCommand(fixtureDir, 'src', '--format', 'json');
+  assert.equal(defaultResult.status, 0, defaultResult.stderr);
+  assert.equal(JSON.parse(defaultResult.stdout).summary.motionFindings, 0);
+
+  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json', '--include-motion');
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.motion.enabled, true);
+  assert.equal(report.summary.motionFindings, 4);
+  assert.equal(report.findings.motion.length, 4);
+  assert.equal(report.motion.values['175ms'], 2);
+  assert.ok(report.motion.values['cubic-bezier(.2,0,0,1)'] || report.motion.values['cubic-bezier(.2, 0, 0, 1)']);
+});
+
+test('audit CLI compares motion findings in baselines', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-motion-baseline-'));
+  const baselinePath = path.join(fixtureDir, 'baseline.json');
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'motion.css'), '.button { transition-duration: 150ms; }\n');
+
+  const writeResult = runAuditCommand(
+    fixtureDir,
+    'src',
+    '--format',
+    'json',
+    '--include-motion',
+    '--write-baseline',
+    baselinePath,
+  );
+  assert.equal(writeResult.status, 0, writeResult.stderr);
+
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'motion.css'), '.button { transition-duration: 175ms; }\n');
+  const result = runAuditCommand(
+    fixtureDir,
+    'src',
+    '--format',
+    'json',
+    '--include-motion',
+    '--since-baseline',
+    baselinePath,
+    '--fail-on-new-drift',
+  );
+
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /new drift found/);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.baseline.newFindingsCount, 1);
+  assert.equal(report.baseline.newFindings[0].type, 'motion-duration');
+});
+
+test('audit CLI can enable motion scanning from config', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-motion-config-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'motion.css'), '.button { transition-duration: 175ms; }\n');
+  fs.writeFileSync(
+    path.join(fixtureDir, '.rhythmguardrc.json'),
+    JSON.stringify({
+      audit: {
+        includeMotion: true,
+      },
+    }),
+  );
+
+  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json');
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.motion.enabled, true);
+  assert.equal(report.summary.motionFindings, 1);
 });
 
 test('audit CLI can scan only staged files', () => {
