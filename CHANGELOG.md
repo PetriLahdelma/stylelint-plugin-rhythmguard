@@ -6,6 +6,14 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [1.6.1] - 2026-05-23
+
+### Fixed
+
+- Added `rhythmguard audit --ignore` for pruning root-relative paths before scanning large repositories.
+- Scoped audit traversal to scan-relevant CSS and template files instead of collecting every file under the audit root first.
+- Added default audit skips for common generated directories such as `.svelte-kit`, `.turbo`, and `.vercel`.
+
 ## [1.6.0] - 2026-05-19
 
 ### Added
