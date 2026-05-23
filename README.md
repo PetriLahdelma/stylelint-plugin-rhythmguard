@@ -89,9 +89,10 @@ Use the audit CLI to create a design-system drift report before turning rules in
 npx rhythmguard audit ./src
 npx rhythmguard audit ./src --format markdown
 npx rhythmguard audit ./src --json
+npx rhythmguard audit . --ignore "apps/legacy/**" --ignore "vendor/**"
 ```
 
-The report covers authored CSS declarations and Tailwind arbitrary spacing values in common template/source files. Markdown output is PR-ready for UX developers, UX designers, and design-system owners:
+The report covers authored CSS declarations and Tailwind arbitrary spacing values in common template/source files. Scan paths are scoped to the directory argument, and `--ignore` accepts repeatable, root-relative glob patterns for large generated or legacy subtrees. Markdown output is PR-ready for UX developers, UX designers, and design-system owners:
 
 ```md
 # Rhythmguard Design-System Audit

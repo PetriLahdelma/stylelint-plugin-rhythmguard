@@ -31,6 +31,7 @@ Audit 2.0 serves both groups by scanning:
 npx rhythmguard audit ./src
 npx rhythmguard audit ./src --format markdown
 npx rhythmguard audit ./src --json
+npx rhythmguard audit . --ignore "apps/legacy/**"
 ```
 
 The report includes:
@@ -44,6 +45,7 @@ The report includes:
 - Top affected files.
 - JSON findings for downstream tooling.
 - Markdown output for pull requests and design-system reviews.
+- Root-relative `--ignore` globs for pruning generated, vendor, or legacy paths before scanning.
 
 ## Follow-Up Roadmap
 
@@ -60,4 +62,3 @@ The report includes:
    - `--min-cleanliness`
    - `--fail-on-new-drift`
 5. Add Figma-friendly export after the code-side contract stabilizes.
-

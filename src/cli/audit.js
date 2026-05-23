@@ -17,6 +17,9 @@ const SKIP_DIRS = new Set([
   '.next',
   '.nuxt',
   '.omx',
+  '.svelte-kit',
+  '.turbo',
+  '.vercel',
   'build',
   'coverage',
   'dist',
@@ -41,6 +44,7 @@ Options:
   --format <text|json|markdown>  Output format (default: text)
   --json                         Alias for --format json
   --markdown                     Alias for --format markdown
+  --ignore <pattern>             Exclude root-relative path/glob (repeatable, comma-separated)
   --scale <values>               Comma-separated scale values (default: 0,4,8,12,16,24,32)
   --base-font-size <number>      px base for rem/em conversion (default: 16)
 `;
@@ -50,6 +54,7 @@ function parseArgs(argv) {
     baseFontSize: DEFAULT_BASE_FONT_SIZE,
     dir: null,
     format: 'text',
+    ignorePatterns: [],
     scale: DEFAULT_SCALE,
   };
 
@@ -68,6 +73,16 @@ function parseArgs(argv) {
 
     if (arg === '--markdown') {
       parsed.format = 'markdown';
+      continue;
+    }
+
+    if (arg === '--ignore') {
+      parsed.ignorePatterns.push(...parseIgnorePatterns(argv[++index]));
+      continue;
+    }
+
+    if (arg.startsWith('--ignore=')) {
+      parsed.ignorePatterns.push(...parseIgnorePatterns(arg.slice('--ignore='.length)));
       continue;
     }
 
@@ -116,6 +131,31 @@ function parseArgs(argv) {
   return parsed;
 }
 
+function parseIgnorePatterns(raw) {
+  if (!raw) {
+    throw new Error('Missing value for --ignore.');
+  }
+
+  const patterns = String(raw).split(',')
+    .map((pattern) => normalizeIgnorePattern(pattern))
+    .filter(Boolean);
+
+  if (patterns.length === 0) {
+    throw new Error('--ignore must include at least one pattern.');
+  }
+
+  return patterns;
+}
+
+function normalizeIgnorePattern(pattern) {
+  return String(pattern)
+    .trim()
+    .replace(/\\/g, '/')
+    .replace(/^\/+/, '')
+    .replace(/^\.\//, '')
+    .replace(/\/+$/, '');
+}
+
 function parseScale(raw) {
   if (!raw) {
     throw new Error('Missing value for --scale.');
@@ -157,29 +197,125 @@ function assertDirectory(dir) {
     process.exit(1);
   }
 
+  if (!fs.statSync(resolvedDir).isDirectory()) {
+    process.stderr.write(`Not a directory: ${dir}\n`);
+    process.exit(1);
+  }
+
   return resolvedDir;
 }
 
-function walkFiles(rootDir) {
-  const files = [];
+function walkFiles(rootDir, ignorePatterns = []) {
+  const cssFiles = [];
+  const templateFiles = [];
+  const ignoreMatchers = createIgnoreMatchers(ignorePatterns);
 
   function walk(currentDir) {
     for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
+      const fullPath = path.join(currentDir, entry.name);
+      const relativePath = toPosixRelativePath(rootDir, fullPath);
+
+      if (shouldIgnorePath(relativePath, entry, ignoreMatchers)) {
+        continue;
+      }
+
       if (entry.isDirectory()) {
-        if (!SKIP_DIRS.has(entry.name)) {
-          walk(path.join(currentDir, entry.name));
-        }
+        walk(fullPath);
         continue;
       }
 
       if (entry.isFile()) {
-        files.push(path.join(currentDir, entry.name));
+        if (isCssFile(fullPath)) {
+          cssFiles.push(fullPath);
+        } else if (isTemplateFile(fullPath)) {
+          templateFiles.push(fullPath);
+        }
       }
     }
   }
 
   walk(rootDir);
-  return files;
+  return { cssFiles, templateFiles };
+}
+
+function shouldIgnorePath(relativePath, entry, ignoreMatchers) {
+  return ignoreMatchers.some((matcher) => matcher.test(relativePath))
+    || (entry.isDirectory() && SKIP_DIRS.has(entry.name));
+}
+
+function createIgnoreMatchers(patterns) {
+  const variants = new Set();
+
+  for (const pattern of patterns) {
+    addIgnorePatternVariants(variants, pattern);
+  }
+
+  return Array.from(variants, (pattern) => globToRegExp(pattern));
+}
+
+function addIgnorePatternVariants(variants, pattern) {
+  if (!pattern) {
+    return;
+  }
+
+  variants.add(pattern);
+
+  if (!pattern.includes('/')) {
+    variants.add(`${pattern}/**`);
+    variants.add(`**/${pattern}`);
+    variants.add(`**/${pattern}/**`);
+    return;
+  }
+
+  if (pattern.endsWith('/**')) {
+    variants.add(pattern.slice(0, -3));
+    return;
+  }
+
+  if (!hasGlob(pattern)) {
+    variants.add(`${pattern}/**`);
+  }
+}
+
+function hasGlob(pattern) {
+  return /[*?]/.test(pattern);
+}
+
+function globToRegExp(pattern) {
+  let source = '^';
+
+  for (let index = 0; index < pattern.length; index++) {
+    const char = pattern[index];
+    const nextChar = pattern[index + 1];
+
+    if (char === '*' && nextChar === '*') {
+      source += '.*';
+      index++;
+      continue;
+    }
+
+    if (char === '*') {
+      source += '[^/]*';
+      continue;
+    }
+
+    if (char === '?') {
+      source += '[^/]';
+      continue;
+    }
+
+    source += escapeRegExp(char);
+  }
+
+  return new RegExp(`${source}$`);
+}
+
+function escapeRegExp(value) {
+  return value.replace(/[|\\{}()[\]^$+*?.]/g, '\\$&');
+}
+
+function toPosixRelativePath(rootDir, filePath) {
+  return path.relative(rootDir, filePath).split(path.sep).join('/');
 }
 
 function isCssFile(filePath) {
@@ -605,9 +741,7 @@ async function run() {
   }
 
   const resolvedDir = assertDirectory(parsed.dir);
-  const allFiles = walkFiles(resolvedDir);
-  const cssFiles = allFiles.filter(isCssFile);
-  const templateFiles = allFiles.filter(isTemplateFile);
+  const { cssFiles, templateFiles } = walkFiles(resolvedDir, parsed.ignorePatterns);
   const options = {
     baseFontSize: parsed.baseFontSize,
     scale: parsed.scale,

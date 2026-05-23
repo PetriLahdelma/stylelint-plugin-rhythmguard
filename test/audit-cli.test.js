@@ -77,3 +77,50 @@ test('audit CLI markdown emits a PR-ready design-system report', () => {
   assert.match(result.stdout, /`md:p-\[13px\]`/);
   assert.match(result.stdout, /`md:p-\[12px\]`/);
 });
+
+test('audit CLI ignores root-relative paths before scanning', () => {
+  const fixtureDir = createAuditFixture();
+  const ignoredDir = path.join(fixtureDir, 'src', 'legacy');
+  fs.mkdirSync(ignoredDir);
+  fs.writeFileSync(
+    path.join(ignoredDir, 'ignored.css'),
+    '.legacy { padding: 13px; gap: 16px; }\n',
+  );
+  fs.writeFileSync(
+    path.join(ignoredDir, 'Ignored.tsx'),
+    'export const ignored = <div className="p-[13px]" />;\n',
+  );
+  const vendorDir = path.join(fixtureDir, 'src', 'vendor');
+  fs.mkdirSync(vendorDir);
+  fs.writeFileSync(
+    path.join(vendorDir, 'vendor.css'),
+    '.vendor { padding: 13px; }\n',
+  );
+
+  const result = runAudit(fixtureDir, '--format', 'json', '--ignore', 'legacy/**,vendor');
+
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.cssFilesScanned, 1);
+  assert.equal(report.templateFilesScanned, 1);
+  assert.equal(report.findings.css.some(({ file }) => file.includes('legacy/')), false);
+  assert.equal(report.findings.css.some(({ file }) => file.includes('vendor/')), false);
+  assert.equal(report.findings.tailwind.some(({ file }) => file.includes('legacy/')), false);
+});
+
+test('audit CLI scopes traversal to the requested directory', () => {
+  const fixtureDir = createAuditFixture();
+  fs.writeFileSync(
+    path.join(fixtureDir, 'outside.css'),
+    '.outside { padding: 13px; gap: 16px; }\n',
+  );
+
+  const result = runAudit(fixtureDir, '--format', 'json');
+
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.cssFilesScanned, 1);
+  assert.equal(report.findings.css.some(({ file }) => file.endsWith('outside.css')), false);
+});
