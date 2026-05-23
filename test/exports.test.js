@@ -38,6 +38,7 @@ test('plugin exports rules, shared configs, presets, and eslint companion', () =
   assert.ok(plugin.eslint);
   assert.ok(plugin.eslint.rules['tailwind-class-use-scale']);
   assert.ok(plugin.eslint.rules['tailwind-class-use-motion-scale']);
+  assert.ok(plugin.audit.createAuditReport);
 });
 
 test('strict config avoids transform overlap in use-scale', () => {
@@ -68,4 +69,5 @@ test('esm entrypoint exposes default plugin object', async () => {
   assert.ok(esm.configs.motion);
   assert.ok(esm.eslint.rules['tailwind-class-use-scale']);
   assert.ok(esm.eslint.rules['tailwind-class-use-motion-scale']);
+  assert.ok(esm.audit.createAuditReport);
 });

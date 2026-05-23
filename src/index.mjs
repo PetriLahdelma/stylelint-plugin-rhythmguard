@@ -8,3 +8,4 @@ export const rules = plugin.rules;
 export const configs = plugin.configs;
 export const presets = plugin.presets;
 export const eslint = plugin.eslint;
+export const audit = plugin.audit;

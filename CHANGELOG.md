@@ -6,6 +6,21 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-05-23
+
+### Changed
+
+- `rhythmguard audit --format json` now emits the stable audit contract with `schemaVersion: "2.0"`.
+- Moved the pre-2.0 audit JSON shape to `--format json-v1` for migration compatibility.
+- Updated audit defaults to use the explicit spacing token pattern `^--(space|spacing)-`.
+
+### Added
+
+- Added `stylelint-plugin-rhythmguard/audit` with `createAuditReport`, `loadAuditConfig`, `parseTokenSources`, and `toAuditContractReport`.
+- Added `rhythmguard audit --format html`, `--output <file>`, and `--schema`.
+- Added `rhythmguard doctor` checks for `.rhythmguardrc.json`, configured token sources, motion audit config, and baseline files.
+- Added `docs/MIGRATING_TO_2.md`.
+
 ## [1.9.0] - 2026-05-23
 
 ### Added

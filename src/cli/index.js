@@ -27,7 +27,7 @@ if (!command || command === '--help' || command === '-h') {
 }
 
 if (command === 'audit') {
-  require('./audit');
+  require('./audit').run();
 } else if (command === 'init') {
   require('./init');
 } else if (command === 'doctor') {

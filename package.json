@@ -1,6 +1,6 @@
 {
   "name": "stylelint-plugin-rhythmguard",
-  "version": "1.9.0",
+  "version": "2.0.0",
   "description": "Token governance for CSS and Tailwind — enforce spacing scales, require design tokens, catch arbitrary values",
   "bin": {
     "rhythmguard": "src/cli/index.js"
@@ -60,6 +60,10 @@
     "./presets": {
       "require": "./src/presets/index.js",
       "import": "./src/presets/index.mjs"
+    },
+    "./audit": {
+      "require": "./src/audit/index.js",
+      "import": "./src/audit/index.mjs"
     },
     "./rules/use-scale": {
       "require": "./src/rules/use-scale/index.js",

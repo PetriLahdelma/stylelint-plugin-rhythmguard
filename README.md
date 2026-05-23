@@ -97,9 +97,11 @@ npx rhythmguard audit ./src --staged --max-findings 0
 npx rhythmguard audit ./src --token-source ./tokens.json
 npx rhythmguard audit ./src --token-source ./theme.css --token-source-format css
 npx rhythmguard audit ./src --include-motion
+npx rhythmguard audit ./src --format html --output rhythmguard-report.html
+npx rhythmguard audit --schema
 ```
 
-The report covers authored CSS declarations, Tailwind arbitrary spacing values in common template/source files, and token-contract drift such as missing spacing tokens, unused spacing tokens, repeated raw values that deserve token review, raw values that match known tokens, and conflicting token values. Scan paths are scoped to the directory argument. Use `--ignore`, `.rhythmguardignore`, or `--ignore-path` for generated or legacy subtrees, then add baselines and CI thresholds when you are ready to gate new drift. Markdown output is PR-ready for UX developers, UX designers, and design-system owners:
+The report covers authored CSS declarations, Tailwind arbitrary spacing values in common template/source files, and token-contract drift such as missing spacing tokens, unused spacing tokens, repeated raw values that deserve token review, raw values that match known tokens, conflicting token values, and opt-in motion rhythm drift. Scan paths are scoped to the directory argument. Use `--ignore`, `.rhythmguardignore`, or `--ignore-path` for generated or legacy subtrees, then add baselines and CI thresholds when you are ready to gate new drift. Markdown output is PR-ready for UX developers, UX designers, and design-system owners:
 
 ```md
 # Rhythmguard Design-System Audit
@@ -135,6 +137,44 @@ For large codebases, put shared audit settings in `.rhythmguardrc.json`:
 ```
 
 `rhythmguard audit` loads `.rhythmguardrc.json` automatically when present. Use `--config <file>` for another config, `--no-config` to skip config discovery, and `--token-source <file>` for extra canonical token files. Token source paths in config files resolve from the config file directory; CLI token source paths resolve from the current working directory. Supported source formats are CSS custom properties and Tailwind v4 `@theme`, flat JSON maps, Style Dictionary JSON, and DTCG JSON.
+
+### Audit JSON 2.0 and API
+
+In Rhythmguard 2.0, `--format json` emits the stable audit contract:
+
+```json
+{
+  "schemaVersion": "2.0",
+  "command": { "directory": "./src", "scanScope": "full" },
+  "summary": { "totalFindings": 12, "scaleCleanliness": 94 },
+  "scanned": { "cssFiles": 10, "templateFiles": 20 },
+  "contracts": {
+    "scale": {},
+    "tokens": {},
+    "motion": {}
+  },
+  "findings": {
+    "css": [],
+    "tailwind": [],
+    "motion": []
+  },
+  "baseline": null
+}
+```
+
+Use `--format json-v1` for the pre-2.0 JSON shape during migration.
+
+Programmatic usage:
+
+```js
+const {
+  createAuditReport,
+  toAuditContractReport,
+} = require('stylelint-plugin-rhythmguard/audit');
+
+const report = await createAuditReport({ dir: './src', noConfig: true });
+const contract = toAuditContractReport(report);
+```
 
 ## Installation
 

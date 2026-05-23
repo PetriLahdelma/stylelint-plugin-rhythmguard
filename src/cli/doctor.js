@@ -2,6 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { normalizeTokenSourceFormat } = require('../utils/token-sources');
 
 const cwd = process.cwd();
 let issues = 0;
@@ -205,6 +206,99 @@ function checkCustomSyntax(configContent) {
   }
 }
 
+function checkRhythmguardConfig() {
+  const configPath = path.join(cwd, '.rhythmguardrc.json');
+  if (!fs.existsSync(configPath)) {
+    skip('rhythmguard config check skipped (.rhythmguardrc.json not found)');
+    return;
+  }
+
+  let parsed;
+  try {
+    parsed = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+  } catch {
+    fail('.rhythmguardrc.json is not valid JSON', 'Fix or remove .rhythmguardrc.json');
+    return;
+  }
+
+  const audit = parsed.audit;
+  if (!audit || typeof audit !== 'object' || Array.isArray(audit)) {
+    fail('.rhythmguardrc.json audit config missing', 'Add an "audit" object or remove the config file');
+    return;
+  }
+
+  pass('.rhythmguardrc.json audit config valid');
+  checkRhythmguardTokenSources(audit, path.dirname(configPath));
+  checkRhythmguardMotionConfig(audit);
+  checkRhythmguardBaseline(audit);
+}
+
+function checkRhythmguardTokenSources(audit, baseDir) {
+  if (audit.tokenSources === undefined) {
+    skip('token source config check skipped (not configured)');
+    return;
+  }
+
+  if (!Array.isArray(audit.tokenSources)) {
+    fail('audit.tokenSources must be an array', 'Use strings or { "path": "...", "format": "..." } entries');
+    return;
+  }
+
+  for (const source of audit.tokenSources) {
+    const sourcePath = typeof source === 'string' ? source : source && source.path;
+    const format = typeof source === 'string' ? 'auto' : source && source.format;
+
+    if (typeof sourcePath !== 'string' || sourcePath.trim().length === 0) {
+      fail('token source entry missing path', 'Use strings or objects with a non-empty path');
+      continue;
+    }
+
+    try {
+      normalizeTokenSourceFormat(format || 'auto');
+    } catch {
+      fail(`token source format invalid for ${sourcePath}`, 'Use auto, css, flat-json, style-dictionary, or dtcg');
+    }
+
+    if (fs.existsSync(path.resolve(baseDir, sourcePath))) {
+      pass(`token source found (${sourcePath})`);
+    } else {
+      fail(`token source not found (${sourcePath})`, 'Update audit.tokenSources or create the token file');
+    }
+  }
+}
+
+function checkRhythmguardMotionConfig(audit) {
+  if (audit.includeMotion === undefined) {
+    skip('motion audit check skipped (not configured)');
+    return;
+  }
+
+  if (typeof audit.includeMotion === 'boolean') {
+    pass(`motion audit config valid (${audit.includeMotion})`);
+  } else {
+    fail('audit.includeMotion must be a boolean', 'Use true or false');
+  }
+}
+
+function checkRhythmguardBaseline(audit) {
+  const baselinePath = path.resolve(cwd, audit.baseline || '.rhythmguard-baseline.json');
+  if (!fs.existsSync(baselinePath)) {
+    skip('baseline freshness check skipped (baseline not found)');
+    return;
+  }
+
+  try {
+    const baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
+    if (!Array.isArray(baseline.findings)) {
+      fail('baseline file does not include findings array', 'Regenerate it with rhythmguard audit --write-baseline');
+      return;
+    }
+    pass(`baseline file readable (${path.relative(cwd, baselinePath)})`);
+  } catch {
+    fail('baseline file is not valid JSON', 'Regenerate it with rhythmguard audit --write-baseline');
+  }
+}
+
 function run() {
   process.stdout.write('\nRhythmguard Doctor\n\n');
 
@@ -214,6 +308,7 @@ function run() {
   checkTokenPattern(configContent);
   checkTailwindConfig(configContent);
   checkCustomSyntax(configContent);
+  checkRhythmguardConfig();
 
   process.stdout.write('\n');
 

@@ -25,3 +25,4 @@ module.exports.configs = {
 };
 module.exports.eslint = require('./eslint');
 module.exports.presets = require('./presets');
+module.exports.audit = require('./audit');
