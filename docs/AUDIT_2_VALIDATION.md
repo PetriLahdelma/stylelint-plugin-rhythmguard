@@ -37,6 +37,7 @@ npx rhythmguard audit ./src --since-baseline --fail-on-new-drift
 npx rhythmguard audit ./src --since origin/main --max-findings 0
 npx rhythmguard audit ./src --token-source ./tokens.json
 npx rhythmguard audit ./src --config ./configs/rhythmguard.json
+npx rhythmguard audit ./src --include-motion
 ```
 
 The report includes:
@@ -57,10 +58,11 @@ The report includes:
 - Token contract reporting for missing, unused, and candidate spacing tokens.
 - External token-source contract checks for canonical tokens that live outside the scanned source tree.
 - `.rhythmguardrc.json` audit config for reusable ignores, thresholds, token sources, and token-kind selection.
+- Opt-in motion rhythm reporting for CSS duration/delay drift, raw easing curves, and Tailwind arbitrary motion utilities.
 - CI gates with `--max-findings`, `--min-cleanliness`, and `--fail-on-new-drift`.
 
 ## Follow-Up Roadmap
 
 1. Add HTML report output for design reviews.
 2. Add Figma-friendly export after the code-side contract stabilizes.
-3. Add opt-in motion rhythm reporting for duration, delay, and easing drift.
+3. Stabilize the audit JSON contract and add HTML output for design reviews.

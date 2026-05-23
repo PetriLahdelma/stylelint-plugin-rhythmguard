@@ -1,6 +1,6 @@
 {
   "name": "stylelint-plugin-rhythmguard",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "Token governance for CSS and Tailwind — enforce spacing scales, require design tokens, catch arbitrary values",
   "bin": {
     "rhythmguard": "src/cli/index.js"
@@ -49,6 +49,10 @@
       "require": "./src/configs/migration.js",
       "import": "./src/configs/migration.mjs"
     },
+    "./configs/motion": {
+      "require": "./src/configs/motion.js",
+      "import": "./src/configs/motion.mjs"
+    },
     "./configs/react-tailwind": {
       "require": "./src/configs/react-tailwind.js",
       "import": "./src/configs/react-tailwind.mjs"
@@ -68,6 +72,10 @@
     "./rules/no-offscale-transform": {
       "require": "./src/rules/no-offscale-transform/index.js",
       "import": "./src/rules/no-offscale-transform/index.mjs"
+    },
+    "./rules/use-motion-scale": {
+      "require": "./src/rules/use-motion-scale/index.js",
+      "import": "./src/rules/use-motion-scale/index.mjs"
     },
     "./eslint": {
       "require": "./src/eslint/index.js",

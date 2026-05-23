@@ -6,6 +6,8 @@ const path = require('node:path');
 
 const { formatLength } = require('../utils/length');
 const { createTailwindClassAnalyzer } = require('../utils/tailwind-class-analysis');
+const { createTailwindMotionAnalyzer } = require('../utils/tailwind-motion-analysis');
+const { formatTime } = require('../utils/time');
 const {
   addDefinition,
   createTokenKindMatcher,
@@ -69,9 +71,10 @@ Options:
   --min-cleanliness <percent>    Exit 1 when scale cleanliness is lower than this percent
   --since <git-ref>              Scan only changed files since a git ref
   --staged                       Scan only staged files
+  --include-motion               Include opt-in motion duration/easing drift
   --token-source <file>          External token source (repeatable, comma-separated)
   --token-source-format <format> Token source format: auto, css, flat-json, style-dictionary, dtcg (default: auto)
-  --token-kind <kind>            Token kind: spacing, radius, typography, size, all (default: spacing)
+  --token-kind <kind>            Token kind: spacing, radius, typography, size, motion, all (default: spacing)
   --token-candidate-min-count <n> Minimum repeated raw value count for token candidates (default: 2)
   --scale <values>               Comma-separated scale values (default: 0,4,8,12,16,24,32)
   --base-font-size <number>      px base for rem/em conversion (default: 16)
@@ -89,6 +92,7 @@ function parseArgs(argv) {
     format: 'text',
     ignorePath: DEFAULT_IGNORE_PATH,
     ignorePatterns: [],
+    includeMotion: false,
     maxFindings: null,
     minCleanliness: null,
     noConfig: false,
@@ -258,6 +262,12 @@ function parseArgs(argv) {
     if (arg === '--staged') {
       parsed.staged = true;
       parsed.cliOptions.add('staged');
+      continue;
+    }
+
+    if (arg === '--include-motion') {
+      parsed.includeMotion = true;
+      parsed.cliOptions.add('includeMotion');
       continue;
     }
 
@@ -572,6 +582,7 @@ function applyAuditConfig(parsed, configResult) {
   applyConfigScalar(next, audit, cliOptions, 'tokenCandidateMinCount', 'tokenCandidateMinCount', parsePositiveInteger);
   applyConfigScalar(next, audit, cliOptions, 'tokenKind', 'tokenKind', normalizeTokenKind);
   applyConfigScalar(next, audit, cliOptions, 'baseFontSize', 'baseFontSize', parseBaseFontSize);
+  applyConfigScalar(next, audit, cliOptions, 'includeMotion', 'includeMotion', parseBooleanOption);
   applyConfigScalar(next, audit, cliOptions, 'scale', 'scale', (value) => {
     if (Array.isArray(value)) {
       return value;
@@ -589,6 +600,14 @@ function applyConfigScalar(target, audit, cliOptions, targetKey, configKey, pars
   }
 
   target[targetKey] = parser(audit[configKey], configKey);
+}
+
+function parseBooleanOption(value, optionName) {
+  if (typeof value !== 'boolean') {
+    throw new Error(`${optionName} must be a boolean.`);
+  }
+
+  return value;
 }
 
 function normalizeCliTokenSources(sources, format) {
@@ -866,31 +885,41 @@ async function runStylelintAudit(cssFiles, options) {
   }
 
   const { default: stylelint } = await import('stylelint');
+  const rules = {
+    'rhythmguard/use-scale': [
+      true,
+      {
+        baseFontSize: options.baseFontSize,
+        scale: options.scale,
+        severity: 'warning',
+      },
+    ],
+    'rhythmguard/prefer-token': [
+      true,
+      {
+        baseFontSize: options.baseFontSize,
+        scale: options.scale,
+        severity: 'warning',
+        tokenMapFromCssCustomProperties: true,
+        tokenPattern: '^--spac(e|ing)-',
+      },
+    ],
+  };
+
+  if (options.includeMotion) {
+    rules['rhythmguard/use-motion-scale'] = [
+      true,
+      {
+        severity: 'warning',
+      },
+    ];
+  }
 
   const result = await stylelint.lint({
     files: cssFiles,
     config: {
       plugins: [pluginPath],
-      rules: {
-        'rhythmguard/use-scale': [
-          true,
-          {
-            baseFontSize: options.baseFontSize,
-            scale: options.scale,
-            severity: 'warning',
-          },
-        ],
-        'rhythmguard/prefer-token': [
-          true,
-          {
-            baseFontSize: options.baseFontSize,
-            scale: options.scale,
-            severity: 'warning',
-            tokenMapFromCssCustomProperties: true,
-            tokenPattern: '^--spac(e|ing)-',
-          },
-        ],
-      },
+      rules,
     },
   });
 
@@ -909,6 +938,12 @@ function collectCssFindings(fileResults) {
       const tokenMatch = text.match(
         /Unexpected raw scale value "([^"]+)"/,
       );
+      const motionDurationMatch = text.match(
+        /Unexpected (?:motion duration|negative motion duration) "([^"]+)"/,
+      );
+      const motionEasingMatch = text.match(
+        /Unexpected raw motion easing "([^"]+)"/,
+      );
 
       findings.push({
         column: warning.column || 1,
@@ -916,13 +951,59 @@ function collectCssFindings(fileResults) {
         line: warning.line || 1,
         rule: warning.rule || 'rhythmguard',
         text,
-        type: tokenMatch ? 'token-opportunity' : 'off-scale',
-        value: tokenMatch ? tokenMatch[1] : offScaleMatch ? offScaleMatch[1] : null,
+        type: getCssFindingType({ motionDurationMatch, motionEasingMatch, tokenMatch }),
+        value: getCssFindingValue({
+          motionDurationMatch,
+          motionEasingMatch,
+          offScaleMatch,
+          tokenMatch,
+        }),
       });
     }
   }
 
   return findings;
+}
+
+function getCssFindingValue({
+  motionDurationMatch,
+  motionEasingMatch,
+  offScaleMatch,
+  tokenMatch,
+}) {
+  if (tokenMatch) {
+    return tokenMatch[1];
+  }
+
+  if (offScaleMatch) {
+    return offScaleMatch[1];
+  }
+
+  if (motionDurationMatch) {
+    return motionDurationMatch[1];
+  }
+
+  if (motionEasingMatch) {
+    return motionEasingMatch[1];
+  }
+
+  return null;
+}
+
+function getCssFindingType({ motionDurationMatch, motionEasingMatch, tokenMatch }) {
+  if (motionDurationMatch) {
+    return 'motion-duration';
+  }
+
+  if (motionEasingMatch) {
+    return 'motion-easing';
+  }
+
+  if (tokenMatch) {
+    return 'token-opportunity';
+  }
+
+  return 'off-scale';
 }
 
 function collectTailwindFindings(templateFiles, options) {
@@ -967,6 +1048,66 @@ function collectTailwindFindings(templateFiles, options) {
   }
 
   return findings;
+}
+
+function collectTailwindMotionFindings(templateFiles, options) {
+  if (!options.includeMotion) {
+    return [];
+  }
+
+  const analyzer = createTailwindMotionAnalyzer(options);
+  const findings = [];
+
+  for (const filePath of templateFiles) {
+    let source = '';
+    try {
+      source = fs.readFileSync(filePath, 'utf8');
+    } catch {
+      continue;
+    }
+
+    const lineStarts = getLineStarts(source);
+
+    for (const literal of findStringLiterals(source)) {
+      for (const { analysis, segment } of analyzer.analyzeClassString(literal.value)) {
+        const position = offsetToLineColumn(lineStarts, literal.valueStart + segment.start);
+        findings.push({
+          column: position.column,
+          file: formatPath(filePath),
+          fixedToken: analysis.fixedToken,
+          line: position.line,
+          nearest: analysis.nearest
+            ? {
+              lower: formatTime(analysis.nearest.lower, 'ms'),
+              upper: formatTime(analysis.nearest.upper, 'ms'),
+            }
+            : null,
+          rawValue: analysis.rawValue,
+          rule: 'rhythmguard-tailwind/tailwind-class-use-motion-scale',
+          text: buildTailwindMotionFindingText(segment.token, analysis),
+          token: segment.token,
+          type: analysis.reason === 'easing'
+            ? 'tailwind-motion-easing'
+            : 'tailwind-motion-duration',
+          utility: analysis.utility,
+        });
+      }
+    }
+  }
+
+  return findings;
+}
+
+function buildTailwindMotionFindingText(token, analysis) {
+  if (analysis.reason === 'easing') {
+    return `Unexpected Tailwind arbitrary motion easing "${token}". Use motion tokens for easing decisions.`;
+  }
+
+  if (analysis.reason === 'negative') {
+    return `Unexpected Tailwind arbitrary motion duration "${token}". Use non-negative duration values.`;
+  }
+
+  return `Unexpected Tailwind arbitrary motion duration "${token}". Use duration scale values.`;
 }
 
 function findStringLiterals(source) {
@@ -1250,6 +1391,8 @@ function buildReport({
   cssFindings,
   dir,
   externalTokenDefinitions,
+  includeMotion,
+  motionFindings,
   scanScope,
   templateFiles,
   tailwindFindings,
@@ -1266,17 +1409,21 @@ function buildReport({
     .map((finding) => finding.value));
   const tailwindArbitraryValues = countByValue(tailwindFindings
     .map((finding) => finding.rawValue));
+  const motionValues = countByValue(motionFindings
+    .map((finding) => finding.value || finding.rawValue));
   const issueFiles = new Set([
     ...cssFindings.map((finding) => finding.file),
+    ...motionFindings.map((finding) => finding.file),
     ...tailwindFindings.map((finding) => finding.file),
   ]);
   const topAffectedFiles = sortCountMap(countByValue([
     ...cssFindings.map((finding) => finding.file),
+    ...motionFindings.map((finding) => finding.file),
     ...tailwindFindings.map((finding) => finding.file),
   ])).slice(0, 10);
 
   const totalFiles = cssFiles.length + templateFiles.length;
-  const totalWarnings = cssFindings.length + tailwindFindings.length;
+  const totalWarnings = cssFindings.length + motionFindings.length + tailwindFindings.length;
   const filesWithIssues = issueFiles.size;
   const scaleCleanliness = totalFiles > 0
     ? Math.max(0, Math.round(((totalFiles - filesWithIssues) / totalFiles) * 100))
@@ -1299,9 +1446,15 @@ function buildReport({
     filesWithIssues,
     findings: {
       css: cssFindings,
+      motion: motionFindings,
       tailwind: tailwindFindings,
     },
-    formatVersion: 4,
+    formatVersion: 5,
+    motion: {
+      enabled: includeMotion,
+      findings: motionFindings.length,
+      values: Object.fromEntries(sortCountMap(motionValues).slice(0, 10)),
+    },
     offScaleValues: Object.fromEntries(sortCountMap(offScaleValues).slice(0, 10)),
     scaleCleanliness,
     scanScope,
@@ -1313,6 +1466,7 @@ function buildReport({
     summary: {
       cssWarnings: cssFindings.length,
       filesWithIssues,
+      motionFindings: motionFindings.length,
       rawValueMatches: tokenContract.summary.rawValueMatches,
       missingTokens: tokenContract.summary.missingTokens,
       rawValueCandidates: tokenContract.summary.rawValueCandidates,
@@ -1405,6 +1559,7 @@ function writeBaseline(report, baselinePath) {
 function getAllFindings(report) {
   return [
     ...report.findings.css,
+    ...report.findings.motion,
     ...report.findings.tailwind,
   ];
 }
@@ -1470,6 +1625,7 @@ function renderText(report) {
   appendHistogram(lines, 'CSS OFF-SCALE VALUES', report.offScaleValues);
   appendHistogram(lines, 'CSS TOKEN OPPORTUNITIES', report.tokenOpportunities);
   appendHistogram(lines, 'TAILWIND CLASS-STRING DRIFT', report.tailwindArbitraryValues);
+  appendHistogram(lines, 'MOTION RHYTHM DRIFT', report.motion.values);
   appendTokenContractText(lines, report.tokenContract);
   appendBaselineText(lines, report);
 
@@ -1622,6 +1778,7 @@ function renderMarkdown(report) {
   appendMarkdownCounts(lines, 'CSS Off-Scale Values', report.offScaleValues);
   appendMarkdownCounts(lines, 'CSS Token Opportunities', report.tokenOpportunities);
   appendMarkdownCounts(lines, 'Tailwind Class-String Drift', report.tailwindArbitraryValues);
+  appendMarkdownCounts(lines, 'Motion Rhythm Drift', report.motion.values);
   appendTokenContractMarkdown(lines, report.tokenContract);
   appendBaselineMarkdown(lines, report);
 
@@ -1872,6 +2029,7 @@ async function run() {
   const { cssFiles, scanScope, templateFiles } = scanFiles;
   const options = {
     baseFontSize: parsed.baseFontSize,
+    includeMotion: parsed.includeMotion,
     scale: parsed.scale,
   };
 
@@ -1888,14 +2046,22 @@ async function run() {
     sources: parsed.tokenSources,
     tokenKind: parsed.tokenKind,
   });
+  const stylelintFindings = collectCssFindings(cssResults);
+  const cssFindings = stylelintFindings.filter((finding) => !finding.type.startsWith('motion-'));
+  const motionFindings = [
+    ...stylelintFindings.filter((finding) => finding.type.startsWith('motion-')),
+    ...collectTailwindMotionFindings(templateFiles, options),
+  ];
 
   const report = buildReport({
     baseFontSize: parsed.baseFontSize,
     config: parsed.config,
     cssFiles,
-    cssFindings: collectCssFindings(cssResults),
+    cssFindings,
     dir: parsed.dir,
     externalTokenDefinitions: tokenSourceResult.definitions,
+    includeMotion: parsed.includeMotion,
+    motionFindings,
     scanScope,
     tailwindFindings: collectTailwindFindings(templateFiles, options),
     templateFiles,

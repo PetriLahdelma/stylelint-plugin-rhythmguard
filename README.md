@@ -66,6 +66,7 @@ This gives you spacing governance in both CSS files and JSX/TSX templates.
 | `rhythmguard/use-scale` | Enforces spacing values must be on your configured scale | Yes, nearest safe value |
 | `rhythmguard/prefer-token` | Enforces token usage over raw spacing literals | Yes, with `tokenMap` |
 | `rhythmguard/no-offscale-transform` | Enforces scale-aligned `translate*` motion offsets | Yes, nearest safe value |
+| `rhythmguard/use-motion-scale` | Enforces opt-in duration/delay rhythm and flags raw easing curves | Yes, for duration/delay values |
 
 ## Demo
 
@@ -95,6 +96,7 @@ npx rhythmguard audit ./src --since-baseline --fail-on-new-drift
 npx rhythmguard audit ./src --staged --max-findings 0
 npx rhythmguard audit ./src --token-source ./tokens.json
 npx rhythmguard audit ./src --token-source ./theme.css --token-source-format css
+npx rhythmguard audit ./src --include-motion
 ```
 
 The report covers authored CSS declarations, Tailwind arbitrary spacing values in common template/source files, and token-contract drift such as missing spacing tokens, unused spacing tokens, repeated raw values that deserve token review, raw values that match known tokens, and conflicting token values. Scan paths are scoped to the directory argument. Use `--ignore`, `.rhythmguardignore`, or `--ignore-path` for generated or legacy subtrees, then add baselines and CI thresholds when you are ready to gate new drift. Markdown output is PR-ready for UX developers, UX designers, and design-system owners:
@@ -125,6 +127,7 @@ For large codebases, put shared audit settings in `.rhythmguardrc.json`:
       { "path": "./src/theme.css", "format": "css" }
     ],
     "tokenKind": "spacing",
+    "includeMotion": false,
     "tokenCandidateMinCount": 2,
     "minCleanliness": 90
   }
@@ -221,6 +224,16 @@ npm install --save-dev stylelint-plugin-rhythmguard
 
 `react-tailwind` extends the tailwind config with CSS Modules overrides (spacing + radius enforcement) and ignores Next.js build directories.
 
+### Motion config
+
+```json
+{
+  "extends": ["stylelint-plugin-rhythmguard/configs/motion"]
+}
+```
+
+`motion` enables opt-in duration/delay rhythm checks with `rhythmguard/use-motion-scale`.
+
 Stable shared config entry points:
 
 - `stylelint-plugin-rhythmguard/configs/recommended`
@@ -230,6 +243,7 @@ Stable shared config entry points:
 - `stylelint-plugin-rhythmguard/configs/expanded`
 - `stylelint-plugin-rhythmguard/configs/logical`
 - `stylelint-plugin-rhythmguard/configs/migration`
+- `stylelint-plugin-rhythmguard/configs/motion`
 
 Framework-specific setup for Vue, Lit, Astro, and SvelteKit: [`docs/FRAMEWORKS.md`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/FRAMEWORKS.md)
 
@@ -471,7 +485,7 @@ Options:
 | `enforceInsideMathFunctions` | `boolean` | `false` | Lints `calc()/clamp()/min()/max()` internals |
 | `mathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Restricts linting to specific 1-based argument indexes per math function |
 | `ignoreMathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Excludes specific 1-based argument indexes per math function |
-| `propertyGroups` | `Array<'spacing' \| 'radius' \| 'typography' \| 'size'>` | `['spacing']` | Selects built-in property groups when `properties` is not provided |
+| `propertyGroups` | `Array<'spacing' \| 'radius' \| 'typography' \| 'size' \| 'motion'>` | `['spacing']` | Selects built-in property groups when `properties` is not provided |
 | `properties` | `Array<string|RegExp>` | built-in spacing patterns | Override targeted property set; string values may be supported property names or regex-like strings (`/pattern/flags`) |
 | `propertyScales` | `Record<propertyOrRegex, scaleOrPreset>` | `{}` | Per-property scale overrides (supports exact names or `/regex/flags` keys; stateful `g`/`y` flags are normalized for deterministic matching) |
 
@@ -542,6 +556,35 @@ Example:
 Options:
 
 `rhythmguard/no-offscale-transform` accepts the same scale options as `rhythmguard/use-scale` (including `unitStrategy`, math argument targeting, and deterministic autofix), but only for transform translation properties. Its secondary options are also validated for unknown keys and invalid value shapes.
+
+### `rhythmguard/use-motion-scale`
+
+Opt-in guardrail for duration, delay, and easing rhythm.
+
+Example:
+
+```css
+/* ❌ Off-scale timing + raw easing */
+.button {
+  transition: opacity 175ms cubic-bezier(.2, 0, 0, 1);
+}
+
+/* ✅ Timing on motion scale */
+.button {
+  transition: opacity 150ms var(--ease-snappy);
+}
+```
+
+Options:
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `durationScale` | `number[]` | `[0,75,100,150,200,300,500,700,1000]` | Allowed duration and delay values in milliseconds |
+| `durationUnits` | `Array<'ms' \| 's'>` | `['ms','s']` | Time units considered by the rule |
+| `fixToScale` | `boolean` | `true` | Autofixes simple duration/delay values to the nearest scale value |
+| `easingTokenMap` | `Record<string,string>` | `{}` | Optional exact replacements for raw easing functions |
+
+Tailwind class strings can use the ESLint companion rule `rhythmguard-tailwind/tailwind-class-use-motion-scale` for `duration-[...]`, `delay-[...]`, and `ease-[...]` arbitrary values.
 
 ## Tailwind CSS Integration
 

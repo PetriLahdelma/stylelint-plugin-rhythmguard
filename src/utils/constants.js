@@ -35,6 +35,10 @@ const PROPERTY_GROUP_PATTERNS = Object.freeze({
     /^letter-spacing$/,
     /^word-spacing$/,
   ]),
+  motion: Object.freeze([
+    /^transition(?:-.+)?$/,
+    /^animation(?:-.+)?$/,
+  ]),
 });
 
 const DEFAULT_PROPERTY_GROUPS = Object.freeze(['spacing']);

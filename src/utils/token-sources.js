@@ -22,12 +22,14 @@ const VALID_TOKEN_KINDS = new Set([
   'radius',
   'typography',
   'size',
+  'motion',
   'all',
 ]);
 
 const TOKEN_KIND_PATTERNS = Object.freeze({
   all: /^--/,
   radius: /^--radius-/,
+  motion: /^--(?:motion|duration|delay|ease|easing)-/,
   size: /^--(?:size|width|height|container)-/,
   spacing: /^--(?:space|spacing)-/,
   typography: /^--(?:font|font-size|line-height|leading|tracking|typography)-/,
@@ -53,7 +55,7 @@ function normalizeTokenSourceFormat(format) {
 function normalizeTokenKind(kind) {
   const normalized = String(kind || 'spacing').trim().toLowerCase();
   if (!VALID_TOKEN_KINDS.has(normalized)) {
-    throw new Error(`Invalid token kind "${kind}". Expected spacing, radius, typography, size, or all.`);
+    throw new Error(`Invalid token kind "${kind}". Expected spacing, radius, typography, size, motion, or all.`);
   }
 
   return normalized;
