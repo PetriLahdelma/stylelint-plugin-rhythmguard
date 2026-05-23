@@ -63,7 +63,7 @@ function runGit(cwd, ...args) {
 
 test('audit CLI JSON reports CSS and Tailwind design-system drift', () => {
   const fixtureDir = createAuditFixture();
-  const result = runAudit(fixtureDir, '--format', 'json');
+  const result = runAudit(fixtureDir, '--format', 'json-v1');
 
   assert.equal(result.status, 0, result.stderr);
 
@@ -84,6 +84,40 @@ test('audit CLI JSON reports CSS and Tailwind design-system drift', () => {
   ));
   assert.ok(report.tokenContract.rawValueCandidates.some(({ value, count }) => value === '13px' && count === 2));
   assert.ok(report.topAffectedFiles.some(({ file }) => file.endsWith('Button.tsx')));
+});
+
+test('audit CLI JSON emits the 2.0 contract shape by default', () => {
+  const fixtureDir = createAuditFixture();
+  const result = runAudit(fixtureDir, '--format', 'json');
+
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.schemaVersion, '2.0');
+  assert.equal(report.command.directory.endsWith('/src') || report.command.directory === path.join(fixtureDir, 'src'), true);
+  assert.equal(report.scanned.cssFiles, 1);
+  assert.equal(report.contracts.tokens.missingTokens[0].token, '--spacing-missing');
+  assert.equal(report.findings.tailwind.length, 2);
+});
+
+test('audit CLI prints schema and can write HTML output', () => {
+  const fixtureDir = createAuditFixture();
+  const schemaResult = runAuditCommand(fixtureDir, 'src', '--schema');
+  assert.equal(schemaResult.status, 0, schemaResult.stderr);
+  assert.equal(JSON.parse(schemaResult.stdout).properties.schemaVersion.const, '2.0');
+
+  const outputPath = path.join(fixtureDir, 'report.html');
+  const htmlResult = runAuditCommand(
+    fixtureDir,
+    'src',
+    '--format',
+    'html',
+    '--output',
+    outputPath,
+  );
+  assert.equal(htmlResult.status, 0, htmlResult.stderr);
+  assert.equal(htmlResult.stdout, '');
+  assert.match(fs.readFileSync(outputPath, 'utf8'), /Rhythmguard Design-System Audit/);
 });
 
 test('audit CLI markdown emits a PR-ready design-system report', () => {
@@ -117,7 +151,7 @@ test('audit CLI ignores root-relative paths before scanning', () => {
     '.vendor { padding: 13px; }\n',
   );
 
-  const result = runAudit(fixtureDir, '--format', 'json', '--ignore', 'legacy/**,vendor');
+  const result = runAudit(fixtureDir, '--format', 'json-v1', '--ignore', 'legacy/**,vendor');
 
   assert.equal(result.status, 0, result.stderr);
 
@@ -136,7 +170,7 @@ test('audit CLI scopes traversal to the requested directory', () => {
     '.outside { padding: 13px; gap: 16px; }\n',
   );
 
-  const result = runAudit(fixtureDir, '--format', 'json');
+  const result = runAudit(fixtureDir, '--format', 'json-v1');
 
   assert.equal(result.status, 0, result.stderr);
 
@@ -156,7 +190,7 @@ test('audit CLI loads ignore patterns from an ignore file', () => {
   );
   fs.writeFileSync(ignorePath, '# generated code\nlegacy\n');
 
-  const result = runAudit(fixtureDir, '--format', 'json', '--ignore-path', ignorePath);
+  const result = runAudit(fixtureDir, '--format', 'json-v1', '--ignore-path', ignorePath);
 
   assert.equal(result.status, 0, result.stderr);
 
@@ -180,8 +214,7 @@ test('audit CLI loads external CSS token sources outside the scan directory', ()
   const result = runAuditCommand(
     fixtureDir,
     'src',
-    '--format',
-    'json',
+    '--format', 'json-v1',
     '--token-source',
     'tokens.css',
   );
@@ -220,8 +253,7 @@ test('audit CLI loads DTCG token sources', () => {
   const result = runAuditCommand(
     fixtureDir,
     'src',
-    '--format',
-    'json',
+    '--format', 'json-v1',
     '--token-source',
     'tokens.json',
     '--token-source-format',
@@ -255,8 +287,7 @@ test('audit CLI loads Style Dictionary token sources', () => {
   const result = runAuditCommand(
     fixtureDir,
     'src',
-    '--format',
-    'json',
+    '--format', 'json-v1',
     '--token-source',
     'tokens.json',
     '--token-source-format',
@@ -287,8 +318,7 @@ test('audit CLI loads flat JSON token sources', () => {
   const result = runAuditCommand(
     fixtureDir,
     'src',
-    '--format',
-    'json',
+    '--format', 'json-v1',
     '--token-source',
     'tokens.json',
     '--token-source-format',
@@ -335,8 +365,7 @@ test('audit CLI loads config and lets CLI scalar options override config', () =>
   const result = runAuditCommand(
     fixtureDir,
     'src',
-    '--format',
-    'json',
+    '--format', 'json-v1',
     '--token-kind',
     'spacing',
     '--token-candidate-min-count',
@@ -363,8 +392,7 @@ test('audit CLI handles repeated token sources without duplicating token definit
   const result = runAuditCommand(
     fixtureDir,
     'src',
-    '--format',
-    'json',
+    '--format', 'json-v1',
     '--token-source',
     'tokens.json,tokens.json',
   );
@@ -384,8 +412,7 @@ test('audit CLI reports missing token source warnings without failing', () => {
   const result = runAuditCommand(
     fixtureDir,
     'src',
-    '--format',
-    'json',
+    '--format', 'json-v1',
     '--token-source',
     'missing.json',
   );
@@ -403,7 +430,7 @@ test('audit CLI fails on invalid rhythmguard config', () => {
   fs.writeFileSync(path.join(fixtureDir, 'src', 'card.css'), '.card { padding: 16px; }\n');
   fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), '{ invalid json');
 
-  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json');
+  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json-v1');
 
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Invalid Rhythmguard config/);
@@ -412,7 +439,7 @@ test('audit CLI fails on invalid rhythmguard config', () => {
 test('audit CLI writes and compares baselines for new drift gating', () => {
   const fixtureDir = createAuditFixture();
   const baselinePath = path.join(fixtureDir, 'baseline.json');
-  const writeResult = runAudit(fixtureDir, '--format', 'json', '--write-baseline', baselinePath);
+  const writeResult = runAudit(fixtureDir, '--format', 'json-v1', '--write-baseline', baselinePath);
 
   assert.equal(writeResult.status, 0, writeResult.stderr);
   assert.equal(fs.existsSync(baselinePath), true);
@@ -424,8 +451,7 @@ test('audit CLI writes and compares baselines for new drift gating', () => {
 
   const result = runAudit(
     fixtureDir,
-    '--format',
-    'json',
+    '--format', 'json-v1',
     '--since-baseline',
     baselinePath,
     '--fail-on-new-drift',
@@ -443,8 +469,7 @@ test('audit CLI supports threshold exit gates', () => {
   const fixtureDir = createAuditFixture();
   const result = runAudit(
     fixtureDir,
-    '--format',
-    'json',
+    '--format', 'json-v1',
     '--max-findings',
     '0',
     '--min-cleanliness',
@@ -469,11 +494,11 @@ test('audit CLI includes motion drift only when requested', () => {
     'export const Button = <button className="duration-[175ms] ease-[cubic-bezier(.2,0,0,1)]" />;\n',
   );
 
-  const defaultResult = runAuditCommand(fixtureDir, 'src', '--format', 'json');
+  const defaultResult = runAuditCommand(fixtureDir, 'src', '--format', 'json-v1');
   assert.equal(defaultResult.status, 0, defaultResult.stderr);
   assert.equal(JSON.parse(defaultResult.stdout).summary.motionFindings, 0);
 
-  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json', '--include-motion');
+  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json-v1', '--include-motion');
   assert.equal(result.status, 0, result.stderr);
 
   const report = JSON.parse(result.stdout);
@@ -493,8 +518,7 @@ test('audit CLI compares motion findings in baselines', () => {
   const writeResult = runAuditCommand(
     fixtureDir,
     'src',
-    '--format',
-    'json',
+    '--format', 'json-v1',
     '--include-motion',
     '--write-baseline',
     baselinePath,
@@ -505,8 +529,7 @@ test('audit CLI compares motion findings in baselines', () => {
   const result = runAuditCommand(
     fixtureDir,
     'src',
-    '--format',
-    'json',
+    '--format', 'json-v1',
     '--include-motion',
     '--since-baseline',
     baselinePath,
@@ -534,7 +557,7 @@ test('audit CLI can enable motion scanning from config', () => {
     }),
   );
 
-  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json');
+  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json-v1');
   assert.equal(result.status, 0, result.stderr);
 
   const report = JSON.parse(result.stdout);
@@ -555,7 +578,7 @@ test('audit CLI can scan only staged files', () => {
   fs.writeFileSync(path.join(fixtureDir, 'src', 'unstaged.css'), '.unstaged { padding: 13px; }\n');
   runGit(fixtureDir, 'add', 'src/staged.css');
 
-  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json', '--staged');
+  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json-v1', '--staged');
 
   assert.equal(result.status, 0, result.stderr);
 
@@ -577,7 +600,7 @@ test('audit CLI can scan files changed since a git ref', () => {
   runGit(fixtureDir, 'commit', '-m', 'init');
   fs.writeFileSync(path.join(fixtureDir, 'src', 'changed.css'), '.changed { padding: 13px; }\n');
 
-  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json', '--since', 'HEAD');
+  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json-v1', '--since', 'HEAD');
 
   assert.equal(result.status, 0, result.stderr);
 

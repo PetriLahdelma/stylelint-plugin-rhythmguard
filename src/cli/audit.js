@@ -25,8 +25,9 @@ const DEFAULT_BASE_FONT_SIZE = 16;
 const DEFAULT_BASELINE_PATH = '.rhythmguard-baseline.json';
 const DEFAULT_CONFIG_PATH = '.rhythmguardrc.json';
 const DEFAULT_IGNORE_PATH = '.rhythmguardignore';
+const DEFAULT_AUDIT_TOKEN_PATTERN = '^--(space|spacing)-';
 const DEFAULT_TOKEN_CANDIDATE_MIN_COUNT = 2;
-const VALID_FORMATS = new Set(['text', 'json', 'markdown']);
+const VALID_FORMATS = new Set(['text', 'json', 'json-v1', 'markdown', 'html']);
 const SKIP_DIRS = new Set([
   '.git',
   '.next',
@@ -56,9 +57,11 @@ const TEMPLATE_EXTENSIONS = new Set([
 const HELP = `Usage: rhythmguard audit <dir> [options]
 
 Options:
-  --format <text|json|markdown>  Output format (default: text)
+  --format <text|json|json-v1|markdown|html> Output format (default: text)
   --json                         Alias for --format json
   --markdown                     Alias for --format markdown
+  --schema                       Print the audit JSON schema and exit
+  --output <file>                Write json, markdown, or html output to a file
   --config <file>                Load audit config (default: .rhythmguardrc.json when present)
   --no-config                    Ignore .rhythmguardrc.json discovery
   --ignore <pattern>             Exclude root-relative path/glob (repeatable, comma-separated)
@@ -81,37 +84,19 @@ Options:
 `;
 
 function parseArgs(argv) {
-  const parsed = {
-    baselinePath: DEFAULT_BASELINE_PATH,
-    baseFontSize: DEFAULT_BASE_FONT_SIZE,
-    cliOptions: new Set(),
-    configExplicit: false,
-    configPath: DEFAULT_CONFIG_PATH,
-    dir: null,
-    failOnNewDrift: false,
-    format: 'text',
-    ignorePath: DEFAULT_IGNORE_PATH,
-    ignorePatterns: [],
-    includeMotion: false,
-    maxFindings: null,
-    minCleanliness: null,
-    noConfig: false,
-    scale: DEFAULT_SCALE,
-    since: null,
-    sinceBaseline: false,
-    staged: false,
-    tokenCandidateMinCount: DEFAULT_TOKEN_CANDIDATE_MIN_COUNT,
-    tokenKind: 'spacing',
-    tokenSourceFormat: 'auto',
-    tokenSources: [],
-    writeBaseline: false,
-  };
+  const parsed = createDefaultAuditOptions();
 
   for (let index = 0; index < argv.length; index++) {
     const arg = argv[index];
 
     if (arg === '--help' || arg === '-h') {
       parsed.help = true;
+      continue;
+    }
+
+    if (arg === '--schema') {
+      parsed.schema = true;
+      parsed.format = 'json';
       continue;
     }
 
@@ -122,6 +107,18 @@ function parseArgs(argv) {
 
     if (arg === '--markdown') {
       parsed.format = 'markdown';
+      continue;
+    }
+
+    if (arg === '--output') {
+      parsed.outputPath = parsePathOption(argv[++index], '--output');
+      parsed.cliOptions.add('outputPath');
+      continue;
+    }
+
+    if (arg.startsWith('--output=')) {
+      parsed.outputPath = parsePathOption(arg.slice('--output='.length), '--output');
+      parsed.cliOptions.add('outputPath');
       continue;
     }
 
@@ -365,7 +362,7 @@ function parseArgs(argv) {
   }
 
   if (!VALID_FORMATS.has(parsed.format)) {
-    throw new Error(`Invalid format "${parsed.format}". Expected text, json, or markdown.`);
+    throw new Error(`Invalid format "${parsed.format}". Expected text, json, json-v1, markdown, or html.`);
   }
 
   if (parsed.since && parsed.staged) {
@@ -377,6 +374,36 @@ function parseArgs(argv) {
   }
 
   return parsed;
+}
+
+function createDefaultAuditOptions() {
+  return {
+    baselinePath: DEFAULT_BASELINE_PATH,
+    baseFontSize: DEFAULT_BASE_FONT_SIZE,
+    cliOptions: new Set(),
+    configExplicit: false,
+    configPath: DEFAULT_CONFIG_PATH,
+    dir: null,
+    failOnNewDrift: false,
+    format: 'text',
+    ignorePath: DEFAULT_IGNORE_PATH,
+    ignorePatterns: [],
+    includeMotion: false,
+    maxFindings: null,
+    minCleanliness: null,
+    noConfig: false,
+    outputPath: null,
+    scale: DEFAULT_SCALE,
+    schema: false,
+    since: null,
+    sinceBaseline: false,
+    staged: false,
+    tokenCandidateMinCount: DEFAULT_TOKEN_CANDIDATE_MIN_COUNT,
+    tokenKind: 'spacing',
+    tokenSourceFormat: 'auto',
+    tokenSources: [],
+    writeBaseline: false,
+  };
 }
 
 function parsePathOption(raw, optionName) {
@@ -486,25 +513,27 @@ function parseBaseFontSize(raw) {
 
 function assertDirectory(dir) {
   if (!dir) {
-    process.stderr.write(HELP);
-    process.exit(1);
+    throw new Error('Missing audit directory.');
   }
 
   const resolvedDir = path.resolve(dir);
   if (!fs.existsSync(resolvedDir)) {
-    process.stderr.write(`Directory not found: ${dir}\n`);
-    process.exit(1);
+    throw new Error(`Directory not found: ${dir}`);
   }
 
   if (!fs.statSync(resolvedDir).isDirectory()) {
-    process.stderr.write(`Not a directory: ${dir}\n`);
-    process.exit(1);
+    throw new Error(`Not a directory: ${dir}`);
   }
 
   return resolvedDir;
 }
 
 function loadAuditConfig(parsed) {
+  parsed = {
+    ...createDefaultAuditOptions(),
+    ...parsed,
+  };
+
   if (parsed.noConfig) {
     return null;
   }
@@ -901,7 +930,7 @@ async function runStylelintAudit(cssFiles, options) {
         scale: options.scale,
         severity: 'warning',
         tokenMapFromCssCustomProperties: true,
-        tokenPattern: '^--spac(e|ing)-',
+        tokenPattern: DEFAULT_AUDIT_TOKEN_PATTERN,
       },
     ],
   };
@@ -1985,6 +2014,209 @@ function formatPath(filePath) {
   return path.relative(process.cwd(), filePath).replace(/\\/g, '/');
 }
 
+async function createAuditReport(options) {
+  const parsed = normalizeCreateAuditOptions(options);
+  const resolvedDir = assertDirectory(parsed.dir);
+  let ignorePatterns;
+  ignorePatterns = [
+    ...loadIgnorePatterns(parsed.ignorePath),
+    ...parsed.ignorePatterns,
+  ];
+
+  const scanFiles = getScanFiles(resolvedDir, ignorePatterns, parsed);
+
+  const { cssFiles, scanScope, templateFiles } = scanFiles;
+  const lintOptions = {
+    baseFontSize: parsed.baseFontSize,
+    includeMotion: parsed.includeMotion,
+    scale: parsed.scale,
+  };
+
+  const cssResults = await runStylelintAudit(cssFiles, lintOptions);
+
+  const tokenSourceResult = parseTokenSources({
+    baseFontSize: parsed.baseFontSize,
+    sources: parsed.tokenSources,
+    tokenKind: parsed.tokenKind,
+  });
+  const stylelintFindings = collectCssFindings(cssResults);
+  const cssFindings = stylelintFindings.filter((finding) => !finding.type.startsWith('motion-'));
+  const motionFindings = [
+    ...stylelintFindings.filter((finding) => finding.type.startsWith('motion-')),
+    ...collectTailwindMotionFindings(templateFiles, lintOptions),
+  ];
+
+  const report = buildReport({
+    baseFontSize: parsed.baseFontSize,
+    config: parsed.config,
+    cssFiles,
+    cssFindings,
+    dir: parsed.dir,
+    externalTokenDefinitions: tokenSourceResult.definitions,
+    includeMotion: parsed.includeMotion,
+    motionFindings,
+    scanScope,
+    tailwindFindings: collectTailwindFindings(templateFiles, lintOptions),
+    templateFiles,
+    tokenCandidateMinCount: parsed.tokenCandidateMinCount,
+    tokenKind: parsed.tokenKind,
+    tokenSourceReports: tokenSourceResult.sources,
+    tokenSourceWarnings: tokenSourceResult.warnings,
+  });
+
+  if (parsed.sinceBaseline) {
+    applyBaselineComparison(report, parsed.baselinePath);
+  }
+
+  if (parsed.writeBaseline) {
+    writeBaseline(report, parsed.baselinePath);
+  }
+
+  return report;
+}
+
+function normalizeCreateAuditOptions(options = {}) {
+  const parsed = {
+    ...createDefaultAuditOptions(),
+    ...options,
+    cliOptions: options.cliOptions instanceof Set
+      ? options.cliOptions
+      : new Set(Object.keys(options)),
+  };
+
+  if (!Array.isArray(parsed.ignorePatterns)) {
+    parsed.ignorePatterns = [];
+  }
+
+  if (!Array.isArray(parsed.tokenSources)) {
+    parsed.tokenSources = [];
+  }
+
+  if (parsed.configApplied) {
+    delete parsed.cliOptions;
+    return parsed;
+  }
+
+  return applyAuditConfig(parsed, loadAuditConfig(parsed));
+}
+
+function toAuditContractReport(report) {
+  return {
+    baseline: report.baseline || null,
+    command: {
+      config: report.config,
+      directory: report.directory,
+      scanScope: report.scanScope.mode,
+    },
+    contracts: {
+      motion: report.motion,
+      scale: {
+        cleanliness: report.scaleCleanliness,
+        offScaleValues: report.offScaleValues,
+        tokenOpportunities: report.tokenOpportunities,
+      },
+      tokens: report.tokenContract,
+    },
+    findings: report.findings,
+    scanned: report.scanned,
+    schemaVersion: '2.0',
+    summary: report.summary,
+  };
+}
+
+const AUDIT_JSON_SCHEMA = Object.freeze({
+  $schema: 'https://json-schema.org/draft/2020-12/schema',
+  additionalProperties: true,
+  properties: {
+    baseline: { type: ['object', 'null'] },
+    command: { type: 'object' },
+    contracts: { type: 'object' },
+    findings: { type: 'object' },
+    scanned: { type: 'object' },
+    schemaVersion: { const: '2.0' },
+    summary: { type: 'object' },
+  },
+  required: ['schemaVersion', 'command', 'summary', 'scanned', 'contracts', 'findings'],
+  title: 'Rhythmguard Audit Report',
+  type: 'object',
+});
+
+function renderHtml(report) {
+  const contractReport = toAuditContractReport(report);
+  const lines = [
+    '<!doctype html>',
+    '<html lang="en">',
+    '<head>',
+    '<meta charset="utf-8">',
+    '<meta name="viewport" content="width=device-width, initial-scale=1">',
+    '<title>Rhythmguard Design-System Audit</title>',
+    '<style>',
+    'body{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;color:#171717;background:#fafafa;}',
+    'main{max-width:1040px;margin:0 auto;padding:32px 20px;}',
+    'h1,h2{line-height:1.2;}',
+    '.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;}',
+    '.metric{border:1px solid #ddd;background:#fff;padding:14px;border-radius:6px;}',
+    '.metric strong{display:block;font-size:28px;}',
+    'table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #ddd;}',
+    'th,td{padding:10px;border-bottom:1px solid #eee;text-align:left;}',
+    'code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;}',
+    '</style>',
+    '</head>',
+    '<body>',
+    '<main>',
+    '<h1>Rhythmguard Design-System Audit</h1>',
+    `<p>Directory: <code>${escapeHtml(contractReport.command.directory)}</code></p>`,
+    '<section class="grid">',
+    metricHtml('Total findings', report.totalWarnings),
+    metricHtml('Scale cleanliness', `${report.scaleCleanliness}%`),
+    metricHtml('CSS files', report.cssFilesScanned),
+    metricHtml('Template files', report.templateFilesScanned),
+    '</section>',
+    renderHtmlTable('Top Affected Files', ['File', 'Findings'], report.topAffectedFiles.map(({ file, count }) => [file, count])),
+    renderHtmlTable('Token Contract Sources', ['File', 'Format', 'Tokens'], report.tokenContract.sources.map((source) => [
+      source.file,
+      source.format,
+      source.tokenCount,
+    ])),
+    renderHtmlTable('Motion Rhythm Drift', ['Value', 'Count'], Object.entries(report.motion.values)),
+    '<h2>Machine JSON</h2>',
+    `<pre><code>${escapeHtml(JSON.stringify(contractReport, null, 2))}</code></pre>`,
+    '</main>',
+    '</body>',
+    '</html>',
+  ];
+
+  return `${lines.join('\n')}\n`;
+}
+
+function metricHtml(label, value) {
+  return `<div class="metric"><span>${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`;
+}
+
+function renderHtmlTable(title, headers, rows) {
+  if (rows.length === 0) {
+    return '';
+  }
+
+  return [
+    `<h2>${escapeHtml(title)}</h2>`,
+    '<table>',
+    `<thead><tr>${headers.map((header) => `<th>${escapeHtml(header)}</th>`).join('')}</tr></thead>`,
+    '<tbody>',
+    ...rows.map((row) => `<tr>${row.map((cell) => `<td><code>${escapeHtml(cell)}</code></td>`).join('')}</tr>`),
+    '</tbody>',
+    '</table>',
+  ].join('\n');
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
 async function run() {
   let parsed;
   try {
@@ -1999,86 +2231,14 @@ async function run() {
     return;
   }
 
-  try {
-    parsed = applyAuditConfig(parsed, loadAuditConfig(parsed));
-  } catch (err) {
-    process.stderr.write(`${err.message}\n`);
-    process.exit(1);
+  if (parsed.schema) {
+    writeOutput(`${JSON.stringify(AUDIT_JSON_SCHEMA, null, 2)}\n`, parsed.outputPath);
+    return;
   }
 
-  const resolvedDir = assertDirectory(parsed.dir);
-  let ignorePatterns;
+  let report;
   try {
-    ignorePatterns = [
-      ...loadIgnorePatterns(parsed.ignorePath),
-      ...parsed.ignorePatterns,
-    ];
-  } catch (err) {
-    process.stderr.write(`${err.message}\n`);
-    process.exit(1);
-  }
-
-  let scanFiles;
-  try {
-    scanFiles = getScanFiles(resolvedDir, ignorePatterns, parsed);
-  } catch (err) {
-    process.stderr.write(`${err.message}\n`);
-    process.exit(1);
-  }
-
-  const { cssFiles, scanScope, templateFiles } = scanFiles;
-  const options = {
-    baseFontSize: parsed.baseFontSize,
-    includeMotion: parsed.includeMotion,
-    scale: parsed.scale,
-  };
-
-  let cssResults;
-  try {
-    cssResults = await runStylelintAudit(cssFiles, options);
-  } catch (err) {
-    process.stderr.write(`Lint error: ${err.message}\n`);
-    process.exit(1);
-  }
-
-  const tokenSourceResult = parseTokenSources({
-    baseFontSize: parsed.baseFontSize,
-    sources: parsed.tokenSources,
-    tokenKind: parsed.tokenKind,
-  });
-  const stylelintFindings = collectCssFindings(cssResults);
-  const cssFindings = stylelintFindings.filter((finding) => !finding.type.startsWith('motion-'));
-  const motionFindings = [
-    ...stylelintFindings.filter((finding) => finding.type.startsWith('motion-')),
-    ...collectTailwindMotionFindings(templateFiles, options),
-  ];
-
-  const report = buildReport({
-    baseFontSize: parsed.baseFontSize,
-    config: parsed.config,
-    cssFiles,
-    cssFindings,
-    dir: parsed.dir,
-    externalTokenDefinitions: tokenSourceResult.definitions,
-    includeMotion: parsed.includeMotion,
-    motionFindings,
-    scanScope,
-    tailwindFindings: collectTailwindFindings(templateFiles, options),
-    templateFiles,
-    tokenCandidateMinCount: parsed.tokenCandidateMinCount,
-    tokenKind: parsed.tokenKind,
-    tokenSourceReports: tokenSourceResult.sources,
-    tokenSourceWarnings: tokenSourceResult.warnings,
-  });
-
-  try {
-    if (parsed.sinceBaseline) {
-      applyBaselineComparison(report, parsed.baselinePath);
-    }
-
-    if (parsed.writeBaseline) {
-      writeBaseline(report, parsed.baselinePath);
-    }
+    report = await createAuditReport(parsed);
   } catch (err) {
     process.stderr.write(`${err.message}\n`);
     process.exit(1);
@@ -2087,19 +2247,42 @@ async function run() {
   const auditFailures = getAuditFailures(report, parsed);
 
   if (parsed.format === 'json') {
-    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    writeOutput(`${JSON.stringify(toAuditContractReport(report), null, 2)}\n`, parsed.outputPath);
+    finish(auditFailures);
+    return;
+  }
+
+  if (parsed.format === 'json-v1') {
+    writeOutput(`${JSON.stringify(report, null, 2)}\n`, parsed.outputPath);
     finish(auditFailures);
     return;
   }
 
   if (parsed.format === 'markdown') {
-    process.stdout.write(renderMarkdown(report));
+    writeOutput(renderMarkdown(report), parsed.outputPath);
     finish(auditFailures);
     return;
   }
 
-  process.stdout.write(renderText(report));
+  if (parsed.format === 'html') {
+    writeOutput(renderHtml(report), parsed.outputPath);
+    finish(auditFailures);
+    return;
+  }
+
+  writeOutput(renderText(report), parsed.outputPath);
   finish(auditFailures);
+}
+
+function writeOutput(output, outputPath) {
+  if (!outputPath) {
+    process.stdout.write(output);
+    return;
+  }
+
+  const resolvedPath = path.resolve(process.cwd(), outputPath);
+  fs.mkdirSync(path.dirname(resolvedPath), { recursive: true });
+  fs.writeFileSync(resolvedPath, output);
 }
 
 function finish(auditFailures) {
@@ -2111,4 +2294,16 @@ function finish(auditFailures) {
   process.exitCode = 1;
 }
 
-run();
+module.exports = {
+  AUDIT_JSON_SCHEMA,
+  createAuditReport,
+  loadAuditConfig,
+  parseArgs,
+  renderHtml,
+  run,
+  toAuditContractReport,
+};
+
+if (require.main === module) {
+  run();
+}

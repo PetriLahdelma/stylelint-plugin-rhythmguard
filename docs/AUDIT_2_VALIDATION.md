@@ -38,6 +38,8 @@ npx rhythmguard audit ./src --since origin/main --max-findings 0
 npx rhythmguard audit ./src --token-source ./tokens.json
 npx rhythmguard audit ./src --config ./configs/rhythmguard.json
 npx rhythmguard audit ./src --include-motion
+npx rhythmguard audit ./src --format html --output rhythmguard-report.html
+npx rhythmguard audit --schema
 ```
 
 The report includes:
@@ -59,10 +61,13 @@ The report includes:
 - External token-source contract checks for canonical tokens that live outside the scanned source tree.
 - `.rhythmguardrc.json` audit config for reusable ignores, thresholds, token sources, and token-kind selection.
 - Opt-in motion rhythm reporting for CSS duration/delay drift, raw easing curves, and Tailwind arbitrary motion utilities.
+- Stable JSON 2.0 contract with `--format json-v1` migration compatibility.
+- Static HTML report output and `--output <file>` for generated artifacts.
+- Programmatic audit API at `stylelint-plugin-rhythmguard/audit`.
 - CI gates with `--max-findings`, `--min-cleanliness`, and `--fail-on-new-drift`.
 
 ## Follow-Up Roadmap
 
-1. Add HTML report output for design reviews.
-2. Add Figma-friendly export after the code-side contract stabilizes.
-3. Stabilize the audit JSON contract and add HTML output for design reviews.
+1. Add Figma-friendly export after the code-side contract stabilizes.
+2. Add richer dashboard examples around the programmatic audit API.
+3. Evaluate whether motion should move from opt-in to a recommended profile in a future major.
