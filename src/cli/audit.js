@@ -1,5 +1,6 @@
 'use strict';
 
+const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 
@@ -11,6 +12,10 @@ const pluginPath = path.resolve(__dirname, '..', 'index.js');
 
 const DEFAULT_SCALE = [0, 4, 8, 12, 16, 24, 32];
 const DEFAULT_BASE_FONT_SIZE = 16;
+const DEFAULT_BASELINE_PATH = '.rhythmguard-baseline.json';
+const DEFAULT_IGNORE_PATH = '.rhythmguardignore';
+const DEFAULT_TOKEN_PATTERN = '^--spac(e|ing)-';
+const DEFAULT_TOKEN_CANDIDATE_MIN_COUNT = 2;
 const VALID_FORMATS = new Set(['text', 'json', 'markdown']);
 const SKIP_DIRS = new Set([
   '.git',
@@ -45,17 +50,37 @@ Options:
   --json                         Alias for --format json
   --markdown                     Alias for --format markdown
   --ignore <pattern>             Exclude root-relative path/glob (repeatable, comma-separated)
+  --ignore-path <file>           Load ignore patterns from file (default: .rhythmguardignore when present)
+  --baseline <file>              Baseline file path (default: .rhythmguard-baseline.json)
+  --write-baseline [file]        Write current findings as a baseline
+  --since-baseline [file]        Compare current findings against a baseline
+  --fail-on-new-drift            Exit 1 when --since-baseline finds new drift
+  --max-findings <number>        Exit 1 when total findings exceed this count
+  --min-cleanliness <percent>    Exit 1 when scale cleanliness is lower than this percent
+  --since <git-ref>              Scan only changed files since a git ref
+  --staged                       Scan only staged files
+  --token-candidate-min-count <n> Minimum repeated raw value count for token candidates (default: 2)
   --scale <values>               Comma-separated scale values (default: 0,4,8,12,16,24,32)
   --base-font-size <number>      px base for rem/em conversion (default: 16)
 `;
 
 function parseArgs(argv) {
   const parsed = {
+    baselinePath: DEFAULT_BASELINE_PATH,
     baseFontSize: DEFAULT_BASE_FONT_SIZE,
     dir: null,
+    failOnNewDrift: false,
     format: 'text',
+    ignorePath: DEFAULT_IGNORE_PATH,
     ignorePatterns: [],
+    maxFindings: null,
+    minCleanliness: null,
     scale: DEFAULT_SCALE,
+    since: null,
+    sinceBaseline: false,
+    staged: false,
+    tokenCandidateMinCount: DEFAULT_TOKEN_CANDIDATE_MIN_COUNT,
+    writeBaseline: false,
   };
 
   for (let index = 0; index < argv.length; index++) {
@@ -83,6 +108,110 @@ function parseArgs(argv) {
 
     if (arg.startsWith('--ignore=')) {
       parsed.ignorePatterns.push(...parseIgnorePatterns(arg.slice('--ignore='.length)));
+      continue;
+    }
+
+    if (arg === '--ignore-path') {
+      parsed.ignorePath = parsePathOption(argv[++index], '--ignore-path');
+      continue;
+    }
+
+    if (arg.startsWith('--ignore-path=')) {
+      parsed.ignorePath = parsePathOption(arg.slice('--ignore-path='.length), '--ignore-path');
+      continue;
+    }
+
+    if (arg === '--baseline') {
+      parsed.baselinePath = parsePathOption(argv[++index], '--baseline');
+      continue;
+    }
+
+    if (arg.startsWith('--baseline=')) {
+      parsed.baselinePath = parsePathOption(arg.slice('--baseline='.length), '--baseline');
+      continue;
+    }
+
+    if (arg === '--write-baseline') {
+      parsed.writeBaseline = true;
+      if (argv[index + 1] && !argv[index + 1].startsWith('-')) {
+        parsed.baselinePath = parsePathOption(argv[++index], '--write-baseline');
+      }
+      continue;
+    }
+
+    if (arg.startsWith('--write-baseline=')) {
+      parsed.writeBaseline = true;
+      parsed.baselinePath = parsePathOption(arg.slice('--write-baseline='.length), '--write-baseline');
+      continue;
+    }
+
+    if (arg === '--since-baseline') {
+      parsed.sinceBaseline = true;
+      if (argv[index + 1] && !argv[index + 1].startsWith('-')) {
+        parsed.baselinePath = parsePathOption(argv[++index], '--since-baseline');
+      }
+      continue;
+    }
+
+    if (arg.startsWith('--since-baseline=')) {
+      parsed.sinceBaseline = true;
+      parsed.baselinePath = parsePathOption(arg.slice('--since-baseline='.length), '--since-baseline');
+      continue;
+    }
+
+    if (arg === '--fail-on-new-drift') {
+      parsed.failOnNewDrift = true;
+      continue;
+    }
+
+    if (arg === '--max-findings') {
+      parsed.maxFindings = parseNonNegativeInteger(argv[++index], '--max-findings');
+      continue;
+    }
+
+    if (arg.startsWith('--max-findings=')) {
+      parsed.maxFindings = parseNonNegativeInteger(arg.slice('--max-findings='.length), '--max-findings');
+      continue;
+    }
+
+    if (arg === '--min-cleanliness') {
+      parsed.minCleanliness = parsePercentage(argv[++index], '--min-cleanliness');
+      continue;
+    }
+
+    if (arg.startsWith('--min-cleanliness=')) {
+      parsed.minCleanliness = parsePercentage(
+        arg.slice('--min-cleanliness='.length),
+        '--min-cleanliness',
+      );
+      continue;
+    }
+
+    if (arg === '--since') {
+      parsed.since = parsePathOption(argv[++index], '--since');
+      continue;
+    }
+
+    if (arg.startsWith('--since=')) {
+      parsed.since = parsePathOption(arg.slice('--since='.length), '--since');
+      continue;
+    }
+
+    if (arg === '--staged') {
+      parsed.staged = true;
+      continue;
+    }
+
+    if (arg === '--token-candidate-min-count') {
+      parsed.tokenCandidateMinCount = parsePositiveInteger(argv[++index], '--token-candidate-min-count');
+      continue;
+    }
+
+    if (arg.startsWith('--token-candidate-min-count=')) {
+      parsed.tokenCandidateMinCount = parsePositiveInteger(
+        arg.slice('--token-candidate-min-count='.length),
+        '--token-candidate-min-count',
+      );
       continue;
     }
 
@@ -128,7 +257,50 @@ function parseArgs(argv) {
     throw new Error(`Invalid format "${parsed.format}". Expected text, json, or markdown.`);
   }
 
+  if (parsed.since && parsed.staged) {
+    throw new Error('Use either --since or --staged, not both.');
+  }
+
+  if (parsed.failOnNewDrift && !parsed.sinceBaseline) {
+    throw new Error('--fail-on-new-drift requires --since-baseline.');
+  }
+
   return parsed;
+}
+
+function parsePathOption(raw, optionName) {
+  if (!raw) {
+    throw new Error(`Missing value for ${optionName}.`);
+  }
+
+  return String(raw);
+}
+
+function parseNonNegativeInteger(raw, optionName) {
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value < 0) {
+    throw new Error(`${optionName} must be a non-negative integer.`);
+  }
+
+  return value;
+}
+
+function parsePositiveInteger(raw, optionName) {
+  const value = Number(raw);
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(`${optionName} must be a positive integer.`);
+  }
+
+  return value;
+}
+
+function parsePercentage(raw, optionName) {
+  const value = Number(raw);
+  if (!Number.isFinite(value) || value < 0 || value > 100) {
+    throw new Error(`${optionName} must be a number between 0 and 100.`);
+  }
+
+  return value;
 }
 
 function parseIgnorePatterns(raw) {
@@ -205,6 +377,27 @@ function assertDirectory(dir) {
   return resolvedDir;
 }
 
+function loadIgnorePatterns(ignorePath) {
+  if (!ignorePath) {
+    return [];
+  }
+
+  const resolvedPath = path.resolve(process.cwd(), ignorePath);
+  if (!fs.existsSync(resolvedPath)) {
+    if (ignorePath === DEFAULT_IGNORE_PATH) {
+      return [];
+    }
+    throw new Error(`Ignore file not found: ${ignorePath}`);
+  }
+
+  return fs.readFileSync(resolvedPath, 'utf8')
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line && !line.startsWith('#'))
+    .map((line) => normalizeIgnorePattern(line))
+    .filter(Boolean);
+}
+
 function walkFiles(rootDir, ignorePatterns = []) {
   const cssFiles = [];
   const templateFiles = [];
@@ -238,9 +431,94 @@ function walkFiles(rootDir, ignorePatterns = []) {
   return { cssFiles, templateFiles };
 }
 
+function getScanFiles(rootDir, ignorePatterns, parsed) {
+  if (parsed.staged || parsed.since) {
+    return getGitChangedScanFiles(rootDir, ignorePatterns, parsed);
+  }
+
+  return {
+    ...walkFiles(rootDir, ignorePatterns),
+    scanScope: {
+      mode: 'full',
+    },
+  };
+}
+
+function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
+  const args = parsed.staged
+    ? ['diff', '--name-only', '--cached', '--diff-filter=ACMR', '--']
+    : ['diff', '--name-only', '--diff-filter=ACMR', parsed.since, '--'];
+  let output = '';
+
+  try {
+    output = execFileSync('git', args, {
+      cwd: process.cwd(),
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+  } catch (err) {
+    const stderr = err.stderr ? String(err.stderr).trim() : err.message;
+    throw new Error(`Unable to read changed files from git: ${stderr}`);
+  }
+
+  const cssFiles = [];
+  const templateFiles = [];
+  const ignoreMatchers = createIgnoreMatchers(ignorePatterns);
+  const seen = new Set();
+  const changedFiles = output.split(/\r?\n/)
+    .map((filePath) => filePath.trim())
+    .filter(Boolean);
+
+  for (const filePath of changedFiles) {
+    const fullPath = path.resolve(process.cwd(), filePath);
+
+    if (!isPathInside(rootDir, fullPath) || seen.has(fullPath) || !fs.existsSync(fullPath)) {
+      continue;
+    }
+
+    const stat = fs.statSync(fullPath);
+    if (!stat.isFile()) {
+      continue;
+    }
+
+    const relativePath = toPosixRelativePath(rootDir, fullPath);
+    if (shouldIgnoreRelativeFile(relativePath, ignoreMatchers)) {
+      continue;
+    }
+
+    seen.add(fullPath);
+    if (isCssFile(fullPath)) {
+      cssFiles.push(fullPath);
+    } else if (isTemplateFile(fullPath)) {
+      templateFiles.push(fullPath);
+    }
+  }
+
+  return {
+    cssFiles,
+    scanScope: {
+      changedFiles: changedFiles.length,
+      mode: parsed.staged ? 'staged' : 'since',
+      since: parsed.since,
+    },
+    templateFiles,
+  };
+}
+
+function isPathInside(rootDir, filePath) {
+  const relativePath = path.relative(rootDir, filePath);
+  return relativePath === '' || (!relativePath.startsWith('..') && !path.isAbsolute(relativePath));
+}
+
 function shouldIgnorePath(relativePath, entry, ignoreMatchers) {
   return ignoreMatchers.some((matcher) => matcher.test(relativePath))
     || (entry.isDirectory() && SKIP_DIRS.has(entry.name));
+}
+
+function shouldIgnoreRelativeFile(relativePath, ignoreMatchers) {
+  const segments = relativePath.split('/');
+  return segments.some((segment) => SKIP_DIRS.has(segment))
+    || ignoreMatchers.some((matcher) => matcher.test(relativePath));
 }
 
 function createIgnoreMatchers(patterns) {
@@ -483,12 +761,151 @@ function offsetToLineColumn(lineStarts, offset) {
   };
 }
 
+function collectTokenContract(cssFiles, cssFindings, tailwindFindings, minCandidateCount) {
+  const definitions = new Map();
+  const uses = new Map();
+  const rawValues = new Map();
+  const rawValueLocations = new Set();
+
+  for (const filePath of cssFiles) {
+    let source = '';
+    try {
+      source = fs.readFileSync(filePath, 'utf8');
+    } catch {
+      continue;
+    }
+
+    const file = formatPath(filePath);
+    collectTokenDefinitions(source, file, definitions);
+    collectTokenUses(source, file, uses);
+  }
+
+  for (const finding of cssFindings) {
+    addRawValue(rawValues, rawValueLocations, finding.value, finding);
+  }
+
+  for (const finding of tailwindFindings) {
+    addRawValue(rawValues, rawValueLocations, finding.rawValue, finding);
+  }
+
+  const definedTokens = mapTokenEntries(definitions);
+  const usedTokens = mapTokenEntries(uses);
+  const missingTokens = usedTokens.filter(({ token }) => !definitions.has(token));
+  const unusedTokens = definedTokens.filter(({ token }) => !uses.has(token));
+  const rawValueCandidates = Array.from(rawValues.entries())
+    .map(([value, entry]) => ({
+      count: entry.count,
+      files: Array.from(entry.files).sort(),
+      value,
+    }))
+    .filter(({ count }) => count >= minCandidateCount)
+    .sort((a, b) => b.count - a.count || a.value.localeCompare(b.value));
+
+  return {
+    definedTokens,
+    missingTokens,
+    rawValueCandidates,
+    summary: {
+      definedTokens: definedTokens.length,
+      missingTokens: missingTokens.length,
+      rawValueCandidates: rawValueCandidates.length,
+      unusedTokens: unusedTokens.length,
+      usedTokens: usedTokens.length,
+    },
+    unusedTokens,
+    usedTokens,
+  };
+}
+
+function collectTokenDefinitions(source, file, definitions) {
+  const declarationPattern = /(--[\w-]+)\s*:\s*([^;{}]+)/g;
+  let match;
+
+  while ((match = declarationPattern.exec(source)) !== null) {
+    const token = match[1];
+    if (!isSpacingToken(token)) {
+      continue;
+    }
+
+    const entry = definitions.get(token) || {
+      files: new Set(),
+      token,
+      values: new Set(),
+    };
+    entry.files.add(file);
+    entry.values.add(match[2].trim());
+    definitions.set(token, entry);
+  }
+}
+
+function collectTokenUses(source, file, uses) {
+  const varPattern = /var\(\s*(--[\w-]+)/g;
+  let match;
+
+  while ((match = varPattern.exec(source)) !== null) {
+    const token = match[1];
+    if (!isSpacingToken(token)) {
+      continue;
+    }
+
+    const entry = uses.get(token) || {
+      files: new Set(),
+      token,
+    };
+    entry.files.add(file);
+    uses.set(token, entry);
+  }
+}
+
+function isSpacingToken(token) {
+  return new RegExp(DEFAULT_TOKEN_PATTERN).test(token);
+}
+
+function addRawValue(rawValues, rawValueLocations, value, finding) {
+  if (!value) {
+    return;
+  }
+
+  const locationKey = [
+    finding.file || '',
+    finding.line || '',
+    finding.column || '',
+    value,
+  ].join('\u001f');
+  if (rawValueLocations.has(locationKey)) {
+    return;
+  }
+  rawValueLocations.add(locationKey);
+
+  const entry = rawValues.get(value) || {
+    count: 0,
+    files: new Set(),
+  };
+  entry.count += 1;
+  if (finding.file) {
+    entry.files.add(finding.file);
+  }
+  rawValues.set(value, entry);
+}
+
+function mapTokenEntries(entries) {
+  return Array.from(entries.values())
+    .map((entry) => ({
+      files: Array.from(entry.files).sort(),
+      token: entry.token,
+      values: entry.values ? Array.from(entry.values).sort() : undefined,
+    }))
+    .sort((a, b) => a.token.localeCompare(b.token));
+}
+
 function buildReport({
   cssFiles,
   cssFindings,
   dir,
+  scanScope,
   templateFiles,
   tailwindFindings,
+  tokenCandidateMinCount,
 }) {
   const offScaleValues = countByValue(cssFindings
     .filter((finding) => finding.type === 'off-scale' && finding.value)
@@ -513,6 +930,12 @@ function buildReport({
   const scaleCleanliness = totalFiles > 0
     ? Math.max(0, Math.round(((totalFiles - filesWithIssues) / totalFiles) * 100))
     : 100;
+  const tokenContract = collectTokenContract(
+    cssFiles,
+    cssFindings,
+    tailwindFindings,
+    tokenCandidateMinCount,
+  );
 
   return {
     cssFilesScanned: cssFiles.length,
@@ -522,9 +945,10 @@ function buildReport({
       css: cssFindings,
       tailwind: tailwindFindings,
     },
-    formatVersion: 2,
+    formatVersion: 3,
     offScaleValues: Object.fromEntries(sortCountMap(offScaleValues).slice(0, 10)),
     scaleCleanliness,
+    scanScope,
     scanned: {
       cssFiles: cssFiles.length,
       templateFiles: templateFiles.length,
@@ -533,13 +957,17 @@ function buildReport({
     summary: {
       cssWarnings: cssFindings.length,
       filesWithIssues,
+      missingTokens: tokenContract.summary.missingTokens,
+      rawValueCandidates: tokenContract.summary.rawValueCandidates,
       scaleCleanliness,
       tailwindArbitrarySpacing: tailwindFindings.length,
       tokenOpportunities: sumCounts(tokenOpportunities),
       totalFindings: totalWarnings,
+      unusedTokens: tokenContract.summary.unusedTokens,
     },
     tailwindArbitraryValues: Object.fromEntries(sortCountMap(tailwindArbitraryValues).slice(0, 10)),
     templateFilesScanned: templateFiles.length,
+    tokenContract,
     tokenOpportunities: Object.fromEntries(sortCountMap(tokenOpportunities).slice(0, 10)),
     topAffectedFiles: topAffectedFiles.map(([file, count]) => ({ count, file })),
     totalFiles,
@@ -567,6 +995,105 @@ function sumCounts(counts) {
   return Object.values(counts).reduce((total, count) => total + count, 0);
 }
 
+function applyBaselineComparison(report, baselinePath) {
+  const resolvedPath = path.resolve(process.cwd(), baselinePath);
+  if (!fs.existsSync(resolvedPath)) {
+    throw new Error(`Baseline file not found: ${baselinePath}`);
+  }
+
+  const baseline = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
+  const baselineFindings = Array.isArray(baseline.findings) ? baseline.findings : [];
+  const baselineKeys = new Set(baselineFindings.map((finding) => finding.key || createFindingKey(finding)));
+  const currentFindings = getAllFindings(report);
+  const currentKeys = new Set(currentFindings.map(createFindingKey));
+  const newFindings = currentFindings.filter((finding) => !baselineKeys.has(createFindingKey(finding)));
+  const resolvedFindings = baselineFindings.filter((finding) => !currentKeys.has(finding.key || createFindingKey(finding)));
+
+  report.baseline = {
+    baselineFindings: baselineFindings.length,
+    file: formatPath(resolvedPath),
+    newFindings,
+    newFindingsCount: newFindings.length,
+    resolvedFindingsCount: resolvedFindings.length,
+  };
+  report.summary.newFindings = newFindings.length;
+  report.summary.resolvedFindings = resolvedFindings.length;
+}
+
+function writeBaseline(report, baselinePath) {
+  const resolvedPath = path.resolve(process.cwd(), baselinePath);
+  fs.mkdirSync(path.dirname(resolvedPath), { recursive: true });
+  fs.writeFileSync(
+    resolvedPath,
+    `${JSON.stringify({
+      createdAt: new Date().toISOString(),
+      directory: report.directory,
+      findings: getAllFindings(report).map(toBaselineFinding),
+      formatVersion: 1,
+      summary: {
+        scaleCleanliness: report.scaleCleanliness,
+        totalFindings: report.totalWarnings,
+      },
+    }, null, 2)}\n`,
+  );
+
+  report.baselineWritten = {
+    file: formatPath(resolvedPath),
+    findings: report.totalWarnings,
+  };
+}
+
+function getAllFindings(report) {
+  return [
+    ...report.findings.css,
+    ...report.findings.tailwind,
+  ];
+}
+
+function toBaselineFinding(finding) {
+  return {
+    column: finding.column,
+    file: finding.file,
+    key: createFindingKey(finding),
+    line: finding.line,
+    rule: finding.rule,
+    text: finding.text,
+    token: finding.token,
+    type: finding.type,
+    value: finding.value || finding.rawValue,
+  };
+}
+
+function createFindingKey(finding) {
+  return [
+    finding.rule || '',
+    finding.type || '',
+    finding.file || '',
+    finding.line || '',
+    finding.column || '',
+    finding.value || finding.rawValue || finding.token || '',
+    finding.text || '',
+  ].join('\u001f');
+}
+
+function getAuditFailures(report, parsed) {
+  const failures = [];
+
+  if (parsed.maxFindings !== null && report.totalWarnings > parsed.maxFindings) {
+    failures.push(`total findings ${report.totalWarnings} exceeds --max-findings ${parsed.maxFindings}`);
+  }
+
+  if (parsed.minCleanliness !== null && report.scaleCleanliness < parsed.minCleanliness) {
+    failures.push(`scale cleanliness ${report.scaleCleanliness}% is below --min-cleanliness ${parsed.minCleanliness}%`);
+  }
+
+  if (parsed.failOnNewDrift && report.baseline && report.baseline.newFindingsCount > 0) {
+    failures.push(`new drift found: ${report.baseline.newFindingsCount} finding(s) not present in baseline`);
+  }
+
+  return failures;
+}
+
 function renderText(report) {
   const lines = [
     '',
@@ -584,6 +1111,8 @@ function renderText(report) {
   appendHistogram(lines, 'CSS OFF-SCALE VALUES', report.offScaleValues);
   appendHistogram(lines, 'CSS TOKEN OPPORTUNITIES', report.tokenOpportunities);
   appendHistogram(lines, 'TAILWIND CLASS-STRING DRIFT', report.tailwindArbitraryValues);
+  appendTokenContractText(lines, report.tokenContract);
+  appendBaselineText(lines, report);
 
   if (report.topAffectedFiles.length > 0) {
     lines.push('  ── TOP AFFECTED FILES ──');
@@ -604,6 +1133,55 @@ function renderText(report) {
   lines.push('');
 
   return `${lines.join('\n')}\n`;
+}
+
+function appendTokenContractText(lines, tokenContract) {
+  const { missingTokens, rawValueCandidates, unusedTokens } = tokenContract;
+  if (missingTokens.length === 0 && rawValueCandidates.length === 0 && unusedTokens.length === 0) {
+    return;
+  }
+
+  lines.push('  ── TOKEN CONTRACT ──');
+  lines.push('');
+
+  if (missingTokens.length > 0) {
+    lines.push(`  Missing tokens         ${missingTokens.length}`);
+    for (const entry of missingTokens.slice(0, 5)) {
+      lines.push(`    ${entry.token} (${truncate(entry.files.join(', '), 42)})`);
+    }
+  }
+
+  if (unusedTokens.length > 0) {
+    lines.push(`  Defined but unused     ${unusedTokens.length}`);
+    for (const entry of unusedTokens.slice(0, 5)) {
+      lines.push(`    ${entry.token}`);
+    }
+  }
+
+  if (rawValueCandidates.length > 0) {
+    lines.push(`  Repeated raw values    ${rawValueCandidates.length}`);
+    for (const entry of rawValueCandidates.slice(0, 5)) {
+      lines.push(`    ${entry.value.padEnd(14)} ${entry.count}`);
+    }
+  }
+
+  lines.push('');
+}
+
+function appendBaselineText(lines, report) {
+  if (report.baseline) {
+    lines.push('  ── BASELINE COMPARISON ──');
+    lines.push('');
+    lines.push(`  Baseline findings      ${String(report.baseline.baselineFindings).padStart(4)}`);
+    lines.push(`  New findings           ${String(report.baseline.newFindingsCount).padStart(4)}`);
+    lines.push(`  Resolved findings      ${String(report.baseline.resolvedFindingsCount).padStart(4)}`);
+    lines.push('');
+  }
+
+  if (report.baselineWritten) {
+    lines.push(`  Baseline written       ${report.baselineWritten.file}`);
+    lines.push('');
+  }
 }
 
 function appendHistogram(lines, title, counts) {
@@ -638,12 +1216,19 @@ function renderMarkdown(report) {
     `| Files with issues | ${report.filesWithIssues} |`,
     `| Total findings | ${report.totalWarnings} |`,
     `| Scale cleanliness | ${report.scaleCleanliness}% |`,
-    '',
   ];
+
+  if (report.baseline) {
+    lines.push(`| New findings | ${report.baseline.newFindingsCount} |`);
+    lines.push(`| Resolved findings | ${report.baseline.resolvedFindingsCount} |`);
+  }
+  lines.push('');
 
   appendMarkdownCounts(lines, 'CSS Off-Scale Values', report.offScaleValues);
   appendMarkdownCounts(lines, 'CSS Token Opportunities', report.tokenOpportunities);
   appendMarkdownCounts(lines, 'Tailwind Class-String Drift', report.tailwindArbitraryValues);
+  appendTokenContractMarkdown(lines, report.tokenContract);
+  appendBaselineMarkdown(lines, report);
 
   if (report.topAffectedFiles.length > 0) {
     lines.push('## Top Affected Files');
@@ -679,6 +1264,81 @@ function renderMarkdown(report) {
   lines.push('');
 
   return `${lines.join('\n')}\n`;
+}
+
+function appendTokenContractMarkdown(lines, tokenContract) {
+  const { missingTokens, rawValueCandidates, unusedTokens } = tokenContract;
+  if (missingTokens.length === 0 && rawValueCandidates.length === 0 && unusedTokens.length === 0) {
+    return;
+  }
+
+  lines.push('## Token Contract');
+  lines.push('');
+
+  if (missingTokens.length > 0) {
+    lines.push('### Tokens Used But Missing');
+    lines.push('');
+    lines.push('| Token | Files |');
+    lines.push('| --- | --- |');
+    for (const entry of missingTokens.slice(0, 10)) {
+      lines.push(`| \`${escapeMarkdown(entry.token)}\` | \`${escapeMarkdown(entry.files.join(', '))}\` |`);
+    }
+    lines.push('');
+  }
+
+  if (unusedTokens.length > 0) {
+    lines.push('### Tokens Defined But Unused');
+    lines.push('');
+    lines.push('| Token | Value |');
+    lines.push('| --- | --- |');
+    for (const entry of unusedTokens.slice(0, 10)) {
+      lines.push(`| \`${escapeMarkdown(entry.token)}\` | \`${escapeMarkdown((entry.values || []).join(', ') || 'n/a')}\` |`);
+    }
+    lines.push('');
+  }
+
+  if (rawValueCandidates.length > 0) {
+    lines.push('### Repeated Raw Value Candidates');
+    lines.push('');
+    lines.push('| Value | Count | Files |');
+    lines.push('| --- | ---: | --- |');
+    for (const entry of rawValueCandidates.slice(0, 10)) {
+      lines.push(`| \`${escapeMarkdown(entry.value)}\` | ${entry.count} | \`${escapeMarkdown(entry.files.join(', '))}\` |`);
+    }
+    lines.push('');
+  }
+}
+
+function appendBaselineMarkdown(lines, report) {
+  if (!report.baseline && !report.baselineWritten) {
+    return;
+  }
+
+  lines.push('## Baseline');
+  lines.push('');
+
+  if (report.baseline) {
+    lines.push('| Metric | Value |');
+    lines.push('| --- | ---: |');
+    lines.push(`| Baseline findings | ${report.baseline.baselineFindings} |`);
+    lines.push(`| New findings | ${report.baseline.newFindingsCount} |`);
+    lines.push(`| Resolved findings | ${report.baseline.resolvedFindingsCount} |`);
+    lines.push('');
+  }
+
+  if (report.baseline && report.baseline.newFindings.length > 0) {
+    lines.push('| New finding | Location |');
+    lines.push('| --- | --- |');
+    for (const finding of report.baseline.newFindings.slice(0, 10)) {
+      lines.push(`| \`${escapeMarkdown(finding.text)}\` | \`${escapeMarkdown(`${finding.file}:${finding.line}`)}\` |`);
+    }
+    lines.push('');
+  }
+
+  if (report.baselineWritten) {
+    lines.push(`Baseline written: \`${escapeMarkdown(report.baselineWritten.file)}\``);
+    lines.push('');
+  }
 }
 
 function appendMarkdownCounts(lines, title, counts) {
@@ -741,7 +1401,26 @@ async function run() {
   }
 
   const resolvedDir = assertDirectory(parsed.dir);
-  const { cssFiles, templateFiles } = walkFiles(resolvedDir, parsed.ignorePatterns);
+  let ignorePatterns;
+  try {
+    ignorePatterns = [
+      ...loadIgnorePatterns(parsed.ignorePath),
+      ...parsed.ignorePatterns,
+    ];
+  } catch (err) {
+    process.stderr.write(`${err.message}\n`);
+    process.exit(1);
+  }
+
+  let scanFiles;
+  try {
+    scanFiles = getScanFiles(resolvedDir, ignorePatterns, parsed);
+  } catch (err) {
+    process.stderr.write(`${err.message}\n`);
+    process.exit(1);
+  }
+
+  const { cssFiles, scanScope, templateFiles } = scanFiles;
   const options = {
     baseFontSize: parsed.baseFontSize,
     scale: parsed.scale,
@@ -759,21 +1438,50 @@ async function run() {
     cssFiles,
     cssFindings: collectCssFindings(cssResults),
     dir: parsed.dir,
+    scanScope,
     tailwindFindings: collectTailwindFindings(templateFiles, options),
     templateFiles,
+    tokenCandidateMinCount: parsed.tokenCandidateMinCount,
   });
+
+  try {
+    if (parsed.sinceBaseline) {
+      applyBaselineComparison(report, parsed.baselinePath);
+    }
+
+    if (parsed.writeBaseline) {
+      writeBaseline(report, parsed.baselinePath);
+    }
+  } catch (err) {
+    process.stderr.write(`${err.message}\n`);
+    process.exit(1);
+  }
+
+  const auditFailures = getAuditFailures(report, parsed);
 
   if (parsed.format === 'json') {
     process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+    finish(auditFailures);
     return;
   }
 
   if (parsed.format === 'markdown') {
     process.stdout.write(renderMarkdown(report));
+    finish(auditFailures);
     return;
   }
 
   process.stdout.write(renderText(report));
+  finish(auditFailures);
+}
+
+function finish(auditFailures) {
+  if (auditFailures.length === 0) {
+    return;
+  }
+
+  process.stderr.write(`Audit failed: ${auditFailures.join('; ')}\n`);
+  process.exitCode = 1;
 }
 
 run();
