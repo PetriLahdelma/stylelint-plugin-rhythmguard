@@ -90,9 +90,12 @@ npx rhythmguard audit ./src
 npx rhythmguard audit ./src --format markdown
 npx rhythmguard audit ./src --json
 npx rhythmguard audit . --ignore "apps/legacy/**" --ignore "vendor/**"
+npx rhythmguard audit ./src --write-baseline
+npx rhythmguard audit ./src --since-baseline --fail-on-new-drift
+npx rhythmguard audit ./src --staged --max-findings 0
 ```
 
-The report covers authored CSS declarations and Tailwind arbitrary spacing values in common template/source files. Scan paths are scoped to the directory argument, and `--ignore` accepts repeatable, root-relative glob patterns for large generated or legacy subtrees. Markdown output is PR-ready for UX developers, UX designers, and design-system owners:
+The report covers authored CSS declarations, Tailwind arbitrary spacing values in common template/source files, and token-contract drift such as missing spacing tokens, unused spacing tokens, and repeated raw values that deserve token review. Scan paths are scoped to the directory argument. Use `--ignore`, `.rhythmguardignore`, or `--ignore-path` for generated or legacy subtrees, then add baselines and CI thresholds when you are ready to gate new drift. Markdown output is PR-ready for UX developers, UX designers, and design-system owners:
 
 ```md
 # Rhythmguard Design-System Audit
@@ -104,6 +107,7 @@ The report covers authored CSS declarations and Tailwind arbitrary spacing value
 | Files with issues | 12 |
 | Total findings | 52 |
 | Scale cleanliness | 91% |
+| New findings | 3 |
 ```
 
 ## Installation

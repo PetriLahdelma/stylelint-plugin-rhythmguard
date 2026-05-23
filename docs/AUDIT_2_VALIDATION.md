@@ -32,6 +32,9 @@ npx rhythmguard audit ./src
 npx rhythmguard audit ./src --format markdown
 npx rhythmguard audit ./src --json
 npx rhythmguard audit . --ignore "apps/legacy/**"
+npx rhythmguard audit ./src --write-baseline
+npx rhythmguard audit ./src --since-baseline --fail-on-new-drift
+npx rhythmguard audit ./src --since origin/main --max-findings 0
 ```
 
 The report includes:
@@ -46,19 +49,14 @@ The report includes:
 - JSON findings for downstream tooling.
 - Markdown output for pull requests and design-system reviews.
 - Root-relative `--ignore` globs for pruning generated, vendor, or legacy paths before scanning.
+- `.rhythmguardignore` / `--ignore-path` reusable scan pruning.
+- Baseline comparison for new drift.
+- Changed-only scopes with `--staged` and `--since <git-ref>`.
+- Token contract reporting for missing, unused, and candidate spacing tokens.
+- CI gates with `--max-findings`, `--min-cleanliness`, and `--fail-on-new-drift`.
 
 ## Follow-Up Roadmap
 
-1. Add baseline mode:
-   - `rhythmguard audit ./src --write-baseline`
-   - `rhythmguard audit ./src --since-baseline`
-2. Add HTML report output for design reviews.
-3. Add token contract reporting:
-   - tokens defined but unused
-   - tokens used but missing
-   - repeated raw values that should become tokens
-4. Add CI threshold flags:
-   - `--max-findings`
-   - `--min-cleanliness`
-   - `--fail-on-new-drift`
-5. Add Figma-friendly export after the code-side contract stabilizes.
+1. Add HTML report output for design reviews.
+2. Add Figma-friendly export after the code-side contract stabilizes.
+3. Add richer token-source configuration for teams whose token declarations live outside the audited source tree.

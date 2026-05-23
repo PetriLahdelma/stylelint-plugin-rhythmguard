@@ -6,6 +6,16 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [1.7.0] - 2026-05-23
+
+### Added
+
+- Added audit baseline workflows with `--write-baseline`, `--since-baseline`, and `--fail-on-new-drift` for legacy-safe CI adoption.
+- Added changed-only audit scopes with `--staged` and `--since <git-ref>`.
+- Added CI threshold gates with `--max-findings` and `--min-cleanliness`.
+- Added `.rhythmguardignore` / `--ignore-path` support for reusable root-relative scan pruning.
+- Added token contract reporting for spacing tokens used but missing, tokens defined but unused, and repeated raw value candidates.
+
 ## [1.6.1] - 2026-05-23
 
 ### Fixed
