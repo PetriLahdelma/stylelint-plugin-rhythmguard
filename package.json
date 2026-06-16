@@ -20,76 +20,95 @@
   ],
   "type": "commonjs",
   "main": "src/index.js",
+  "types": "./types/index.d.ts",
   "exports": {
     ".": {
+      "types": "./types/index.d.ts",
       "require": "./src/index.js",
       "import": "./src/index.mjs"
     },
     "./configs/recommended": {
+      "types": "./types/config.d.ts",
       "require": "./src/configs/recommended.js",
       "import": "./src/configs/recommended.mjs"
     },
     "./configs/strict": {
+      "types": "./types/config.d.ts",
       "require": "./src/configs/strict.js",
       "import": "./src/configs/strict.mjs"
     },
     "./configs/tailwind": {
+      "types": "./types/config.d.ts",
       "require": "./src/configs/tailwind.js",
       "import": "./src/configs/tailwind.mjs"
     },
     "./configs/expanded": {
+      "types": "./types/config.d.ts",
       "require": "./src/configs/expanded.js",
       "import": "./src/configs/expanded.mjs"
     },
     "./configs/logical": {
+      "types": "./types/config.d.ts",
       "require": "./src/configs/logical.js",
       "import": "./src/configs/logical.mjs"
     },
     "./configs/migration": {
+      "types": "./types/config.d.ts",
       "require": "./src/configs/migration.js",
       "import": "./src/configs/migration.mjs"
     },
     "./configs/motion": {
+      "types": "./types/config.d.ts",
       "require": "./src/configs/motion.js",
       "import": "./src/configs/motion.mjs"
     },
     "./configs/react-tailwind": {
+      "types": "./types/config.d.ts",
       "require": "./src/configs/react-tailwind.js",
       "import": "./src/configs/react-tailwind.mjs"
     },
     "./presets": {
+      "types": "./types/presets.d.ts",
       "require": "./src/presets/index.js",
       "import": "./src/presets/index.mjs"
     },
     "./audit": {
+      "types": "./types/audit.d.ts",
       "require": "./src/audit/index.js",
       "import": "./src/audit/index.mjs"
     },
     "./rules/use-scale": {
+      "types": "./types/rule.d.ts",
       "require": "./src/rules/use-scale/index.js",
       "import": "./src/rules/use-scale/index.mjs"
     },
     "./rules/prefer-token": {
+      "types": "./types/rule.d.ts",
       "require": "./src/rules/prefer-token/index.js",
       "import": "./src/rules/prefer-token/index.mjs"
     },
     "./rules/no-offscale-transform": {
+      "types": "./types/rule.d.ts",
       "require": "./src/rules/no-offscale-transform/index.js",
       "import": "./src/rules/no-offscale-transform/index.mjs"
     },
     "./rules/use-motion-scale": {
+      "types": "./types/rule.d.ts",
       "require": "./src/rules/use-motion-scale/index.js",
       "import": "./src/rules/use-motion-scale/index.mjs"
     },
     "./eslint": {
+      "types": "./types/eslint.d.ts",
       "require": "./src/eslint/index.js",
       "import": "./src/eslint/index.mjs"
     }
   },
   "files": [
+    "examples",
     "scales",
     "schemas",
     "src",
+    "types",
     "README.md",
     "CHANGELOG.md",
     "CONTRIBUTING.md",

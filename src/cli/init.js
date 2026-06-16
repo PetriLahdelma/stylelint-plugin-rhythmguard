@@ -4,17 +4,39 @@ const fs = require('node:fs');
 const path = require('node:path');
 const readline = require('node:readline');
 
-function ask(question) {
+function createPrompter() {
+  if (!process.stdin.isTTY) {
+    const answers = fs.readFileSync(0, 'utf8').split(/\r?\n/);
+    let answerIndex = 0;
+
+    return {
+      ask(question) {
+        process.stdout.write(question);
+        const answer = answers[answerIndex] || '';
+        answerIndex += 1;
+        return Promise.resolve(answer.trim().toLowerCase());
+      },
+      close() {},
+    };
+  }
+
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
   });
-  return new Promise((resolve) => {
-    rl.question(question, (answer) => {
+
+  return {
+    ask(question) {
+      return new Promise((resolve) => {
+        rl.question(question, (answer) => {
+          resolve(answer.trim().toLowerCase());
+        });
+      });
+    },
+    close() {
       rl.close();
-      resolve(answer.trim().toLowerCase());
-    });
-  });
+    },
+  };
 }
 
 function detect() {
@@ -80,49 +102,55 @@ function selectProfile(stack) {
 }
 
 async function run() {
-  process.stdout.write('\nRhythmguard Init\n\n');
+  const prompter = createPrompter();
 
-  const stack = detect();
+  try {
+    process.stdout.write('\nRhythmguard Init\n\n');
 
-  // Report detection
-  const detected = [];
-  if (stack.tailwind) detected.push('Tailwind CSS');
-  if (stack.nextjs) detected.push('Next.js');
-  if (detected.length > 0) {
-    process.stdout.write(`Detected: ${detected.join(', ')}\n`);
-  } else {
-    process.stdout.write('Detected: plain CSS project\n');
-  }
+    const stack = detect();
 
-  // Warn about existing config
-  if (stack.hasExistingConfig) {
-    process.stdout.write('\n⚠ Existing Stylelint config found.\n');
-    const answer = await ask('Overwrite? (y/n) ');
+    // Report detection
+    const detected = [];
+    if (stack.tailwind) detected.push('Tailwind CSS');
+    if (stack.nextjs) detected.push('Next.js');
+    if (detected.length > 0) {
+      process.stdout.write(`Detected: ${detected.join(', ')}\n`);
+    } else {
+      process.stdout.write('Detected: plain CSS project\n');
+    }
+
+    // Warn about existing config
+    if (stack.hasExistingConfig) {
+      process.stdout.write('\n⚠ Existing Stylelint config found.\n');
+      const answer = await prompter.ask('Overwrite? (y/n) ');
+      if (answer !== 'y' && answer !== 'yes') {
+        process.stdout.write('Aborted.\n');
+        process.exit(0);
+      }
+    }
+
+    const profile = selectProfile(stack);
+    process.stdout.write(`\nProfile: ${profile}\n`);
+
+    const answer = await prompter.ask('Write .stylelintrc.json? (y/n) ');
     if (answer !== 'y' && answer !== 'yes') {
       process.stdout.write('Aborted.\n');
       process.exit(0);
     }
+
+    const config = {
+      extends: [`stylelint-plugin-rhythmguard/configs/${profile}`],
+    };
+
+    const configPath = path.join(process.cwd(), '.stylelintrc.json');
+    fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+
+    process.stdout.write(`\n✓ Wrote ${configPath}\n`);
+    process.stdout.write(`\nNext steps:\n`);
+    process.stdout.write(`  npx stylelint "src/**/*.css"\n\n`);
+  } finally {
+    prompter.close();
   }
-
-  const profile = selectProfile(stack);
-  process.stdout.write(`\nProfile: ${profile}\n`);
-
-  const answer = await ask('Write .stylelintrc.json? (y/n) ');
-  if (answer !== 'y' && answer !== 'yes') {
-    process.stdout.write('Aborted.\n');
-    process.exit(0);
-  }
-
-  const config = {
-    extends: [`stylelint-plugin-rhythmguard/configs/${profile}`],
-  };
-
-  const configPath = path.join(process.cwd(), '.stylelintrc.json');
-  fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
-
-  process.stdout.write(`\n✓ Wrote ${configPath}\n`);
-  process.stdout.write(`\nNext steps:\n`);
-  process.stdout.write(`  npx stylelint "src/**/*.css"\n\n`);
 }
 
 run();
