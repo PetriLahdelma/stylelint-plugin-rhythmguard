@@ -2,9 +2,11 @@
 
 const path = require('node:path');
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
 const test = require('node:test');
 const { pathToFileURL } = require('node:url');
 
+const packageJson = require('../package.json');
 const plugin = require('../src/index');
 
 test('plugin exports rules, shared configs, presets, and eslint companion', () => {
@@ -70,4 +72,18 @@ test('esm entrypoint exposes default plugin object', async () => {
   assert.ok(esm.eslint.rules['tailwind-class-use-scale']);
   assert.ok(esm.eslint.rules['tailwind-class-use-motion-scale']);
   assert.ok(esm.audit.createAuditReport);
+});
+
+test('package exports expose TypeScript declaration paths', () => {
+  assert.equal(packageJson.types, './types/index.d.ts');
+  assert.ok(packageJson.files.includes('types'));
+
+  for (const [exportName, descriptor] of Object.entries(packageJson.exports)) {
+    assert.equal(typeof descriptor.types, 'string', `${exportName} is missing types`);
+    assert.equal(
+      fs.existsSync(path.join(__dirname, '..', descriptor.types)),
+      true,
+      `${exportName} types path does not exist`,
+    );
+  }
 });

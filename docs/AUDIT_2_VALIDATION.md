@@ -68,6 +68,6 @@ The report includes:
 
 ## Follow-Up Roadmap
 
-1. Add Figma-friendly export after the code-side contract stabilizes.
-2. Add richer dashboard examples around the programmatic audit API.
-3. Evaluate whether motion should move from opt-in to a recommended profile in a future major.
+1. Add Figma-friendly export after the code-side contract stabilizes. Delivered as a bridge payload example in [`AUDIT_API_EXAMPLES.md`](./AUDIT_API_EXAMPLES.md).
+2. Add richer dashboard examples around the programmatic audit API. Delivered as a dependency-free static dashboard example in [`AUDIT_API_EXAMPLES.md`](./AUDIT_API_EXAMPLES.md).
+3. Evaluate whether motion should move from opt-in to a recommended profile in a future major. Evidence captured in [`MOTION_DEFAULTS_EVIDENCE.md`](./MOTION_DEFAULTS_EVIDENCE.md).

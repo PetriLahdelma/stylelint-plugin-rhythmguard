@@ -291,6 +291,8 @@ Framework-specific setup for Vue, Lit, Astro, and SvelteKit: [`docs/FRAMEWORKS.m
 
 - Side-by-side tool fit guide with migration snippets: [`docs/COMPARISON.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/COMPARISON.md)
 - Audit 2.0 validation and roadmap: [`docs/AUDIT_2_VALIDATION.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/AUDIT_2_VALIDATION.md)
+- CI baseline rollout recipe: [`docs/CI_ADOPTION.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/CI_ADOPTION.md)
+- Programmatic dashboard and Figma-friendly export examples: [`docs/AUDIT_API_EXAMPLES.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/AUDIT_API_EXAMPLES.md)
 - Real-world before/after excerpts from public repos: [`docs/ADOPTION_DIFFS.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/ADOPTION_DIFFS.md)
 - Distribution submissions to Stylelint discovery surfaces: [`docs/DISTRIBUTION.md`](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/blob/main/docs/DISTRIBUTION.md)
 

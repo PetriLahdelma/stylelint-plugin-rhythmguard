@@ -3,10 +3,10 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Rhythmguard Playground — Token governance for CSS and Tailwind</title>
-<meta name="description" content="Paste CSS, see spacing scale violations and token opportunities in real time. No install, no config — just try it." />
-<meta property="og:title" content="Rhythmguard Playground" />
-<meta property="og:description" content="Paste CSS, see spacing scale violations in real time." />
+<title>Rhythmguard Playground + Audit 2.0 — Token governance for CSS and Tailwind</title>
+<meta name="description" content="Try CSS spacing and token checks in the browser, then run Rhythmguard Audit 2.0 locally for stable JSON, HTML reports, baselines, and CI gates." />
+<meta property="og:title" content="Rhythmguard Playground + Audit 2.0" />
+<meta property="og:description" content="Try CSS spacing and token checks in the browser, then run Audit 2.0 locally for reports and CI." />
 <meta property="og:image" content="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-banner.svg" />
 <meta name="twitter:card" content="summary_large_image" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230C1117'/%3E%3Ctext y='70' x='10' font-family='monospace' font-size='48' fill='white'%3E%7CR%7C%3C/text%3E%3C/svg%3E" />
@@ -49,6 +49,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 24px;
+    flex-wrap: wrap;
   }
 
   .brand {
@@ -72,6 +73,8 @@
     display: flex;
     gap: 16px;
     align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
   }
 
   nav.top-nav a {
@@ -81,6 +84,60 @@
   }
 
   nav.top-nav a:hover { color: var(--fg); }
+
+  .release-strip {
+    border-bottom: 1px solid var(--border);
+    padding: 12px 24px;
+    background: var(--bg-panel);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .release-copy {
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+    color: var(--fg-muted);
+  }
+
+  .release-eyebrow {
+    color: var(--ok);
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  .release-copy strong {
+    color: var(--fg);
+    font-weight: 650;
+  }
+
+  .release-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .release-actions a {
+    color: var(--fg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 5px 9px;
+    text-decoration: none;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .release-actions a:hover {
+    border-color: var(--fg);
+    background: rgba(255, 255, 255, 0.04);
+  }
 
   main {
     display: grid;
@@ -339,8 +396,18 @@
     color: var(--fg);
   }
 
+  .cli-stack {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
   @media (max-width: 900px) {
     main { grid-template-columns: 1fr; }
+    header.top { align-items: flex-start; }
+    .brand { flex-wrap: wrap; }
+    .release-strip { align-items: flex-start; }
   }
 
   ::-webkit-scrollbar { width: 10px; height: 10px; }
@@ -359,9 +426,22 @@
     <nav class="top-nav">
       <a href="https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard" target="_blank" rel="noopener">GitHub</a>
       <a href="https://www.npmjs.com/package/stylelint-plugin-rhythmguard" target="_blank" rel="noopener">npm</a>
+      <a href="https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/MIGRATING_TO_2.md" target="_blank" rel="noopener">2.0 migration</a>
       <a href="https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/FRAMEWORKS.md" target="_blank" rel="noopener">Frameworks</a>
     </nav>
   </header>
+
+  <section class="release-strip" aria-label="Rhythmguard Audit 2.0 release">
+    <div class="release-copy">
+      <span class="release-eyebrow">Audit 2.0</span>
+      <strong>Stable repo audits are now the CLI path.</strong>
+      <span>This playground checks pasted CSS; local runs add JSON contracts, HTML reports, baselines, token sources, motion checks, and CI gates.</span>
+    </div>
+    <div class="release-actions">
+      <a href="https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/AUDIT_2_VALIDATION.md" target="_blank" rel="noopener">Audit guide</a>
+      <a href="https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/MIGRATING_TO_2.md" target="_blank" rel="noopener">Migration notes</a>
+    </div>
+  </section>
 
   <main>
     <section class="pane">
@@ -421,9 +501,11 @@
   </main>
 
   <footer class="bottom">
-    <div>
-      Using this locally? Install the plugin and run
+    <div class="cli-stack">
+      <span>Using this locally?</span>
       <span class="cli-hint">npx rhythmguard audit ./src</span>
+      <span class="cli-hint">npx rhythmguard audit ./src --format html --output rhythmguard-report.html</span>
+      <span class="cli-hint">npx rhythmguard audit --schema</span>
     </div>
     <div>
       <a href="https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues" target="_blank" rel="noopener">Report an issue</a>
