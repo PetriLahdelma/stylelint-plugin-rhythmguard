@@ -6,6 +6,18 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-06-17
+
+### Added
+
+- Added TypeScript declaration files for the public plugin, config, rule, preset, ESLint companion, and Audit 2.0 API exports.
+- Added dependency-free Audit 2.0 dashboard and Figma-friendly export examples under `examples/`.
+- Added CI adoption and motion-default evidence docs for safer baseline-based rollout.
+
+### Fixed
+
+- Fixed `rhythmguard init` scripted input handling so multiple prompts work reliably in piped/CI contexts.
+
 ## [2.0.0] - 2026-05-23
 
 ### Changed
