@@ -8,7 +8,10 @@ on:
 jobs:
   verify:
     name: node-${{ matrix.node-version }} stylelint-${{ matrix.stylelint-version }}
-    runs-on: ubuntu-latest
+    # Self-hosted CI farm (owned hardware) instead of metered GitHub-hosted minutes. PUBLIC repo:
+    # fork PRs must NEVER run on our runners, so gate to same-repo PRs (and pushes) only.
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     strategy:
       fail-fast: false
       matrix:
@@ -57,3 +60,12 @@ jobs:
       - name: Pack smoke test (single reference run)
         if: matrix.node-version == '20.x' && matrix.stylelint-version == '16'
         run: npm run test:pack-smoke
+
+      - name: Report CI result to dashboard collector
+        if: always()   # report pass AND fail; the reporting step can never fail the gate
+        env:
+          CI_COLLECTOR_URL: ${{ vars.CI_COLLECTOR_URL }}
+          CI_COLLECTOR_TOKEN: ${{ secrets.CI_COLLECTOR_TOKEN }}
+          CI_REPORT_NODE: ${{ runner.name }}
+          JOB_STATUS: ${{ job.status }}
+        run: bash .github/scripts/report-ci.sh
