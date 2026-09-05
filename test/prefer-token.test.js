@@ -151,3 +151,15 @@ test('prefer-token can lint inside math functions when enabled', async () => {
   assert.equal(result.warnings.length, 2);
   assert.ok(result.warnings.every((warning) => warning.rule === 'rhythmguard/prefer-token'));
 });
+
+test('prefer-token never treats percentages as token opportunities', async () => {
+  const { lintCss: lint } = require('./helpers/lint');
+  const assertStrict = require('node:assert/strict');
+  const result = await lint({
+    code: '.center { transform: translate(-50%, -50%); margin-inline: 5%; inset: 100% auto; padding: 12px; }',
+    rules: { 'rhythmguard/prefer-token': [true, { tokenMap: { '12px': 'var(--space-3)' } }] },
+  });
+  const texts = result.warnings.map((w) => w.text);
+  assertStrict.equal(texts.length, 1, texts.join('\n'));
+  assertStrict.match(texts[0], /"12px"/);
+});

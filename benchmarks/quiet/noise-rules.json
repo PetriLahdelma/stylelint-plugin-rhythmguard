@@ -1,0 +1,22 @@
+{
+  "$comment": "Heuristic classification for the quiet benchmark. Anything matched here counts as a false positive. Per-repo labels in labels/<repo>.json override these.",
+  "noisePaths": [
+    {
+      "category": "noise:non-authored",
+      "pattern": "(^|/)(vendor|third[-_]?party|node_modules|dist|build|generated|__snapshots__|fixtures?|tests?|__tests__|e2e|storybook-static|\\.storybook)(/|$)",
+      "reason": "generated, vendored or test-only CSS is not authored design-system code"
+    },
+    {
+      "category": "noise:minified",
+      "pattern": "\\.min\\.css$",
+      "reason": "minified bundles are build output"
+    }
+  ],
+  "allowances": [
+    {
+      "category": "allowance:hairline",
+      "values": ["1px", "-1px", "0.5px", "-0.5px"],
+      "reason": "one-pixel offsets are hairlines, focus-ring insets or visually-hidden patterns, not spacing decisions"
+    }
+  ]
+}

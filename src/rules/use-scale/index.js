@@ -88,7 +88,12 @@ function checkLengthValue({
     return false;
   }
 
-  if (parsedLength.unit === '%' && options.allowPercentages) {
+  if (parsedLength.unit === '%') {
+    if (options.allowPercentages) {
+      return false;
+    }
+
+    report(node.value, decl, node, null, null, '%');
     return false;
   }
 

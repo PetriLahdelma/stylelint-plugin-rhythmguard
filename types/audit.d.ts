@@ -37,7 +37,8 @@ export interface AuditOptions {
   noConfig?: boolean;
   /** Write rendered output to this file instead of stdout (equivalent to `--output`). */
   outputPath?: string;
-  scale?: Array<number | string>;
+  /** Explicit scale values, or `"auto"` to infer from token sources, then scanned CSS, then the default. */
+  scale?: Array<number | string> | "auto";
   since?: string;
   sinceBaseline?: boolean;
   staged?: boolean;
@@ -87,8 +88,19 @@ export interface AuditBaselineComparison {
   [key: string]: unknown;
 }
 
+export type AuditScaleSource = "default" | "explicit" | "fallback" | "scanned-css" | "token-sources";
+
+export interface AuditScale {
+  /** Files the scale was derived from (token sources or scanned stylesheets). Empty for explicit, default and fallback. */
+  files: string[];
+  source: AuditScaleSource;
+  tokenCount: number;
+  values: Array<number | string>;
+}
+
 export interface AuditReport {
   baseline?: AuditBaselineComparison | null;
+  scale?: AuditScale | null;
   config?: string | null;
   directory: string;
   findings: {
@@ -112,8 +124,11 @@ export interface AuditContractReport {
     motion?: unknown;
     scale: {
       cleanliness?: unknown;
+      files: string[];
       offScaleValues?: unknown;
+      source: AuditScaleSource;
       tokenOpportunities?: unknown;
+      values: Array<number | string> | null;
     };
     tokens?: unknown;
   };

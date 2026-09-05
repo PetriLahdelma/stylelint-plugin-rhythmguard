@@ -21,8 +21,14 @@ function renderText(report) {
     `  Template files scanned   ${String(report.templateFilesScanned).padStart(4)}`,
     `  Files with issues        ${String(report.filesWithIssues).padStart(4)}`,
     `  Scale cleanliness        ${scoreBar(report.scaleCleanliness)}  ${report.scaleCleanliness}%`,
-    '',
   ];
+
+  if (report.scale) {
+    lines.push(`  Scale                    ${report.scale.values.join(', ')}`);
+    const files = report.scale.files.length > 0 ? ` (${report.scale.files.join(', ')})` : '';
+    lines.push(`  Scale source             ${report.scale.source}${files}`);
+  }
+  lines.push('');
 
   appendHistogram(lines, 'CSS OFF-SCALE VALUES', report.offScaleValues);
   appendHistogram(lines, 'CSS TOKEN OPPORTUNITIES', report.tokenOpportunities);

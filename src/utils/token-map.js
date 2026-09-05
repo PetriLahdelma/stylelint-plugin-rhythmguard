@@ -1,5 +1,7 @@
 'use strict';
 
+const { parseTokenValueLength } = require('./token-sources');
+
 const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -43,7 +45,7 @@ function addLengthValueMapping(map, rawLength, tokenReference, baseFontSize) {
     return;
   }
 
-  const parsed = parseLengthToken(rawLength);
+  const parsed = parseTokenValueLength(rawLength);
   if (!parsed) {
     return;
   }
@@ -196,7 +198,7 @@ function mergeTokenMapFromCssCustomProperties({
       return;
     }
 
-    const parsed = parseLengthToken(decl.value);
+    const parsed = parseTokenValueLength(decl.value);
     if (!parsed || parsed.number === 0) {
       return;
     }

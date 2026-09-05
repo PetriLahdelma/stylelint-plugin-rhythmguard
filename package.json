@@ -118,6 +118,7 @@
   "scripts": {
     "bench:perf": "node scripts/bench/compare.mjs",
     "bench:perf:fix": "node scripts/bench/compare.mjs --fix",
+    "bench:quiet": "node scripts/bench/quiet.mjs",
     "lint": "eslint .",
     "scales:add": "node scripts/scales/add-scale.mjs",
     "scales:validate": "node scripts/scales/validate-community-scales.mjs",

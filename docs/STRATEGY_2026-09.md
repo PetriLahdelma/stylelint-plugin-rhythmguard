@@ -157,6 +157,9 @@ Semver note, decided 2026-09-05: `scale: "auto"` ships opt-in in 2.2 together wi
 
 #### B2. Quiet benchmark
 
+Status 2026-09-05: harness shipped (`npm run bench:quiet`, results in [`QUIET_BENCHMARK.md`](./QUIET_BENCHMARK.md)). First run found that every repository fell back to `rhythmic-4`; fixing that (calc-wrapped tokens, Tailwind v4 base, prefixed names) and removing percentage findings from `prefer-token` were the first two defaults the benchmark bought. Remaining heuristic false positives are dominated by 1px hairlines; the open question for maintainer review is whether `1px` offsets should be a default allowance.
+
+
 Define "quiet" as findings a maintainer of the scanned repo would accept as real drift. Run `recommended` against twenty public design systems and shared-config consumers (start with Primer CSS, Gutenberg, Penpot, Liveblocks, Taiga UI, Koobiq, mittwald Flow, Bootstrap, Orbit, shadcn/ui) using the existing `scripts/bench` harness extended with a review-classification step. Publish results in `docs/QUIET_BENCHMARK.md` with a per-repo false-positive rate. Target under 5% before any outreach. The Digitaltableteur adoption already showed the required profile: warning level, autofix off, baseline ratchet. Anything the benchmark flags as systematic noise (reduced-motion overrides, generated assets, third-party CSS, `0.01ms`) becomes a default ignore or a documented allowance, not a per-consumer setting.
 
 #### B3. Embed kit for shared-config authors

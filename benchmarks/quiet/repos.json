@@ -1,0 +1,72 @@
+{
+  "$comment": "Public repositories for the quiet benchmark (Track B2). Sparse paths keep clones small. Plain CSS only: the audit does not parse SCSS yet.",
+  "repos": [
+    {
+      "name": "radix-themes",
+      "url": "https://github.com/radix-ui/themes.git",
+      "paths": [
+        "packages/radix-ui-themes/src"
+      ],
+      "notes": "Token-driven CSS with --space-N custom properties. Expected to infer its own scale."
+    },
+    {
+      "name": "mantine",
+      "url": "https://github.com/mantinedev/mantine.git",
+      "paths": [
+        "packages/@mantine/core/src"
+      ],
+      "ignore": [
+        "**/*.story.tsx",
+        "**/*.test.tsx"
+      ],
+      "notes": "CSS Modules. Spacing tokens are --mantine-spacing-*, which the default spacing pattern does not match; a fallback here is a token-discovery to-do."
+    },
+    {
+      "name": "primer-react",
+      "url": "https://github.com/primer/react.git",
+      "paths": [
+        "packages/react/src"
+      ],
+      "ignore": [
+        "**/*.stories.tsx",
+        "**/*.test.tsx",
+        "**/__tests__/**"
+      ],
+      "notes": "CSS Modules using --base-size-N tokens. Same token-discovery caveat as Mantine."
+    },
+    {
+      "name": "liveblocks-react-ui",
+      "url": "https://github.com/liveblocks/liveblocks.git",
+      "paths": [
+        "packages/liveblocks-react-ui/src"
+      ],
+      "notes": "Already consumes stylelint-plugin-logical-css through a shared config; a realistic embed target."
+    },
+    {
+      "name": "shadcn-ui",
+      "url": "https://github.com/shadcn-ui/ui.git",
+      "paths": [
+        "apps/v4/app",
+        "apps/v4/registry",
+        "apps/v4/components"
+      ],
+      "notes": "Tailwind v4 with @theme in globals.css plus TSX class strings; exercises the Tailwind side of the audit."
+    },
+    {
+      "name": "open-props",
+      "url": "https://github.com/argyleink/open-props.git",
+      "paths": [
+        "src"
+      ],
+      "notes": "A token library, not a component library. Sizes are --size-N, so the spacing pattern will miss them; included to measure the cost of that gap."
+    },
+    {
+      "name": "mittwald-flow",
+      "url": "https://github.com/mittwald/flow.git",
+      "paths": [
+        "packages/components/src"
+      ],
+      "notes": "SCSS-only under the scanned path, so the audit finds no CSS. Kept as the explicit marker of the SCSS scope gap."
+    }
+  ]
+}

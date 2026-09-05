@@ -221,3 +221,16 @@ test('use-scale does not report invalid preset when custom scale is provided', a
 
   assert.equal(result.warnings.length, 0);
 });
+
+test('use-scale allows percentage translations by default and reports them when allowPercentages is false', async () => {
+  const code = '.center { transform: translate(-50%, -50%); translate: 100% 0; }';
+
+  const allowed = await lintCss({ code, rules: ruleConfig });
+  assert.equal(allowed.warnings.length, 0, allowed.warnings.map((w) => w.text).join('\n'));
+
+  const strict = await lintCss({
+    code,
+    rules: { 'rhythmguard/use-scale': [true, { ...ruleConfig['rhythmguard/use-scale'][1], allowPercentages: false }] },
+  });
+  assert.equal(strict.warnings.length, 3, strict.warnings.map((w) => w.text).join('\n'));
+});

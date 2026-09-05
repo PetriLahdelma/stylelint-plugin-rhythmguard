@@ -243,6 +243,7 @@ function buildReport({
   externalTokenDefinitions,
   includeMotion,
   motionFindings,
+  scale,
   scanScope,
   templateFiles,
   tailwindFindings,
@@ -306,6 +307,7 @@ function buildReport({
       values: Object.fromEntries(sortCountMap(motionValues).slice(0, 10)),
     },
     offScaleValues: Object.fromEntries(sortCountMap(offScaleValues).slice(0, 10)),
+    scale: scale || null,
     scaleCleanliness,
     scanScope,
     scanned: {
@@ -370,8 +372,11 @@ function toAuditContractReport(report) {
       motion: report.motion,
       scale: {
         cleanliness: report.scaleCleanliness,
+        files: report.scale ? report.scale.files : [],
         offScaleValues: report.offScaleValues,
+        source: report.scale ? report.scale.source : 'default',
         tokenOpportunities: report.tokenOpportunities,
+        values: report.scale ? report.scale.values : null,
       },
       tokens: report.tokenContract,
     },
