@@ -19,10 +19,9 @@
 
 ## npm Publish
 
-1. Confirm `NPM_TOKEN` exists in repo secrets.
-2. Publish via GitHub Release workflow (`release.yml`) or run local publish:
-   - `npm publish --provenance`
-3. Verify package metadata and README on npm.
+1. Publishing is done by `release.yml` through npm trusted publishing (OIDC). The trusted publisher on npmjs.com is bound to `PetriLahdelma/stylelint-plugin-rhythmguard` and the workflow file `release.yml`; no npm token is stored anywhere.
+2. The publish job must run on a GitHub-hosted runner (npm does not support trusted publishing from self-hosted runners). Provenance is attached automatically.
+3. Verify package metadata, provenance badge and README on npm.
 
 ## Post-release
 
