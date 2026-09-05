@@ -5,6 +5,7 @@ const valueParser = require('postcss-value-parser');
 const {
   formatLength,
   fromPx,
+  isHairlineLength,
   nearestScaleValues,
   normalizeScale,
   normalizeScaleByUnit,
@@ -166,6 +167,10 @@ const ruleFunction = (primary, secondaryOptions) => {
         }
 
         if (parsedLength.unit === '%' && options.allowPercentages) {
+          return;
+        }
+
+        if (options.allowHairlines && isHairlineLength(parsedLength, options.baseFontSize)) {
           return;
         }
 

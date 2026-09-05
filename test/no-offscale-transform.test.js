@@ -87,3 +87,16 @@ test('no-offscale-transform allows percentage translations by default', async ()
   });
   assertStrict.equal(result.warnings.length, 0, result.warnings.map((w) => w.text).join('\n'));
 });
+
+test('no-offscale-transform treats one-pixel translations as hairlines unless allowHairlines is false', async () => {
+  const { lintCss: lint } = require('./helpers/lint');
+  const assertStrict = require('node:assert/strict');
+  const code = '.a { transform: translateY(1px) translateX(-0.5px); translate: 1px 6px; }';
+
+  const relaxed = await lint({ code, rules: { 'rhythmguard/no-offscale-transform': [true, { scale: [0, 4, 8, 12, 16] }] } });
+  assertStrict.equal(relaxed.warnings.length, 1, relaxed.warnings.map((w) => w.text).join('\n'));
+  assertStrict.match(relaxed.warnings[0].text, /"6px"/);
+
+  const strict = await lint({ code, rules: { 'rhythmguard/no-offscale-transform': [true, { scale: [0, 4, 8, 12, 16], allowHairlines: false }] } });
+  assertStrict.equal(strict.warnings.length, 4, strict.warnings.map((w) => w.text).join('\n'));
+});

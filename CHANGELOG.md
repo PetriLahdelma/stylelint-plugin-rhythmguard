@@ -14,6 +14,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 - Added the quiet benchmark (`npm run bench:quiet`): audits public design systems with `--scale auto`, classifies findings as drift, noise or allowance, and writes `docs/QUIET_BENCHMARK.md` with a per-repo false-positive rate. Manifest and classification rules live in `benchmarks/quiet/`.
 - Scale inference now reads token values written as `calc(<length> * var(--factor))` (Radix Themes), expands a bare Tailwind v4 `--spacing` base into the default multiplier scale, and matches prefixed spacing tokens such as `--lb-spacing-md` while excluding `letter-spacing` and `word-spacing`.
 
+- Added `allowHairlines` (default `true`) to `use-scale`, `no-offscale-transform` and `prefer-token`. Non-zero lengths that resolve to one CSS pixel or less (`1px`, `-1px`, `0.5px`, `0.0625rem`) are exempt: they compensate for borders and rendering, not spacing. The quiet benchmark showed them to be the only systematic false positive left across Radix Themes, Mantine, Primer React and Liveblocks. Set `allowHairlines: false` to restore the previous reports.
+
 ### Fixed
 
 - `rhythmguard/prefer-token` no longer reports percentages such as `translate(-50%, -50%)` or `inset: 100%` as raw scale values. Percentages are never token candidates. This was the largest noise source in the quiet benchmark.

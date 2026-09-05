@@ -127,7 +127,7 @@ test('prefer-token ignores unitless non-zero values', async () => {
 
 test('prefer-token skips math internals by default', async () => {
   const result = await lintCss({
-    code: '.stack { gap: calc(12px + 1px); }',
+    code: '.stack { gap: calc(12px + 2px); }',
     rules: baseRule,
   });
 
@@ -136,7 +136,7 @@ test('prefer-token skips math internals by default', async () => {
 
 test('prefer-token can lint inside math functions when enabled', async () => {
   const result = await lintCss({
-    code: '.stack { gap: calc(12px + 1px); }',
+    code: '.stack { gap: calc(12px + 2px); }',
     rules: {
       'rhythmguard/prefer-token': [
         true,
@@ -162,4 +162,17 @@ test('prefer-token never treats percentages as token opportunities', async () =>
   const texts = result.warnings.map((w) => w.text);
   assertStrict.equal(texts.length, 1, texts.join('\n'));
   assertStrict.match(texts[0], /"12px"/);
+});
+
+test('prefer-token does not ask for a token for hairline offsets unless allowHairlines is false', async () => {
+  const { lintCss: lint } = require('./helpers/lint');
+  const assertStrict = require('node:assert/strict');
+  const code = '.a { margin: -1px; inset: 0.5px; padding: 12px; }';
+
+  const relaxed = await lint({ code, rules: { 'rhythmguard/prefer-token': [true, { tokenMap: { '12px': 'var(--space-3)' } }] } });
+  assertStrict.equal(relaxed.warnings.length, 1, relaxed.warnings.map((w) => w.text).join('\n'));
+  assertStrict.match(relaxed.warnings[0].text, /"12px"/);
+
+  const strict = await lint({ code, rules: { 'rhythmguard/prefer-token': [true, { allowHairlines: false, tokenMap: { '12px': 'var(--space-3)' } }] } });
+  assertStrict.equal(strict.warnings.length, 3, strict.warnings.map((w) => w.text).join('\n'));
 });

@@ -96,6 +96,10 @@ Resolution precedence: `customScale`, then `scale`, then `preset`, then the defa
 
 Rhythmguard validates every rule's secondary options before linting. Unknown option names, wrong shapes, unknown property names, unknown property groups, and invalid math-function argument maps all fail immediately as Stylelint invalid-option warnings. A typo like `"sevverity": "warning"` is reported rather than silently ignored.
 
+## Built-in allowances
+
+Every scale rule skips three kinds of value without configuration: zero, percentages (`allowPercentages`), and hairlines, meaning non-zero lengths of one CSS pixel or less (`allowHairlines`). Hairlines compensate for borders and rendering, not spacing; the reasoning and the opt-out are in the [`use-scale` docs](./rules/use-scale.md#hairlines).
+
 ## Autofix policy
 
 Only deterministic fixes are applied: nearest scale value for off-scale literals, and explicit token-map replacements. The rules never guess a token. Teams whose visuals have not been reviewed against the scale usually run at warning level with `fixToScale: false` and ratchet with [`rhythmguard audit`](./AUDIT.md).

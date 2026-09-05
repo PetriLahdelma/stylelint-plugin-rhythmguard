@@ -1,5 +1,5 @@
 {
-  "$comment": "Heuristic classification for the quiet benchmark. Anything matched here counts as a false positive. Per-repo labels in labels/<repo>.json override these.",
+  "$comment": "Heuristic classification for the quiet benchmark. Anything matched here counts as a false positive. Per-repo labels in labels/<repo>.json override these. Hairlines (1px and smaller) are exempted by the rules themselves via allowHairlines, so they are no longer a benchmark allowance.",
   "noisePaths": [
     {
       "category": "noise:non-authored",
@@ -12,11 +12,5 @@
       "reason": "minified bundles are build output"
     }
   ],
-  "allowances": [
-    {
-      "category": "allowance:hairline",
-      "values": ["1px", "-1px", "0.5px", "-0.5px"],
-      "reason": "one-pixel offsets are hairlines, focus-ring insets or visually-hidden patterns, not spacing decisions"
-    }
-  ]
+  "allowances": []
 }

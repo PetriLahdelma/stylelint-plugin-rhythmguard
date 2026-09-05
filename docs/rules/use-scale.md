@@ -28,7 +28,7 @@ Opt-in groups via `propertyGroups`:
 - `typography`: `font-size`, `line-height`, `letter-spacing`, `word-spacing`
 - `size`: `width`, `height`, min/max sizes, logical `inline-size` and `block-size`
 
-Values that are `0`, percentages (when `allowPercentages` is on), keywords, or tokenized through one of `tokenFunctions` are never reported.
+Values that are `0`, percentages (when `allowPercentages` is on), hairlines (when `allowHairlines` is on, see below), keywords, or tokenized through one of `tokenFunctions` are never reported.
 
 ## Examples
 
@@ -51,6 +51,19 @@ Message for the failing case:
 ```
 Unexpected off-scale value "13px". Use scale values (nearest: 12px or 16px). (rhythmguard/use-scale)
 ```
+
+## Hairlines
+
+A hairline is a non-zero length that resolves to one CSS pixel or less: `1px`, `-1px`, `0.5px`, `0.0625rem`. These values are not spacing decisions. They compensate for something else:
+
+- `margin: -1px` pulls a border over the neighbouring border so two 1px lines do not stack.
+- `inset: 1px` or `top: -1px` nudges a focus ring or an icon into optical alignment.
+- `margin: -1px; width: 1px; height: 1px` is the visually-hidden pattern for screen-reader-only text.
+- `translateY(1px)` corrects subpixel rendering.
+
+Reporting them as "off the scale, use 0 or 4px" is technically true and practically wrong, and it is the kind of report that makes teams turn a rule off. The [quiet benchmark](../QUIET_BENCHMARK.md) confirmed it: across Radix Themes, Mantine, Primer React and Liveblocks, hairlines were the only systematic false positive left once percentages were handled. So the rule exempts them by default. Set `allowHairlines: false` to report them; a team that renders hairlines through a token such as `var(--border-width)` may want exactly that.
+
+The exemption is by resolved size, not by literal: `0.0625rem` at a 16px base is a hairline, `1.5px` is not, and `0` is never reported anyway. Percentages are governed by `allowPercentages`, not by this option.
 
 ## Autofix
 
@@ -92,6 +105,7 @@ Token values in `rem` and `em` are converted through `baseFontSize`; values in u
 | `tokenFunctions` | `string[]` | `['var','theme','token']` | Functions treated as tokenized values |
 | `allowNegative` | `boolean` | `true` | Allows negative scale values |
 | `allowPercentages` | `boolean` | `true` | Skips `%` values |
+| `allowHairlines` | `boolean` | `true` | Skips non-zero lengths of one CSS pixel or less. See [Hairlines](#hairlines) |
 | `fixToScale` | `boolean` | `true` | Enables nearest-value autofix |
 | `enforceInsideMathFunctions` | `boolean` | `false` | Lints inside `calc()`, `clamp()`, `min()`, `max()` |
 | `mathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Restricts linting to specific 1-based argument indexes per math function |
