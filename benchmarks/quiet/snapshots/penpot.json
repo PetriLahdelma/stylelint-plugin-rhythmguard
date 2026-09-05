@@ -1,0 +1,41 @@
+{
+  "name": "penpot",
+  "sha": "00e0492",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 17,
+    "drift": 17,
+    "falsePositives": 0
+  },
+  "findings": [
+    "frontend/src/app/main/ui/components/reorder_handler.scss:13:-11px:drift",
+    "frontend/src/app/main/ui/dashboard/check_updates.scss:158:0.55em:drift",
+    "frontend/src/app/main/ui/dashboard/deleted.scss:46:5px:drift",
+    "frontend/src/app/main/ui/dashboard/inline_edition.scss:43:7px:drift",
+    "frontend/src/app/main/ui/ds/product/loader.scss:15:-150px:drift",
+    "frontend/src/app/main/ui/ds/tooltip/tooltip.scss:48:-10px:drift",
+    "frontend/src/app/main/ui/ds/tooltip/tooltip.scss:48:-2px:drift",
+    "frontend/src/app/main/ui/ds/tooltip/tooltip.scss:63:-2px:drift",
+    "frontend/src/app/main/ui/ds/tooltip/tooltip.scss:63:7px:drift",
+    "frontend/src/app/main/ui/ds/tooltip/tooltip.scss:76:-2px:drift",
+    "frontend/src/app/main/ui/ds/tooltip/tooltip.scss:89:-10px:drift",
+    "frontend/src/app/main/ui/ds/tooltip/tooltip.scss:89:7px:drift",
+    "frontend/src/app/main/ui/settings/subscription.scss:129:2px:drift",
+    "frontend/src/app/main/ui/workspace/colorpicker/slider_selector.scss:101:5px:drift",
+    "frontend/src/app/main/ui/workspace/colorpicker/slider_selector.scss:94:-3px:drift",
+    "frontend/src/app/main/ui/workspace/sidebar/options/menus/typography.scss:189:6px:drift",
+    "frontend/src/app/main/ui/workspace/viewport/presence.scss:12:2px:drift"
+  ],
+  "commit": "00e0492bb53e93360795eb7feb3b0baefc06383d"
+}

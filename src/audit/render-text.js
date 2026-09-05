@@ -19,6 +19,8 @@ function renderText(report) {
     '',
     `  CSS files scanned        ${String(report.cssFilesScanned).padStart(4)}`,
     `  Template files scanned   ${String(report.templateFilesScanned).padStart(4)}`,
+    ...(report.scanned && report.scanned.scssFiles > 0 ? [`  SCSS files scanned       ${String(report.scanned.scssFiles - report.scanned.scssSkipped).padStart(4)}`] : []),
+    ...(report.scanned && report.scanned.scssSkipped > 0 ? [`  SCSS files skipped       ${String(report.scanned.scssSkipped).padStart(4)}  (install postcss-scss to audit them)`] : []),
     `  Files with issues        ${String(report.filesWithIssues).padStart(4)}`,
     `  Scale cleanliness        ${scoreBar(report.scaleCleanliness)}  ${report.scaleCleanliness}%`,
   ];

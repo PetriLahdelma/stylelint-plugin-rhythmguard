@@ -1,0 +1,27 @@
+{
+  "name": "gitlab-ui",
+  "sha": "8660f9f",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 3,
+    "drift": 3,
+    "falsePositives": 0
+  },
+  "findings": [
+    "src/components/base/form/form_date/form_date.scss:5:-2px:drift",
+    "src/scss/typography.scss:26:3px:drift",
+    "src/scss/typography.scss:26:5px:drift"
+  ],
+  "commit": "8660f9fec8cb516908ea705c6a91d21c74895564"
+}

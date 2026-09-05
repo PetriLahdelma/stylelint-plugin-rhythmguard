@@ -6,6 +6,15 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- The audit now scans `.scss` files through `postcss-scss` (new optional peer dependency). Without it, SCSS files are reported as skipped instead of ignored. `scanned.scssFiles` and `scanned.scssSkipped` join the JSON contract; text and Markdown output show the counts.
+- Quiet benchmark widened from 7 to 20 public repositories, adding SCSS-first systems: Bootstrap, Primer CSS, Penpot, Mastodon, Gutenberg components, GitLab UI, Pico, Bulma, Spectrum CSS, USWDS, Carbon, Salesforce Lightning, wp-calypso components.
+
+### Changed
+
+- New README banner.
+
 ## [2.2.0] - 2026-09-05
 
 ### Added

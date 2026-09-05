@@ -244,7 +244,7 @@ function renderDoc(results, rules) {
   lines.push('- CI runs `npm run bench:quiet -- --check` on every change. It fails when the finding set or the inferred scale of any pinned repository differs from its committed snapshot, so a rule change that alters behaviour on real design systems has to be reviewed and accepted with `--update-snapshots`.');
   lines.push('- Heuristic classification is a floor, not a verdict. A finding labelled `drift` may still be intentional; only a maintainer can say. Per-repo labels exist for exactly that, and the FP rate should be re-read after review.');
   lines.push('- Repositories whose scale fell back to `rhythmic-4` were measured against a scale they never chose. Their drift counts say more about Rhythmguard\'s token discovery than about their CSS. Each fallback is a to-do for `scale: "auto"` inference.');
-  lines.push('- The audit scans `.css` only. SCSS-first design systems (Bootstrap, Primer CSS, Penpot, Mastodon) are out of scope until a SCSS syntax is wired into the audit.');
+  lines.push('- SCSS is audited through postcss-scss. Sass variables and functions are not evaluated, so a system that routes all spacing through `$spacer` or `spacing()` shows few literal findings and a fallback scale; that is a token-discovery gap, not cleanliness.');
   lines.push('');
   return `${lines.join('\n')}\n`;
 }

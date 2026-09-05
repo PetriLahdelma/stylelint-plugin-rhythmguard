@@ -1,0 +1,31 @@
+{
+  "name": "pico",
+  "sha": "1039a47",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 7,
+    "drift": 7,
+    "falsePositives": 0
+  },
+  "findings": [
+    "scss/components/_dropdown.scss:28:0.2rem:drift",
+    "scss/components/_tooltip.scss:101:-0.3rem:drift",
+    "scss/components/_tooltip.scss:67:-0.3rem:drift",
+    "scss/components/_tooltip.scss:84:0.3rem:drift",
+    "scss/content/_code.scss:54:0.375rem:drift",
+    "scss/content/_typography.scss:137:0.125rem:drift",
+    "scss/forms/_checkbox-radio-switch.scss:25:-0.125em:drift"
+  ],
+  "commit": "1039a4788d6abc368d5485ae6bac84a8f0e3096f"
+}

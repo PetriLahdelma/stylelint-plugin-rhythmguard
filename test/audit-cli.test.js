@@ -715,3 +715,38 @@ test('audit CLI markdown reports the scale source', () => {
   assert.match(result.stdout, /\| Scale source \| scanned-css \(src\/card\.css, src\/theme\.css\) \|/);
   assert.match(result.stdout, /\| Scale \| 0, 8, 12, 16 \|/);
 });
+
+test('audit CLI scans SCSS files through postcss-scss and reports them separately', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-scss-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'tokens.scss'), ':root { --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; }\n');
+  fs.writeFileSync(
+    path.join(fixtureDir, 'src', 'card.scss'),
+    [
+      '$gap: 13px;',
+      '@use "sass:math";',
+      '.card {',
+      '  padding: $gap;',
+      '  margin: 13px;',
+      '  .title { gap: 7px; width: math.div(100%, 3); }',
+      '  &:hover { inset: 8px; }',
+      '}',
+      '',
+    ].join('\n'),
+  );
+
+  const result = runAuditCommand(fixtureDir, 'src', '--scale', 'auto', '--format', 'json');
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+
+  assert.equal(report.scanned.cssFiles, 2, 'scss files count as style files');
+  assert.equal(report.scanned.scssFiles, 2);
+  assert.equal(report.contracts.scale.source, 'scanned-css', 'tokens declared in scss feed the scale');
+  const offScale = report.findings.css.filter((finding) => finding.type === 'off-scale');
+  assert.deepEqual(offScale.map((finding) => finding.value).sort(), ['13px', '7px']);
+  assert.ok(offScale.every((finding) => finding.file.endsWith('card.scss')));
+  assert.equal(report.scanned.scssSkipped, 0);
+
+  const markdown = runAuditCommand(fixtureDir, 'src', '--format', 'markdown');
+  assert.match(markdown.stdout, /\| SCSS files scanned \| 2 \|/);
+});

@@ -33,6 +33,16 @@ Scan paths are scoped to the directory argument. Common generated directories ar
 
 `--scale 0,4,8,12,16` sets the scale explicitly. `--scale auto` infers one project-level scale and reports where it came from: external `--token-source` files first, then spacing custom properties (`--space-*`, `--spacing-*`) found across the scanned CSS, then the default `rhythmic-4` values. The JSON contract carries it under `contracts.scale.values`, `contracts.scale.source` and `contracts.scale.files`; text and Markdown output print the scale and its source. A shared config that enables `scale: "auto"` on the rules and an audit run with `--scale auto` therefore agree on the scale.
 
+## SCSS
+
+`.scss` files are scanned alongside `.css` when `postcss-scss` can be resolved from the audited project or from the plugin. Install it as a dev dependency to opt in:
+
+```bash
+npm install --save-dev postcss-scss
+```
+
+Without it, SCSS files are counted under `scanned.scssSkipped` and the text and Markdown output say so, rather than failing. Sass variables (`$gap: 13px`) and functions are not evaluated; declarations whose value is a variable are ignored, literal lengths are checked, and custom properties declared in SCSS feed `--scale auto` like any other.
+
 ## Markdown output
 
 ```md

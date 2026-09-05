@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-banner.svg?v=3" width="100%" alt="Rhythmguard banner showing spacing scale ruler and lint output" />
+  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-banner.svg?v=4" width="100%" alt="Rhythmguard banner showing spacing scale ruler and lint output" />
 </p>
 
 # stylelint-plugin-rhythmguard
@@ -13,7 +13,7 @@ Spacing scale and design-token governance for CSS and Tailwind. `padding: 13px` 
 
 Rhythmguard is scale-aware rather than a blanket ban: values on your scale pass, values off it are reported with the two nearest steps, and tokens are only ever suggested from a map you control. It works on CSS declarations through Stylelint and on Tailwind class strings through an ESLint companion, and it ships an audit CLI so you can measure drift and ratchet it down before enforcing anything.
 
-What it is not: it does not check colors or hex values, the Stylelint rules do not see Tailwind class strings (that is the separate ESLint companion below), and it does not parse SCSS in the audit. Pair it with a color linter if you need one; do not expect one tool to do both.
+What it is not: it does not check colors or hex values, and the Stylelint rules do not see Tailwind class strings (that is the separate ESLint companion below). Pair it with a color linter if you need one; do not expect one tool to do both. SCSS is audited when `postcss-scss` is installed.
 
 ## Start here
 

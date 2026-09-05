@@ -230,8 +230,33 @@ function toPosixRelativePath(rootDir, filePath) {
   return path.relative(rootDir, filePath).split(path.sep).join('/');
 }
 
+function isScssFile(filePath) {
+  return filePath.endsWith('.scss');
+}
+
+// "CSS files" in the audit means authored stylesheets: .css always, .scss when
+// postcss-scss can be resolved (see resolveScssSyntax).
 function isCssFile(filePath) {
-  return filePath.endsWith('.css');
+  return filePath.endsWith('.css') || isScssFile(filePath);
+}
+
+let scssSyntaxCache;
+
+/**
+ * postcss-scss is an optional peer. Resolve it from the audited project first,
+ * then from this package. Returns null when unavailable; SCSS files are then
+ * counted as skipped instead of failing the audit.
+ */
+function resolveScssSyntax() {
+  if (scssSyntaxCache !== undefined) {
+    return scssSyntaxCache;
+  }
+  try {
+    scssSyntaxCache = require.resolve('postcss-scss', { paths: [process.cwd(), __dirname] });
+  } catch {
+    scssSyntaxCache = null;
+  }
+  return scssSyntaxCache;
 }
 
 function isTemplateFile(filePath) {
@@ -240,7 +265,10 @@ function isTemplateFile(filePath) {
 
 async function runStylelintAudit(cssFiles, options) {
   if (cssFiles.length === 0) {
-    return [];
+    const empty = [];
+    empty.scssFiles = 0;
+    empty.scssSkipped = 0;
+    return empty;
   }
 
   const { default: stylelint } = await import('stylelint');
@@ -274,15 +302,42 @@ async function runStylelintAudit(cssFiles, options) {
     ];
   }
 
-  const result = await stylelint.lint({
-    files: cssFiles,
-    config: {
-      plugins: [pluginPath],
-      rules,
-    },
-  });
+  const plainFiles = cssFiles.filter((file) => !isScssFile(file));
+  const scssFiles = cssFiles.filter(isScssFile);
+  const results = [];
 
-  return result.results || [];
+  if (plainFiles.length > 0) {
+    const result = await stylelint.lint({
+      files: plainFiles,
+      config: {
+        plugins: [pluginPath],
+        rules,
+      },
+    });
+    results.push(...(result.results || []));
+  }
+
+  let scssSkipped = 0;
+  if (scssFiles.length > 0) {
+    const scssSyntax = resolveScssSyntax();
+    if (scssSyntax) {
+      const result = await stylelint.lint({
+        files: scssFiles,
+        config: {
+          customSyntax: scssSyntax,
+          plugins: [pluginPath],
+          rules,
+        },
+      });
+      results.push(...(result.results || []));
+    } else {
+      scssSkipped = scssFiles.length;
+    }
+  }
+
+  results.scssFiles = scssFiles.length;
+  results.scssSkipped = scssSkipped;
+  return results;
 }
 
 function collectCssFindings(fileResults) {
@@ -535,6 +590,8 @@ module.exports = {
   globToRegExp,
   hasGlob,
   isCssFile,
+  isScssFile,
+  resolveScssSyntax,
   isPathInside,
   isTemplateFile,
   offsetToLineColumn,

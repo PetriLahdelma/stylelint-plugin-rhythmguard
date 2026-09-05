@@ -44,7 +44,7 @@ Unexpected off-scale value "13px". Use scale values (nearest: 12px or 16px). (rh
 
 ## What Rhythmguard does not do
 
-It does not check colors or hex values. It does not enforce token usage unless `prefer-token` is enabled. The Stylelint rules do not see Tailwind class strings; that is the ESLint companion (`stylelint-plugin-rhythmguard/eslint`), which must be configured separately. It does not parse SCSS in the audit. An agent that expects any of these will look for findings that never come.
+It does not check colors or hex values. It does not enforce token usage unless `prefer-token` is enabled. The Stylelint rules do not see Tailwind class strings; that is the ESLint companion (`stylelint-plugin-rhythmguard/eslint`), which must be configured separately. SCSS files are audited only when `postcss-scss` is installed; otherwise the audit counts them as skipped and says so. An agent that expects any of these will look for findings that never come.
 
 ## Why the defaults are quiet
 

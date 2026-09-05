@@ -1,5 +1,5 @@
 {
-  "$comment": "Public repositories for the quiet benchmark (Track B2). Sparse paths keep clones small. Plain CSS only: the audit does not parse SCSS yet.",
+  "$comment": "Public repositories for the quiet benchmark (Track B2). Sparse paths keep clones small. CSS and SCSS (through postcss-scss).",
   "repos": [
     {
       "name": "radix-themes",
@@ -66,7 +66,112 @@
       "paths": [
         "packages/components/src"
       ],
-      "notes": "SCSS-only under the scanned path, so the audit finds no CSS. Kept as the explicit marker of the SCSS scope gap."
+      "notes": "SCSS-first design system that already runs stylelint-plugin-logical-css."
+    },
+    {
+      "name": "bootstrap",
+      "url": "https://github.com/twbs/bootstrap.git",
+      "paths": [
+        "scss"
+      ],
+      "notes": "SCSS. Spacing comes from the $spacer map, not custom properties, so inference is expected to fall back."
+    },
+    {
+      "name": "primer-css",
+      "url": "https://github.com/primer/css.git",
+      "paths": [
+        "src"
+      ],
+      "notes": "SCSS. Spacing tokens arrive from @primer/primitives at build time."
+    },
+    {
+      "name": "penpot",
+      "url": "https://github.com/penpot/penpot.git",
+      "paths": [
+        "frontend/src/app/main/ui"
+      ],
+      "notes": "SCSS modules next to ClojureScript components. Already consumes stylelint-plugin-logical-css."
+    },
+    {
+      "name": "mastodon",
+      "url": "https://github.com/mastodon/mastodon.git",
+      "paths": [
+        "app/javascript/styles"
+      ],
+      "notes": "SCSS. Consumes stylelint-plugin-logical-css through its shared config."
+    },
+    {
+      "name": "gutenberg-components",
+      "url": "https://github.com/WordPress/gutenberg.git",
+      "paths": [
+        "packages/components/src"
+      ],
+      "notes": "Mixed SCSS and CSS; the WordPress spacing scale is $grid-unit-*, so inference is expected to fall back."
+    },
+    {
+      "name": "gitlab-ui",
+      "url": "https://gitlab.com/gitlab-org/gitlab-ui.git",
+      "paths": [
+        "src/scss",
+        "src/components"
+      ],
+      "notes": "SCSS plus Vue templates. GitLab publishes @gitlab/stylelint-config, an embed target."
+    },
+    {
+      "name": "pico",
+      "url": "https://github.com/picocss/pico.git",
+      "paths": [
+        "scss"
+      ],
+      "notes": "SCSS. Spacing derived from a $spacing variable."
+    },
+    {
+      "name": "bulma",
+      "url": "https://github.com/jgthms/bulma.git",
+      "paths": [
+        "sass"
+      ],
+      "notes": "SCSS. Bulma v1 exposes --bulma-* custom properties; spacing is mostly Sass variables."
+    },
+    {
+      "name": "spectrum-css",
+      "url": "https://github.com/adobe/spectrum-css.git",
+      "paths": [
+        "components"
+      ],
+      "notes": "Plain CSS driven entirely by --spectrum-* tokens; a strong test of whether the token pattern is too narrow."
+    },
+    {
+      "name": "uswds",
+      "url": "https://github.com/uswds/uswds.git",
+      "paths": [
+        "packages"
+      ],
+      "notes": "SCSS with a units() function for spacing; raw px values are rare by design."
+    },
+    {
+      "name": "carbon-styles",
+      "url": "https://github.com/carbon-design-system/carbon.git",
+      "paths": [
+        "packages/styles/scss"
+      ],
+      "notes": "SCSS. Spacing through $spacing-NN tokens and the spacing() function."
+    },
+    {
+      "name": "salesforce-lightning",
+      "url": "https://github.com/salesforce-ux/design-system.git",
+      "paths": [
+        "ui"
+      ],
+      "notes": "SCSS. Spacing through $spacing-* design tokens."
+    },
+    {
+      "name": "wp-calypso-components",
+      "url": "https://github.com/Automattic/wp-calypso.git",
+      "paths": [
+        "packages/components/src"
+      ],
+      "notes": "SCSS. Consumes stylelint-plugin-logical-css at repo level."
     }
   ]
 }

@@ -79,6 +79,8 @@ async function createAuditReport(options) {
     motionFindings,
     scale,
     scanScope,
+    scssFiles: cssResults.scssFiles || 0,
+    scssSkipped: cssResults.scssSkipped || 0,
     tailwindFindings: collectTailwindFindings(templateFiles, lintOptions),
     templateFiles,
     tokenCandidateMinCount: parsed.tokenCandidateMinCount,
