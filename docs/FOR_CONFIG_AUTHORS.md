@@ -49,14 +49,15 @@ You do not know each consumer's scale, and you should not have to. With `"auto"`
 1. `scaleSources` files, if the consumer or your config lists any
 2. `audit.tokenSources` from the consumer's `.rhythmguardrc.json`
 3. spacing custom properties in the linted stylesheet (`--space-*`, `--spacing-*`, prefixed variants like `--acme-spacing-md`, Tailwind v4's `--spacing` base, values written as `calc(4px * var(--scaling))`)
-4. `theme.spacing` from `tailwindConfigPath`
-5. the `rhythmic-4` preset, announced once in the first report of the file
+4. spacing tokens shipped by installed design-token packages (`tailwindcss`, `@radix-ui/themes`, `@mantine/core`, `@primer/primitives`, `@shopify/polaris-tokens`, `@spectrum-css/tokens`)
+5. `theme.spacing` from `tailwindConfigPath`
+6. the `rhythmic-4` preset, announced once in the first report of the file
 
 Inference needs at least three distinct token values before it trusts a source; a one-token scale is worse than the default. The [quiet benchmark](./QUIET_BENCHMARK.md) shows how this behaves on Radix Themes, Mantine, shadcn/ui, Primer React and Liveblocks.
 
 ### When tokens live in a package, not in CSS
 
-Design systems often ship tokens from a Style Dictionary build or an npm package (`@primer/primitives`, Mantine's JS theme). The linted stylesheets then contain no token definitions and inference falls back. Point `scaleSources` at the built token file so every consumer of your config gets the same scale:
+Design systems often ship tokens from a Style Dictionary build or an npm package. For the packages on the allowlist (Tailwind v4, Radix Themes, Mantine, Primer primitives, Polaris, Spectrum) inference reads the installed files on its own. For any other package, or your own token build, point `scaleSources` at the built token file so every consumer of your config gets the same scale:
 
 ```json
 {

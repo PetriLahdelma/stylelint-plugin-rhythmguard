@@ -93,7 +93,7 @@ export interface AuditBaselineComparison {
   [key: string]: unknown;
 }
 
-export type AuditScaleSource = "default" | "explicit" | "fallback" | "scanned-css" | "token-sources";
+export type AuditScaleSource = "default" | "explicit" | "fallback" | "scanned-css" | "token-package" | "token-sources";
 
 export interface AuditScale {
   /** Files the scale was derived from (token sources or scanned stylesheets). Empty for explicit, default and fallback. */

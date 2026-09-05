@@ -199,3 +199,75 @@ test('scale "auto" falls back when fewer than three token values are found, beca
   assert.match(texts[0], /"13px".*nearest: 12px or 16px/);
   assert.match(texts[0], /using preset "rhythmic-4"/);
 });
+
+test('scale "auto" discovers spacing tokens shipped by installed design-token packages', async () => {
+  const dir = tempDir('token-packages');
+  fs.mkdirSync(path.join(dir, 'node_modules', 'tailwindcss'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'package.json'), '{"name":"fixture","devDependencies":{"tailwindcss":"^4.1.0"}}');
+  fs.writeFileSync(path.join(dir, 'node_modules', 'tailwindcss', 'package.json'), '{"name":"tailwindcss","version":"4.1.0"}');
+  fs.writeFileSync(path.join(dir, 'node_modules', 'tailwindcss', 'theme.css'), '@theme default { --spacing: 0.25rem; --color-red-500: red; }\n');
+
+  const previousCwd = process.cwd();
+  process.chdir(dir);
+  let result;
+  try {
+    result = await lintCss({
+      code: '@import "tailwindcss";\n.a { padding: 13px; margin: 20px; }',
+      rules: useScaleAuto(),
+    });
+  } finally {
+    process.chdir(previousCwd);
+  }
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  assert.equal(result.warnings.length, 1, result.warnings.map((w) => w.text).join('\n'));
+  assert.match(result.warnings[0].text, /"13px".*nearest: 12px or 14px/);
+  assert.doesNotMatch(result.warnings[0].text, /No spacing tokens/);
+});
+
+test('token packages with their own naming (Primer --base-size-*) are read through a per-package pattern', async () => {
+  const dir = tempDir('token-packages-primer');
+  const primer = path.join(dir, 'node_modules', '@primer', 'primitives');
+  fs.mkdirSync(path.join(primer, 'dist', 'css', 'base', 'size'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'package.json'), '{"name":"fixture","dependencies":{"@primer/primitives":"^10.0.0"}}');
+  fs.writeFileSync(path.join(primer, 'package.json'), '{"name":"@primer/primitives","version":"10.0.0"}');
+  fs.writeFileSync(
+    path.join(primer, 'dist', 'css', 'base', 'size', 'size.css'),
+    ':root { --base-size-4: 0.25rem; --base-size-8: 0.5rem; --base-size-12: 0.75rem; --base-size-16: 1rem; --base-size-24: 1.5rem; }\n',
+  );
+
+  const previousCwd = process.cwd();
+  process.chdir(dir);
+  let result;
+  try {
+    result = await lintCss({ code: '.a { padding: 13px; margin: 24px; gap: 32px; }', rules: useScaleAuto() });
+  } finally {
+    process.chdir(previousCwd);
+  }
+
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 2, texts.join('\n'));
+  assert.match(texts[0], /"13px".*nearest: 12px or 16px/);
+  assert.match(texts[1], /"32px"/, '32px is on rhythmic-4 but not on Primer\'s ladder, so it proves the package scale was used');
+  assert.doesNotMatch(texts[0], /No spacing tokens/);
+});
+
+test('token packages that are only transitive dependencies are ignored', async () => {
+  const dir = tempDir('token-packages-transitive');
+  fs.mkdirSync(path.join(dir, 'node_modules', 'tailwindcss'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'package.json'), '{"name":"fixture","devDependencies":{"stylelint-config-tailwindcss":"^1.0.0"}}');
+  fs.writeFileSync(path.join(dir, 'node_modules', 'tailwindcss', 'package.json'), '{"name":"tailwindcss","version":"4.1.0"}');
+  fs.writeFileSync(path.join(dir, 'node_modules', 'tailwindcss', 'theme.css'), '@theme default { --spacing: 0.25rem; }\n');
+
+  const previousCwd = process.cwd();
+  process.chdir(dir);
+  let result;
+  try {
+    result = await lintCss({ code: '.a { padding: 13px; }', rules: useScaleAuto() });
+  } finally {
+    process.chdir(previousCwd);
+  }
+
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0].text, /using preset "rhythmic-4"/, 'a transitive tailwindcss must not supply the scale');
+});
