@@ -60,27 +60,13 @@ jobs:
         if: matrix.node-version == '20.x' && matrix.stylelint-version == '16'
         run: npm run test:pack-smoke
 
-  publish-gate:
-    needs: verify
-    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
-    outputs:
-      has_npm_token: ${{ steps.token.outputs.has_npm_token }}
-    steps:
-      - name: Detect npm token availability
-        id: token
-        env:
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-        run: |
-          if [ -n "$NPM_TOKEN" ]; then
-            echo "has_npm_token=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "has_npm_token=false" >> "$GITHUB_OUTPUT"
-          fi
-
   publish:
-    needs: [verify, publish-gate]
-    if: ${{ needs.publish-gate.outputs.has_npm_token == 'true' }}
-    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
+    needs: verify
+    # npm trusted publishing (OIDC) is only supported from GitHub-hosted runners, so this
+    # one small job runs on ubuntu-latest while the verify matrix stays on the farm.
+    # No npm token: the trusted publisher on npmjs.com is bound to this repo and this
+    # workflow file. Provenance is generated automatically; --provenance is not needed.
+    runs-on: ubuntu-latest
     permissions:
       contents: read
       id-token: write
@@ -91,26 +77,17 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
           registry-url: https://registry.npmjs.org
+
+      - name: Ensure npm supports trusted publishing (>= 11.5.1)
+        run: |
+          npm install -g npm@latest
+          npm --version
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Publish to npm
-        # The farm runners carry an npm registry override (local proxy). Publishing must
-        # target the public registry explicitly; the CLI flag beats env and user config.
-        run: npm publish --provenance --registry https://registry.npmjs.org
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-
-  publish-skipped:
-    needs: [verify, publish-gate]
-    if: ${{ needs.publish-gate.outputs.has_npm_token != 'true' }}
-    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
-    steps:
-      - name: Skip publish because NPM_TOKEN is not configured
-        run: |
-          echo "NPM_TOKEN is not configured in repository secrets."
-          echo "Release verification completed; npm publish step was skipped."
+      - name: Publish to npm via OIDC
+        run: npm publish --access public --registry https://registry.npmjs.org
