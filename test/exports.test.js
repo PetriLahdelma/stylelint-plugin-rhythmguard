@@ -17,13 +17,15 @@ test('plugin exports rules, shared configs, presets, and eslint companion', () =
   assert.ok(plugin.rules['rhythmguard/no-offscale-transform']);
   assert.ok(plugin.rules['rhythmguard/use-motion-scale']);
 
-  assert.ok(plugin.configs.recommended);
-  assert.ok(plugin.configs.strict);
-  assert.ok(plugin.configs.tailwind);
-  assert.ok(plugin.configs.expanded);
-  assert.ok(plugin.configs.logical);
-  assert.ok(plugin.configs.migration);
-  assert.ok(plugin.configs.motion);
+  assert.deepEqual(
+    Object.keys(plugin.configs).sort(),
+    ['embed', 'motion', 'recommended', 'strict', 'tailwind'],
+    '3.0 ships five configs; expanded, logical, migration and react-tailwind are documented rule blocks now',
+  );
+  for (const removed of ['expanded', 'logical', 'migration', 'react-tailwind']) {
+    assert.equal(packageJson.exports[`./configs/${removed}`], undefined, `./configs/${removed} must no longer be exported`);
+    assert.equal(fs.existsSync(path.join(__dirname, '..', 'src', 'configs', `${removed}.js`)), false, `${removed}.js must be deleted`);
+  }
 
   assert.deepEqual(plugin.configs.tailwind.extends, [
     'stylelint-config-tailwindcss',
@@ -67,7 +69,7 @@ test('esm entrypoint exposes default plugin object', async () => {
 
   assert.ok(esm.default);
   assert.ok(esm.default.rules['rhythmguard/use-scale']);
-  assert.ok(esm.configs.logical);
+  assert.ok(esm.configs.embed);
   assert.ok(esm.configs.motion);
   assert.ok(esm.eslint.rules['tailwind-class-use-scale']);
   assert.ok(esm.eslint.rules['tailwind-class-use-motion-scale']);

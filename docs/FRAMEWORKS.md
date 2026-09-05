@@ -2,7 +2,7 @@
 
 Rhythmguard configs for common frontend frameworks. Use the shipped config for React/Next.js, or copy a snippet for Vue, Lit, or Astro.
 
-## React / Next.js + Tailwind (shipped config)
+## React / Next.js + Tailwind
 
 ```bash
 npm install --save-dev stylelint stylelint-plugin-rhythmguard
@@ -10,7 +10,8 @@ npm install --save-dev stylelint stylelint-plugin-rhythmguard
 
 ```json
 {
-  "extends": ["stylelint-plugin-rhythmguard/configs/react-tailwind"]
+  "extends": ["stylelint-plugin-rhythmguard/configs/tailwind"],
+  "ignoreFiles": [".next/**", "out/**", "node_modules/**"]
 }
 ```
 
@@ -145,6 +146,6 @@ Lint command:
 npx stylelint "src/**/*.{css,svelte}"
 ```
 
-## Why only React/Next.js gets a shipped config
+## Why there is no per-framework config
 
-Vue, Lit, Astro, and Svelte require `customSyntax` packages (`postcss-html`, `postcss-lit`) that most React projects don't need. Shipping them as dependencies would add unnecessary weight for the majority of users. The snippets above are copy-paste ready and stay current as those packages evolve.
+Every framework snippet above is the `tailwind` or `recommended` config plus a custom syntax or an ignore list. Shipping one config per framework doubled the surface for no behaviour, so 3.0 keeps five configs and documents the composition. `npx rhythmguard init` writes the Next.js ignores for you when it detects Next.js.

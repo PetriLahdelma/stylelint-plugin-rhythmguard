@@ -73,14 +73,14 @@ This guide helps teams choose the right Stylelint plugin for each problem, then 
 }
 ```
 
-## 4) Token migration phase (temporary)
+## 4) Token migration phase (temporary): recommended config plus an audit baseline
 
 ```json
 {
   "extends": [
     "stylelint-plugin-defensive-css/configs/recommended",
     "stylelint-plugin-logical-css/configs/recommended",
-    "stylelint-plugin-rhythmguard/configs/migration"
+    "stylelint-plugin-rhythmguard/configs/recommended"
   ]
 }
 ```

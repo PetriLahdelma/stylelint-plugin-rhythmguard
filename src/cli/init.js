@@ -92,9 +92,6 @@ function detect() {
 }
 
 function selectProfile(stack) {
-  if (stack.nextjs && stack.tailwind) {
-    return 'react-tailwind';
-  }
   if (stack.tailwind) {
     return 'tailwind';
   }
@@ -140,6 +137,8 @@ async function run() {
 
     const config = {
       extends: [`stylelint-plugin-rhythmguard/configs/${profile}`],
+      // Next.js build output is generated CSS; never lint it.
+      ...(stack.nextjs ? { ignoreFiles: ['.next/**', 'out/**', 'node_modules/**'] } : {}),
     };
 
     const configPath = path.join(process.cwd(), '.stylelintrc.json');
