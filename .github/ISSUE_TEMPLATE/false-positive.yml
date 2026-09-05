@@ -1,0 +1,56 @@
+name: False positive
+about: Rhythmguard reported something your team considers correct. This is the most useful report we get.
+title: "false positive: "
+labels:
+  - bug
+  - false-positive
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you. Percentages and hairlines stopped being findings because of reports like this one.
+
+  - type: textarea
+    id: css
+    attributes:
+      label: The CSS or class string that was reported
+      description: The smallest snippet that reproduces the report.
+      render: css
+    validations:
+      required: true
+
+  - type: textarea
+    id: message
+    attributes:
+      label: The message Rhythmguard printed
+      render: text
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why this value is correct in your codebase
+      description: One or two sentences. Design decision, framework requirement, rendering fix, accessibility pattern.
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Your rule options or config
+      render: json
+    validations:
+      required: false
+
+  - type: dropdown
+    id: wish
+    attributes:
+      label: What should happen instead
+      options:
+        - Never report this pattern (a new default)
+        - Make it an option I can turn off
+        - Report it differently
+        - Not sure
+    validations:
+      required: true

@@ -750,3 +750,34 @@ test('audit CLI scans SCSS files through postcss-scss and reports them separatel
   const markdown = runAuditCommand(fixtureDir, 'src', '--format', 'markdown');
   assert.match(markdown.stdout, /\| SCSS files scanned \| 2 \|/);
 });
+
+test('audit CLI --scale auto infers the scale from Sass variables and maps in SCSS sources', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-sass-scale-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(
+    path.join(fixtureDir, 'src', '_variables.scss'),
+    '$spacer: 1rem !default;\n$spacers: (0: 0, 1: $spacer * .25, 2: $spacer * .5, 3: $spacer, 4: $spacer * 1.5) !default;\n',
+  );
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'card.scss'), '.card { padding: 13px; margin: 8px; }\n');
+
+  const result = runAuditCommand(fixtureDir, 'src', '--scale', 'auto', '--format', 'json');
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.contracts.scale.source, 'scanned-css');
+  assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 16, 24]);
+  const offScale = report.findings.css.filter((finding) => finding.type === 'off-scale');
+  assert.deepEqual(offScale.map((finding) => finding.value), ['13px']);
+});
+
+test('audit CLI --scale auto ignores token declarations in test and fixture directories when inferring the scale', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-testdirs-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src', 'test'), { recursive: true });
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'theme.css'), ':root { --space-1: 4px; --space-2: 8px; --space-3: 12px; }\n');
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'test', 'override.scss'), '$spacing-weird: 7px;\n.t { margin: 7px; }\n');
+
+  const result = runAuditCommand(fixtureDir, 'src', '--scale', 'auto', '--format', 'json');
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12], 'the 7px test token must not join the scale');
+  assert.deepEqual(report.contracts.scale.files, ['src/theme.css']);
+});

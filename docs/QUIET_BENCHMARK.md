@@ -18,8 +18,8 @@ Findings classified as `drift` are, by construction, the values the tool would a
 
 | Repo | Commit | CSS files | Template files | Scored findings | Drift | Noise | Allowance | FP rate | Token opportunities | Scale source |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| [bootstrap](https://github.com/twbs/bootstrap.git) | `12cb8b9` | 122 | 3 | 41 | 41 | 0 | 0 | 0% | 126 | fallback (no spacing tokens found) |
-| [bulma](https://github.com/jgthms/bulma.git) | `741da22` | 75 | 0 | 33 | 33 | 0 | 0 | 0% | 110 | fallback (no spacing tokens found) |
+| [bootstrap](https://github.com/twbs/bootstrap.git) | `12cb8b9` | 122 | 3 | 59 | 53 | 6 | 0 | 10% | 126 | scanned-css (7 tokens) |
+| [bulma](https://github.com/jgthms/bulma.git) | `741da22` | 75 | 0 | 37 | 37 | 0 | 0 | 0% | 110 | scanned-css (7 tokens) |
 | [carbon-styles](https://github.com/carbon-design-system/carbon.git) | `4cc7900` | 284 | 73 | 272 | 272 | 0 | 0 | 0% | 411 | fallback (no spacing tokens found) |
 | [gitlab-ui](https://gitlab.com/gitlab-org/gitlab-ui.git) | `8660f9f` | 93 | 373 | 3 | 3 | 0 | 0 | 0% | 4 | fallback (no spacing tokens found) |
 | [gutenberg-components](https://github.com/WordPress/gutenberg.git) | `ec62b33` | 79 | 845 | 35 | 35 | 0 | 0 | 0% | 51 | fallback (no spacing tokens found) |
@@ -30,13 +30,13 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [open-props](https://github.com/argyleink/open-props.git) | `530682d` | 79 | 23 | 0 | 0 | 0 | 0 | 0% | 0 | fallback (no spacing tokens found) |
 | [penpot](https://github.com/penpot/penpot.git) | `00e0492` | 294 | 31 | 17 | 17 | 0 | 0 | 0% | 43 | fallback (no spacing tokens found) |
 | [pico](https://github.com/picocss/pico.git) | `1039a47` | 54 | 1 | 7 | 7 | 0 | 0 | 0% | 23 | fallback (no spacing tokens found) |
-| [primer-css](https://github.com/primer/css.git) | `72564a3` | 113 | 0 | 97 | 97 | 0 | 0 | 0% | 116 | fallback (no spacing tokens found) |
+| [primer-css](https://github.com/primer/css.git) | `72564a3` | 113 | 0 | 103 | 103 | 0 | 0 | 0% | 116 | scanned-css (32 tokens) |
 | [primer-react](https://github.com/primer/react.git) | `dc8387f` | 204 | 442 | 22 | 22 | 0 | 0 | 0% | 33 | fallback (no spacing tokens found) |
 | [radix-themes](https://github.com/radix-ui/themes.git) | `1faff10` | 150 | 149 | 7 | 7 | 0 | 0 | 0% | 19 | scanned-css (9 tokens) |
 | [salesforce-lightning](https://github.com/salesforce-ux/design-system.git) | `9bc6a40` | 459 | 558 | 75 | 58 | 17 | 0 | 23% | 98 | fallback (no spacing tokens found) |
 | [shadcn-ui](https://github.com/shadcn-ui/ui.git) | `7c9eaba` | 13 | 1829 | 58 | 58 | 0 | 0 | 0% | 26 | scanned-css (2 tokens) |
 | [spectrum-css](https://github.com/adobe/spectrum-css.git) | `3762086` | 236 | 252 | 5 | 5 | 0 | 0 | 0% | 7 | fallback (no spacing tokens found) |
-| [uswds](https://github.com/uswds/uswds.git) | `eed8a5e` | 682 | 205 | 30 | 21 | 9 | 0 | 30% | 46 | fallback (no spacing tokens found) |
+| [uswds](https://github.com/uswds/uswds.git) | `eed8a5e` | 682 | 205 | 17 | 11 | 6 | 0 | 35% | 46 | scanned-css (30 tokens) |
 | [wp-calypso-components](https://github.com/Automattic/wp-calypso.git) | `7cc9ee9` | 51 | 204 | 80 | 80 | 0 | 0 | 0% | 173 | fallback (no spacing tokens found) |
 
 ## Per-repo detail
@@ -45,43 +45,52 @@ Findings classified as `drift` are, by construction, the values the tool would a
 
 Paths: `scss`. SCSS. Spacing comes from the $spacer map, not custom properties, so inference is expected to fall back.
 
-Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+Inferred scale: `0, 4, 8, 16, 24, 48` from scanned-css (scss/_variables.scss).
 
 Top drift values:
 
 | Value | Count |
 | --- | ---: |
 | `.125rem` | 9 |
+| `.75rem` | 8 |
 | `1.25rem` | 8 |
+| `2rem` | 6 |
 | `15px` | 4 |
 | `.8125rem` | 2 |
-| `3rem` | 2 |
 | `4rem` | 2 |
 | `.1rem` | 1 |
-| `160px` | 1 |
+
+False-positive examples by category:
+
+- `noise:non-authored` (6)
+  - `scss/tests/mixins/_utilities.test.scss:32` `2rem`
+  - `scss/tests/mixins/_utilities.test.scss:52` `2rem`
+  - `scss/tests/mixins/_utilities.test.scss:78` `2rem`
+  - `scss/tests/mixins/_utilities.test.scss:91` `2rem`
+  - `scss/tests/mixins/_utilities.test.scss:108` `2rem`
 
 Drift examples for maintainer review:
 
+- `scss/_reboot.scss:161` `2rem`
 - `scss/mixins/_forms.scss:43` `.1rem`
 - `site/src/scss/_ads.scss:10` `15px`
 - `site/src/scss/_ads.scss:10` `15px`
 - `site/src/scss/_ads.scss:10` `15px`
-- `site/src/scss/_ads.scss:10` `160px`
 
 ### bulma
 
 Paths: `sass`. SCSS. Bulma v1 exposes --bulma-* custom properties; spacing is mostly Sass variables.
 
-Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+Inferred scale: `0, 4, 8, 12, 16, 24, 48` from scanned-css (sass/helpers/spacing.scss).
 
 Top drift values:
 
 | Value | Count |
 | --- | ---: |
+| `2em` | 7 |
 | `-0.375em` | 5 |
 | `0.375em` | 4 |
 | `0.375rem` | 3 |
-| `3rem` | 2 |
 | `2.5em` | 2 |
 | `1.125em` | 2 |
 | `1.25em` | 2 |
@@ -90,10 +99,10 @@ Top drift values:
 Drift examples for maintainer review:
 
 - `sass/components/dropdown.scss:121` `0.375rem`
-- `sass/components/dropdown.scss:135` `3rem`
 - `sass/components/navbar.scss:272` `0.375rem`
 - `sass/components/navbar.scss:400` `2.5em`
 - `sass/components/navbar.scss:405` `-0.375em`
+- `sass/components/navbar.scss:406` `1.125em`
 
 ### carbon-styles
 
@@ -329,7 +338,7 @@ Drift examples for maintainer review:
 
 Paths: `src`. SCSS. Spacing tokens arrive from @primer/primitives at build time.
 
-Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+Inferred scale: `0, 4, 8, 16, 24, 32, 40, 48, 64, 80, 96, 112, 128` from scanned-css (src/layout/page-layout.scss, src/support/variables/layout.scss).
 
 Top drift values:
 
@@ -341,8 +350,8 @@ Top drift values:
 | `10px` | 8 |
 | `13px` | 8 |
 | `3px` | 7 |
+| `12px` | 7 |
 | `20px` | 6 |
-| `2px` | 5 |
 
 Drift examples for maintainer review:
 
@@ -491,37 +500,34 @@ Drift examples for maintainer review:
 
 Paths: `packages`. SCSS with a units() function for spacing; raw px values are rare by design.
 
-Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+Inferred scale: `0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 40, 48, 56, 64, 72` from scanned-css (packages/uswds-core/src/styles/tokens/units/grid-base.scss, packages/uswds-core/src/styles/tokens/units/spacing-em.scss, packages/uswds-core/src/styles/tokens/units/spacing.scss, +1 more).
 
 Top drift values:
 
 | Value | Count |
 | --- | ---: |
-| `2px` | 4 |
 | `20px` | 4 |
 | `10px` | 4 |
-| `5px` | 4 |
-| `6px` | 1 |
-| `40px` | 1 |
 | `0.2rem` | 1 |
 | `0.3rem` | 1 |
+| `0.67em` | 1 |
 
 False-positive examples by category:
 
-- `noise:non-authored` (9)
-  - `packages/usa-accordion/src/test/accordion-icon.spec.scss:16` `3.5rem`
+- `noise:non-authored` (6)
   - `packages/usa-accordion/src/test/accordion-icon.spec.scss:17` `1.25rem`
   - `packages/usa-accordion/src/test/accordion-icon.spec.scss:35` `1.25rem`
-  - `packages/usa-accordion/src/test/accordion-icon.spec.scss:36` `3.5rem`
   - `packages/usa-accordion/src/test/accordion-icon.spec.scss:54` `1.25rem`
+  - `packages/usa-accordion/src/test/accordion-icon.spec.scss:77` `1.25rem`
+  - `packages/usa-accordion/src/test/accordion-icon.spec.scss:93` `1.25rem`
 
 Drift examples for maintainer review:
 
-- `packages/usa-banner/src/styles/_usa-banner.scss:174` `2px`
 - `packages/usa-date-picker/src/styles/_usa-date-picker.scss:228` `20px`
 - `packages/usa-date-picker/src/styles/_usa-date-picker.scss:228` `10px`
-- `packages/usa-date-picker/src/styles/_usa-date-picker.scss:272` `6px`
 - `packages/usa-date-picker/src/styles/_usa-date-picker.scss:277` `10px`
+- `packages/usa-date-picker/src/styles/_usa-date-picker.scss:402` `20px`
+- `packages/usa-date-picker/src/styles/_usa-date-picker.scss:417` `10px`
 
 ### wp-calypso-components
 

@@ -1,12 +1,13 @@
-## Summary
+## What and why
 
-- what changed:
-- why it changed:
+<!-- One or two sentences. Link the issue if there is one. -->
 
 ## Checklist
 
-- [ ] `npm run lint`
-- [ ] `npm test`
-- [ ] `npm run scales:validate` (if community scales changed)
-- [ ] README/docs updated where needed
-- [ ] CHANGELOG updated for user-facing behavior changes
+- [ ] A test fails without this change and passes with it
+- [ ] `npm run lint`, `npm run typecheck`, `npm test` pass locally
+- [ ] Rule page under `docs/rules/` updated if options or behavior changed
+- [ ] `CHANGELOG.md` updated under Unreleased for user-facing changes
+- [ ] `npm run bench:quiet -- --check` passes, or snapshots are updated and the new findings are explained below
+
+<!-- If snapshots changed: why are the new findings right? -->
