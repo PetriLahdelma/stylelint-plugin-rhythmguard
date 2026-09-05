@@ -1,0 +1,29 @@
+{
+  "name": "spectrum-css",
+  "sha": "3762086",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 5,
+    "drift": 5,
+    "falsePositives": 0
+  },
+  "findings": [
+    "components/asset/index.css:41:20px:drift",
+    "components/steplist/index.css:107:-10px:drift",
+    "components/steplist/index.css:113:-10px:drift",
+    "components/steplist/index.css:202:-10px:drift",
+    "components/steplist/index.css:91:40px:drift"
+  ],
+  "commit": "37620864c60c4c142a506017e1a15348a26abb0e"
+}

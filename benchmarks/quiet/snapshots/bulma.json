@@ -1,0 +1,57 @@
+{
+  "name": "bulma",
+  "sha": "741da22",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 33,
+    "drift": 33,
+    "falsePositives": 0
+  },
+  "findings": [
+    "sass/components/dropdown.scss:121:0.375rem:drift",
+    "sass/components/dropdown.scss:135:3rem:drift",
+    "sass/components/navbar.scss:272:0.375rem:drift",
+    "sass/components/navbar.scss:400:2.5em:drift",
+    "sass/components/navbar.scss:405:-0.375em:drift",
+    "sass/components/navbar.scss:406:1.125em:drift",
+    "sass/components/navbar.scss:685:0.375rem:drift",
+    "sass/components/navbar.scss:690:3rem:drift",
+    "sass/components/navbar.scss:719:-5px:drift",
+    "sass/components/tabs.scss:249:1.25em:drift",
+    "sass/components/tabs.scss:255:1.25em:drift",
+    "sass/elements/content.scss:105:0.6666em:drift",
+    "sass/elements/content.scss:108:1.3333em:drift",
+    "sass/elements/content.scss:114:0.8em:drift",
+    "sass/elements/content.scss:119:0.8888em:drift",
+    "sass/elements/content.scss:96:0.5714em:drift",
+    "sass/elements/content.scss:99:1.1428em:drift",
+    "sass/elements/tag.scss:108:-0.375rem:drift",
+    "sass/elements/tag.scss:149:-0.375em:drift",
+    "sass/elements/tag.scss:150:0.1875em:drift",
+    "sass/elements/tag.scss:154:0.1875em:drift",
+    "sass/elements/tag.scss:155:-0.375em:drift",
+    "sass/elements/tag.scss:159:-0.375em:drift",
+    "sass/elements/tag.scss:160:-0.375em:drift",
+    "sass/form/file.scss:146:3em:drift",
+    "sass/form/select.scss:125:0.625em:drift",
+    "sass/form/select.scss:32:1.125em:drift",
+    "sass/form/select.scss:62:2.5em:drift",
+    "sass/form/tools.scss:213:0.375em:drift",
+    "sass/form/tools.scss:217:0.375em:drift",
+    "sass/form/tools.scss:222:0.375em:drift",
+    "sass/form/tools.scss:227:0.375em:drift",
+    "sass/utilities/mixins.scss:13:-0.4375em:drift"
+  ],
+  "commit": "741da22368cd548111224983a1c3ece8954fe8cc"
+}

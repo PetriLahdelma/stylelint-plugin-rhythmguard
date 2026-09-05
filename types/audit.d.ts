@@ -60,7 +60,12 @@ export interface AuditSummary {
 }
 
 export interface AuditScanned {
+  /** Authored stylesheets scanned: .css plus .scss when postcss-scss is available. */
   cssFiles: number;
+  /** .scss files found. Audited through postcss-scss when it resolves. */
+  scssFiles?: number;
+  /** .scss files found but not audited because postcss-scss is not installed. */
+  scssSkipped?: number;
   templateFiles: number;
   totalFiles?: number;
   [key: string]: unknown;

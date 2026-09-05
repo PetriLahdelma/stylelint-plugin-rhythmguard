@@ -21,6 +21,8 @@ function renderMarkdown(report) {
     '| --- | ---: |',
     `| CSS files scanned | ${report.cssFilesScanned} |`,
     `| Template files scanned | ${report.templateFilesScanned} |`,
+    ...(report.scanned && report.scanned.scssFiles > 0 ? [`| SCSS files scanned | ${report.scanned.scssFiles - report.scanned.scssSkipped} |`] : []),
+    ...(report.scanned && report.scanned.scssSkipped > 0 ? [`| SCSS files skipped (install postcss-scss) | ${report.scanned.scssSkipped} |`] : []),
     `| Files with issues | ${report.filesWithIssues} |`,
     `| Total findings | ${report.totalWarnings} |`,
     `| Scale cleanliness | ${report.scaleCleanliness}% |`,

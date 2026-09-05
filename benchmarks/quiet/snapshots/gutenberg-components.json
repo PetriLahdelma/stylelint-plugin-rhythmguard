@@ -1,0 +1,59 @@
+{
+  "name": "gutenberg-components",
+  "sha": "ec62b33",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 35,
+    "drift": 35,
+    "falsePositives": 0
+  },
+  "findings": [
+    "packages/components/src/badge/styles.scss:17:2px:drift",
+    "packages/components/src/badge/styles.scss:46:2px:drift",
+    "packages/components/src/border-box-control/style.module.scss:55:39px:drift",
+    "packages/components/src/border-control/style.module.scss:69:2px:drift",
+    "packages/components/src/button/style.scss:306:6px:drift",
+    "packages/components/src/button/style.scss:320:2px:drift",
+    "packages/components/src/combobox-control/style.scss:16:2px:drift",
+    "packages/components/src/custom-gradient-picker/style.scss:49:2px:drift",
+    "packages/components/src/dropdown-menu/style.scss:17:6px:drift",
+    "packages/components/src/dropdown-menu/style.scss:24:6px:drift",
+    "packages/components/src/duotone-picker/color-list-picker/style.scss:14:2px:drift",
+    "packages/components/src/form-token-field/style.module.scss:4:7px:drift",
+    "packages/components/src/form-token-field/style.scss:131:6px:drift",
+    "packages/components/src/guide/style.scss:79:-6px:drift",
+    "packages/components/src/item-group/style.module.scss:112:16.0008px:drift",
+    "packages/components/src/menu-item/style.scss:25:-2px:drift",
+    "packages/components/src/menu-item/style.scss:36:-2px:drift",
+    "packages/components/src/panel/style.scss:123:-10px:drift",
+    "packages/components/src/panel/style.scss:130:-2px:drift",
+    "packages/components/src/panel/style.scss:130:-2px:drift",
+    "packages/components/src/panel/style.scss:130:6px:drift",
+    "packages/components/src/panel/style.scss:134:-5px:drift",
+    "packages/components/src/panel/style.scss:167:20px:drift",
+    "packages/components/src/panel/style.scss:77:5px:drift",
+    "packages/components/src/placeholder/style.scss:98:10px:drift",
+    "packages/components/src/placeholder/style.scss:99:10px:drift",
+    "packages/components/src/spinner/style.module.scss:7:11px:drift",
+    "packages/components/src/spinner/style.module.scss:7:5px:drift",
+    "packages/components/src/tab-panel/style.scss:21:3px:drift",
+    "packages/components/src/textarea-control/style.module.scss:18:11px:drift",
+    "packages/components/src/textarea-control/style.module.scss:18:9px:drift",
+    "packages/components/src/toolbar/toolbar-button/style.scss:9:10px:drift",
+    "packages/components/src/toolbar/toolbar-button/style.scss:9:5px:drift",
+    "packages/components/src/toolbar/toolbar-button/style.scss:9:5px:drift",
+    "packages/components/src/toolbar/toolbar-group/style.scss:69:6px:drift"
+  ],
+  "commit": "ec62b33a8ae3b94de3b0d95cdf8b5c68113a978b"
+}

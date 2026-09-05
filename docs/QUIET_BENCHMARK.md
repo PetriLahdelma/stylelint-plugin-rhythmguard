@@ -18,15 +18,156 @@ Findings classified as `drift` are, by construction, the values the tool would a
 
 | Repo | Commit | CSS files | Template files | Scored findings | Drift | Noise | Allowance | FP rate | Token opportunities | Scale source |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| [bootstrap](https://github.com/twbs/bootstrap.git) | `12cb8b9` | 122 | 3 | 41 | 41 | 0 | 0 | 0% | 126 | fallback (no spacing tokens found) |
+| [bulma](https://github.com/jgthms/bulma.git) | `741da22` | 75 | 0 | 33 | 33 | 0 | 0 | 0% | 110 | fallback (no spacing tokens found) |
+| [carbon-styles](https://github.com/carbon-design-system/carbon.git) | `4cc7900` | 284 | 73 | 272 | 272 | 0 | 0 | 0% | 411 | fallback (no spacing tokens found) |
+| [gitlab-ui](https://gitlab.com/gitlab-org/gitlab-ui.git) | `8660f9f` | 93 | 373 | 3 | 3 | 0 | 0 | 0% | 4 | fallback (no spacing tokens found) |
+| [gutenberg-components](https://github.com/WordPress/gutenberg.git) | `ec62b33` | 79 | 845 | 35 | 35 | 0 | 0 | 0% | 51 | fallback (no spacing tokens found) |
 | [liveblocks-react-ui](https://github.com/liveblocks/liveblocks.git) | `98332db` | 6 | 184 | 9 | 9 | 0 | 0 | 0% | 29 | fallback (no spacing tokens found) |
 | [mantine](https://github.com/mantinedev/mantine.git) | `3862b09` | 102 | 849 | 30 | 30 | 0 | 0 | 0% | 36 | scanned-css (15 tokens) |
-| [mittwald-flow](https://github.com/mittwald/flow.git) | `17efdf9` | 0 | 1423 | 0 | 0 | 0 | 0 | 0% | 0 | fallback (no spacing tokens found) |
+| [mastodon](https://github.com/mastodon/mastodon.git) | `0a32b4a` | 36 | 0 | 564 | 564 | 0 | 0 | 0% | 1255 | scanned-css (13 tokens) |
+| [mittwald-flow](https://github.com/mittwald/flow.git) | `17efdf9` | 130 | 1423 | 2 | 2 | 0 | 0 | 0% | 2 | fallback (no spacing tokens found) |
 | [open-props](https://github.com/argyleink/open-props.git) | `530682d` | 79 | 23 | 0 | 0 | 0 | 0 | 0% | 0 | fallback (no spacing tokens found) |
+| [penpot](https://github.com/penpot/penpot.git) | `00e0492` | 294 | 31 | 17 | 17 | 0 | 0 | 0% | 43 | fallback (no spacing tokens found) |
+| [pico](https://github.com/picocss/pico.git) | `1039a47` | 54 | 1 | 7 | 7 | 0 | 0 | 0% | 23 | fallback (no spacing tokens found) |
+| [primer-css](https://github.com/primer/css.git) | `72564a3` | 113 | 0 | 97 | 97 | 0 | 0 | 0% | 116 | fallback (no spacing tokens found) |
 | [primer-react](https://github.com/primer/react.git) | `dc8387f` | 204 | 442 | 22 | 22 | 0 | 0 | 0% | 33 | fallback (no spacing tokens found) |
 | [radix-themes](https://github.com/radix-ui/themes.git) | `1faff10` | 150 | 149 | 7 | 7 | 0 | 0 | 0% | 19 | scanned-css (9 tokens) |
+| [salesforce-lightning](https://github.com/salesforce-ux/design-system.git) | `9bc6a40` | 459 | 558 | 75 | 58 | 17 | 0 | 23% | 98 | fallback (no spacing tokens found) |
 | [shadcn-ui](https://github.com/shadcn-ui/ui.git) | `7c9eaba` | 13 | 1829 | 58 | 58 | 0 | 0 | 0% | 26 | scanned-css (2 tokens) |
+| [spectrum-css](https://github.com/adobe/spectrum-css.git) | `3762086` | 236 | 252 | 5 | 5 | 0 | 0 | 0% | 7 | fallback (no spacing tokens found) |
+| [uswds](https://github.com/uswds/uswds.git) | `eed8a5e` | 682 | 205 | 30 | 21 | 9 | 0 | 30% | 46 | fallback (no spacing tokens found) |
+| [wp-calypso-components](https://github.com/Automattic/wp-calypso.git) | `7cc9ee9` | 51 | 204 | 80 | 80 | 0 | 0 | 0% | 173 | fallback (no spacing tokens found) |
 
 ## Per-repo detail
+
+### bootstrap
+
+Paths: `scss`. SCSS. Spacing comes from the $spacer map, not custom properties, so inference is expected to fall back.
+
+Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `.125rem` | 9 |
+| `1.25rem` | 8 |
+| `15px` | 4 |
+| `.8125rem` | 2 |
+| `3rem` | 2 |
+| `4rem` | 2 |
+| `.1rem` | 1 |
+| `160px` | 1 |
+
+Drift examples for maintainer review:
+
+- `scss/mixins/_forms.scss:43` `.1rem`
+- `site/src/scss/_ads.scss:10` `15px`
+- `site/src/scss/_ads.scss:10` `15px`
+- `site/src/scss/_ads.scss:10` `15px`
+- `site/src/scss/_ads.scss:10` `160px`
+
+### bulma
+
+Paths: `sass`. SCSS. Bulma v1 exposes --bulma-* custom properties; spacing is mostly Sass variables.
+
+Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `-0.375em` | 5 |
+| `0.375em` | 4 |
+| `0.375rem` | 3 |
+| `3rem` | 2 |
+| `2.5em` | 2 |
+| `1.125em` | 2 |
+| `1.25em` | 2 |
+| `0.1875em` | 2 |
+
+Drift examples for maintainer review:
+
+- `sass/components/dropdown.scss:121` `0.375rem`
+- `sass/components/dropdown.scss:135` `3rem`
+- `sass/components/navbar.scss:272` `0.375rem`
+- `sass/components/navbar.scss:400` `2.5em`
+- `sass/components/navbar.scss:405` `-0.375em`
+
+### carbon-styles
+
+Paths: `packages/styles/scss`. SCSS. Spacing through $spacing-NN tokens and the spacing() function.
+
+Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `13px` | 28 |
+| `2px` | 23 |
+| `7px` | 19 |
+| `3px` | 16 |
+| `6px` | 13 |
+| `-2px` | 11 |
+| `10px` | 9 |
+| `40px` | 9 |
+
+Drift examples for maintainer review:
+
+- `packages/styles/scss/components/Tearsheet/_tearsheet.scss:487` `10px`
+- `packages/styles/scss/components/Tearsheet/_tearsheet.scss:533` `-14px`
+- `packages/styles/scss/components/accordion/_accordion.scss:226` `2px`
+- `packages/styles/scss/components/breadcrumb/_breadcrumb.scss:146` `2px`
+- `packages/styles/scss/components/breadcrumb/_breadcrumb.scss:218` `3px`
+
+### gitlab-ui
+
+Paths: `src/scss`, `src/components`. SCSS plus Vue templates. GitLab publishes @gitlab/stylelint-config, an embed target.
+
+Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `-2px` | 1 |
+| `3px` | 1 |
+| `5px` | 1 |
+
+Drift examples for maintainer review:
+
+- `src/components/base/form/form_date/form_date.scss:5` `-2px`
+- `src/scss/typography.scss:26` `3px`
+- `src/scss/typography.scss:26` `5px`
+
+### gutenberg-components
+
+Paths: `packages/components/src`. Mixed SCSS and CSS; the WordPress spacing scale is $grid-unit-*, so inference is expected to fall back.
+
+Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `2px` | 7 |
+| `6px` | 6 |
+| `-2px` | 4 |
+| `5px` | 4 |
+| `10px` | 3 |
+| `11px` | 2 |
+| `39px` | 1 |
+| `7px` | 1 |
+
+Drift examples for maintainer review:
+
+- `packages/components/src/badge/styles.scss:17` `2px`
+- `packages/components/src/badge/styles.scss:46` `2px`
+- `packages/components/src/border-box-control/style.module.scss:55` `39px`
+- `packages/components/src/border-control/style.module.scss:69` `2px`
+- `packages/components/src/button/style.scss:306` `6px`
 
 ### liveblocks-react-ui
 
@@ -82,17 +223,134 @@ Drift examples for maintainer review:
 - `packages/@mantine/core/src/components/ColorInput/ColorInput.module.css:34` `8px`
 - `packages/@mantine/core/src/components/ColorPicker/ColorPicker.module.css:82` `5px`
 
+### mastodon
+
+Paths: `app/javascript/styles`. SCSS. Consumes stylelint-plugin-logical-css through its shared config.
+
+Inferred scale: `0, 2, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40` from scanned-css (app/javascript/styles/mastodon/components.scss, app/javascript/styles/mastodon/tokens/_shape.scss).
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `10px` | 165 |
+| `15px` | 112 |
+| `5px` | 70 |
+| `30px` | 50 |
+| `6px` | 36 |
+| `14px` | 16 |
+| `25px` | 8 |
+| `11px` | 8 |
+
+Drift examples for maintainer review:
+
+- `app/javascript/styles/entrypoints/mailer.scss:93` `18px`
+- `app/javascript/styles/entrypoints/mailer.scss:142` `56px`
+- `app/javascript/styles/entrypoints/mailer.scss:308` `26px`
+- `app/javascript/styles/entrypoints/mailer.scss:342` `5px`
+- `app/javascript/styles/entrypoints/mailer.scss:453` `110px`
+
 ### mittwald-flow
 
-Paths: `packages/components/src`. SCSS-only under the scanned path, so the audit finds no CSS. Kept as the explicit marker of the SCSS scope gap.
+Paths: `packages/components/src`. SCSS-first design system that already runs stylelint-plugin-logical-css.
 
 Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `2px` | 2 |
+
+Drift examples for maintainer review:
+
+- `packages/components/src/components/DateRangePicker/components/DateRangeInput/DateRangeInput.module.scss:35` `2px`
+- `packages/components/src/components/DateRangePicker/components/DateRangeInput/DateRangeInput.module.scss:39` `2px`
 
 ### open-props
 
 Paths: `src`. A token library, not a component library. Sizes are --size-N, so the spacing pattern will miss them; included to measure the cost of that gap.
 
 Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+### penpot
+
+Paths: `frontend/src/app/main/ui`. SCSS modules next to ClojureScript components. Already consumes stylelint-plugin-logical-css.
+
+Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `7px` | 3 |
+| `-2px` | 3 |
+| `5px` | 2 |
+| `-10px` | 2 |
+| `2px` | 2 |
+| `-11px` | 1 |
+| `0.55em` | 1 |
+| `-150px` | 1 |
+
+Drift examples for maintainer review:
+
+- `frontend/src/app/main/ui/components/reorder_handler.scss:13` `-11px`
+- `frontend/src/app/main/ui/dashboard/check_updates.scss:158` `0.55em`
+- `frontend/src/app/main/ui/dashboard/deleted.scss:46` `5px`
+- `frontend/src/app/main/ui/dashboard/inline_edition.scss:43` `7px`
+- `frontend/src/app/main/ui/ds/product/loader.scss:15` `-150px`
+
+### pico
+
+Paths: `scss`. SCSS. Spacing derived from a $spacing variable.
+
+Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `-0.3rem` | 2 |
+| `0.2rem` | 1 |
+| `0.3rem` | 1 |
+| `0.375rem` | 1 |
+| `0.125rem` | 1 |
+| `-0.125em` | 1 |
+
+Drift examples for maintainer review:
+
+- `scss/components/_dropdown.scss:28` `0.2rem`
+- `scss/components/_tooltip.scss:67` `-0.3rem`
+- `scss/components/_tooltip.scss:84` `0.3rem`
+- `scss/components/_tooltip.scss:101` `-0.3rem`
+- `scss/content/_code.scss:54` `0.375rem`
+
+### primer-css
+
+Paths: `src`. SCSS. Spacing tokens arrive from @primer/primitives at build time.
+
+Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `5px` | 17 |
+| `6px` | 11 |
+| `7px` | 9 |
+| `10px` | 8 |
+| `13px` | 8 |
+| `3px` | 7 |
+| `20px` | 6 |
+| `2px` | 5 |
+
+Drift examples for maintainer review:
+
+- `src/base/base.scss:61` `15px`
+- `src/base/typography-base.scss:27` `10px`
+- `src/branch-name/branch-name.scss:8` `2px`
+- `src/branch-name/branch-name.scss:8` `6px`
+- `src/branch-name/branch-name.scss:19` `-2px`
 
 ### primer-react
 
@@ -144,6 +402,42 @@ Drift examples for maintainer review:
 - `packages/radix-ui-themes/src/components/segmented-control.css:109` `3px`
 - `packages/radix-ui-themes/src/components/text-field.css:210` `-2px`
 
+### salesforce-lightning
+
+Paths: `ui`. SCSS. Spacing through $spacing-* design tokens.
+
+Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `2.5rem` | 3 |
+| `-2.25rem` | 2 |
+| `-0.35rem` | 2 |
+| `10px` | 2 |
+| `7.5em` | 2 |
+| `13.5em` | 2 |
+| `19.5em` | 2 |
+| `3em` | 2 |
+
+False-positive examples by category:
+
+- `noise:non-authored` (17)
+  - `.storybook/scss/ui/index.scss:21` `1.25rem`
+  - `.storybook/scss/ui/index.scss:33` `0.375rem`
+  - `.storybook/scss/ui/index.scss:34` `0.375rem`
+  - `ui/vendor/_normalize-reset.scss:182` `40px`
+  - `ui/vendor/_normalize-reset.scss:360` `2px`
+
+Drift examples for maintainer review:
+
+- `__fixtures__/ui/components/data-tables/inline-edit/_index.scss:29` `-2.25rem`
+- `ui/components/color-picker/base/_index.scss:54` `0.3rem`
+- `ui/components/combobox/base/_index.scss:585` `3.75rem`
+- `ui/components/data-tables/inline-edit/_index.scss:29` `-2.25rem`
+- `ui/components/global-navigation/navigation-bar/_index.scss:49` `-0.35rem`
+
 ### shadcn-ui
 
 Paths: `apps/v4/app`, `apps/v4/registry`, `apps/v4/components`. Tailwind v4 with @theme in globals.css plus TSX class strings; exercises the Tailwind side of the audit.
@@ -171,6 +465,91 @@ Drift examples for maintainer review:
 - `apps/v4/app/(app)/(typeset)/typeset.css:250` `0.35em`
 - `apps/v4/app/(app)/(typeset)/typeset.css:263` `0.25em`
 
+### spectrum-css
+
+Paths: `components`. Plain CSS driven entirely by --spectrum-* tokens; a strong test of whether the token pattern is too narrow.
+
+Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `-10px` | 3 |
+| `20px` | 1 |
+| `40px` | 1 |
+
+Drift examples for maintainer review:
+
+- `components/asset/index.css:41` `20px`
+- `components/steplist/index.css:91` `40px`
+- `components/steplist/index.css:107` `-10px`
+- `components/steplist/index.css:113` `-10px`
+- `components/steplist/index.css:202` `-10px`
+
+### uswds
+
+Paths: `packages`. SCSS with a units() function for spacing; raw px values are rare by design.
+
+Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `2px` | 4 |
+| `20px` | 4 |
+| `10px` | 4 |
+| `5px` | 4 |
+| `6px` | 1 |
+| `40px` | 1 |
+| `0.2rem` | 1 |
+| `0.3rem` | 1 |
+
+False-positive examples by category:
+
+- `noise:non-authored` (9)
+  - `packages/usa-accordion/src/test/accordion-icon.spec.scss:16` `3.5rem`
+  - `packages/usa-accordion/src/test/accordion-icon.spec.scss:17` `1.25rem`
+  - `packages/usa-accordion/src/test/accordion-icon.spec.scss:35` `1.25rem`
+  - `packages/usa-accordion/src/test/accordion-icon.spec.scss:36` `3.5rem`
+  - `packages/usa-accordion/src/test/accordion-icon.spec.scss:54` `1.25rem`
+
+Drift examples for maintainer review:
+
+- `packages/usa-banner/src/styles/_usa-banner.scss:174` `2px`
+- `packages/usa-date-picker/src/styles/_usa-date-picker.scss:228` `20px`
+- `packages/usa-date-picker/src/styles/_usa-date-picker.scss:228` `10px`
+- `packages/usa-date-picker/src/styles/_usa-date-picker.scss:272` `6px`
+- `packages/usa-date-picker/src/styles/_usa-date-picker.scss:277` `10px`
+
+### wp-calypso-components
+
+Paths: `packages/components/src`. SCSS. Consumes stylelint-plugin-logical-css at repo level.
+
+Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+
+Top drift values:
+
+| Value | Count |
+| --- | ---: |
+| `10px` | 15 |
+| `5px` | 8 |
+| `20px` | 8 |
+| `6px` | 6 |
+| `2px` | 5 |
+| `3px` | 4 |
+| `-6px` | 4 |
+| `14px` | 3 |
+
+Drift examples for maintainer review:
+
+- `packages/components/src/button/style.scss:24` `14px`
+- `packages/components/src/button/style.scss:39` `-2px`
+- `packages/components/src/button/style.scss:86` `7px`
+- `packages/components/src/card/style.scss:8` `10px`
+- `packages/components/src/card/style.scss:41` `48px`
+
 ## Classification rules in force
 
 - `noise:non-authored`: path matches `(^|/)(vendor|third[-_]?party|node_modules|dist|build|generated|__snapshots__|fixtures?|tests?|__tests__|e2e|storybook-static|\.storybook)(/|$)`
@@ -181,5 +560,5 @@ Drift examples for maintainer review:
 - CI runs `npm run bench:quiet -- --check` on every change. It fails when the finding set or the inferred scale of any pinned repository differs from its committed snapshot, so a rule change that alters behaviour on real design systems has to be reviewed and accepted with `--update-snapshots`.
 - Heuristic classification is a floor, not a verdict. A finding labelled `drift` may still be intentional; only a maintainer can say. Per-repo labels exist for exactly that, and the FP rate should be re-read after review.
 - Repositories whose scale fell back to `rhythmic-4` were measured against a scale they never chose. Their drift counts say more about Rhythmguard's token discovery than about their CSS. Each fallback is a to-do for `scale: "auto"` inference.
-- The audit scans `.css` only. SCSS-first design systems (Bootstrap, Primer CSS, Penpot, Mastodon) are out of scope until a SCSS syntax is wired into the audit.
+- SCSS is audited through postcss-scss. Sass variables and functions are not evaluated, so a system that routes all spacing through `$spacer` or `spacing()` shows few literal findings and a fallback scale; that is a token-discovery gap, not cleanliness.
 

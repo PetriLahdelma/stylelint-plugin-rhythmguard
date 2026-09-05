@@ -245,6 +245,8 @@ function buildReport({
   motionFindings,
   scale,
   scanScope,
+  scssFiles = 0,
+  scssSkipped = 0,
   templateFiles,
   tailwindFindings,
   tokenCandidateMinCount,
@@ -312,6 +314,8 @@ function buildReport({
     scanScope,
     scanned: {
       cssFiles: cssFiles.length,
+      scssFiles,
+      scssSkipped,
       templateFiles: templateFiles.length,
       totalFiles,
     },
