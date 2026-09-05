@@ -12,7 +12,7 @@ The format follows Keep a Changelog principles and semantic versioning.
 - Quiet benchmark widened from 7 to 20 public repositories, adding SCSS-first systems: Bootstrap, Primer CSS, Penpot, Mastodon, Gutenberg components, GitLab UI, Pico, Bulma, Spectrum CSS, USWDS, Carbon, Salesforce Lightning, wp-calypso components.
 
 - `scale: "auto"` now reads spacing tokens shipped by installed design-token packages when the project's own stylesheets define none: `tailwindcss` (v4 `theme.css`), `@radix-ui/themes`, `@mantine/core`, `@primer/primitives`, `@shopify/polaris-tokens`, `@spectrum-css/tokens`. Provenance is `token-package`. Token-source entries accept a per-file `tokenPattern` for packages that name spacing differently. The allowlist is `src/utils/token-packages.json`.
-- Sass variables and maps are token sources for `--scale auto` and for `scaleSources` files: `$spacer: 1rem`, `$spacing-01: 0.125rem`, and maps such as `$spacers: (1: $spacer * .25, ...)` with nested maps, variable references, `* / + -` arithmetic and `math.div()`. Unevaluable function calls, strings, keywords and interpolated keys are skipped. Bootstrap, Bulma, Carbon and USWDS now infer their own scales in the quiet benchmark.
+- Sass variables and maps are token sources for `--scale auto`, for `scaleSources` files, and for `scale: "auto"` inside the rules when the linted `.scss` file declares them (with `postcss-scss`): `$spacer: 1rem`, `$spacing-01: 0.125rem`, and maps such as `$spacers: (1: $spacer * .25, ...)` with nested maps, variable references, `* / + -` arithmetic and `math.div()`. Unevaluable function calls, strings, keywords and interpolated keys are skipped. Bootstrap, Bulma, Carbon and USWDS now infer their own scales in the quiet benchmark.
 
 ### Changed
 
