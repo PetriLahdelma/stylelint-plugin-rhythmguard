@@ -65,6 +65,22 @@ function isUnitStrategy(value) {
   return value === 'convert' || value === 'exact';
 }
 
+function isAutoScaleLiteral(value) {
+  return value === 'auto';
+}
+
+function isScaleEntryOrAuto(value) {
+  return isAutoScaleLiteral(value) || isScaleEntry(value);
+}
+
+function isScaleSourceEntry(value) {
+  if (isNonEmptyString(value)) {
+    return true;
+  }
+
+  return isPlainObject(value) && (isNonEmptyString(value.path) || isNonEmptyString(value.file));
+}
+
 function isScaleEntry(value) {
   if (typeof value === 'number') {
     return Number.isFinite(value) && value >= 0;
@@ -237,7 +253,10 @@ function validateSecondaryOptionShapes(result, ruleName, secondaryOptions, schem
       continue;
     }
 
-    if (descriptor.expectsArray && !Array.isArray(optionValue)) {
+    const literalAllowed = Array.isArray(descriptor.allowLiterals)
+      && descriptor.allowLiterals.includes(optionValue);
+
+    if (descriptor.expectsArray && !Array.isArray(optionValue) && !literalAllowed) {
       valid = false;
       result.warn(
         `Invalid value ${stringifyOptionValue(optionValue)} for option "${optionName}" of rule "${ruleName}"`,
@@ -443,8 +462,16 @@ const SCALE_VALIDATION_SCHEMA = Object.freeze({
     entryValidator: isNonEmptyString,
   }),
   scale: Object.freeze({
-    entryValidator: isScaleEntry,
+    allowLiterals: ['auto'],
+    entryValidator: isScaleEntryOrAuto,
     expectsArray: true,
+  }),
+  scaleSources: Object.freeze({
+    entryValidator: isScaleSourceEntry,
+    expectsArray: true,
+  }),
+  tailwindConfigPath: Object.freeze({
+    entryValidator: isNonEmptyString,
   }),
   unitStrategy: Object.freeze({
     entryValidator: isUnitStrategy,
@@ -528,7 +555,12 @@ const PREFER_TOKEN_VALIDATION_SCHEMA = Object.freeze({
     expectsObject: true,
   }),
   scale: Object.freeze({
-    entryValidator: isScaleEntry,
+    allowLiterals: ['auto'],
+    entryValidator: isScaleEntryOrAuto,
+    expectsArray: true,
+  }),
+  scaleSources: Object.freeze({
+    entryValidator: isScaleSourceEntry,
     expectsArray: true,
   }),
   tailwindConfigPath: Object.freeze({
@@ -600,6 +632,13 @@ function buildScaleOptions(rawOptions) {
     propertyGroups: normalizePropertyGroups(options.propertyGroups),
     propertyScaleOverrides: buildPropertyScaleOverrides(options.propertyScales),
     scale: scaleSelection.scale,
+    scaleAuto: isAutoScaleLiteral(options.scale),
+    scaleSources: Array.isArray(options.scaleSources) ? options.scaleSources : [],
+    tailwindConfigPath:
+      typeof options.tailwindConfigPath === 'string' && options.tailwindConfigPath.length > 0
+        ? options.tailwindConfigPath
+        : null,
+    tokenPatternExplicit: typeof options.tokenPattern === 'string' && options.tokenPattern.length > 0,
     tokenFunctions: Array.isArray(options.tokenFunctions)
       ? options.tokenFunctions.map((value) => String(value).toLowerCase())
       : ['var', 'theme', 'token'],
@@ -637,6 +676,9 @@ function buildTokenOptions(rawOptions) {
     propertyGroups: normalizePropertyGroups(options.propertyGroups),
     propertyScaleOverrides: buildPropertyScaleOverrides(options.propertyScales),
     scale: scaleSelection.scale,
+    scaleAuto: isAutoScaleLiteral(options.scale),
+    scaleSources: Array.isArray(options.scaleSources) ? options.scaleSources : [],
+    tokenPatternExplicit: typeof options.tokenPattern === 'string' && options.tokenPattern.length > 0,
     tailwindConfigPath:
       typeof options.tailwindConfigPath === 'string' && options.tailwindConfigPath.length > 0
         ? options.tailwindConfigPath

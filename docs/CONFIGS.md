@@ -84,6 +84,12 @@ Option reference per rule: [`use-scale`](./rules/use-scale.md), [`prefer-token`]
 { "rules": { "rhythmguard/use-scale": [true, { "customScale": [0, 6, 12, 18, 24, 36, 48] }] } }
 ```
 
+```json
+{ "rules": { "rhythmguard/use-scale": [true, { "scale": "auto" }] } }
+```
+
+`scale: "auto"` derives the scale from your spacing tokens: explicit `scaleSources` files, then `.rhythmguardrc.json` audit token sources, then the linted stylesheet's `--space-*` / `--spacing-*` custom properties, then a Tailwind v3 config, then the `rhythmic-4` preset. Details in the [`use-scale` docs](./rules/use-scale.md#automatic-scale).
+
 Resolution precedence: `customScale`, then `scale`, then `preset`, then the default `rhythmic-4`. The preset catalogue is in [`SCALE_PRESETS.md`](./SCALE_PRESETS.md).
 
 ## Option validation

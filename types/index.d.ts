@@ -14,6 +14,7 @@ export type {
   RhythmguardRuleOptions,
   RhythmguardStylelintConfig,
   ScalePresetMetadata,
+  ScaleSource,
   ScaleValue,
 } from "./shared";
 export type {

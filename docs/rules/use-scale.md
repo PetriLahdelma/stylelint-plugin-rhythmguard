@@ -56,13 +56,35 @@ Unexpected off-scale value "13px". Use scale values (nearest: 12px or 16px). (rh
 
 Deterministic: the value is replaced with the nearest scale step, preserving sign and unit (`rem` and `em` are converted through `baseFontSize` unless `unitStrategy` is `exact`). Turn it off with `fixToScale: false` when snapping would change visuals you have not reviewed; the Digitaltableteur rollout runs the rule at warning level with autofix disabled.
 
+## Automatic scale
+
+`scale: "auto"` infers the scale from your spacing tokens instead of a hand-written list, so a shared config can enable the rule without knowing each consumer's scale. The first source that yields tokens wins; sources are not merged.
+
+1. `scaleSources`: token files listed in the rule options. CSS custom properties (including Tailwind v4 `@theme`), flat JSON, Style Dictionary JSON, or DTCG JSON.
+2. `audit.tokenSources` in a `.rhythmguardrc.json` in the working directory, so lint and `rhythmguard audit` read the same token contract.
+3. Custom properties in the linted stylesheet whose names match `tokenPattern` (default for auto: `^--(space|spacing)-`).
+4. `theme.spacing` from `tailwindConfigPath` (Tailwind v3 JS config).
+5. Fallback to the `rhythmic-4` preset. The first report in the file says so: `No spacing tokens were found for scale "auto"; using preset "rhythmic-4".`
+
+```json
+{
+  "rules": {
+    "rhythmguard/use-scale": [true, { "scale": "auto", "scaleSources": ["./src/theme.css"] }]
+  }
+}
+```
+
+Token values in `rem` and `em` are converted through `baseFontSize`; values in units that cannot convert to `px` are ignored. `customScale` still overrides everything.
+
 ## Options
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `preset` | `string` | `rhythmic-4` | Selects a built-in scale. See [scale presets](../SCALE_PRESETS.md). |
 | `customScale` | `Array<number\|string>` | `undefined` | Highest-priority custom scale override |
-| `scale` | `Array<number\|string>` | `[0,4,8,12,16,24,32,40,48,64]` | Allowed values |
+| `scale` | `Array<number\|string> \| "auto"` | `[0,4,8,12,16,24,32,40,48,64]` | Allowed values, or `"auto"` to infer them from tokens (see above) |
+| `scaleSources` | `Array<string \| { path, format? }>` | `[]` | Token files consulted first when `scale` is `"auto"` |
+| `tailwindConfigPath` | `string` | `null` | Tailwind v3 config whose `theme.spacing` feeds `scale: "auto"` |
 | `units` | `string[]` | `['px','rem','em']` | Units considered for scale enforcement |
 | `unitStrategy` | `'convert' \| 'exact'` | `'convert'` | `convert` compares through px conversion. `exact` compares against same-unit scale values (for `vw`, `cqi`, and similar) |
 | `baseFontSize` | `number` | `16` | Used for `rem` and `em` conversion |
@@ -78,7 +100,7 @@ Deterministic: the value is replaced with the nearest scale step, preserving sig
 | `properties` | `Array<string\|RegExp>` | built-in spacing patterns | Explicit property set. Strings may be property names or regex-like strings (`/pattern/flags`) |
 | `propertyScales` | `Record<propertyOrRegex, scaleOrPreset>` | `{}` | Per-property scale overrides. Keys may be exact names or `/regex/flags`; stateful `g` and `y` flags are normalized |
 
-Scale resolution precedence: `customScale`, then `scale`, then `preset`, then the default `rhythmic-4`.
+Scale resolution precedence: `customScale`, then `scale` (a list, or `"auto"` inference), then `preset`, then the default `rhythmic-4`.
 
 ### Option validation
 

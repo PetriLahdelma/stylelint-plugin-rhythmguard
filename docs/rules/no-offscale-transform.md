@@ -45,6 +45,6 @@ Same deterministic nearest-value fix as `use-scale`, applied only to translation
 
 ## Options
 
-Accepts the same scale options as [`rhythmguard/use-scale`](./use-scale.md#options): `preset`, `customScale`, `scale`, `units`, `unitStrategy`, `baseFontSize`, `tokenPattern`, `tokenFunctions`, `allowNegative`, `allowPercentages`, `fixToScale`, `enforceInsideMathFunctions`, `mathFunctionArguments`, `ignoreMathFunctionArguments`. Property selection options are not accepted because the property set is fixed to translations.
+Accepts the same scale options as [`rhythmguard/use-scale`](./use-scale.md#options), including `scale: "auto"` with `scaleSources` and `tailwindConfigPath` (see [automatic scale](./use-scale.md#automatic-scale)): `preset`, `customScale`, `scale`, `units`, `unitStrategy`, `baseFontSize`, `tokenPattern`, `tokenFunctions`, `allowNegative`, `allowPercentages`, `fixToScale`, `enforceInsideMathFunctions`, `mathFunctionArguments`, `ignoreMathFunctionArguments`. Property selection options are not accepted because the property set is fixed to translations.
 
 Unknown option names and wrong value shapes are rejected up front, as for every Rhythmguard rule.

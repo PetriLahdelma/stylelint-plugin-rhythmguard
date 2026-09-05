@@ -29,13 +29,19 @@ const {
   walkTransformTranslateNodes,
 } = require('../../utils/value-utils');
 
+const {
+  DEFAULT_AUTO_TOKEN_PATTERN,
+  autoScaleFallbackNote,
+  resolveAutoScale,
+} = require('../../utils/scale-inference');
+
 const ruleName = 'rhythmguard/use-scale';
 
 const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
-  rejected: (value, lower, upper) =>
-    `Unexpected off-scale value "${value}". Use scale values (nearest: ${lower} or ${upper}).`,
+  rejected: (value, lower, upper, note = '') =>
+    `Unexpected off-scale value "${value}". Use scale values (nearest: ${lower} or ${upper}).${note ? ` ${note}` : ''}`,
 });
 
 function getFixedNodeValue(parsedLength, nearestPx, options) {
@@ -180,8 +186,21 @@ const ruleFunction = (primary, secondaryOptions) => {
       });
     }
 
+    if (options.scaleAuto) {
+      const inference = resolveAutoScale({
+        baseFontSize: options.baseFontSize,
+        root,
+        scaleSources: options.scaleSources,
+        tailwindConfigPath: options.tailwindConfigPath,
+        tokenPattern: options.tokenPatternExplicit ? options.tokenPattern : DEFAULT_AUTO_TOKEN_PATTERN,
+      });
+      options.scale = inference.scale;
+      options.scaleInference = inference;
+    }
+
     const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);
     const scaleCache = new Map();
+    let fallbackNote = autoScaleFallbackNote(options.scaleInference);
 
     const getScaleStateForProperty = (prop) => {
       const cached = scaleCache.get(prop);
@@ -208,7 +227,7 @@ const ruleFunction = (primary, secondaryOptions) => {
       const payload = {
         endIndex,
         index,
-        message: messages.rejected(value, lower, upper),
+        message: messages.rejected(value, lower, upper, fallbackNote),
         node: decl,
         result,
         ruleName,
@@ -221,6 +240,7 @@ const ruleFunction = (primary, secondaryOptions) => {
         };
       }
 
+      fallbackNote = '';
       stylelint.utils.report(payload);
     };
 
