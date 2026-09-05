@@ -6,9 +6,16 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.1.0] - 2026-09-06
+
 ### Added
 
 - Audit findings for CSS declarations carry the declaration's `property`, recovered from the source at the warning position (`null` inside at-rules). Off-scale findings are counted by property in `offScaleProperties`, exposed as `contracts.scale.offScaleProperties`, rendered as a histogram in text, Markdown and HTML output and as a `Top properties` line in the quickstart. Baseline keys and benchmark snapshots are unchanged. ([#64](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/64))
+
+### Changed
+
+- `rhythmguard audit --help` describes what `--scale auto` reads and in which order, SCSS scanning through `postcss-scss`, and the value, property and file breakdowns.
+- CI and release workflows no longer run the full suite on the Stylelint 16.0.0 floor as an allowed-to-fail step; that step produced an error annotation on every green run. The blocking floor suite is unchanged. Actions `checkout` and `setup-node` moved to v5.
 
 ## [3.0.0] - 2026-09-06
 
