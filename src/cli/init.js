@@ -153,4 +153,8 @@ async function run() {
   }
 }
 
-run();
+module.exports = { detect, run, selectProfile };
+
+if (require.main === module) {
+  run();
+}

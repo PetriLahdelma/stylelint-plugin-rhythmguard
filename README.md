@@ -13,7 +13,13 @@ Spacing scale and design-token governance for CSS and Tailwind. `padding: 13px` 
 
 Rhythmguard is scale-aware rather than a blanket ban: values on your scale pass, values off it are reported with the two nearest steps, and tokens are only ever suggested from a map you control. It works on CSS declarations through Stylelint and on Tailwind class strings through an ESLint companion, and it ships an audit CLI so you can measure drift and ratchet it down before enforcing anything.
 
-## Install
+## Start here
+
+```bash
+npx rhythmguard
+```
+
+No install, no config. It detects your stack and token files, infers your spacing scale from your own tokens, audits the current directory, and prints the exact `.stylelintrc.json` (and ESLint snippet for Tailwind) to paste. Then:
 
 ```bash
 npm install --save-dev stylelint stylelint-plugin-rhythmguard
