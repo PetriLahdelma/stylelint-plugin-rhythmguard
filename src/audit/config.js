@@ -134,11 +134,21 @@ function parseBooleanOption(value, optionName) {
 }
 
 function normalizeCliTokenSources(sources, format) {
-  return sources.map((sourcePath) => ({
-    baseDir: process.cwd(),
-    format,
-    path: sourcePath,
-  }));
+  return sources.map((source) => {
+    // The programmatic API may pass typed { path | file, format?, baseDir? } entries.
+    if (source && typeof source === 'object') {
+      return {
+        baseDir: source.baseDir || process.cwd(),
+        format: source.format || format,
+        path: source.path || source.file,
+      };
+    }
+    return {
+      baseDir: process.cwd(),
+      format,
+      path: source,
+    };
+  });
 }
 
 function normalizeConfigTokenSources(sources, baseDir) {

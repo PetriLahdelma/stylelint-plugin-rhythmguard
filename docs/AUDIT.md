@@ -110,5 +110,6 @@ Dependency-free dashboard and Figma-friendly export examples: [`AUDIT_API_EXAMPL
 
 ## Companion commands
 
+- `npx rhythmguard` with no command runs the zero-config quickstart: stack and token detection, inferred scale with provenance, a findings summary, and a paste-ready config.
 - `npx rhythmguard init` detects Tailwind and Next.js and writes a `.stylelintrc.json`.
 - `npx rhythmguard doctor` checks that Stylelint is installed, the config is valid, token patterns compile, token sources exist, and baseline and motion settings are consistent.

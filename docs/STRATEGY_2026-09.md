@@ -208,6 +208,10 @@ Tailwind v5, or a shift of CSS linting to Biome or Oxlint, would open the kind o
 5. B5 upstream proposal in parallel with B4.
 6. Track A v3.0 items 4 to 6 (standalone ESLint plugin, playground, asset move) as capacity allows; none of them gate distribution.
 
+### Delivery standard (added 2026-09-05)
+
+A developer in a repository we have never seen runs one command with no configuration and gets a correct, quiet, explained result in under a minute, and every release proves that against real public codebases. `npx rhythmguard` (zero-config quickstart) is the first half; the quiet benchmark run on every change is the second. Outreach waits until the tool earns it.
+
 ### Deferred
 
 - MCP server or other agent-native surfaces. The audit JSON contract plus an `AGENTS.md` snippet is enough for coding agents today.
