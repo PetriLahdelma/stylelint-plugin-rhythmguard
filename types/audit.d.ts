@@ -77,7 +77,8 @@ export interface AuditFinding {
   key?: string;
   line?: number;
   message: string;
-  property?: string;
+  /** CSS property of the declaration, recovered from the source. Null when the position is not inside a declaration. CSS findings only. */
+  property?: string | null;
   rule?: string;
   type: string;
   value?: string;
@@ -113,6 +114,10 @@ export interface AuditReport {
     motion: AuditFinding[];
     tailwind: AuditFinding[];
   };
+  /** Off-scale CSS findings counted by property, top ten. */
+  offScaleProperties?: Record<string, number>;
+  /** Off-scale CSS findings counted by value, top ten. */
+  offScaleValues?: Record<string, number>;
   scanned: AuditScanned;
   summary: AuditSummary;
   [key: string]: unknown;
@@ -130,6 +135,7 @@ export interface AuditContractReport {
     scale: {
       cleanliness?: unknown;
       files: string[];
+      offScaleProperties?: Record<string, number>;
       offScaleValues?: unknown;
       source: AuditScaleSource;
       tokenOpportunities?: unknown;

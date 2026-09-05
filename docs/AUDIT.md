@@ -60,7 +60,23 @@ Literal lengths in SCSS are checked. Declarations whose value is a Sass variable
 | New findings | 3 |
 ```
 
-Followed by histograms of off-scale values, token opportunities and Tailwind drift, the token contract, top affected files, and the baseline comparison when one is active.
+Followed by histograms of off-scale values, off-scale properties, token opportunities and Tailwind drift, the token contract, top affected files, and the baseline comparison when one is active.
+
+## Drift by property
+
+Every CSS finding carries the `property` of its declaration (`padding`, `margin-bottom`, `gap`, `transform`). Stylelint reports a position, not a node, so the audit reads the declaration back from the source at that position; a finding inside an at-rule such as `@include` gets `property: null`. The report counts off-scale findings by property in `offScaleProperties`, exposed in the JSON contract as `contracts.scale.offScaleProperties`, and prints the table after the value histogram:
+
+```md
+## CSS Off-Scale Properties
+
+| Property | Count |
+| --- | ---: |
+| `margin-bottom` | 112 |
+| `padding` | 41 |
+| `gap` | 3 |
+```
+
+The value histogram tells you which numbers drifted; the property table tells you where the layout decision lives. A table dominated by margins on siblings usually means the parent should own the spacing with `gap`, which removes the drift in one place instead of one declaration at a time. A table dominated by `padding` is component-internal and is fixed per component. Baselines and the quiet benchmark key findings by file, line and value, so the property does not affect either.
 
 ## Config file
 

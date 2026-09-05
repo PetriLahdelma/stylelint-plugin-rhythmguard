@@ -14,6 +14,7 @@ This project enforces its spacing scale with stylelint-plugin-rhythmguard.
 - Do not use `--fix` on spacing findings unless the task says so. Snapping a value can change layout; choose the value deliberately.
 - Values of one pixel or less (hairlines) and percentages are allowed and are not findings.
 - Tailwind arbitrary spacing values such as `p-[13px]` are findings too; use the scale utility (`p-3`) or an on-scale arbitrary value.
+- When the audit's `contracts.scale.offScaleProperties` table is dominated by margins on sibling elements, put a `gap` on the parent instead of fixing each margin. The parent owns the spacing between its children.
 - If the audit reports the scale source as `fallback`, the project has no discoverable spacing tokens. Ask before adding any; do not guess a scale.
 ```
 
@@ -24,7 +25,7 @@ Trim it to the lines that apply. The whole value of an agent instruction is that
 | Command | Use it when | Output |
 | --- | --- | --- |
 | `npx rhythmguard` | First contact with a repository | Detected stack, inferred scale with its source, findings summary, a config to paste. Human-readable, exit 0 |
-| `npx rhythmguard audit . --format json` | You need to act on findings | Stable JSON 2.0 contract: `contracts.scale.values` and `.source`, `findings.css[]` and `findings.tailwind[]` with `file`, `line`, `column`, `value`, `type`, `text`. Exit 0 unless a gate flag is set |
+| `npx rhythmguard audit . --format json` | You need to act on findings | Stable JSON 2.0 contract: `contracts.scale.values`, `.source` and `.offScaleProperties`, `findings.css[]` and `findings.tailwind[]` with `file`, `line`, `column`, `value`, `type`, `text`, and `property` on CSS findings. Exit 0 unless a gate flag is set |
 | `npx rhythmguard audit . --scale auto --format github` | Running inside GitHub Actions | One `::warning file=…,line=…::…` per finding |
 | `npx rhythmguard audit . --since-baseline --fail-on-new-drift` | Gating a change in CI | Exit 1 only when the change introduced drift not in `.rhythmguard-baseline.json` |
 | `npx stylelint "**/*.css"` | A Stylelint config with Rhythmguard exists | Standard Stylelint output; messages end with `(rhythmguard/use-scale)` |

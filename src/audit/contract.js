@@ -268,6 +268,9 @@ function buildReport({
   const offScaleValues = countByValue(cssFindings
     .filter((finding) => finding.type === 'off-scale' && finding.value)
     .map((finding) => finding.value));
+  const offScaleProperties = countByValue(cssFindings
+    .filter((finding) => finding.type === 'off-scale' && finding.property)
+    .map((finding) => finding.property));
   const tokenOpportunities = countByValue(cssFindings
     .filter((finding) => finding.type === 'token-opportunity' && finding.value)
     .map((finding) => finding.value));
@@ -319,6 +322,7 @@ function buildReport({
       findings: motionFindings.length,
       values: Object.fromEntries(sortCountMap(motionValues).slice(0, 10)),
     },
+    offScaleProperties: Object.fromEntries(sortCountMap(offScaleProperties).slice(0, 10)),
     offScaleValues: Object.fromEntries(sortCountMap(offScaleValues).slice(0, 10)),
     scale: scale || null,
     scaleCleanliness,
@@ -388,6 +392,7 @@ function toAuditContractReport(report) {
       scale: {
         cleanliness: report.scaleCleanliness,
         files: report.scale ? report.scale.files : [],
+        offScaleProperties: report.offScaleProperties || {},
         offScaleValues: report.offScaleValues,
         source: report.scale ? report.scale.source : 'default',
         tokenOpportunities: report.tokenOpportunities,

@@ -46,6 +46,7 @@ test('bare `rhythmguard` runs the zero-config quickstart: detection, inferred sc
   assert.match(out, /Scale\s+0, 4, 8, 12, 16/, 'inferred scale is printed');
   assert.match(out, /scanned-css/, 'scale provenance is printed');
   assert.match(out, /13px/, 'the off-scale value shows up');
+  assert.match(out, /Top properties\s+padding ×1/, 'off-scale findings are broken down by property');
   assert.match(out, /\.stylelintrc\.json/, 'a config file name is suggested');
   assert.match(out, /"scale": "auto"/, 'the suggested config uses auto inference');
   assert.match(out, /stylelint-plugin-rhythmguard\/configs\/recommended/, 'plain CSS projects get the recommended config');

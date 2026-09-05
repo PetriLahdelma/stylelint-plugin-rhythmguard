@@ -34,6 +34,7 @@ function renderHtml(report) {
     metricHtml('CSS files', report.cssFilesScanned),
     metricHtml('Template files', report.templateFilesScanned),
     '</section>',
+    renderHtmlTable('CSS Off-Scale Properties', ['Property', 'Count'], Object.entries(report.offScaleProperties || {})),
     renderHtmlTable('Top Affected Files', ['File', 'Findings'], report.topAffectedFiles.map(({ file, count }) => [file, count])),
     renderHtmlTable('Token Contract Sources', ['File', 'Format', 'Tokens'], report.tokenContract.sources.map((source) => [
       source.file,
