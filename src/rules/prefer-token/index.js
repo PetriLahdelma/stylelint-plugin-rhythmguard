@@ -28,6 +28,11 @@ const {
 } = require('../../utils/value-utils');
 const { buildEffectiveTokenMap } = require('../../utils/token-map');
 
+const {
+  DEFAULT_AUTO_TOKEN_PATTERN,
+  resolveAutoScale,
+} = require('../../utils/scale-inference');
+
 const ruleName = 'rhythmguard/prefer-token';
 
 const messages = stylelint.utils.ruleMessages(ruleName, {
@@ -110,6 +115,18 @@ const ruleFunction = (primary, secondaryOptions) => {
         result,
         ruleName,
       });
+    }
+
+    if (options.scaleAuto) {
+      const inference = resolveAutoScale({
+        baseFontSize: options.baseFontSize,
+        root,
+        scaleSources: options.scaleSources,
+        tailwindConfigPath: options.tailwindConfigPath,
+        tokenPattern: options.tokenPatternExplicit ? options.tokenPattern : DEFAULT_AUTO_TOKEN_PATTERN,
+      });
+      options.scale = inference.scale;
+      options.scaleInference = inference;
     }
 
     const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);

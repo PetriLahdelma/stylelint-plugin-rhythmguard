@@ -86,7 +86,8 @@ Nested DTCG groups are walked recursively and the key path becomes the variable 
 | `allowNumericScale` | `boolean` | `false` | Migration mode: on-scale literals pass |
 | `preset` | `string` | `rhythmic-4` | Scale used in migration mode |
 | `customScale` | `Array<number\|string>` | `undefined` | Highest-priority custom scale override |
-| `scale` | `Array<number\|string>` | `[0,4,8,12,16,24,32,40,48,64]` | Used when `allowNumericScale` is on |
+| `scale` | `Array<number\|string> \| "auto"` | `[0,4,8,12,16,24,32,40,48,64]` | Used when `allowNumericScale` is on. `"auto"` infers it from tokens, see [use-scale](./use-scale.md#automatic-scale) |
+| `scaleSources` | `Array<string \| { path, format? }>` | `[]` | Token files consulted first when `scale` is `"auto"` |
 | `baseFontSize` | `number` | `16` | Used for `rem` and `em` scale checks |
 | `unitStrategy` | `'convert' \| 'exact'` | `'convert'` | Matching strategy in migration mode |
 | `units` | `string[]` | `['px','rem','em']` | Units considered for numeric scale checks |

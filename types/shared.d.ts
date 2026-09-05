@@ -2,13 +2,32 @@ export type ScaleValue = number | string;
 
 export type RuleSeverity = boolean | "always" | "never";
 
+export interface ScaleSource {
+  /** Directory that a relative `path` resolves from. Defaults to the working directory. */
+  baseDir?: string;
+  /** Alias for `path`. */
+  file?: string;
+  /** `auto` (default), `css`, `flat-json`, `style-dictionary`, or `dtcg`. */
+  format?: string;
+  path?: string;
+}
+
 export interface RhythmguardRuleOptions {
   baseFontSize?: number;
   customScale?: ScaleValue[];
   includeMathFunctions?: boolean;
   preset?: string;
   properties?: Array<string | RegExp>;
-  scale?: ScaleValue[];
+  /**
+   * Allowed values, or `"auto"` to infer the scale from spacing tokens: `scaleSources`,
+   * then `.rhythmguardrc.json` audit token sources, then the linted stylesheet's custom
+   * properties, then `tailwindConfigPath`, falling back to the `rhythmic-4` preset.
+   */
+  scale?: ScaleValue[] | "auto";
+  /** Token files consulted first when `scale` is `"auto"`. */
+  scaleSources?: Array<string | ScaleSource>;
+  /** Tailwind v3 config whose `theme.spacing` feeds `scale: "auto"` and `tokenMapFromTailwindSpacing`. */
+  tailwindConfigPath?: string;
   tokenMap?: Record<string, string>;
   tokenMapFile?: string;
   tokenMapFromCssCustomProperties?: boolean;

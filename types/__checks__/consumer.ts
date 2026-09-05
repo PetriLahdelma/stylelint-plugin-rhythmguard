@@ -38,6 +38,12 @@ const ruleOptions: RhythmguardRuleOptions = {
   tokenMapFromCssCustomProperties: true,
 };
 
+const autoScaleOptions: RhythmguardRuleOptions = {
+  scale: 'auto',
+  scaleSources: ['./tokens.json', { path: './theme.css', format: 'css' }],
+  tailwindConfigPath: './tailwind.config.mjs',
+};
+
 const useScaleRule = rules['rhythmguard/use-scale'];
 const fixable: boolean | undefined = useScaleRule.meta.fixable;
 const docUrl: string | undefined = useScale.meta.url;
@@ -59,6 +65,7 @@ async function runAudit(): Promise<AuditContractReport> {
 
 void pluginConfigs;
 void ruleOptions;
+void autoScaleOptions;
 void fixable;
 void docUrl;
 void name;
