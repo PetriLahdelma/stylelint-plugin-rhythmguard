@@ -4,7 +4,7 @@ const js = require('@eslint/js');
 
 module.exports = [
   {
-    ignores: ['coverage/**', 'node_modules/**'],
+    ignores: ['benchmarks/**', 'coverage/**', 'node_modules/**'],
   },
   js.configs.recommended,
   {

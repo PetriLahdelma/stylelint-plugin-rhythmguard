@@ -31,7 +31,8 @@ const TOKEN_KIND_PATTERNS = Object.freeze({
   radius: /^--radius-/,
   motion: /^--(?:motion|duration|delay|ease|easing)-/,
   size: /^--(?:size|width|height|container)-/,
-  spacing: /^--(?:space|spacing)-/,
+  // Anchored or prefixed (--spacing-4, --lb-spacing-md, bare Tailwind v4 --spacing), never letter-/word-spacing.
+  spacing: /(?:^--|-)(?<!letter-)(?<!word-)(?:space|spacing)(?:-|$)/,
   typography: /^--(?:font|font-size|line-height|leading|tracking|typography)-/,
 });
 
@@ -377,6 +378,34 @@ function addDefinition(definitions, {
   definitions.set(token, entry);
 }
 
+const CALC_LENGTH_TIMES_VAR = /^calc\(\s*(-?[\d.]+(?:px|rem|em)?)\s*\*\s*var\([^()]*\)\s*\)$/i;
+const CALC_VAR_TIMES_LENGTH = /^calc\(\s*var\([^()]*\)\s*\*\s*(-?[\d.]+(?:px|rem|em)?)\s*\)$/i;
+
+/**
+ * Parse the length a token value carries. Accepts plain lengths and the
+ * `calc(<length> * var(--factor))` form design systems use for scaling
+ * (Radix Themes: `--space-1: calc(4px * var(--scaling))`).
+ */
+function parseTokenValueLength(value) {
+  if (typeof value !== 'string') {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  const direct = parseLengthToken(trimmed);
+  if (direct) {
+    return direct;
+  }
+
+  const match = trimmed.match(CALC_LENGTH_TIMES_VAR) || trimmed.match(CALC_VAR_TIMES_LENGTH);
+  if (!match) {
+    return null;
+  }
+
+  const inner = parseLengthToken(match[1]);
+  return inner ? { ...inner, raw: trimmed } : null;
+}
+
 function getNormalizedValueKeys(value, baseFontSize = 16) {
   if (value === null || value === undefined) {
     return [];
@@ -388,7 +417,7 @@ function getNormalizedValueKeys(value, baseFontSize = 16) {
   }
 
   const keys = new Set([raw]);
-  const parsed = parseLengthToken(raw);
+  const parsed = parseTokenValueLength(raw);
   if (!parsed) {
     return Array.from(keys);
   }
@@ -417,4 +446,5 @@ module.exports = {
   normalizeTokenKind,
   normalizeTokenSourceFormat,
   parseTokenSources,
+  parseTokenValueLength,
 };

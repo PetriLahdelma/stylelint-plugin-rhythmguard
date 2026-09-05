@@ -77,3 +77,13 @@ test('no-offscale-transform ignores unitless non-zero values', async () => {
 
   assert.equal(result.warnings.length, 0);
 });
+
+test('no-offscale-transform allows percentage translations by default', async () => {
+  const { lintCss: lint } = require('./helpers/lint');
+  const assertStrict = require('node:assert/strict');
+  const result = await lint({
+    code: '.center { transform: translate(-50%, -50%) scale(1); }',
+    rules: { 'rhythmguard/no-offscale-transform': [true, { scale: [0, 4, 8, 12, 16] }] },
+  });
+  assertStrict.equal(result.warnings.length, 0, result.warnings.map((w) => w.text).join('\n'));
+});

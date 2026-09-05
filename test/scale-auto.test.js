@@ -140,3 +140,62 @@ test('scale still rejects arbitrary strings and scaleSources must be an array', 
   });
   assert.equal(badSources.invalidOptionWarnings.length, 1, JSON.stringify(badSources.invalidOptionWarnings));
 });
+
+test('scale "auto" reads token values wrapped in calc(<length> * var(--factor)) as Radix Themes writes them', async () => {
+  const result = await lintCss({
+    code: [
+      ':root { --space-1: calc(4px * var(--scaling)); --space-2: calc(8px * var(--scaling)); --space-4: calc(var(--scaling) * 16px); }',
+      '.a { margin: 8px; padding: 13px; }',
+    ].join('\n'),
+    rules: useScaleAuto(),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  assert.equal(result.warnings.length, 1, result.warnings.map((w) => w.text).join('\n'));
+  assert.match(result.warnings[0].text, /"13px".*nearest: 8px or 16px/);
+});
+
+test('scale "auto" expands a bare Tailwind v4 --spacing base into the default multiplier scale', async () => {
+  const result = await lintCss({
+    code: [
+      '@theme inline { --spacing: 0.25rem; --color-primary: #000; }',
+      '.a { padding: 13px; margin: 20px; gap: 96px; inset: 100px; }',
+    ].join('\n'),
+    rules: useScaleAuto(),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 2, texts.join('\n'));
+  assert.match(texts[0], /"13px".*nearest: 12px or 14px/);
+  assert.match(texts[1], /"100px"/);
+});
+
+test('scale "auto" matches prefixed spacing tokens but not letter-spacing or word-spacing', async () => {
+  const result = await lintCss({
+    code: [
+      ':root { --lb-spacing-1: 4px; --lb-spacing-2: 8px; --mantine-spacing-md: 16px; --letter-spacing-2: 0.01em; --word-spacing-1: 0.75em; }',
+      '.a { margin: 16px; padding: 13px; gap: 0.75em; }',
+    ].join('\n'),
+    rules: useScaleAuto(),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 2, texts.join('\n'));
+  assert.match(texts[0], /"13px".*nearest: 8px or 16px/);
+  assert.match(texts[1], /"0\.75em"/, 'word-spacing value must not have joined the scale');
+});
+
+test('scale "auto" falls back when fewer than three token values are found, because a one-token scale is worse than the default', async () => {
+  const result = await lintCss({
+    code: ':root { --lb-spacing: 1rem; } .a { margin: 8px; padding: 13px; }',
+    rules: useScaleAuto(),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 1, texts.join('\n'));
+  assert.match(texts[0], /"13px".*nearest: 12px or 16px/);
+  assert.match(texts[0], /using preset "rhythmic-4"/);
+});

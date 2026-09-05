@@ -74,7 +74,7 @@ Deterministic: the value is replaced with the nearest scale step, preserving sig
 }
 ```
 
-Token values in `rem` and `em` are converted through `baseFontSize`; values in units that cannot convert to `px` are ignored. `customScale` still overrides everything.
+Token values in `rem` and `em` are converted through `baseFontSize`; values in units that cannot convert to `px` are ignored. Values written as `calc(<length> * var(--factor))`, the Radix Themes scaling idiom, contribute the length. A bare Tailwind v4 base (`--spacing: 0.25rem`) expands into Tailwind's default multiplier scale. Prefixed names such as `--lb-spacing-md` or `--mantine-spacing-xs` match; `letter-spacing` and `word-spacing` tokens never do. `customScale` still overrides everything.
 
 ## Options
 

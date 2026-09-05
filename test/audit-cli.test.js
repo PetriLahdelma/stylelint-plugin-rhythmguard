@@ -657,13 +657,14 @@ test('audit CLI github format escapes newlines and commas in annotation messages
 
 test('audit CLI --scale auto infers the scale from spacing tokens across scanned CSS', () => {
   const fixtureDir = createAuditFixture();
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'theme.css'), ':root { --spacing-2: 8px; --spacing-3: 12px; }\n');
   const result = runAuditCommand(fixtureDir, 'src', '--scale', 'auto', '--format', 'json');
 
   assert.equal(result.status, 0, result.stderr);
   const report = JSON.parse(result.stdout);
-  assert.deepEqual(report.contracts.scale.values, [0, 16]);
+  assert.deepEqual(report.contracts.scale.values, [0, 8, 12, 16]);
   assert.equal(report.contracts.scale.source, 'scanned-css');
-  assert.deepEqual(report.contracts.scale.files, ['src/card.css']);
+  assert.deepEqual(report.contracts.scale.files, ['src/card.css', 'src/theme.css']);
 
   const offScale = report.findings.css.filter((finding) => finding.type === 'off-scale');
   assert.deepEqual(offScale.map((finding) => finding.value), ['13px']);
@@ -707,9 +708,10 @@ test('audit CLI --scale auto falls back to the default scale and reports it', ()
 
 test('audit CLI markdown reports the scale source', () => {
   const fixtureDir = createAuditFixture();
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'theme.css'), ':root { --spacing-2: 8px; --spacing-3: 12px; }\n');
   const result = runAuditCommand(fixtureDir, 'src', '--scale', 'auto', '--format', 'markdown');
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /\| Scale source \| scanned-css \(src\/card\.css\) \|/);
-  assert.match(result.stdout, /\| Scale \| 0, 16 \|/);
+  assert.match(result.stdout, /\| Scale source \| scanned-css \(src\/card\.css, src\/theme\.css\) \|/);
+  assert.match(result.stdout, /\| Scale \| 0, 8, 12, 16 \|/);
 });

@@ -213,6 +213,12 @@ const ruleFunction = (primary, secondaryOptions) => {
           return false;
         }
 
+        // Percentages are relative to the container or the element itself; they are
+        // never spacing-token candidates (translate(-50%, -50%) centering, inset: 100%).
+        if (parsedLength.unit === '%') {
+          return false;
+        }
+
         if (
           parsedLength.unit &&
           parsedLength.unit !== '%' &&
