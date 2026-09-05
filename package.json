@@ -1,7 +1,7 @@
 {
   "name": "stylelint-plugin-rhythmguard",
   "version": "2.2.0",
-  "description": "Token governance for CSS and Tailwind — enforce spacing scales, require design tokens, catch arbitrary values",
+  "description": "Nobody chose 13px. Catches off-scale spacing in CSS and Tailwind class strings and snaps it to your scale or tokens. Stylelint rules, an ESLint companion, and an audit CLI.",
   "bin": {
     "rhythmguard": "src/cli/index.js"
   },
