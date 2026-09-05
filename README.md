@@ -62,7 +62,7 @@ Every rule validates its options up front. Unknown option names and wrong shapes
 
 ## Configs
 
-`recommended`, `strict`, `tailwind`, `react-tailwind`, `expanded`, `logical`, `migration`, `motion`. All are `stylelint-plugin-rhythmguard/configs/<name>`. What each enables, the full custom setup, and the scale-selection precedence are in [docs/CONFIGS.md](docs/CONFIGS.md). Built-in and community scale presets are in [docs/SCALE_PRESETS.md](docs/SCALE_PRESETS.md).
+`recommended`, `strict`, `tailwind`, `react-tailwind`, `expanded`, `logical`, `migration`, `motion`, and `embed` for authors of shared configs (see [docs/FOR_CONFIG_AUTHORS.md](docs/FOR_CONFIG_AUTHORS.md)). All are `stylelint-plugin-rhythmguard/configs/<name>`. What each enables, the full custom setup, and the scale-selection precedence are in [docs/CONFIGS.md](docs/CONFIGS.md). Built-in and community scale presets are in [docs/SCALE_PRESETS.md](docs/SCALE_PRESETS.md).
 
 ## Audit before you enforce
 

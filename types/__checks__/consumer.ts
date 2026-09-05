@@ -14,6 +14,7 @@ import { createAuditReport, toAuditContractReport } from 'stylelint-plugin-rhyth
 import eslintPlugin from 'stylelint-plugin-rhythmguard/eslint';
 import { getScalePreset, listScalePresetNames } from 'stylelint-plugin-rhythmguard/presets';
 import recommended from 'stylelint-plugin-rhythmguard/configs/recommended';
+import embed from 'stylelint-plugin-rhythmguard/configs/embed';
 import reactTailwind from 'stylelint-plugin-rhythmguard/configs/react-tailwind';
 import useScale, { ruleName as useScaleName } from 'stylelint-plugin-rhythmguard/rules/use-scale';
 
@@ -27,6 +28,8 @@ const pluginConfigs: readonly RhythmguardStylelintConfig[] = [
   plugin.configs.motion,
   plugin.configs['react-tailwind'],
   configs.recommended,
+  plugin.configs.embed,
+  embed,
   recommended,
   reactTailwind,
 ];

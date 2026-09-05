@@ -32,6 +32,11 @@
       "require": "./src/configs/recommended.js",
       "import": "./src/configs/recommended.mjs"
     },
+    "./configs/embed": {
+      "types": "./types/config.d.ts",
+      "require": "./src/configs/embed.js",
+      "import": "./src/configs/embed.mjs"
+    },
     "./configs/strict": {
       "types": "./types/config.d.ts",
       "require": "./src/configs/strict.js",

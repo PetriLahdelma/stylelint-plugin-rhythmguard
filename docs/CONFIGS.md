@@ -4,6 +4,7 @@ Every config is a one-line `extends`. Pick the first one that fits and move down
 
 | Config | Enables | Use when |
 | --- | --- | --- |
+| `embed` | `use-scale` at warning level with `scale: "auto"` | You maintain a shared config that other teams install. Shape frozen for 2.x. See [`FOR_CONFIG_AUTHORS.md`](./FOR_CONFIG_AUTHORS.md) |
 | `recommended` | `use-scale` on the spacing group | You want spacing on a scale and nothing else decided for you |
 | `strict` | `use-scale` + `prefer-token` + `no-offscale-transform` | Tokens exist and raw literals should be errors |
 | `tailwind` | `strict` + `stylelint-config-tailwindcss` + `@theme` token extraction | Tailwind v3 or v4 project |

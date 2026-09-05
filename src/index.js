@@ -15,6 +15,7 @@ module.exports.rules = {
   [useMotionScale.ruleName]: useMotionScale,
 };
 module.exports.configs = {
+  embed: require('./configs/embed'),
   recommended: require('./configs/recommended'),
   strict: require('./configs/strict'),
   tailwind: require('./configs/tailwind'),

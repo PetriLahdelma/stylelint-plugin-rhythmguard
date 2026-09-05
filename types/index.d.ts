@@ -38,6 +38,7 @@ export type { StylelintRuleModule } from "./rule";
 export interface RhythmguardPlugin extends Array<StylelintRuleModule> {
   audit: typeof auditApi;
   configs: {
+    embed: RhythmguardStylelintConfig;
     expanded: RhythmguardStylelintConfig;
     logical: RhythmguardStylelintConfig;
     migration: RhythmguardStylelintConfig;

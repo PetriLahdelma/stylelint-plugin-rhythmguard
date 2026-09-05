@@ -164,6 +164,8 @@ Define "quiet" as findings a maintainer of the scanned repo would accept as real
 
 #### B3. Embed kit for shared-config authors
 
+Status 2026-09-05: shipped. `configs/embed` and [`FOR_CONFIG_AUTHORS.md`](./FOR_CONFIG_AUTHORS.md). The guide also covers the case the first external adopter (doctor-school/ds-platform) solved on their own: tokens that live in a package or a Style Dictionary build, fed through `scaleSources`.
+
 A short `docs/FOR_CONFIG_AUTHORS.md`: the exact `rules` block to add, why warning level, how consumers opt out per file, how consumers override the scale, the dependency footprint (zero hard deps, Stylelint 16 and 17), and the support commitment. Ship a `stylelint-plugin-rhythmguard/embed` config entry point that is `recommended` with `scale: "auto"` and warning severity and nothing else, so config authors have a stable one-liner that will not change shape between minors.
 
 #### B4. Target list and outreach method
