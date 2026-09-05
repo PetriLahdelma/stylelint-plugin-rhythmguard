@@ -210,7 +210,7 @@ Tailwind v5, or a shift of CSS linting to Biome or Oxlint, would open the kind o
 
 ### Delivery standard (added 2026-09-05)
 
-A developer in a repository we have never seen runs one command with no configuration and gets a correct, quiet, explained result in under a minute, and every release proves that against real public codebases. `npx rhythmguard` (zero-config quickstart) is the first half; the quiet benchmark run on every change is the second. Outreach waits until the tool earns it.
+A developer in a repository we have never seen runs one command with no configuration and gets a correct, quiet, explained result in under a minute, and every release proves that against real public codebases. `npx rhythmguard` (zero-config quickstart) is the first half; the quiet benchmark run on every change is the second. Both shipped 2026-09-05: bare `npx rhythmguard`, and `bench:quiet --check` against pinned commits with committed snapshots, enforced by the Quiet Benchmark workflow on the farm. Outreach waits until the tool earns it.
 
 ### Deferred
 

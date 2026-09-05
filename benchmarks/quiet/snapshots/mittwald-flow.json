@@ -1,0 +1,23 @@
+{
+  "name": "mittwald-flow",
+  "sha": "17efdf9",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 0,
+    "drift": 0,
+    "falsePositives": 0
+  },
+  "findings": [],
+  "commit": "17efdf9c9a545733dce93ad9b5a0afe82c9a5252"
+}

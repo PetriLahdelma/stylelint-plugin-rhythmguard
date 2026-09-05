@@ -1,0 +1,34 @@
+{
+  "name": "radix-themes",
+  "sha": "1faff10",
+  "scale": {
+    "source": "scanned-css",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32,
+      40,
+      48,
+      64
+    ]
+  },
+  "summary": {
+    "total": 7,
+    "drift": 7,
+    "falsePositives": 0
+  },
+  "findings": [
+    "packages/radix-ui-themes/src/components/_internal/base-dialog.css:113:5px:drift",
+    "packages/radix-ui-themes/src/components/_internal/base-dialog.css:98:5px:drift",
+    "packages/radix-ui-themes/src/components/segmented-control.css:108:3px:drift",
+    "packages/radix-ui-themes/src/components/segmented-control.css:109:3px:drift",
+    "packages/radix-ui-themes/src/components/text-field.css:210:-2px:drift",
+    "packages/radix-ui-themes/src/components/text-field.css:230:2px:drift",
+    "packages/radix-ui-themes/src/components/text-field.css:256:5px:drift"
+  ],
+  "commit": "1faff10ac26ae17f09944d418c6949b93fc6b566"
+}

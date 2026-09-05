@@ -8,6 +8,9 @@
  *   npm run bench:quiet -- --only radix-themes,open-props
  *   npm run bench:quiet -- --no-clone   # reuse existing checkouts
  *   npm run bench:quiet -- --report-only  # rebuild the markdown from stored results
+ *   npm run bench:quiet -- --check        # fail if findings or scale differ from benchmarks/quiet/snapshots
+ *   npm run bench:quiet -- --update-snapshots  # accept the current findings as the new snapshots
+ *   npm run bench:quiet -- --latest       # ignore pinned commits and audit upstream HEAD
  */
 
 import fs from 'node:fs';
@@ -15,7 +18,7 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-import { classifyFinding, summarize } from './quiet-classify.mjs';
+import { classifyFinding, compareSnapshot, summarize, toSnapshot } from './quiet-classify.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..', '..');
@@ -23,6 +26,7 @@ const benchDir = path.join(repoRoot, 'benchmarks', 'quiet');
 const reposDir = path.join(benchDir, 'repos');
 const resultsDir = path.join(benchDir, 'results');
 const labelsDir = path.join(benchDir, 'labels');
+const snapshotsDir = path.join(benchDir, 'snapshots');
 const manifestPath = path.join(benchDir, 'repos.json');
 const rulesPath = path.join(benchDir, 'noise-rules.json');
 const docPath = path.join(repoRoot, 'docs', 'QUIET_BENCHMARK.md');
@@ -30,11 +34,14 @@ const docPath = path.join(repoRoot, 'docs', 'QUIET_BENCHMARK.md');
 const { createAuditReport } = await import(path.join(repoRoot, 'src', 'audit', 'index.js'));
 
 function parseArgs(argv) {
-  const args = { clone: true, only: null, reportOnly: false };
+  const args = { check: false, clone: true, latest: false, only: null, reportOnly: false, updateSnapshots: false };
   for (let i = 0; i < argv.length; i += 1) {
     const token = argv[i];
     if (token === '--no-clone') args.clone = false;
     else if (token === '--report-only') args.reportOnly = true;
+    else if (token === '--check') args.check = true;
+    else if (token === '--update-snapshots') args.updateSnapshots = true;
+    else if (token === '--latest') args.latest = true;
     else if (token === '--only') args.only = new Set(String(argv[++i] || '').split(',').filter(Boolean));
   }
   return args;
@@ -48,21 +55,28 @@ function run(cmd, cmdArgs, options = {}) {
   return result.stdout;
 }
 
-function ensureCheckout(repo) {
+/**
+ * Checkout pinned to the commit recorded in the snapshot, so upstream churn
+ * cannot fail our CI. `--latest` fetches the default branch head instead.
+ */
+function ensureCheckout(repo, pinnedCommit) {
   const dir = path.join(reposDir, repo.name);
   if (!fs.existsSync(path.join(dir, '.git'))) {
     fs.mkdirSync(reposDir, { recursive: true });
     run('git', ['clone', '--depth', '1', '--filter=blob:none', '--sparse', '--quiet', repo.url, dir]);
-    run('git', ['-C', dir, 'sparse-checkout', 'set', '--no-cone', ...repo.paths]);
-  } else {
-    run('git', ['-C', dir, 'fetch', '--depth', '1', '--quiet', 'origin']);
-    run('git', ['-C', dir, 'reset', '--hard', '--quiet', 'FETCH_HEAD']);
-    run('git', ['-C', dir, 'sparse-checkout', 'set', '--no-cone', ...repo.paths]);
   }
-  return {
-    dir,
-    sha: run('git', ['-C', dir, 'rev-parse', 'HEAD']).trim().slice(0, 7),
-  };
+  const target = pinnedCommit || 'HEAD';
+  run('git', ['-C', dir, 'fetch', '--depth', '1', '--quiet', 'origin', target]);
+  run('git', ['-C', dir, 'checkout', '--detach', '--quiet', 'FETCH_HEAD']);
+  run('git', ['-C', dir, 'sparse-checkout', 'set', '--no-cone', ...repo.paths]);
+  const commit = run('git', ['-C', dir, 'rev-parse', 'HEAD']).trim();
+  return { commit, dir, sha: commit.slice(0, 7) };
+}
+
+function currentCheckout(repo) {
+  const dir = path.join(reposDir, repo.name);
+  const commit = run('git', ['-C', dir, 'rev-parse', 'HEAD']).trim();
+  return { commit, dir, sha: commit.slice(0, 7) };
 }
 
 function loadJson(file, fallback) {
@@ -129,6 +143,13 @@ async function auditRepo(repo, checkout, rules) {
 
   return {
     auditedAt: new Date().toISOString(),
+    classified: classified.map((item) => ({
+      category: item.category,
+      file: item.file,
+      line: item.line,
+      value: item.value || item.rawValue || '',
+    })),
+    commit: checkout.commit,
     cssFilesScanned: report.cssFilesScanned,
     examples,
     filesWithIssues: report.filesWithIssues,
@@ -165,7 +186,7 @@ function renderDoc(results, rules) {
     '',
     '## Method',
     '',
-    '1. Sparse, shallow clone of each repository at its default branch, limited to the paths listed in the manifest.',
+    '1. Sparse, shallow clone of each repository, pinned to the commit recorded in `benchmarks/quiet/snapshots/<repo>.json` so upstream churn cannot move the numbers; `--latest` audits the default branch head instead. Paths are limited to those listed in the manifest.',
     '2. `rhythmguard audit --scale auto` over the checkout. The scale is inferred from the repository\'s own spacing tokens when it has at least three distinct values (`--space-*`, `--spacing-*`, prefixed variants, calc-wrapped values, or a Tailwind v4 `--spacing` base); otherwise the audit falls back to `rhythmic-4` and the row says so.',
     '3. Only the `recommended` profile is scored: `use-scale` findings on CSS plus the Tailwind class-string rule. `prefer-token` findings (a raw value that could be a token) are reported as token opportunities in their own column and never count as drift.',
     '4. Every scored finding is classified. Path heuristics mark generated, vendored and test CSS as `noise:*`. Value heuristics, when any are configured, mark accepted exceptions as `allowance:*`; hairlines of one pixel or less are exempted by the rules themselves (`allowHairlines`, default on) since 2.2 and no longer appear as findings. Per-repo labels written after manual review override the heuristics. Everything else is `drift`.',
@@ -220,6 +241,7 @@ function renderDoc(results, rules) {
   for (const rule of rules.allowances || []) lines.push(`- \`${rule.category}\`: value in ${rule.values.map((v) => `\`${v}\``).join(', ')}${rule.reason ? `. ${rule.reason}` : ''}`);
   lines.push('');
   lines.push('## Reading the numbers honestly', '');
+  lines.push('- CI runs `npm run bench:quiet -- --check` on every change. It fails when the finding set or the inferred scale of any pinned repository differs from its committed snapshot, so a rule change that alters behaviour on real design systems has to be reviewed and accepted with `--update-snapshots`.');
   lines.push('- Heuristic classification is a floor, not a verdict. A finding labelled `drift` may still be intentional; only a maintainer can say. Per-repo labels exist for exactly that, and the FP rate should be re-read after review.');
   lines.push('- Repositories whose scale fell back to `rhythmic-4` were measured against a scale they never chose. Their drift counts say more about Rhythmguard\'s token discovery than about their CSS. Each fallback is a to-do for `scale: "auto"` inference.');
   lines.push('- The audit scans `.css` only. SCSS-first design systems (Bootstrap, Primer CSS, Penpot, Mastodon) are out of scope until a SCSS syntax is wired into the audit.');
@@ -234,9 +256,13 @@ fs.mkdirSync(resultsDir, { recursive: true });
 
 const selected = manifest.repos.filter((repo) => !args.only || args.only.has(repo.name));
 const results = [];
+const checkFailures = [];
+fs.mkdirSync(snapshotsDir, { recursive: true });
 
 for (const repo of manifest.repos) {
   const resultFile = path.join(resultsDir, `${repo.name}.json`);
+  const snapshotFile = path.join(snapshotsDir, `${repo.name}.json`);
+  const snapshot = loadJson(snapshotFile, null);
   if (args.reportOnly || !selected.includes(repo)) {
     if (fs.existsSync(resultFile)) results.push(loadJson(resultFile));
     continue;
@@ -244,18 +270,38 @@ for (const repo of manifest.repos) {
 
   process.stdout.write(`▸ ${repo.name} … `);
   try {
-    const checkout = args.clone
-      ? ensureCheckout(repo)
-      : { dir: path.join(reposDir, repo.name), sha: run('git', ['-C', path.join(reposDir, repo.name), 'rev-parse', 'HEAD']).trim().slice(0, 7) };
+    const pinned = args.latest ? null : (snapshot && snapshot.commit) || null;
+    const checkout = args.clone ? ensureCheckout(repo, pinned) : currentCheckout(repo);
     const result = await auditRepo(repo, checkout, rules);
     fs.writeFileSync(resultFile, `${JSON.stringify(result, null, 2)}\n`);
     results.push(result);
-    process.stdout.write(`${result.summary.total} findings, ${result.summary.drift} drift, FP ${result.summary.falsePositiveRate}%, scale ${result.scale.source}\n`);
+    process.stdout.write(`${result.summary.total} findings, ${result.summary.drift} drift, FP ${result.summary.falsePositiveRate}%, scale ${result.scale.source}, @${result.sha}\n`);
+
+    const current = { ...toSnapshot(result), commit: result.commit };
+    if (args.updateSnapshots || !snapshot) {
+      fs.writeFileSync(snapshotFile, `${JSON.stringify(current, null, 2)}\n`);
+      if (!snapshot) process.stdout.write(`  snapshot created: ${path.relative(repoRoot, snapshotFile)}\n`);
+    } else if (args.check) {
+      const diff = compareSnapshot(snapshot, current);
+      if (diff.changed) {
+        checkFailures.push(repo.name);
+        process.stdout.write(`  CHANGED vs snapshot: ${diff.reasons.join('; ')}\n`);
+        for (const key of diff.added.slice(0, 10)) process.stdout.write(`    + ${key}\n`);
+        for (const key of diff.removed.slice(0, 10)) process.stdout.write(`    - ${key}\n`);
+      }
+    }
   } catch (error) {
     process.stdout.write(`FAILED: ${error.message.split('\n')[0]}\n`);
+    if (args.check) checkFailures.push(repo.name);
   }
 }
 
 results.sort((a, b) => a.name.localeCompare(b.name));
 fs.writeFileSync(docPath, renderDoc(results, rules));
 process.stdout.write(`\nWrote ${path.relative(repoRoot, docPath)} (${results.length} repos)\n`);
+
+if (args.check && checkFailures.length > 0) {
+  process.stdout.write(`\nQuiet benchmark changed for: ${checkFailures.join(', ')}.\n`);
+  process.stdout.write('If the change is intended, review the diff above, then run `npm run bench:quiet -- --update-snapshots` and commit benchmarks/quiet/snapshots/.\n');
+  process.exitCode = 1;
+}
