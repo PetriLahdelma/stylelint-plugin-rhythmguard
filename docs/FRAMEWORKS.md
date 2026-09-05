@@ -21,7 +21,7 @@ This gives you:
 - Expanded enforcement (spacing + radius) on CSS Modules (`*.module.css`)
 - `.next/` and `out/` build directories ignored
 
-Pair with the ESLint companion for Tailwind class-string governance in JSX/TSX:
+Pair with the ESLint companion to check Tailwind class strings in JSX/TSX:
 
 ```js
 // eslint.config.js

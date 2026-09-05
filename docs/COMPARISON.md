@@ -8,7 +8,7 @@ This guide helps teams choose the right Stylelint plugin for each problem, then 
 | --- | --- | --- |
 | `stylelint-plugin-defensive-css` | Resilience and accessibility guardrails | UI hardening, interaction safety, reduced-motion, focus behavior |
 | `stylelint-plugin-logical-css` | Direction-agnostic and writing-mode-safe CSS | Internationalization, RTL/LTR parity, logical properties and keywords |
-| `stylelint-plugin-rhythmguard` | Design-token + spacing-scale governance | Consistent spacing/radius/size/typography and deterministic scale autofix |
+| `stylelint-plugin-rhythmguard` | Off-scale spacing and missing tokens | Spacing (and optionally radius, size, typography) kept on one scale, with deterministic nearest-value autofix |
 | `stylelint-scales` | Property-specific numeric scale enforcement | Teams that want granular scale rules per property category |
 
 ## When to use each
@@ -32,7 +32,7 @@ This guide helps teams choose the right Stylelint plugin for each problem, then 
 ### Use `stylelint-scales` when:
 
 - You want a broad rule-pack where each property family has its own numeric rule.
-- Your team prefers direct per-rule tuning by property type over a single governance model.
+- Your team prefers direct per-rule tuning by property type over one shared scale.
 
 ## Recommended rollout order in real teams
 
@@ -61,7 +61,7 @@ This guide helps teams choose the right Stylelint plugin for each problem, then 
 }
 ```
 
-## 3) Add Rhythmguard scale governance
+## 3) Add Rhythmguard scale checks
 
 ```json
 {
