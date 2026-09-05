@@ -6,7 +6,9 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
-The next release is 3.0.0. See [`docs/MIGRATING_TO_3.md`](./docs/MIGRATING_TO_3.md).
+## [3.0.0] - 2026-09-06
+
+Upgrade notes: [`docs/MIGRATING_TO_3.md`](./docs/MIGRATING_TO_3.md).
 
 ### Breaking
 
