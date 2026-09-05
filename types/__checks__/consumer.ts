@@ -15,23 +15,17 @@ import eslintPlugin from 'stylelint-plugin-rhythmguard/eslint';
 import { getScalePreset, listScalePresetNames } from 'stylelint-plugin-rhythmguard/presets';
 import recommended from 'stylelint-plugin-rhythmguard/configs/recommended';
 import embed from 'stylelint-plugin-rhythmguard/configs/embed';
-import reactTailwind from 'stylelint-plugin-rhythmguard/configs/react-tailwind';
 import useScale, { ruleName as useScaleName } from 'stylelint-plugin-rhythmguard/rules/use-scale';
 
 const pluginConfigs: readonly RhythmguardStylelintConfig[] = [
   plugin.configs.recommended,
   plugin.configs.strict,
   plugin.configs.tailwind,
-  plugin.configs.expanded,
-  plugin.configs.logical,
-  plugin.configs.migration,
   plugin.configs.motion,
-  plugin.configs['react-tailwind'],
   configs.recommended,
   plugin.configs.embed,
   embed,
   recommended,
-  reactTailwind,
 ];
 
 const ruleOptions: RhythmguardRuleOptions = {

@@ -6,6 +6,19 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+The next release is 3.0.0. See [`docs/MIGRATING_TO_3.md`](./docs/MIGRATING_TO_3.md).
+
+### Breaking
+
+- Node 20.19 or newer is required. Node 18 support is removed.
+- `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peer dependencies instead of dependencies. Install `stylelint-config-tailwindcss` yourself if you extend `configs/tailwind`. The package now has one runtime dependency, `known-css-properties`.
+- Removed configs `expanded`, `logical`, `migration` and `react-tailwind`. Their rule blocks are reproduced in the migration guide. `plugin.configs` has five keys: `embed`, `motion`, `recommended`, `strict`, `tailwind`.
+- `rhythmguard init` writes the `tailwind` config plus Next.js build ignores for Next.js projects instead of `react-tailwind`.
+
+### Removed
+
+- Campaign media, slide images, outreach drafts and old planning documents are no longer in the repository. The README banner and the cover image referenced by a published article remain.
+
 ### Added
 
 - The audit now scans `.scss` files through `postcss-scss` (new optional peer dependency). Without it, SCSS files are reported as skipped instead of ignored. `scanned.scssFiles` and `scanned.scssSkipped` join the JSON contract; text and Markdown output show the counts.

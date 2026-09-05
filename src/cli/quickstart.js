@@ -77,13 +77,14 @@ function topEntries(counts, limit = MAX_LISTED) {
     .slice(0, limit);
 }
 
-function suggestedStylelintConfig({ profile, tokenFiles }) {
+function suggestedStylelintConfig({ nextjs = false, profile, tokenFiles }) {
   const ruleOptions = { scale: 'auto' };
   if (tokenFiles.length > 0) {
     ruleOptions.scaleSources = tokenFiles.map(toPosix);
   }
   return {
     extends: [`stylelint-plugin-rhythmguard/configs/${profile}`],
+    ...(nextjs ? { ignoreFiles: ['.next/**', 'out/**', 'node_modules/**'] } : {}),
     rules: {
       'rhythmguard/use-scale': [true, ruleOptions],
     },
@@ -182,9 +183,9 @@ async function run() {
   }
   out.push('');
 
-  const profile = stack.tailwind ? (stack.nextjs ? 'react-tailwind' : 'tailwind') : 'recommended';
+  const profile = stack.tailwind ? 'tailwind' : 'recommended';
   out.push(`  Paste this into .stylelintrc.json${stack.hasExistingConfig ? ' (merge with your existing config)' : ''}:`, '');
-  out.push(JSON.stringify(suggestedStylelintConfig({ profile, tokenFiles }), null, 2).replace(/^/gm, '    '));
+  out.push(JSON.stringify(suggestedStylelintConfig({ nextjs: stack.nextjs, profile, tokenFiles }), null, 2).replace(/^/gm, '    '));
   out.push('');
 
   if (stack.tailwind) {

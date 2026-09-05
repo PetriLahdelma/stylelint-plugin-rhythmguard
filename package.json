@@ -47,30 +47,10 @@
       "require": "./src/configs/tailwind.js",
       "import": "./src/configs/tailwind.mjs"
     },
-    "./configs/expanded": {
-      "types": "./types/config.d.ts",
-      "require": "./src/configs/expanded.js",
-      "import": "./src/configs/expanded.mjs"
-    },
-    "./configs/logical": {
-      "types": "./types/config.d.ts",
-      "require": "./src/configs/logical.js",
-      "import": "./src/configs/logical.mjs"
-    },
-    "./configs/migration": {
-      "types": "./types/config.d.ts",
-      "require": "./src/configs/migration.js",
-      "import": "./src/configs/migration.mjs"
-    },
     "./configs/motion": {
       "types": "./types/config.d.ts",
       "require": "./src/configs/motion.js",
       "import": "./src/configs/motion.mjs"
-    },
-    "./configs/react-tailwind": {
-      "types": "./types/config.d.ts",
-      "require": "./src/configs/react-tailwind.js",
-      "import": "./src/configs/react-tailwind.mjs"
     },
     "./presets": {
       "types": "./types/presets.d.ts",
@@ -146,17 +126,23 @@
   },
   "peerDependencies": {
     "stylelint": "^16.0.0 || ^17.0.0",
-    "postcss-scss": "^4.0.0"
+    "postcss-scss": "^4.0.0",
+    "stylelint-config-tailwindcss": "^1.0.1",
+    "stylelint-plugin-logical-css": "^2.0.2"
   },
   "peerDependenciesMeta": {
     "postcss-scss": {
       "optional": true
+    },
+    "stylelint-config-tailwindcss": {
+      "optional": true
+    },
+    "stylelint-plugin-logical-css": {
+      "optional": true
     }
   },
   "dependencies": {
-    "known-css-properties": "^0.37.0",
-    "stylelint-config-tailwindcss": "^1.0.1",
-    "stylelint-plugin-logical-css": "^2.0.2"
+    "known-css-properties": "^0.37.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.22.0",
@@ -167,12 +153,13 @@
     "postcss-scss": "^4.0.9",
     "postcss-value-parser": "^4.2.0",
     "stylelint": "^16.15.0",
+    "stylelint-config-tailwindcss": "^1.0.1",
     "stylelint-plugin-logical-css": "^2.0.2",
     "stylelint-scales": "^5.0.0",
     "typescript": "^5.9.3"
   },
   "engines": {
-    "node": ">=18.18.0"
+    "node": ">=20.19.0"
   },
   "publishConfig": {
     "access": "public"

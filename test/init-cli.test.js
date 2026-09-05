@@ -55,18 +55,19 @@ test('init writes tailwind config when Tailwind is installed', () => {
   });
 });
 
-test('init writes react-tailwind config for Next.js Tailwind projects', () => {
+test('init writes the tailwind config plus Next.js build ignores for Next.js Tailwind projects', () => {
   const fixtureDir = makeFixture('next-tailwind');
+  fs.writeFileSync(path.join(fixtureDir, 'package.json'), JSON.stringify({ devDependencies: { tailwindcss: '^4.0.0' } }));
   fs.writeFileSync(path.join(fixtureDir, 'next.config.mjs'), 'export default {};\n');
-  fs.writeFileSync(path.join(fixtureDir, 'tailwind.config.mjs'), 'export default {};\n');
 
   const result = runInit(fixtureDir);
 
   assert.equal(result.status, 0, result.stderr);
-  assert.match(result.stdout, /Detected: Tailwind CSS, Next\.js/);
-  assert.match(result.stdout, /Profile: react-tailwind/);
+  assert.match(result.stdout, /Detected: Tailwind CSS, Next.js/);
+  assert.match(result.stdout, /Profile: tailwind/);
   assert.deepEqual(readGeneratedConfig(fixtureDir), {
-    extends: ['stylelint-plugin-rhythmguard/configs/react-tailwind'],
+    extends: ['stylelint-plugin-rhythmguard/configs/tailwind'],
+    ignoreFiles: ['.next/**', 'out/**', 'node_modules/**'],
   });
 });
 

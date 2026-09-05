@@ -7,11 +7,7 @@ Every config is a one-line `extends`. Pick the first one that fits and move down
 | `embed` | `use-scale` at warning level with `scale: "auto"` | You maintain a shared config that other teams install. Shape frozen for 2.x. See [`FOR_CONFIG_AUTHORS.md`](./FOR_CONFIG_AUTHORS.md) |
 | `recommended` | `use-scale` on the spacing group | You want spacing on a scale and nothing else decided for you |
 | `strict` | `use-scale` + `prefer-token` + `no-offscale-transform` | Tokens exist and raw literals should be errors |
-| `tailwind` | `strict` + `stylelint-config-tailwindcss` + `@theme` token extraction | Tailwind v3 or v4 project |
-| `react-tailwind` | `tailwind` + CSS Modules overrides + Next.js build ignores | Next.js or React with Tailwind and CSS Modules |
-| `expanded` | `use-scale` across spacing, radius, typography and size groups | You also want radii, type and size on scales |
-| `logical` | `strict` + `stylelint-plugin-logical-css` recommended | Internationalised UI using logical properties |
-| `migration` | `prefer-token` with `allowNumericScale: true` and automatic token maps | Transition period from literals to tokens |
+| `tailwind` | `strict` + `stylelint-config-tailwindcss` + `@theme` token extraction | Tailwind v3 or v4 project. Install `stylelint-config-tailwindcss` yourself; it is an optional peer |
 | `motion` | `use-motion-scale` | Opt-in duration, delay and easing checks. Experimental |
 
 ```json
@@ -24,7 +20,7 @@ Entry points follow the same pattern for every row: `stylelint-plugin-rhythmguar
 
 `strict` removes `transform` from `use-scale` and hands translations to `no-offscale-transform` so one off-scale translation produces one report.
 
-Framework snippets for Vue, Lit, Astro and SvelteKit, which need `postcss-html` or `postcss-lit`, are in [`FRAMEWORKS.md`](./FRAMEWORKS.md).
+Framework snippets for Next.js, Vue, Lit, Astro and SvelteKit are in [`FRAMEWORKS.md`](./FRAMEWORKS.md). The `expanded`, `logical`, `migration` and `react-tailwind` configs shipped in 2.x are plain rule blocks now; they are reproduced in [`MIGRATING_TO_3.md`](./MIGRATING_TO_3.md).
 
 ## Full custom setup
 

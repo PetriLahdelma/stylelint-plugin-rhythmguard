@@ -59,6 +59,7 @@ test('quickstart detects Tailwind and adds the class-string companion to the sug
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Tailwind\s+v4/);
   assert.match(result.stdout, /configs\/tailwind/);
+  assert.doesNotMatch(result.stdout, /react-tailwind/);
   assert.match(result.stdout, /eslint\.config\.js/);
   assert.match(result.stdout, /tailwind-class-use-scale/);
 });

@@ -70,7 +70,7 @@ Every rule validates its options up front. Unknown option names and wrong shapes
 
 ## Configs
 
-`recommended`, `strict`, `tailwind`, `react-tailwind`, `expanded`, `logical`, `migration`, `motion`, and `embed` for authors of shared configs (see [docs/FOR_CONFIG_AUTHORS.md](docs/FOR_CONFIG_AUTHORS.md)). All are `stylelint-plugin-rhythmguard/configs/<name>`. What each enables, the full custom setup, and the scale-selection precedence are in [docs/CONFIGS.md](docs/CONFIGS.md). Built-in and community scale presets are in [docs/SCALE_PRESETS.md](docs/SCALE_PRESETS.md).
+`recommended`, `strict`, `tailwind`, `motion` (experimental), and `embed` for authors of shared configs (see [docs/FOR_CONFIG_AUTHORS.md](docs/FOR_CONFIG_AUTHORS.md)). All are `stylelint-plugin-rhythmguard/configs/<name>`. What each enables, the full custom setup, and the scale-selection precedence are in [docs/CONFIGS.md](docs/CONFIGS.md). Built-in and community scale presets are in [docs/SCALE_PRESETS.md](docs/SCALE_PRESETS.md).
 
 ## Audit before you enforce
 
@@ -99,7 +99,7 @@ The audit scans CSS declarations, Tailwind class strings and your token contract
 
 ## Compatibility
 
-Stylelint 16 and 17. Node 18.18 or newer for Stylelint 16, Node 20.19 or newer for Stylelint 17. CommonJS and ESM entry points, TypeScript declarations for every export. The CI matrix runs Node 18, 20 and 22 against Stylelint 16.0.0, 16.x and 17.x.
+Stylelint 16 and 17. Node 20.19 or newer. One runtime dependency (`known-css-properties`); `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers. CommonJS and ESM entry points, TypeScript declarations for every export. The CI matrix runs Node 20 and 22 against Stylelint 16.0.0, 16.x and 17.x. Upgrading from 2.x: [docs/MIGRATING_TO_3.md](docs/MIGRATING_TO_3.md).
 
 ## Contributing and support
 

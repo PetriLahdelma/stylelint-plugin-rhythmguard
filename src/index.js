@@ -19,11 +19,7 @@ module.exports.configs = {
   recommended: require('./configs/recommended'),
   strict: require('./configs/strict'),
   tailwind: require('./configs/tailwind'),
-  expanded: require('./configs/expanded'),
-  logical: require('./configs/logical'),
-  migration: require('./configs/migration'),
   motion: require('./configs/motion'),
-  'react-tailwind': require('./configs/react-tailwind'),
 };
 module.exports.eslint = require('./eslint');
 module.exports.presets = require('./presets');

@@ -27,7 +27,7 @@ npm ci
 npm test
 ```
 
-Node 18.18 or newer. No build step; the source runs as is. Tests use `node --test` and take about five seconds.
+Node 20.19 or newer. No build step; the source runs as is. Tests use `node --test` and take about five seconds.
 
 ## The local gate
 
@@ -72,14 +72,14 @@ CI for this repository runs on self-hosted runners for pushes and same-repo bran
 - Minor: new options, presets, sources, or behaviour that does not change existing reports.
 - Major: any change to default reports for existing configs, to autofix behaviour, or to exported entry points.
 
-`configs/recommended`, `configs/strict` and `configs/embed` stay stable within a major. The `embed` config's shape is frozen for 2.x because shared configs depend on it.
+`configs/recommended`, `configs/strict`, `configs/tailwind` and `configs/embed` stay stable within a major. The `embed` config's shape is frozen for 2.x because shared configs depend on it.
 
 ## Compatibility
 
 - Stylelint `^16.0.0 || ^17.0.0`. The 16.0.0 floor has known autofix differences; CI runs the floor suite against it.
-- Node `>=18.18.0` for Stylelint 16, `>=20.19.0` for Stylelint 17.
+- Node `>=20.19.0`.
 - CommonJS and ESM entry points; every export has a declaration under `types/`.
-- `postcss-scss` is an optional peer, only needed to audit SCSS.
+- One runtime dependency, `known-css-properties`. `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers and dev dependencies here.
 
 ## Review
 
