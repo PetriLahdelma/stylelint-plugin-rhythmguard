@@ -72,6 +72,7 @@ When changing rule logic:
 2. validate deterministic fix behavior
 3. update the rule's page in `docs/rules/` if options or behavior changed
 4. update CHANGELOG
+5. run the quiet benchmark: `npm run bench:quiet -- --check`. It audits real public design systems at pinned commits and fails when the finding set or the inferred scale changes. If the change is intended, review the printed diff, run `npm run bench:quiet -- --update-snapshots`, and commit `benchmarks/quiet/snapshots/` with a sentence in the PR on why the new findings are right. CI runs the same check.
 
 ## Release Workflow
 

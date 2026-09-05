@@ -1,0 +1,39 @@
+name: Quiet Benchmark
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Weekly: audit upstream HEADs to spot new drift or inference regressions early.
+    - cron: '17 6 * * 1'
+
+jobs:
+  check:
+    name: findings match snapshots (pinned commits)
+    if: github.event_name != 'schedule' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Quiet benchmark against pinned commits
+        run: npm run bench:quiet -- --check
+
+  upstream:
+    name: upstream HEADs (informational)
+    if: github.event_name == 'schedule'
+    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Quiet benchmark against upstream HEADs
+        run: npm run bench:quiet -- --latest --check

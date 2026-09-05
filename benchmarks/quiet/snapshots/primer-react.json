@@ -1,0 +1,46 @@
+{
+  "name": "primer-react",
+  "sha": "dc8387f",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 22,
+    "drift": 22,
+    "falsePositives": 0
+  },
+  "findings": [
+    "packages/react/src/AnchoredOverlay/AnchoredOverlay.features.stories.module.css:13:96px:drift",
+    "packages/react/src/PageLayout/PageLayout.module.css:717:-2px:drift",
+    "packages/react/src/Pagination/Pagination.module.css:90:20px:drift",
+    "packages/react/src/Pagination/Pagination.module.css:92:15px:drift",
+    "packages/react/src/Popover/Popover.module.css:36:-9px:drift",
+    "packages/react/src/ProgressBar/ProgressBar.module.css:36:2px:drift",
+    "packages/react/src/Timeline/Timeline.module.css:108:-15px:drift",
+    "packages/react/src/Tooltip/Tooltip.module.css:120:6px:drift",
+    "packages/react/src/Tooltip/Tooltip.module.css:129:6px:drift",
+    "packages/react/src/Tooltip/Tooltip.module.css:76:6px:drift",
+    "packages/react/src/Tooltip/Tooltip.module.css:96:6px:drift",
+    "packages/react/src/deprecated/ActionList/Header.module.css:8:6px:drift",
+    "packages/react/src/deprecated/ActionList/Item.module.css:22:6px:drift",
+    "packages/react/src/experimental/SelectPanel2/SelectPanel.module.css:113:2px:drift",
+    "packages/react/src/internal/components/TextInputWrapper.module.css:103:3px:drift",
+    "packages/react/src/internal/components/TextInputWrapper.module.css:106:3px:drift",
+    "packages/react/src/internal/components/TextInputWrapper.module.css:118:10px:drift",
+    "packages/react/src/internal/components/TextInputWrapper.module.css:121:10px:drift",
+    "packages/react/src/internal/components/TextInputWrapper.module.css:129:3px:drift",
+    "packages/react/src/internal/components/TextInputWrapper.module.css:132:3px:drift",
+    "packages/react/src/internal/components/TextInputWrapper.module.css:143:10px:drift",
+    "packages/react/src/internal/components/TextInputWrapper.module.css:146:10px:drift"
+  ],
+  "commit": "dc8387f4fa07cf00887cb2412d358fb7eb54be63"
+}

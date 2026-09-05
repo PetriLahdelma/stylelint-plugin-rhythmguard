@@ -61,3 +61,52 @@ test('summarize computes the false-positive rate from noise and allowance catego
   assert.deepEqual(summary.byCategory, { 'allowance:hairline': 1, drift: 3, 'noise:non-authored': 1 });
   assert.equal(summarize([]).falsePositiveRate, 0);
 });
+
+test('toSnapshot keeps only what should be stable: pinned commit, scale, summary, finding keys', async () => {
+  const { toSnapshot } = await load();
+  const result = {
+    name: 'radix-themes',
+    sha: '1faff10',
+    scale: { source: 'scanned-css', values: [0, 4, 8], files: ['a.css'], tokenCount: 3 },
+    summary: { total: 2, drift: 2, falsePositives: 0, falsePositiveRate: 0, byCategory: { drift: 2 } },
+    classified: [
+      { file: 'src/b.css', line: 9, value: '5px', category: 'drift' },
+      { file: 'src/a.css', line: 3, value: '13px', category: 'drift' },
+    ],
+    auditedAt: '2026-09-05T00:00:00Z',
+  };
+  const snapshot = toSnapshot(result);
+  assert.deepEqual(snapshot, {
+    name: 'radix-themes',
+    sha: '1faff10',
+    scale: { source: 'scanned-css', values: [0, 4, 8] },
+    summary: { total: 2, drift: 2, falsePositives: 0 },
+    findings: ['src/a.css:3:13px:drift', 'src/b.css:9:5px:drift'],
+  });
+  assert.equal('auditedAt' in snapshot, false, 'timestamps must not churn snapshots');
+});
+
+test('compareSnapshot reports added and removed findings and scale changes, and is clean when nothing moved', async () => {
+  const { compareSnapshot } = await load();
+  const before = {
+    name: 'r', sha: 'abc',
+    scale: { source: 'scanned-css', values: [0, 4, 8] },
+    summary: { total: 2, drift: 2, falsePositives: 0 },
+    findings: ['src/a.css:3:13px:drift', 'src/b.css:9:5px:drift'],
+  };
+  const same = compareSnapshot(before, { ...before });
+  assert.equal(same.changed, false);
+
+  const after = {
+    ...before,
+    scale: { source: 'fallback', values: [0, 4, 8, 12] },
+    summary: { total: 2, drift: 2, falsePositives: 0 },
+    findings: ['src/a.css:3:13px:drift', 'src/c.css:1:7px:drift'],
+  };
+  const diff = compareSnapshot(before, after);
+  assert.equal(diff.changed, true);
+  assert.deepEqual(diff.added, ['src/c.css:1:7px:drift']);
+  assert.deepEqual(diff.removed, ['src/b.css:9:5px:drift']);
+  assert.equal(diff.scaleChanged, true);
+  assert.match(diff.reasons.join('\n'), /scale source scanned-css -> fallback/);
+});

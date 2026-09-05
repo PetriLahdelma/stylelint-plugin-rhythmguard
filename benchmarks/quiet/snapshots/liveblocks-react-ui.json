@@ -1,0 +1,33 @@
+{
+  "name": "liveblocks-react-ui",
+  "sha": "98332db",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 9,
+    "drift": 9,
+    "falsePositives": 0
+  },
+  "findings": [
+    "packages/liveblocks-react-ui/src/styles/index.css:1180:0.1em:drift",
+    "packages/liveblocks-react-ui/src/styles/index.css:1180:0.3em:drift",
+    "packages/liveblocks-react-ui/src/styles/index.css:1964:-0.35rem:drift",
+    "packages/liveblocks-react-ui/src/styles/index.css:1965:-0.35rem:drift",
+    "packages/liveblocks-react-ui/src/styles/index.css:2481:0.2em:drift",
+    "packages/liveblocks-react-ui/src/styles/index.css:2481:0.4em:drift",
+    "packages/liveblocks-react-ui/src/styles/index.css:573:0.375em:drift",
+    "packages/liveblocks-react-ui/src/styles/index.css:617:1.125em:drift",
+    "packages/liveblocks-react-ui/src/styles/index.css:730:1.25em:drift"
+  ],
+  "commit": "98332db7c9b3c82070b1870c4e8b85a7ea0bbc95"
+}

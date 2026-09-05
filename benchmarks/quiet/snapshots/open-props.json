@@ -1,0 +1,23 @@
+{
+  "name": "open-props",
+  "sha": "530682d",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 0,
+    "drift": 0,
+    "falsePositives": 0
+  },
+  "findings": [],
+  "commit": "530682d04327f842f56bb1ec33cf84a3cadb3876"
+}
