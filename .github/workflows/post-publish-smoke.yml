@@ -57,7 +57,7 @@ jobs:
         env:
           VERSION: ${{ steps.pkg.outputs.version }}
         run: |
-          if npm view "stylelint-plugin-rhythmguard@$VERSION" version >/dev/null 2>&1; then
+          if npm view "stylelint-plugin-rhythmguard@$VERSION" version --registry https://registry.npmjs.org >/dev/null 2>&1; then
             echo "available=true" >> "$GITHUB_OUTPUT"
           else
             echo "available=false" >> "$GITHUB_OUTPUT"

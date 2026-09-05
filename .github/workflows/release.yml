@@ -99,7 +99,9 @@ jobs:
         run: npm ci
 
       - name: Publish to npm
-        run: npm publish --provenance
+        # The farm runners carry an npm registry override (local proxy). Publishing must
+        # target the public registry explicitly; the CLI flag beats env and user config.
+        run: npm publish --provenance --registry https://registry.npmjs.org
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 

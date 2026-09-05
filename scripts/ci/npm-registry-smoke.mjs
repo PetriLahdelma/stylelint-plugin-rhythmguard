@@ -64,7 +64,7 @@ try {
 
   const installResult = run(
     'npm',
-    ['install', '--save-dev', 'stylelint@16', spec],
+    ['install', '--save-dev', 'stylelint@16', spec, '--registry', 'https://registry.npmjs.org'],
     { cwd: tempDir },
   );
   if (installResult.status !== 0) {
