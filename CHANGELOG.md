@@ -10,6 +10,7 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 - Added `scale: "auto"` to `rhythmguard/use-scale`, `rhythmguard/no-offscale-transform` and `rhythmguard/prefer-token`. The scale is inferred from spacing tokens: `scaleSources` files, then `.rhythmguardrc.json` audit token sources, then the linted stylesheet's custom properties, then `tailwindConfigPath`, with a `rhythmic-4` fallback that is announced in the first report of the file. First matching source wins.
 - Added the `scaleSources` rule option and made `tailwindConfigPath` available to every scale rule.
+- Added `rhythmguard audit --scale auto`, which infers one project-level scale from token sources, then spacing custom properties across the scanned CSS, then the default. The JSON contract now carries `contracts.scale.values`, `source` and `files`; text and Markdown output print the scale and its source.
 
 ## [2.1.0] - 2026-09-05
 

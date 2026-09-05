@@ -654,3 +654,62 @@ test('audit CLI github format escapes newlines and commas in annotation messages
     assert.equal(/%(?!25|0D|0A|2C|3A)/.test(message), false, `unescaped % in: ${line}`);
   }
 });
+
+test('audit CLI --scale auto infers the scale from spacing tokens across scanned CSS', () => {
+  const fixtureDir = createAuditFixture();
+  const result = runAuditCommand(fixtureDir, 'src', '--scale', 'auto', '--format', 'json');
+
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.deepEqual(report.contracts.scale.values, [0, 16]);
+  assert.equal(report.contracts.scale.source, 'scanned-css');
+  assert.deepEqual(report.contracts.scale.files, ['src/card.css']);
+
+  const offScale = report.findings.css.filter((finding) => finding.type === 'off-scale');
+  assert.deepEqual(offScale.map((finding) => finding.value), ['13px']);
+});
+
+test('audit CLI --scale auto prefers external token sources over scanned CSS', () => {
+  const fixtureDir = createAuditFixture();
+  fs.writeFileSync(path.join(fixtureDir, 'tokens.json'), JSON.stringify({
+    spacing: {
+      1: { $value: '4px', $type: 'dimension' },
+      2: { $value: '8px', $type: 'dimension' },
+      3: { $value: '12px', $type: 'dimension' },
+      4: { $value: '16px', $type: 'dimension' },
+    },
+  }));
+  const result = runAuditCommand(fixtureDir, 'src', '--scale', 'auto', '--token-source', './tokens.json', '--format', 'json');
+
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12, 16]);
+  assert.equal(report.contracts.scale.source, 'token-sources');
+  assert.deepEqual(report.contracts.scale.files, ['tokens.json']);
+});
+
+test('audit CLI --scale auto falls back to the default scale and reports it', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-notokens-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'plain.css'), '.a { margin: 13px; }\n');
+  const result = runAuditCommand(fixtureDir, 'src', '--scale', 'auto', '--format', 'json');
+
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.contracts.scale.source, 'fallback');
+  assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12, 16, 24, 32]);
+
+  const explicit = runAuditCommand(fixtureDir, 'src', '--scale', '0,4,8', '--format', 'json');
+  assert.equal(JSON.parse(explicit.stdout).contracts.scale.source, 'explicit');
+  const defaulted = runAuditCommand(fixtureDir, 'src', '--format', 'json');
+  assert.equal(JSON.parse(defaulted.stdout).contracts.scale.source, 'default');
+});
+
+test('audit CLI markdown reports the scale source', () => {
+  const fixtureDir = createAuditFixture();
+  const result = runAuditCommand(fixtureDir, 'src', '--scale', 'auto', '--format', 'markdown');
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /\| Scale source \| scanned-css \(src\/card\.css\) \|/);
+  assert.match(result.stdout, /\| Scale \| 0, 16 \|/);
+});

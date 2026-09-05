@@ -98,6 +98,16 @@ function scaleFromSources(sources, baseFontSize) {
   return outcome;
 }
 
+/** Build a px scale from token definitions as produced by token-sources.js / contract.js. */
+function scaleFromDefinitions(definitions, baseFontSize = 16) {
+  const keys = [];
+  for (const definition of definitions.values()) {
+    keys.push(...definition.normalizedValues);
+  }
+  const scale = pxValuesFromKeys(keys, baseFontSize);
+  return scale.length > 1 ? scale : null;
+}
+
 function rcTokenSources(cwd) {
   const rcPath = path.join(cwd, RC_FILE);
   if (!fs.existsSync(rcPath)) {
@@ -204,4 +214,5 @@ module.exports = {
   DEFAULT_AUTO_TOKEN_PATTERN,
   autoScaleFallbackNote,
   resolveAutoScale,
+  scaleFromDefinitions,
 };

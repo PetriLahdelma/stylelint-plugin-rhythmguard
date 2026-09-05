@@ -20,6 +20,7 @@ npx rhythmguard audit ./src --write-baseline
 npx rhythmguard audit ./src --since-baseline --fail-on-new-drift
 npx rhythmguard audit ./src --staged --max-findings 0
 npx rhythmguard audit ./src --since origin/main --min-cleanliness 90
+npx rhythmguard audit ./src --scale auto
 npx rhythmguard audit ./src --token-source ./tokens.json
 npx rhythmguard audit ./src --token-source ./theme.css --token-source-format css
 npx rhythmguard audit ./src --include-motion
@@ -27,6 +28,10 @@ npx rhythmguard audit --schema
 ```
 
 Scan paths are scoped to the directory argument. Common generated directories are skipped by default. Use `--ignore`, a `.rhythmguardignore` file, or `--ignore-path` for legacy subtrees. `--help` prints every flag.
+
+## Scale
+
+`--scale 0,4,8,12,16` sets the scale explicitly. `--scale auto` infers one project-level scale and reports where it came from: external `--token-source` files first, then spacing custom properties (`--space-*`, `--spacing-*`) found across the scanned CSS, then the default `rhythmic-4` values. The JSON contract carries it under `contracts.scale.values`, `contracts.scale.source` and `contracts.scale.files`; text and Markdown output print the scale and its source. A shared config that enables `scale: "auto"` on the rules and an audit run with `--scale auto` therefore agree on the scale.
 
 ## Markdown output
 

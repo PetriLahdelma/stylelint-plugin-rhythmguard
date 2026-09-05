@@ -36,7 +36,8 @@ Options:
   --token-source-format <format> Token source format: auto, css, flat-json, style-dictionary, dtcg (default: auto)
   --token-kind <kind>            Token kind: spacing, radius, typography, size, motion, all (default: spacing)
   --token-candidate-min-count <n> Minimum repeated raw value count for token candidates (default: 2)
-  --scale <values>               Comma-separated scale values (default: 0,4,8,12,16,24,32)
+  --scale <values|auto>          Comma-separated scale values (default: 0,4,8,12,16,24,32);
+                                 auto infers the scale from token sources, then scanned CSS
   --base-font-size <number>      px base for rem/em conversion (default: 16)
 `;
 
@@ -404,6 +405,10 @@ function parseTokenSourcePaths(raw) {
 function parseScale(raw) {
   if (!raw) {
     throw new Error('Missing value for --scale.');
+  }
+
+  if (raw.trim().toLowerCase() === 'auto') {
+    return 'auto';
   }
 
   const scale = raw.split(',')

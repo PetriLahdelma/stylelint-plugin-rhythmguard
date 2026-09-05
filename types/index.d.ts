@@ -23,6 +23,8 @@ export type {
   AuditFinding,
   AuditOptions,
   AuditReport,
+  AuditScale,
+  AuditScaleSource,
   AuditScanned,
   AuditSummary,
   AuditTokenKind,

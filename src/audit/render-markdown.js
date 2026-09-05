@@ -3,6 +3,12 @@
 const { sortCountMap } = require('./contract');
 const { escapeMarkdown } = require('./render-utils');
 
+function describeScaleSource(scale) {
+  return scale.files.length > 0
+    ? `${scale.source} (${scale.files.join(', ')})`
+    : scale.source;
+}
+
 function renderMarkdown(report) {
   const lines = [
     '# Rhythmguard Design-System Audit',
@@ -19,6 +25,11 @@ function renderMarkdown(report) {
     `| Total findings | ${report.totalWarnings} |`,
     `| Scale cleanliness | ${report.scaleCleanliness}% |`,
   ];
+
+  if (report.scale) {
+    lines.push(`| Scale | ${report.scale.values.join(', ')} |`);
+    lines.push(`| Scale source | ${describeScaleSource(report.scale)} |`);
+  }
 
   if (report.baseline) {
     lines.push(`| New findings | ${report.baseline.newFindingsCount} |`);
