@@ -32,7 +32,13 @@ const TOKEN_KIND_PATTERNS = Object.freeze({
   motion: /^--(?:motion|duration|delay|ease|easing)-/,
   size: /^--(?:size|width|height|container)-/,
   // Anchored or prefixed (--spacing-4, --lb-spacing-md, bare Tailwind v4 --spacing), never letter-/word-spacing.
-  spacing: /(?:^--|-)(?<!letter-)(?<!word-)(?:space|spacing)(?:-|$)/,
+  // CSS custom properties (--spacing-4, --lb-spacing-md, bare --spacing) and Sass
+  // variables or map entries ($spacer, $spacers.3, $system-spacing.small.2).
+  // Custom properties may carry a namespace (--lb-spacing-md, --mantine-spacing-xs, bare
+  // --spacing) but never letter-/word-spacing. Sass names must start with the scale word
+  // (an optional `system-` prefix allowed): $spacer, $spacers.3, $spacing-01, $system-spacing.
+  // Component variables such as $dropdown-spacer or $card-spacer-y are not scale tokens.
+  spacing: /^(?:\$(?:system-)?(?:space|spacing|spacer)s?(?:-|$|\.)|--(?:[\w-]*-)?(?<!letter-)(?<!word-)(?:space|spacing)(?:-|$))/,
   typography: /^--(?:font|font-size|line-height|leading|tracking|typography)-/,
 });
 
@@ -231,7 +237,264 @@ function collectCssTokens(source, matchesKind) {
     });
   }
 
+  tokens.push(...collectScssTokens(source, matchesKind));
   return tokens;
+}
+
+/**
+ * Sass variables and maps as token sources. Handles `$spacer: 1rem`, maps such
+ * as `$spacers: (1: $spacer * .25, ...)` including nested maps, variable
+ * references, `* / + -` arithmetic and `math.div()`. Anything it cannot
+ * evaluate (function calls, strings, keywords, interpolated keys, cycles) is
+ * skipped rather than guessed. Token names are `$name` or `$name.key.path`.
+ */
+function collectScssTokens(source, matchesKind) {
+  const declarations = parseScssDeclarations(source);
+  const cache = new Map();
+
+  const resolveVariable = (name, stack) => {
+    if (cache.has(name)) {
+      return cache.get(name);
+    }
+    if (stack.has(name) || !declarations.has(name)) {
+      return null;
+    }
+    stack.add(name);
+    const raw = declarations.get(name);
+    const value = isScssMap(raw) ? null : evaluateScssExpression(raw, resolveVariable, stack);
+    stack.delete(name);
+    cache.set(name, value);
+    return value;
+  };
+
+  const tokens = [];
+  const push = (tokenName, value) => {
+    if (!value || !matchesKind(tokenName)) {
+      return;
+    }
+    tokens.push({ token: tokenName, value: formatScssValue(value) });
+  };
+
+  for (const [name, raw] of declarations) {
+    const tokenName = `$${name}`;
+    if (isScssMap(raw)) {
+      walkScssMap(raw, [tokenName], (pathName, expression) => {
+        push(pathName, evaluateScssExpression(expression, resolveVariable, new Set()));
+      });
+      continue;
+    }
+    push(tokenName, resolveVariable(name, new Set()));
+  }
+
+  return tokens;
+}
+
+function stripScssComments(source) {
+  return source
+    .replace(/\/\*[\s\S]*?\*\//g, '')
+    .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+}
+
+function parseScssDeclarations(source) {
+  const text = stripScssComments(source);
+  const declarations = new Map();
+  const startPattern = /(?:^|\n)[ \t]*\$([\w-]+)[ \t]*:/g;
+  let match;
+
+  while ((match = startPattern.exec(text)) !== null) {
+    const name = match[1];
+    let index = match.index + match[0].length;
+    let depth = 0;
+    let quote = null;
+    let value = '';
+
+    for (; index < text.length; index += 1) {
+      const char = text[index];
+      if (quote) {
+        value += char;
+        if (char === quote) quote = null;
+        continue;
+      }
+      if (char === '"' || char === "'") {
+        quote = char;
+      } else if (char === '(') {
+        depth += 1;
+      } else if (char === ')') {
+        depth -= 1;
+      } else if (char === ';' && depth === 0) {
+        break;
+      }
+      value += char;
+    }
+
+    startPattern.lastIndex = index;
+    const cleaned = value.replace(/!(default|global)\b/g, '').trim();
+    if (cleaned && !declarations.has(name)) {
+      declarations.set(name, cleaned);
+    }
+  }
+
+  return declarations;
+}
+
+function isScssMap(raw) {
+  return raw.startsWith('(') && raw.endsWith(')') && /:/.test(raw);
+}
+
+function splitTopLevel(text, separator) {
+  const parts = [];
+  let depth = 0;
+  let quote = null;
+  let current = '';
+  for (const char of text) {
+    if (quote) {
+      current += char;
+      if (char === quote) quote = null;
+      continue;
+    }
+    if (char === '"' || char === "'") quote = char;
+    else if (char === '(') depth += 1;
+    else if (char === ')') depth -= 1;
+    if (char === separator && depth === 0) {
+      parts.push(current);
+      current = '';
+      continue;
+    }
+    current += char;
+  }
+  if (current.trim()) parts.push(current);
+  return parts;
+}
+
+function walkScssMap(raw, pathSegments, visit) {
+  const inner = raw.slice(1, -1);
+  for (const entry of splitTopLevel(inner, ',')) {
+    const pair = splitTopLevel(entry, ':');
+    if (pair.length < 2) continue;
+    const key = pair[0].trim().replace(/^["']|["']$/g, '');
+    const expression = pair.slice(1).join(':').trim();
+    if (!key || key.includes('#{')) continue;
+    const nextPath = [...pathSegments, key];
+    if (isScssMap(expression)) {
+      walkScssMap(expression, nextPath, visit);
+    } else {
+      visit(nextPath.join('.'), expression);
+    }
+  }
+}
+
+const SCSS_TOKEN_PATTERN = /\s*(?:(-?(?:\d+\.?\d*|\.\d+)[a-zA-Z%]*)|(\$[\w-]+)|([a-zA-Z_][\w.-]*)\s*\(|([()*/+,-]))/y;
+
+function tokenizeScssExpression(expression) {
+  const tokens = [];
+  let index = 0;
+  while (index < expression.length) {
+    SCSS_TOKEN_PATTERN.lastIndex = index;
+    const match = SCSS_TOKEN_PATTERN.exec(expression);
+    if (!match) {
+      if (/\s/.test(expression[index])) {
+        index += 1;
+        continue;
+      }
+      return null;
+    }
+    index = SCSS_TOKEN_PATTERN.lastIndex;
+    if (match[1] !== undefined) tokens.push({ type: 'number', raw: match[1] });
+    else if (match[2] !== undefined) tokens.push({ type: 'var', name: match[2].slice(1) });
+    else if (match[3] !== undefined) tokens.push({ type: 'call', name: match[3] });
+    else tokens.push({ type: 'op', value: match[4] });
+  }
+  return tokens;
+}
+
+function evaluateScssExpression(expression, resolveVariable, stack) {
+  const tokens = tokenizeScssExpression(expression.trim());
+  if (!tokens || tokens.length === 0) {
+    return null;
+  }
+  let position = 0;
+  const peek = () => tokens[position];
+  const next = () => tokens[position++];
+
+  const parseNumber = (raw) => {
+    const parsed = parseLengthToken(raw);
+    if (parsed) return { number: parsed.number, unit: parsed.unit };
+    const numeric = Number(raw);
+    return Number.isFinite(numeric) ? { number: numeric, unit: '' } : null;
+  };
+
+  const combine = (left, op, right) => {
+    if (!left || !right) return null;
+    if (op === '*') {
+      if (left.unit && right.unit) return null;
+      return { number: left.number * right.number, unit: left.unit || right.unit };
+    }
+    if (op === '/') {
+      if (right.number === 0) return null;
+      if (right.unit && right.unit !== left.unit) return null;
+      return { number: left.number / right.number, unit: right.unit ? '' : left.unit };
+    }
+    const compatible = left.unit === right.unit || left.number === 0 || right.number === 0;
+    if (!compatible) return null;
+    return { number: op === '+' ? left.number + right.number : left.number - right.number, unit: left.unit || right.unit };
+  };
+
+  const parsePrimary = () => {
+    const token = next();
+    if (!token) return null;
+    if (token.type === 'number') return parseNumber(token.raw);
+    if (token.type === 'var') return resolveVariable(token.name, stack);
+    if (token.type === 'op' && token.value === '-') {
+      const value = parsePrimary();
+      return value ? { number: -value.number, unit: value.unit } : null;
+    }
+    if (token.type === 'op' && token.value === '(') {
+      const value = parseExpression();
+      const closing = next();
+      return closing && closing.type === 'op' && closing.value === ')' ? value : null;
+    }
+    if (token.type === 'call') {
+      const args = [];
+      let current = parseExpression();
+      args.push(current);
+      while (peek() && peek().type === 'op' && peek().value === ',') {
+        next();
+        args.push(parseExpression());
+      }
+      const closing = next();
+      if (!closing || closing.type !== 'op' || closing.value !== ')') return null;
+      if (token.name === 'math.div' && args.length === 2) return combine(args[0], '/', args[1]);
+      return null;
+    }
+    return null;
+  };
+
+  const parseTerm = () => {
+    let value = parsePrimary();
+    while (peek() && peek().type === 'op' && (peek().value === '*' || peek().value === '/')) {
+      const op = next().value;
+      value = combine(value, op, parsePrimary());
+    }
+    return value;
+  };
+
+  const parseExpression = () => {
+    let value = parseTerm();
+    while (peek() && peek().type === 'op' && (peek().value === '+' || peek().value === '-')) {
+      const op = next().value;
+      value = combine(value, op, parseTerm());
+    }
+    return value;
+  };
+
+  const result = parseExpression();
+  return position === tokens.length ? result : null;
+}
+
+function formatScssValue(value) {
+  const rounded = Math.round(value.number * 1000) / 1000;
+  if (rounded === 0) return '0';
+  return `${rounded}${value.unit}`;
 }
 
 function collectJsonTokens(parsed, matchesKind) {
@@ -441,6 +704,7 @@ module.exports = {
   VALID_TOKEN_KINDS,
   VALID_TOKEN_SOURCE_FORMATS,
   addDefinition,
+  collectScssTokens,
   createTokenKindMatcher,
   getNormalizedValueKeys,
   normalizeTokenKind,

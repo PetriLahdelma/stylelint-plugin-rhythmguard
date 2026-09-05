@@ -11,9 +11,12 @@ The format follows Keep a Changelog principles and semantic versioning.
 - The audit now scans `.scss` files through `postcss-scss` (new optional peer dependency). Without it, SCSS files are reported as skipped instead of ignored. `scanned.scssFiles` and `scanned.scssSkipped` join the JSON contract; text and Markdown output show the counts.
 - Quiet benchmark widened from 7 to 20 public repositories, adding SCSS-first systems: Bootstrap, Primer CSS, Penpot, Mastodon, Gutenberg components, GitLab UI, Pico, Bulma, Spectrum CSS, USWDS, Carbon, Salesforce Lightning, wp-calypso components.
 
+- Sass variables and maps are token sources for `--scale auto` and for `scaleSources` files: `$spacer: 1rem`, `$spacing-01: 0.125rem`, and maps such as `$spacers: (1: $spacer * .25, ...)` with nested maps, variable references, `* / + -` arithmetic and `math.div()`. Unevaluable function calls, strings, keywords and interpolated keys are skipped. Bootstrap, Bulma, Carbon and USWDS now infer their own scales in the quiet benchmark.
+
 ### Changed
 
 - New README banner.
+- Contributing: rewritten `CONTRIBUTING.md` with ways to contribute and the local gate, a Contributor Covenant code of conduct, a false-positive issue template, a current security policy, and a GitHub-hosted CI job so pull requests from forks get lint, typecheck and test feedback.
 
 ## [2.2.0] - 2026-09-05
 

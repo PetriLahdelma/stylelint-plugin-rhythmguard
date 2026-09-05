@@ -14,10 +14,13 @@
     ]
   },
   "summary": {
-    "total": 0,
-    "drift": 0,
+    "total": 2,
+    "drift": 2,
     "falsePositives": 0
   },
-  "findings": [],
+  "findings": [
+    "packages/components/src/components/DateRangePicker/components/DateRangeInput/DateRangeInput.module.scss:35:2px:drift",
+    "packages/components/src/components/DateRangePicker/components/DateRangeInput/DateRangeInput.module.scss:39:2px:drift"
+  ],
   "commit": "17efdf9c9a545733dce93ad9b5a0afe82c9a5252"
 }

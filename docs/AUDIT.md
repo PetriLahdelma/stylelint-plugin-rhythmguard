@@ -41,7 +41,9 @@ Scan paths are scoped to the directory argument. Common generated directories ar
 npm install --save-dev postcss-scss
 ```
 
-Without it, SCSS files are counted under `scanned.scssSkipped` and the text and Markdown output say so, rather than failing. Sass variables (`$gap: 13px`) and functions are not evaluated; declarations whose value is a variable are ignored, literal lengths are checked, and custom properties declared in SCSS feed `--scale auto` like any other.
+Without it, SCSS files are counted under `scanned.scssSkipped` and the text and Markdown output say so, rather than failing.
+
+Literal lengths in SCSS are checked. Declarations whose value is a Sass variable or function call are ignored, since Sass is not compiled. For `--scale auto`, however, the audit does read Sass variables and maps as token sources: `$spacer: 1rem`, `$spacing-01: 0.125rem`, and maps such as Bootstrap's `$spacers: (1: $spacer * .25, ...)` including nested maps, variable references, `* / + -` arithmetic and `math.div()`. Function calls it cannot evaluate, strings, keywords and interpolated keys are skipped. Token names appear as `$spacer` or `$spacers.3` in the scale provenance.
 
 ## Markdown output
 

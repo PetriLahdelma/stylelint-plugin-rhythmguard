@@ -100,6 +100,8 @@ async function createAuditReport(options) {
   return report;
 }
 
+const NON_AUTHORED_SEGMENT = /(^|\/)(test|tests|__tests__|spec|specs|fixtures?|__fixtures__|__snapshots__|vendor|third[-_]?party|storybook-static)(\/|$)/i;
+
 /**
  * One project-level scale for the whole audit, with provenance.
  * "auto": external token sources, then spacing custom properties across the scanned
@@ -130,6 +132,11 @@ function resolveAuditScale({ baseFontSize, cssFiles, requested, tokenSourceResul
   const definitions = new Map();
   const matchesKind = createTokenKindMatcher('spacing');
   for (const filePath of cssFiles) {
+    // Test, fixture and vendored stylesheets often redefine tokens to exercise
+    // overrides; they are findings noise and must not shape the inferred scale.
+    if (NON_AUTHORED_SEGMENT.test(formatPath(filePath))) {
+      continue;
+    }
     let text;
     try {
       text = fs.readFileSync(filePath, 'utf8');

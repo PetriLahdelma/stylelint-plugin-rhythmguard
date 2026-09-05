@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const {
   addDefinition,
+  collectScssTokens,
   createTokenKindMatcher,
   getNormalizedValueKeys,
 } = require('../utils/token-sources');
@@ -110,6 +111,16 @@ function collectTokenDefinitions(source, file, definitions, matchesKind, baseFon
       source: file,
       token,
       value: match[2].trim(),
+    });
+  }
+
+  for (const sassToken of collectScssTokens(source, matchesKind)) {
+    addDefinition(definitions, {
+      baseFontSize,
+      file,
+      source: file,
+      token: sassToken.token,
+      value: sassToken.value,
     });
   }
 }

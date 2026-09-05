@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Benchmark results
+    url: https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/QUIET_BENCHMARK.md
+    about: What the tool finds on twenty public design systems, regenerated on every change.
+  - name: Security report
+    url: https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/security/advisories/new
+    about: Please report vulnerabilities privately through a security advisory.

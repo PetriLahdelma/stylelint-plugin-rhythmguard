@@ -73,3 +73,20 @@ jobs:
           CI_REPORT_NODE: ${{ runner.name }}
           JOB_STATUS: ${{ job.status }}
         run: bash .github/scripts/report-ci.sh
+
+  # Fork PRs cannot use the self-hosted farm (public repo, untrusted code), so
+  # contributors get feedback from one GitHub-hosted job: lint, typecheck, tests.
+  fork-verify:
+    name: fork PR verify (GitHub-hosted, node-22 stylelint-16)
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
