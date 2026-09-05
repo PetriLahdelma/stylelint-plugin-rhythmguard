@@ -40,6 +40,7 @@ function renderMarkdown(report) {
   lines.push('');
 
   appendMarkdownCounts(lines, 'CSS Off-Scale Values', report.offScaleValues);
+  appendMarkdownCounts(lines, 'CSS Off-Scale Properties', report.offScaleProperties, 'Property');
   appendMarkdownCounts(lines, 'CSS Token Opportunities', report.tokenOpportunities);
   appendMarkdownCounts(lines, 'Tailwind Class-String Drift', report.tailwindArbitraryValues);
   appendMarkdownCounts(lines, 'Motion Rhythm Drift', report.motion.values);
@@ -204,8 +205,8 @@ function appendBaselineMarkdown(lines, report) {
   }
 }
 
-function appendMarkdownCounts(lines, title, counts) {
-  const entries = sortCountMap(counts);
+function appendMarkdownCounts(lines, title, counts, label = 'Value') {
+  const entries = sortCountMap(counts || {});
 
   if (entries.length === 0) {
     return;
@@ -213,7 +214,7 @@ function appendMarkdownCounts(lines, title, counts) {
 
   lines.push(`## ${title}`);
   lines.push('');
-  lines.push('| Value | Count |');
+  lines.push(`| ${label} | Count |`);
   lines.push('| --- | ---: |');
   for (const [value, count] of entries) {
     lines.push(`| \`${escapeMarkdown(value)}\` | ${count} |`);

@@ -33,6 +33,7 @@ function renderText(report) {
   lines.push('');
 
   appendHistogram(lines, 'CSS OFF-SCALE VALUES', report.offScaleValues);
+  appendHistogram(lines, 'CSS OFF-SCALE PROPERTIES', report.offScaleProperties);
   appendHistogram(lines, 'CSS TOKEN OPPORTUNITIES', report.tokenOpportunities);
   appendHistogram(lines, 'TAILWIND CLASS-STRING DRIFT', report.tailwindArbitraryValues);
   appendHistogram(lines, 'MOTION RHYTHM DRIFT', report.motion.values);
@@ -145,9 +146,9 @@ function appendBaselineText(lines, report) {
   }
 }
 
-function appendHistogram(lines, title, counts) {
-  const entries = sortCountMap(counts);
-  const total = sumCounts(counts);
+function appendHistogram(lines, title, counts = {}) {
+  const entries = sortCountMap(counts || {});
+  const total = sumCounts(counts || {});
 
   if (entries.length === 0) {
     return;

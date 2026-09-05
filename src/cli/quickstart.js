@@ -177,6 +177,10 @@ async function run() {
   if (topValues.length > 0) {
     out.push(`    Top values      ${topValues.map(([value, count]) => `${value} ×${count}`).join(', ')}`);
   }
+  const topProperties = topEntries(report.offScaleProperties);
+  if (topProperties.length > 0) {
+    out.push(`    Top properties  ${topProperties.map(([property, count]) => `${property} ×${count}`).join(', ')}`);
+  }
   const topFiles = (report.topAffectedFiles || []).slice(0, 3);
   if (topFiles.length > 0) {
     out.push(`    Top files       ${topFiles.map((entry) => `${entry.file} (${entry.count})`).join(', ')}`);

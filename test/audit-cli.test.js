@@ -72,6 +72,9 @@ test('audit CLI JSON reports CSS and Tailwind design-system drift', () => {
   assert.equal(report.cssFilesScanned, 1);
   assert.equal(report.templateFilesScanned, 1);
   assert.equal(report.offScaleValues['13px'], 1);
+  assert.equal(report.offScaleProperties.padding, 1);
+  assert.equal(report.findings.css.find((finding) => finding.value === '13px').property, 'padding');
+  assert.equal(report.findings.css.find((finding) => finding.value === '16px').property, 'gap');
   assert.equal(report.tokenOpportunities['16px'], 1);
   assert.equal(report.tailwindArbitraryValues['13px'], 1);
   assert.equal(report.tailwindArbitraryValues['-0.3rem'], 1);
@@ -97,6 +100,7 @@ test('audit CLI JSON emits the 2.0 contract shape by default', () => {
   assert.equal(report.command.directory.endsWith('/src') || report.command.directory === path.join(fixtureDir, 'src'), true);
   assert.equal(report.scanned.cssFiles, 1);
   assert.equal(report.contracts.tokens.missingTokens[0].token, '--spacing-missing');
+  assert.deepEqual(report.contracts.scale.offScaleProperties, { padding: 1 });
   assert.equal(report.findings.tailwind.length, 2);
 });
 
@@ -128,6 +132,7 @@ test('audit CLI markdown emits a PR-ready design-system report', () => {
   assert.match(result.stdout, /^# Rhythmguard Design-System Audit/m);
   assert.match(result.stdout, /\| CSS files scanned \| 1 \|/);
   assert.match(result.stdout, /## Tailwind Class-String Drift/);
+  assert.match(result.stdout, /## CSS Off-Scale Properties\n\n\| Property \| Count \|\n\| --- \| ---: \|\n\| `padding` \| 1 \|/);
   assert.match(result.stdout, /`md:p-\[13px\]`/);
   assert.match(result.stdout, /`md:p-\[12px\]`/);
 });
