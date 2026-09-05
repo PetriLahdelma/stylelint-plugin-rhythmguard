@@ -214,7 +214,7 @@ A developer in a repository we have never seen runs one command with no configur
 
 ### Deferred
 
-- MCP server or other agent-native surfaces. The audit JSON contract plus an `AGENTS.md` snippet is enough for coding agents today.
+- MCP server or other agent-native surfaces. The audit JSON contract plus the `AGENTS.md` block in [`FOR_AGENTS.md`](./FOR_AGENTS.md) (shipped 2026-09-05) is enough for coding agents today.
 - Oxlint support for the ESLint plugin, until B6 triggers.
 - Any new property group, scale preset or reporter format.
 - Articles, newsletter submissions and conference proposals, until B4 has produced at least two embedded configs to write about.
