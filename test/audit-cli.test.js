@@ -609,3 +609,48 @@ test('audit CLI can scan files changed since a git ref', () => {
   assert.equal(report.cssFilesScanned, 1);
   assert.equal(report.findings.css[0].file, 'src/changed.css');
 });
+
+test('audit CLI github format emits workflow-command annotations for CI', () => {
+  const fixtureDir = createAuditFixture();
+  // Run from the fixture root, as a CI job would, so file= paths are repo-relative.
+  const result = runAuditCommand(fixtureDir, 'src', '--format', 'github');
+
+  assert.equal(result.status, 0, result.stderr);
+
+  const lines = result.stdout.trim().split('\n');
+  const warningLines = lines.filter((line) => line.startsWith('::warning '));
+  const noticeLines = lines.filter((line) => line.startsWith('::notice '));
+
+  assert.ok(warningLines.length >= 2, `expected annotations, got:\n${result.stdout}`);
+  assert.ok(
+    warningLines.some((line) =>
+      /^::warning file=src\/card\.css,line=3,col=\d+,title=rhythmguard\/use-scale::Unexpected off-scale value "13px"/.test(line),
+    ),
+    `missing css annotation in:\n${result.stdout}`,
+  );
+  assert.ok(
+    warningLines.some((line) =>
+      /^::warning file=src\/Button\.tsx,line=2,col=\d+,title=rhythmguard-tailwind\/tailwind-class-use-scale::/.test(line),
+    ),
+    `missing tailwind annotation in:\n${result.stdout}`,
+  );
+  assert.equal(noticeLines.length, 1);
+  assert.match(noticeLines[0], /^::notice title=Rhythmguard audit::\d+ findings? across \d+ files?, \d+%25 scale cleanliness$/);
+  assert.equal(lines.every((line) => line.startsWith('::')), true, 'github format must emit only workflow commands');
+});
+
+test('audit CLI github format escapes newlines and commas in annotation messages', () => {
+  const fixtureDir = createAuditFixture();
+  fs.writeFileSync(
+    path.join(fixtureDir, 'src', 'odd.css'),
+    '.odd { margin: 13px 7px; }\n',
+  );
+  const result = runAuditCommand(fixtureDir, 'src', '--format', 'github');
+
+  assert.equal(result.status, 0, result.stderr);
+  for (const line of result.stdout.trim().split('\n')) {
+    const [, message = ''] = line.split('::').length >= 3 ? [null, line.slice(line.indexOf('::', 2) + 2)] : [];
+    assert.equal(message.includes('\n'), false);
+    assert.equal(/%(?!25|0D|0A|2C|3A)/.test(message), false, `unescaped % in: ${line}`);
+  }
+});

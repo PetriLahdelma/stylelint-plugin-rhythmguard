@@ -22,6 +22,7 @@ module.exports.configs = {
   logical: require('./configs/logical'),
   migration: require('./configs/migration'),
   motion: require('./configs/motion'),
+  'react-tailwind': require('./configs/react-tailwind'),
 };
 module.exports.eslint = require('./eslint');
 module.exports.presets = require('./presets');

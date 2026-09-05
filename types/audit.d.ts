@@ -23,22 +23,28 @@ export interface AuditTokenSource {
 export interface AuditOptions {
   baseFontSize?: number;
   baselinePath?: string;
-  config?: string;
+  /** Path to a `.rhythmguardrc.json`-style config. Defaults to `.rhythmguardrc.json` in `cwd`. */
+  configPath?: string;
   dir?: string;
   failOnNewDrift?: boolean;
-  format?: "json" | "json-v1" | "markdown" | "text" | "html";
+  format?: "json" | "json-v1" | "markdown" | "text" | "html" | "github";
   ignorePath?: string;
   ignorePatterns?: string[];
   includeMotion?: boolean;
   maxFindings?: number;
   minCleanliness?: number;
-  output?: string;
+  /** Skip config discovery entirely (equivalent to `--no-config`). */
+  noConfig?: boolean;
+  /** Write rendered output to this file instead of stdout (equivalent to `--output`). */
+  outputPath?: string;
   scale?: Array<number | string>;
   since?: string;
   sinceBaseline?: boolean;
   staged?: boolean;
   tokenCandidateMinCount?: number;
   tokenKind?: AuditTokenKind;
+  /** Format applied to `tokenSources` entries that do not declare their own. */
+  tokenSourceFormat?: AuditTokenSourceFormat | "auto";
   tokenSources?: AuditTokenSource[];
   writeBaseline?: boolean;
 }

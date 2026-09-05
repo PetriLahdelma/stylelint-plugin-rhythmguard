@@ -16,7 +16,11 @@ jobs:
       fail-fast: false
       matrix:
         node-version: ['18.18.2', '20.x', '22.x']
-        stylelint-version: ['16.0.0', '16']
+        stylelint-version: ['16.0.0', '16', '17']
+        exclude:
+          # Stylelint 17 requires Node >= 20.19
+          - node-version: '18.18.2'
+            stylelint-version: '17'
 
     steps:
       - name: Checkout

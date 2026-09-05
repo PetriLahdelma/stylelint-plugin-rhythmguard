@@ -269,7 +269,7 @@ ruleFunction.ruleName = ruleName;
 ruleFunction.messages = messages;
 ruleFunction.meta = {
   fixable: true,
-  url: 'https://github.com/petrilahdelma/stylelint-plugin-rhythmguard#rhythmguardno-offscale-transform',
+  url: 'https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/no-offscale-transform.md',
 };
 
 module.exports = stylelint.createPlugin(ruleName, ruleFunction);

@@ -6,6 +6,25 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- Added `rhythmguard audit --format github`, emitting GitHub Actions workflow-command annotations (one `::warning` per finding, a `::notice` summary) for inline PR feedback without a formatter dependency.
+- Added per-rule documentation pages under `docs/rules/` for every Stylelint and ESLint rule. Rule `meta.url` and ESLint `meta.docs.url` now point at them, and a test enforces the link.
+- Added `npm run typecheck`: compiles the published TypeScript declarations, a consumer check file, and the packaged examples.
+- Added Stylelint 17 to the CI and release matrices (Node 20 and 22; Node 18 is excluded for Stylelint 17).
+- Added a bug-report issue template.
+
+### Changed
+
+- README cut from 833 lines to a quick start. Config details, scale presets, the audit reference and the full custom setup moved to `docs/CONFIGS.md`, `docs/SCALE_PRESETS.md` and `docs/AUDIT.md`; development and release notes moved to `CONTRIBUTING.md`.
+- Split the audit CLI into focused modules under `src/audit/`; `src/cli/audit.js` is now a thin command shell. No behaviour change.
+- Release, post-publish smoke and community-scale workflows now run on the self-hosted runners like CI.
+
+### Fixed
+
+- `plugin.configs` and the ESM entry now expose `react-tailwind`, matching the `./configs/react-tailwind` package export. A test asserts parity between package exports and the programmatic configs object.
+- `AuditOptions` declaration: `config` and `output` were never read by the audit API and are replaced by the real keys `configPath` and `outputPath`; `noConfig` and `tokenSourceFormat` added.
+
 ## [2.0.1] - 2026-06-17
 
 ### Added

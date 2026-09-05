@@ -1,0 +1,58 @@
+name: Bug report
+about: A rule, config, or the audit CLI did something wrong.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. A minimal CSS or class-string snippet plus your config is enough for most fixes.
+
+  - type: dropdown
+    id: surface
+    attributes:
+      label: Surface
+      options:
+        - Stylelint rule
+        - ESLint companion rule
+        - rhythmguard audit
+        - rhythmguard init / doctor
+        - Shared config or types
+    validations:
+      required: true
+
+  - type: textarea
+    id: input
+    attributes:
+      label: Input
+      description: The smallest CSS, JSX/TSX, or command that reproduces it.
+      render: css
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Config
+      description: Your Rhythmguard rule options, `.stylelintrc`, `eslint.config.js`, or `.rhythmguardrc.json`.
+      render: json
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+      description: What you expected the rule, fix, or report to do, and what it did instead.
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: Versions
+      description: stylelint-plugin-rhythmguard, stylelint, eslint, node
+      placeholder: rhythmguard 2.0.1, stylelint 17.15.0, node 22.22.3
+    validations:
+      required: true
