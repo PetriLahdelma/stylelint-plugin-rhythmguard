@@ -781,3 +781,23 @@ test('audit CLI --scale auto ignores token declarations in test and fixture dire
   assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12], 'the 7px test token must not join the scale');
   assert.deepEqual(report.contracts.scale.files, ['src/theme.css']);
 });
+
+test('audit CLI --scale auto reports token-package provenance when the scale comes from node_modules', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-pkg-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.mkdirSync(path.join(fixtureDir, 'node_modules', '@radix-ui', 'themes'), { recursive: true });
+  fs.writeFileSync(path.join(fixtureDir, 'package.json'), '{"name":"fixture","dependencies":{"@radix-ui/themes":"^3.0.0"}}');
+  fs.writeFileSync(path.join(fixtureDir, 'node_modules', '@radix-ui', 'themes', 'package.json'), '{"name":"@radix-ui/themes","version":"3.0.0"}');
+  fs.writeFileSync(
+    path.join(fixtureDir, 'node_modules', '@radix-ui', 'themes', 'tokens.css'),
+    ':root { --space-1: calc(4px * var(--scaling)); --space-2: calc(8px * var(--scaling)); --space-3: calc(12px * var(--scaling)); --space-4: calc(16px * var(--scaling)); }\n',
+  );
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'card.css'), '.card { padding: 13px; margin: 8px; }\n');
+
+  const result = runAuditCommand(fixtureDir, 'src', '--scale', 'auto', '--format', 'json');
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.contracts.scale.source, 'token-package');
+  assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12, 16]);
+  assert.deepEqual(report.contracts.scale.files, ['node_modules/@radix-ui/themes/tokens.css']);
+});

@@ -14,6 +14,7 @@ const path = require('node:path');
 
 const { createAuditReport } = require('../audit/report');
 const { detect } = require('./init');
+const { discoverTokenPackages } = require('../utils/scale-inference');
 
 const TOKEN_FILE_PATTERN = /(^|[.-])tokens?\.json$/i;
 const TOKEN_DIRS = ['tokens', 'design-tokens', path.join('src', 'tokens'), path.join('dist', 'tokens')];
@@ -127,6 +128,8 @@ async function run() {
   out.push(`    Next.js         ${stack.nextjs ? 'yes' : 'no'}`);
   out.push(`    Stylelint config ${stack.hasExistingConfig ? 'present' : 'none'}`);
   out.push(`    Token files     ${tokenFiles.length > 0 ? tokenFiles.join(', ') : 'none found'}`);
+  const tokenPackages = [...new Set(discoverTokenPackages(cwd).map((source) => source.package))];
+  out.push(`    Token packages  ${tokenPackages.length > 0 ? tokenPackages.join(', ') : 'none installed'}`);
   out.push(`    .rhythmguardrc  ${rcPresent ? 'present (its token sources are used)' : 'none'}`);
   out.push('');
 

@@ -21,6 +21,80 @@ const MIN_INFERRED_SCALE_LENGTH = 4;
 const RC_FILE = '.rhythmguardrc.json';
 
 const sourceCache = new Map();
+const TOKEN_PACKAGES = require('./token-packages.json').packages;
+
+/**
+ * Installed design-token packages that ship a spacing scale (allowlist in
+ * token-packages.json). Resolved from the project, so only what the project
+ * actually depends on is read. Returns token-source entries.
+ */
+function readDirectDependencies(dir) {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
+    return new Set([
+      ...Object.keys(pkg.dependencies || {}),
+      ...Object.keys(pkg.devDependencies || {}),
+      ...Object.keys(pkg.peerDependencies || {}),
+    ]);
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Project roots from cwd up to the repository boundary (first directory holding
+ * .git), each with the dependencies it declares directly. Hoisted monorepo
+ * installs are found by walking up; a stray global node_modules is never
+ * consulted because the walk stops at the repository.
+ */
+function projectRoots(cwd) {
+  const roots = [];
+  let current = path.resolve(cwd);
+  for (;;) {
+    const direct = readDirectDependencies(current);
+    if (direct) {
+      roots.push({ dir: current, direct });
+    }
+    const parent = path.dirname(current);
+    if (fs.existsSync(path.join(current, '.git')) || parent === current) {
+      break;
+    }
+    current = parent;
+  }
+  return roots;
+}
+
+function discoverTokenPackages(cwd = process.cwd()) {
+  const sources = [];
+  const roots = projectRoots(cwd);
+  for (const entry of TOKEN_PACKAGES) {
+    // Only packages the project depends on directly count. A transitive
+    // tailwindcss (for example via stylelint-config-tailwindcss) must not hand
+    // a non-Tailwind project the Tailwind scale.
+    const owner = roots.find((root) => root.direct.has(entry.name));
+    if (!owner) {
+      continue;
+    }
+    const root = roots
+      .map((candidate) => path.join(candidate.dir, 'node_modules', entry.name))
+      .find((dir) => fs.existsSync(path.join(dir, 'package.json')));
+    if (!root) {
+      continue;
+    }
+    for (const file of entry.files) {
+      const resolved = path.join(root, file);
+      if (fs.existsSync(resolved)) {
+        sources.push({
+          format: 'auto',
+          package: entry.name,
+          path: resolved,
+          ...(entry.tokenPattern ? { tokenPattern: entry.tokenPattern } : {}),
+        });
+      }
+    }
+  }
+  return sources;
+}
 
 function pxValuesFromKeys(keys, baseFontSize) {
   const values = new Set([0]);
@@ -54,6 +128,7 @@ function normalizeSource(source, baseDir) {
     return {
       format: typeof source.format === 'string' ? source.format : 'auto',
       path: path.resolve(source.baseDir || baseDir, rawPath),
+      ...(source.tokenPattern ? { tokenPattern: source.tokenPattern } : {}),
     };
   }
 
@@ -69,7 +144,7 @@ function cacheKey(sources) {
       } catch {
         // missing file: key still changes when it appears
       }
-      return `${source.path}|${source.format}|${mtime}`;
+      return `${source.path}|${source.format}|${source.tokenPattern || ''}|${mtime}`;
     })
     .join('\n');
 }
@@ -86,13 +161,9 @@ function scaleFromSources(sources, baseFontSize) {
   }
 
   const parsed = parseTokenSources({ baseFontSize, sources: normalized, tokenKind: 'spacing' });
-  const keys = [];
-  for (const definition of parsed.definitions.values()) {
-    keys.push(...definition.normalizedValues);
-  }
-
-  const scale = pxValuesFromKeys(keys, baseFontSize);
-  const outcome = scale.length >= MIN_INFERRED_SCALE_LENGTH
+  // scaleFromDefinitions also expands a bare Tailwind --spacing base into its multiples.
+  const scale = scaleFromDefinitions(parsed.definitions, baseFontSize);
+  const outcome = scale
     ? {
       files: parsed.sources.map((source) => source.file),
       scale,
@@ -229,6 +300,11 @@ function resolveAutoScale({
     }
   }
 
+  const fromPackages = scaleFromSources(discoverTokenPackages(process.cwd()), baseFontSize);
+  if (fromPackages) {
+    return { source: 'token-package', ...fromPackages };
+  }
+
   return {
     files: [],
     preset: FALLBACK_PRESET,
@@ -250,6 +326,7 @@ function autoScaleFallbackNote(inference) {
 module.exports = {
   DEFAULT_AUTO_TOKEN_PATTERN,
   autoScaleFallbackNote,
+  discoverTokenPackages,
   resolveAutoScale,
   scaleFromDefinitions,
 };

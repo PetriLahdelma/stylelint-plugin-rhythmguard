@@ -68,6 +68,15 @@ function normalizeTokenKind(kind) {
   return normalized;
 }
 
+function createPatternMatcher(pattern, fallback) {
+  try {
+    const regex = new RegExp(pattern);
+    return (token) => regex.test(token);
+  } catch {
+    return fallback;
+  }
+}
+
 function createTokenKindMatcher(kind) {
   const normalizedKind = normalizeTokenKind(kind);
   const pattern = TOKEN_KIND_PATTERNS[normalizedKind] || TOKEN_KIND_PATTERNS.spacing;
@@ -115,16 +124,19 @@ function parseTokenSources({
     }
 
     let tokens = [];
+    const matchesSource = normalizedSource.tokenPattern
+      ? createPatternMatcher(normalizedSource.tokenPattern, matchesKind)
+      : matchesKind;
     try {
       if (normalizedSource.format === 'css') {
-        tokens = collectCssTokens(text, matchesKind);
+        tokens = collectCssTokens(text, matchesSource);
       } else {
         const parsed = JSON.parse(text);
         const detectedFormat = normalizedSource.requestedFormat === 'auto'
           ? detectJsonTokenFormat(parsed)
           : normalizedSource.format;
         sourceReport.format = detectedFormat;
-        tokens = collectJsonTokens(parsed, matchesKind);
+        tokens = collectJsonTokens(parsed, matchesSource);
       }
     } catch (err) {
       const warning = `Unable to parse token source ${normalizedSource.displayPath}: ${err.message}`;
@@ -174,6 +186,9 @@ function normalizeTokenSource(source) {
     format: requestedFormat === 'auto' ? detectSourceFormat(resolvedPath) : requestedFormat,
     requestedFormat,
     resolvedPath,
+    // Optional per-source override for packages that name spacing tokens differently
+    // (Primer's --base-size-*). Falls back to the kind matcher when absent.
+    tokenPattern: typeof source.tokenPattern === 'string' && source.tokenPattern ? source.tokenPattern : null,
   };
 }
 

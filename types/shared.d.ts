@@ -10,6 +10,8 @@ export interface ScaleSource {
   /** `auto` (default), `css`, `flat-json`, `style-dictionary`, or `dtcg`. */
   format?: string;
   path?: string;
+  /** Regex for token names in this file, overriding the spacing kind matcher (for packages that name spacing differently). */
+  tokenPattern?: string;
 }
 
 export interface RhythmguardRuleOptions {

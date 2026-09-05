@@ -31,7 +31,7 @@ Scan paths are scoped to the directory argument. Common generated directories ar
 
 ## Scale
 
-`--scale 0,4,8,12,16` sets the scale explicitly. `--scale auto` infers one project-level scale and reports where it came from: external `--token-source` files first, then spacing custom properties (`--space-*`, `--spacing-*`) found across the scanned CSS, then the default `rhythmic-4` values. The JSON contract carries it under `contracts.scale.values`, `contracts.scale.source` and `contracts.scale.files`; text and Markdown output print the scale and its source. A shared config that enables `scale: "auto"` on the rules and an audit run with `--scale auto` therefore agree on the scale.
+`--scale 0,4,8,12,16` sets the scale explicitly. `--scale auto` infers one project-level scale and reports where it came from: external `--token-source` files first, then spacing custom properties (`--space-*`, `--spacing-*`) and Sass variables found across the scanned CSS and SCSS, then spacing tokens shipped by installed design-token packages (`source: "token-package"`), then the default `rhythmic-4` values. The JSON contract carries it under `contracts.scale.values`, `contracts.scale.source` and `contracts.scale.files`; text and Markdown output print the scale and its source. A shared config that enables `scale: "auto"` on the rules and an audit run with `--scale auto` therefore agree on the scale.
 
 ## SCSS
 

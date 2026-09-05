@@ -1,0 +1,48 @@
+{
+  "$comment": "Design-token packages whose installed files declare a spacing scale. Used by scale: \"auto\" after the project's own stylesheets are checked. Each entry lists the files to read (relative to the package root) and, when the package does not use space/spacing names, the token pattern to match. Additions welcome; keep them to files that ship in the published package.",
+  "packages": [
+    {
+      "name": "tailwindcss",
+      "files": [
+        "theme.css"
+      ],
+      "note": "Tailwind v4 base multiplier --spacing"
+    },
+    {
+      "name": "@radix-ui/themes",
+      "files": [
+        "tokens.css"
+      ],
+      "note": "--space-1..9 as calc(<px> * var(--scaling))"
+    },
+    {
+      "name": "@mantine/core",
+      "files": [
+        "styles.css"
+      ],
+      "note": "--mantine-spacing-* as calc(<rem> * var(--mantine-scale))"
+    },
+    {
+      "name": "@primer/primitives",
+      "files": [
+        "dist/css/base/size/size.css"
+      ],
+      "tokenPattern": "^--base-size-\\d+$",
+      "note": "Primer names its spacing ladder size"
+    },
+    {
+      "name": "@shopify/polaris-tokens",
+      "files": [
+        "dist/css/styles.css"
+      ],
+      "note": "--p-space-* in rem"
+    },
+    {
+      "name": "@spectrum-css/tokens",
+      "files": [
+        "dist/css/global-vars.css"
+      ],
+      "note": "--spectrum-spacing-* in px"
+    }
+  ]
+}
