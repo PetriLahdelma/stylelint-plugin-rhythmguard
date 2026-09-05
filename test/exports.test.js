@@ -111,3 +111,17 @@ test('every ./configs/* package export is exposed on plugin.configs (cjs and esm
 
   assert.deepEqual(Object.keys(plugin.configs).sort(), exportedConfigNames);
 });
+
+test('embed config is the one-liner for shared-config authors: use-scale on auto scale at warning level, nothing else', () => {
+  const embed = plugin.configs.embed;
+  assert.ok(embed, 'configs.embed is missing');
+  assert.deepEqual(embed.plugins, ['stylelint-plugin-rhythmguard']);
+  assert.equal(embed.extends, undefined, 'embed must not pull other configs or dependencies');
+  assert.deepEqual(Object.keys(embed.rules), ['rhythmguard/use-scale']);
+  assert.deepEqual(embed.rules['rhythmguard/use-scale'], [
+    true,
+    { scale: 'auto', severity: 'warning' },
+  ]);
+  assert.equal(packageJson.exports['./configs/embed'].require, './src/configs/embed.js');
+  assert.equal(packageJson.exports['./configs/embed'].import, './src/configs/embed.mjs');
+});
