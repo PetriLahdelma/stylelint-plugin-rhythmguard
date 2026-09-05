@@ -217,7 +217,7 @@ A developer in a repository we have never seen runs one command with no configur
 - MCP server or other agent-native surfaces. The audit JSON contract plus the `AGENTS.md` block in [`FOR_AGENTS.md`](./FOR_AGENTS.md) (shipped 2026-09-05) is enough for coding agents today.
 - Oxlint support for the ESLint plugin, until B6 triggers.
 - Any new property group, scale preset or reporter format.
-- Articles, newsletter submissions and conference proposals, until B4 has produced at least two embedded configs to write about.
+- Articles, newsletter submissions and conference proposals about features, until B4 has produced at least two embedded configs to write about. Data pieces from the benchmark are not deferred; see section 9.
 
 ## 7. Success metrics
 
@@ -246,3 +246,65 @@ If Track A targets are missed, the cause is product and the fix is in this repo.
 - francoismassart/eslint-plugin-tailwindcss issue #375.
 - deslint.com home and docs, and the `@deslint/*` packages on npm.
 - LLM-wiki entity page for Rhythmguard and the Digitaltableteur adoption capture of 2026-07-18.
+
+## 9. Being talked about (added 2026-09-06)
+
+Sections 6 and 7 are about being installed. This section is about being discussed, which is a different mechanism with a different unit of work. Downloads follow shared configs; conversation follows artifacts people link to. The tools in this category that get talked about (stylelint-plugin-defensive-css, better-tailwindcss, Knip, Biome) each own one artifact that is quoted without the tool being installed: a named idea, a benchmark table, a migration story, a number. Rhythmguard has three candidates already built and none of them published as a thing in its own right: the quiet benchmark data, the phrase "nobody chose 13px", and the drift-by-property table.
+
+The deferral in section 6 ("articles until B4 has produced two embedded configs") stays for feature marketing. It is lifted for data. Twenty audited design systems with committed, reproducible snapshots is a dataset, and datasets travel on their own.
+
+### 9.1 The artifact: State of Spacing (issue #70)
+
+A standing report generated from the benchmark: every repository, its inferred scale and where it came from, off-scale count, cleanliness, top three values, top three properties, and the trend since the last edition. Published as `docs/STATE_OF_SPACING.md` from the same script that writes `QUIET_BENCHMARK.md`, cut as a dated edition each quarter, and posted once as an article with the table embedded. The framing is consistency, not shame: each row links to the audit the maintainer can run themselves, and the edition is published only after every repository in it has an issue with its audit attached (B4, which this makes concrete). Widen from 20 to 50 repositories before the first edition so no single team feels singled out. Rankings are what get quoted; the property table is what gets argued about, and argument is the goal.
+
+### 9.2 The badge (issue #68)
+
+A `spacing drift` badge for READMEs, the way coverage badges spread coverage tools. `rhythmguard audit --format badge` writes a shields.io endpoint JSON (`{ schemaVersion: 1, label: "spacing drift", message: "3%", color }`), a GitHub Action publishes it to the repository's Pages or a gist, and the README embeds it. Every repository that shows the badge shows the name. The design-system repositories in the benchmark are the first targets: offer the badge in the same issue as the audit.
+
+### 9.3 The action
+
+`PetriLahdelma/rhythmguard-action` on the GitHub Marketplace: runs the audit with a baseline, posts one sticky PR comment with the delta and the property table, emits annotations, writes the badge. The Marketplace is a discovery surface with search traffic of its own, and a PR comment is seen by everyone on the PR, not only the person who configured it. The action is a thin wrapper over the CLI and lives in this repository as a workspace so it releases with the plugin.
+
+### 9.4 Agents as the distribution channel that talks back (issue #69)
+
+Coding agents generate most new off-scale values and read `AGENTS.md`. Publish the [`FOR_AGENTS.md`](./FOR_AGENTS.md) block as installable skill packs where agents look for them: a Claude Code skill, a Cursor rules file, a Copilot instructions snippet, each one file and each linking back. An agent that runs `npx rhythmguard` on a user's repository puts the name into a conversation the maintainer never had to start. The MCP server stays deferred; the skill files are an afternoon.
+
+### 9.5 Fix pull requests, not only issues
+
+B4 opens issues with audits. Where a benchmark repository shows one value explaining a third of its drift (Mastodon's `10px`, 165 times), offer a pull request fixing that one value, with before and after screenshots, after the issue has been acknowledged. A merged fix in a well-known repository is a public reference that an issue is not, and the conversation in the review is where maintainers say what the tool got wrong. Never open the PR unasked.
+
+### 9.6 The phrase
+
+"Nobody chose 13px" is the only line about Rhythmguard that people repeat. Give it a home: a one-page site at a memorable domain with the quickstart command, the Mastodon histogram, and nothing else, plus stickers for the two conferences below. The GitHub about text and the npm description already carry it; the README slogan, the Dev.to draft and the talk title should be the same words. One phrase, everywhere, until it is the tool's name in conversation.
+
+### 9.7 Where to say it
+
+Places that carry data pieces without an existing audience, in order of cost:
+
+1. Newsletters that accept submissions: CSS Weekly, Frontend Focus, Smashing Newsletter, JavaScript Weekly. Submit the State of Spacing edition, not the plugin.
+2. Podcasts that take pitches with a number in them: Syntax, ShopTalk Show, JS Party, The CSS Podcast. The pitch is "we audited fifty design systems and here is what drifted", with the maintainer as the guest who did the work.
+3. Conference CFPs where the audience maintains design systems: CSS Day, Smashing Conf, Into Design Systems, Beyond Tellerrand, Nordic.js. The talk is the report plus the Mastodon before and after; the tool appears in one slide.
+4. The playground (issue #57), rebuilt on the real rules with a shareable result URL that renders an image card, so a pasted-CSS result can be posted rather than described.
+
+### 9.8 What not to do
+
+No disguised comments on other people's articles, no unsolicited pull requests, no ranking that names a team without giving it the audit first, and no article about a feature. Every public word is either a number from a reproducible run or a sentence a maintainer of a benchmark repository said to us. The reason is section 7's last paragraph: if the tool is not worth talking about, the honest outcome is a stable small tool, and it should be reached on evidence.
+
+### 9.9 Metrics for this section
+
+| Metric | Now | 6 months |
+| --- | ---: | ---: |
+| Repositories showing the badge | 0 | 10 |
+| Public mentions per month (GitHub, Bluesky, Mastodon, X, newsletters), excluding own | 0 | 20 |
+| Benchmark repositories with an acknowledged audit issue | 0 | 15 |
+| Merged fix PRs in benchmark repositories | 0 | 3 |
+| Newsletter placements, podcast or talk slots | 0 | 3 |
+| Unique repo visitors per fortnight | 2 | 300 |
+
+### 9.10 Sequencing
+
+1. Badge format and skill packs first; both are small and neither needs anyone's permission.
+2. Widen the benchmark to 50 repositories (issue #56 is the entry point for contributors), then generate the first State of Spacing edition.
+3. Open the B4 audit issues with the badge offer; wait for acknowledgements.
+4. Publish the edition, submit it to the newsletters, pitch the podcasts, file the CFPs.
+5. Action and playground as capacity allows; they amplify but do not gate.
