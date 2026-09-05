@@ -4,10 +4,10 @@
 
 # stylelint-plugin-rhythmguard
 
-Spacing scale and design-token governance for CSS and Tailwind. `padding: 13px` and `p-[13px]` get reported with the nearest on-scale values, and fixed to them when you ask.
+Nobody chose 13px. Rhythmguard catches off-scale spacing in CSS and Tailwind class strings, tells you the nearest steps on your scale, and snaps to them or to your tokens when you ask.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/petrilahdelma/stylelint-plugin-rhythmguard/ci.yml?branch=main&label=ci)](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/stylelint-plugin-rhythmguard.svg)](https://www.npmjs.com/package/stylelint-plugin-rhythmguard)
+[![npm version](https://img.shields.io/npm/v/stylelint-plugin-rhythmguard?label=npm&color=1f6feb)](https://www.npmjs.com/package/stylelint-plugin-rhythmguard)
 [![npm downloads](https://img.shields.io/npm/dm/stylelint-plugin-rhythmguard.svg)](https://www.npmjs.com/package/stylelint-plugin-rhythmguard)
 [![License: MIT](https://img.shields.io/badge/license-MIT-white.svg)](./LICENSE)
 
