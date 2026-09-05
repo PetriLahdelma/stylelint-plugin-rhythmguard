@@ -15,10 +15,10 @@ jobs:
         stylelint-version: ['16.0.0', '16', '17']
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
@@ -38,11 +38,6 @@ jobs:
       - name: Test (Stylelint floor compat)
         if: matrix.stylelint-version == '16.0.0'
         run: npm run test:compat-floor
-
-      - name: Observe full suite behavior on Stylelint floor (non-blocking)
-        if: matrix.stylelint-version == '16.0.0'
-        continue-on-error: true
-        run: npm test
 
       - name: Test (full suite)
         if: matrix.stylelint-version != '16.0.0'
@@ -68,10 +63,10 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: 24
           cache: npm

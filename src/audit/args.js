@@ -37,8 +37,14 @@ Options:
   --token-kind <kind>            Token kind: spacing, radius, typography, size, motion, all (default: spacing)
   --token-candidate-min-count <n> Minimum repeated raw value count for token candidates (default: 2)
   --scale <values|auto>          Comma-separated scale values (default: 0,4,8,12,16,24,32);
-                                 auto infers the scale from token sources, then scanned CSS
+                                 auto infers the scale from token sources, then --space-*/--spacing-*
+                                 custom properties and Sass variables in scanned CSS/SCSS, then
+                                 installed design-token packages, and reports where it came from
   --base-font-size <number>      px base for rem/em conversion (default: 16)
+
+Scans .css files, and .scss files when postcss-scss is installed. Reports drift by
+value, by property and by file; text output prints histograms, markdown is PR-ready,
+json is the stable 2.0 contract.
 `;
 
 function parseArgs(argv) {

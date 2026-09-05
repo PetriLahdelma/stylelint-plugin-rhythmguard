@@ -21,12 +21,12 @@ jobs:
     runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     steps:
       - name: Checkout published commit
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ inputs.ref || github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v5
         with:
           node-version: '20'
           cache: npm
