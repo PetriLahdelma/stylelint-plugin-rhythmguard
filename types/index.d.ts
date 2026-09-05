@@ -39,6 +39,7 @@ export interface RhythmguardPlugin extends Array<StylelintRuleModule> {
     logical: RhythmguardStylelintConfig;
     migration: RhythmguardStylelintConfig;
     motion: RhythmguardStylelintConfig;
+    "react-tailwind": RhythmguardStylelintConfig;
     recommended: RhythmguardStylelintConfig;
     strict: RhythmguardStylelintConfig;
     tailwind: RhythmguardStylelintConfig;

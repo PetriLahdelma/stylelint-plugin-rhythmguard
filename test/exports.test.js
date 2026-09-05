@@ -87,3 +87,27 @@ test('package exports expose TypeScript declaration paths', () => {
     );
   }
 });
+
+test('every ./configs/* package export is exposed on plugin.configs (cjs and esm)', async () => {
+  const exportedConfigNames = Object.keys(packageJson.exports)
+    .filter((exportName) => exportName.startsWith('./configs/'))
+    .map((exportName) => exportName.slice('./configs/'.length))
+    .sort();
+
+  assert.ok(exportedConfigNames.length > 0);
+
+  const entryPath = path.join(__dirname, '..', 'src', 'index.mjs');
+  const esm = await import(pathToFileURL(entryPath).href);
+
+  for (const name of exportedConfigNames) {
+    assert.ok(plugin.configs[name], `cjs plugin.configs is missing "${name}"`);
+    assert.ok(esm.configs[name], `esm configs is missing "${name}"`);
+    assert.equal(
+      plugin.configs[name],
+      require(`../src/configs/${name}`),
+      `plugin.configs.${name} must be the same object as the ./configs/${name} export`,
+    );
+  }
+
+  assert.deepEqual(Object.keys(plugin.configs).sort(), exportedConfigNames);
+});

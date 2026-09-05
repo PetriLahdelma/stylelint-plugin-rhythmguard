@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": [
+      "ES2022"
+    ],
+    "types": [
+      "node"
+    ],
+    "strict": true,
+    "noEmit": true,
+    "allowJs": true,
+    "checkJs": true,
+    "skipLibCheck": false,
+    "baseUrl": ".",
+    "paths": {
+      "stylelint-plugin-rhythmguard": [
+        "./types/index.d.ts"
+      ],
+      "stylelint-plugin-rhythmguard/audit": [
+        "./types/audit.d.ts"
+      ],
+      "stylelint-plugin-rhythmguard/eslint": [
+        "./types/eslint.d.ts"
+      ],
+      "stylelint-plugin-rhythmguard/presets": [
+        "./types/presets.d.ts"
+      ],
+      "stylelint-plugin-rhythmguard/configs/*": [
+        "./types/config.d.ts"
+      ],
+      "stylelint-plugin-rhythmguard/rules/*": [
+        "./types/rule.d.ts"
+      ]
+    },
+    "noImplicitAny": false
+  },
+  "include": [
+    "types/**/*.d.ts",
+    "types/__checks__/**/*.ts",
+    "examples/**/*.mjs"
+  ]
+}
