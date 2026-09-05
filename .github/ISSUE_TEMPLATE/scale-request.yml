@@ -14,7 +14,7 @@ body:
     attributes:
       label: Design context
       description: What kind of product or design system is this for?
-      placeholder: enterprise dashboard / editorial layout / mobile-first app
+      placeholder: admin dashboard / editorial layout / mobile-first app
     validations:
       required: true
 

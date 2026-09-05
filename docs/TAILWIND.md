@@ -70,7 +70,7 @@ export default [
 
 Then layer on:
 
-- `eslint-plugin-tailwindcss` for broader class-string governance and conventions. Its `tailwindcss/no-arbitrary-value` rule is useful when a project wants to reject all arbitrary values; Rhythmguard's companion rule is narrower and checks arbitrary spacing values against your configured scale.
+- `eslint-plugin-tailwindcss` for broader class-string linting and conventions. Its `tailwindcss/no-arbitrary-value` rule is useful when a project wants to reject all arbitrary values; Rhythmguard's companion rule is narrower and checks arbitrary spacing values against your configured scale.
 
 Use Prettier for deterministic ordering:
 
@@ -88,4 +88,4 @@ Use Prettier for deterministic ordering:
 2. ESLint over JS/TS/JSX/TSX templates.
 3. Prettier check.
 
-This gives complete spacing governance without mixing parser responsibilities.
+This covers spacing in both CSS and class strings without mixing parser responsibilities.
