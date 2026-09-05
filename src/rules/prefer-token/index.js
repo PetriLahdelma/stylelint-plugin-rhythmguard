@@ -288,7 +288,7 @@ ruleFunction.ruleName = ruleName;
 ruleFunction.messages = messages;
 ruleFunction.meta = {
   fixable: true,
-  url: 'https://github.com/petrilahdelma/stylelint-plugin-rhythmguard#rhythmguardprefer-token',
+  url: 'https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/prefer-token.md',
 };
 
 module.exports = stylelint.createPlugin(ruleName, ruleFunction);

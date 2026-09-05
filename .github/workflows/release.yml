@@ -7,12 +7,16 @@ on:
 jobs:
   verify:
     name: verify node-${{ matrix.node-version }} stylelint-${{ matrix.stylelint-version }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     strategy:
       fail-fast: false
       matrix:
         node-version: ['18.18.2', '20.x', '22.x']
-        stylelint-version: ['16.0.0', '16']
+        stylelint-version: ['16.0.0', '16', '17']
+        exclude:
+          # Stylelint 17 requires Node >= 20.19
+          - node-version: '18.18.2'
+            stylelint-version: '17'
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -58,7 +62,7 @@ jobs:
 
   publish-gate:
     needs: verify
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     outputs:
       has_npm_token: ${{ steps.token.outputs.has_npm_token }}
     steps:
@@ -76,7 +80,7 @@ jobs:
   publish:
     needs: [verify, publish-gate]
     if: ${{ needs.publish-gate.outputs.has_npm_token == 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     permissions:
       contents: read
       id-token: write
@@ -102,7 +106,7 @@ jobs:
   publish-skipped:
     needs: [verify, publish-gate]
     if: ${{ needs.publish-gate.outputs.has_npm_token != 'true' }}
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     steps:
       - name: Skip publish because NPM_TOKEN is not configured
         run: |

@@ -67,6 +67,7 @@ function maybeCheckNodeText(node, sourceCode, context, analyzer, allowFix) {
 module.exports = {
   meta: {
     docs: {
+      url: 'https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/tailwind-class-use-scale.md',
       description: 'Enforce spacing scale for Tailwind arbitrary spacing utilities in class strings',
     },
     fixable: 'code',
