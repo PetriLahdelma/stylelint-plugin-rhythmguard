@@ -5,7 +5,7 @@ const path = require('node:path');
 
 const { parseLengthToken, toPx } = require('./length');
 const { buildEffectiveTokenMap } = require('./token-map');
-const { parseTokenSources } = require('./token-sources');
+const { collectScssTokens, createTokenKindMatcher, parseTokenSources } = require('./token-sources');
 const { getScalePreset } = require('../presets/scales');
 
 // Matches the audit default so lint and audit agree on what a spacing token is.
@@ -228,8 +228,27 @@ function rcTokenSources(cwd) {
     .filter(Boolean);
 }
 
-function scaleFromTokenMap(map, baseFontSize) {
-  const keys = [];
+/**
+ * Sass variables and maps declared in the linted stylesheet itself (postcss-scss
+ * exposes them as declarations whose prop starts with `$`). Evaluated with the
+ * same collector the audit uses; component variables such as $dropdown-spacer
+ * are excluded by the anchored name rule.
+ */
+function sassValuesFromRoot(root) {
+  const lines = [];
+  root.walkDecls((decl) => {
+    if (typeof decl.prop === 'string' && decl.prop.startsWith('$')) {
+      lines.push(`${decl.prop}: ${decl.value};`);
+    }
+  });
+  if (lines.length === 0) {
+    return [];
+  }
+  return collectScssTokens(lines.join('\n'), createTokenKindMatcher('spacing')).map((token) => token.value);
+}
+
+function scaleFromTokenMap(map, baseFontSize, extraKeys = []) {
+  const keys = [...extraKeys];
   const baseKeys = [];
   for (const [key, reference] of Object.entries(map)) {
     const name = String(reference).match(/^var\((--[\w-]+)\)$/);
@@ -277,7 +296,7 @@ function resolveAutoScale({
       root,
       tokenRegex,
     });
-    const scale = scaleFromTokenMap(stylesheetMap, baseFontSize);
+    const scale = scaleFromTokenMap(stylesheetMap, baseFontSize, sassValuesFromRoot(root));
     if (scale) {
       return { files: [], scale, source: 'stylesheet', tokenCount: scale.length - 1, warnings: [] };
     }

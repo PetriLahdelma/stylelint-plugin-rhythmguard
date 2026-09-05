@@ -271,3 +271,28 @@ test('token packages that are only transitive dependencies are ignored', async (
   assert.equal(result.warnings.length, 1);
   assert.match(result.warnings[0].text, /using preset "rhythmic-4"/, 'a transitive tailwindcss must not supply the scale');
 });
+
+test('scale "auto" reads Sass variables and maps from the linted SCSS file itself (issue #52)', async () => {
+  const result = await lintCss({
+    customSyntax: require.resolve('postcss-scss'),
+    code: [
+      '$spacer: 1rem !default;',
+      '$spacers: (',
+      '  0: 0,',
+      '  1: $spacer * .25,',
+      '  2: $spacer * .5,',
+      '  3: $spacer,',
+      ') !default;',
+      '$dropdown-spacer: .125rem;',
+      '.a { padding: 13px; margin: 8px; gap: 2px; }',
+    ].join('\n'),
+    rules: useScaleAuto(),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 2, texts.join('\n'));
+  assert.match(texts[0], /"13px".*nearest: 8px or 16px/);
+  assert.match(texts[1], /"2px"/, 'the component variable $dropdown-spacer must not have put 2px on the scale');
+  assert.doesNotMatch(texts[0], /No spacing tokens/);
+});
