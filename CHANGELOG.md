@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-09-05
+
 ### Added
 
 - Added `rhythmguard audit --format github`, emitting GitHub Actions workflow-command annotations (one `::warning` per finding, a `::notice` summary) for inline PR feedback without a formatter dependency.
