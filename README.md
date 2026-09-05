@@ -98,6 +98,7 @@ npx rhythmguard audit ./src --token-source ./tokens.json
 npx rhythmguard audit ./src --token-source ./theme.css --token-source-format css
 npx rhythmguard audit ./src --include-motion
 npx rhythmguard audit ./src --format html --output rhythmguard-report.html
+npx rhythmguard audit ./src --format github
 npx rhythmguard audit --schema
 ```
 

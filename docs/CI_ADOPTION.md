@@ -55,6 +55,17 @@ jobs:
 
 For repos without a committed baseline, remove `--since-baseline` and `--fail-on-new-drift`, then gate with `--max-findings 0` only after the first cleanup pass.
 
+## 2b. Inline annotations without a formatter
+
+Stylelint 17 removed its built-in GitHub formatter. The audit CLI can emit GitHub Actions workflow commands directly, so every finding shows up as an inline annotation on the pull request diff and the summary appears as a notice:
+
+```yaml
+      - name: Rhythmguard annotations
+        run: npx rhythmguard audit ./src --format github
+```
+
+Run it from the repository root so `file=` paths match the checked-out tree. Combine with `--since-baseline --fail-on-new-drift` to annotate everything but fail only on new drift. `--output` works with this format too if you prefer to `cat` the file in a later step.
+
 ## 3. Post a PR comment
 
 The markdown output is designed for review comments:

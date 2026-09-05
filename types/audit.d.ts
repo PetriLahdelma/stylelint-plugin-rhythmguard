@@ -27,7 +27,7 @@ export interface AuditOptions {
   configPath?: string;
   dir?: string;
   failOnNewDrift?: boolean;
-  format?: "json" | "json-v1" | "markdown" | "text" | "html";
+  format?: "json" | "json-v1" | "markdown" | "text" | "html" | "github";
   ignorePath?: string;
   ignorePatterns?: string[];
   includeMotion?: boolean;

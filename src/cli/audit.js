@@ -27,7 +27,7 @@ const DEFAULT_CONFIG_PATH = '.rhythmguardrc.json';
 const DEFAULT_IGNORE_PATH = '.rhythmguardignore';
 const DEFAULT_AUDIT_TOKEN_PATTERN = '^--(space|spacing)-';
 const DEFAULT_TOKEN_CANDIDATE_MIN_COUNT = 2;
-const VALID_FORMATS = new Set(['text', 'json', 'json-v1', 'markdown', 'html']);
+const VALID_FORMATS = new Set(['text', 'json', 'json-v1', 'markdown', 'html', 'github']);
 const SKIP_DIRS = new Set([
   '.git',
   '.next',
@@ -57,7 +57,8 @@ const TEMPLATE_EXTENSIONS = new Set([
 const HELP = `Usage: rhythmguard audit <dir> [options]
 
 Options:
-  --format <text|json|json-v1|markdown|html> Output format (default: text)
+  --format <text|json|json-v1|markdown|html|github> Output format (default: text)
+                                 github = GitHub Actions workflow-command annotations
   --json                         Alias for --format json
   --markdown                     Alias for --format markdown
   --schema                       Print the audit JSON schema and exit
@@ -362,7 +363,7 @@ function parseArgs(argv) {
   }
 
   if (!VALID_FORMATS.has(parsed.format)) {
-    throw new Error(`Invalid format "${parsed.format}". Expected text, json, json-v1, markdown, or html.`);
+    throw new Error(`Invalid format "${parsed.format}". Expected text, json, json-v1, markdown, html, or github.`);
   }
 
   if (parsed.since && parsed.staged) {
@@ -2270,8 +2271,43 @@ async function run() {
     return;
   }
 
+  if (parsed.format === 'github') {
+    writeOutput(renderGithub(report), parsed.outputPath);
+    finish(auditFailures);
+    return;
+  }
+
   writeOutput(renderText(report), parsed.outputPath);
   finish(auditFailures);
+}
+
+function renderGithub(report) {
+  const findings = getAllFindings(report);
+  const lines = findings.map((finding) =>
+    `::warning file=${escapeGithubProperty(finding.file)},line=${finding.line || 1},col=${finding.column || 1},title=${escapeGithubProperty(finding.rule || 'rhythmguard')}::${escapeGithubData(finding.text || '')}`,
+  );
+  const findingWord = findings.length === 1 ? 'finding' : 'findings';
+  const fileWord = report.filesWithIssues === 1 ? 'file' : 'files';
+  lines.push(
+    `::notice title=Rhythmguard audit::${escapeGithubData(
+      `${findings.length} ${findingWord} across ${report.filesWithIssues} ${fileWord}, ${report.scaleCleanliness}% scale cleanliness`,
+    )}`,
+  );
+  return `${lines.join('\n')}\n`;
+}
+
+// Escaping rules from GitHub's actions/toolkit (packages/core/src/command.ts).
+function escapeGithubData(value) {
+  return String(value)
+    .replace(/%/g, '%25')
+    .replace(/\r/g, '%0D')
+    .replace(/\n/g, '%0A');
+}
+
+function escapeGithubProperty(value) {
+  return escapeGithubData(value)
+    .replace(/:/g, '%3A')
+    .replace(/,/g, '%2C');
 }
 
 function writeOutput(output, outputPath) {
