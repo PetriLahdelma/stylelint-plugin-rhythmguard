@@ -5,6 +5,7 @@ const valueParser = require('postcss-value-parser');
 const {
   formatLength,
   fromPx,
+  isHairlineLength,
   nearestScaleValues,
   normalizeScale,
   normalizeScaleByUnit,
@@ -94,6 +95,10 @@ function checkLengthValue({
     }
 
     report(node.value, decl, node, null, null, '%');
+    return false;
+  }
+
+  if (options.allowHairlines && isHairlineLength(parsedLength, options.baseFontSize)) {
     return false;
   }
 

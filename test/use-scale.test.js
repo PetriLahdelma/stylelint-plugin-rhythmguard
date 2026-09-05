@@ -234,3 +234,24 @@ test('use-scale allows percentage translations by default and reports them when 
   });
   assert.equal(strict.warnings.length, 3, strict.warnings.map((w) => w.text).join('\n'));
 });
+
+test('use-scale treats one-pixel offsets as hairlines by default and reports them when allowHairlines is false', async () => {
+  const code = '.a { margin: -1px; inset: 1px; inset-block-start: 0.5px; transform: translateY(1px); padding: 2px; gap: 0.0625rem; }';
+
+  const relaxed = await lintCss({ code, rules: ruleConfig });
+  const relaxedTexts = relaxed.warnings.map((w) => w.text);
+  assert.equal(relaxedTexts.length, 1, relaxedTexts.join('\n'));
+  assert.match(relaxedTexts[0], /"2px"/);
+
+  const strict = await lintCss({
+    code,
+    rules: { 'rhythmguard/use-scale': [true, { ...ruleConfig['rhythmguard/use-scale'][1], allowHairlines: false }] },
+  });
+  assert.equal(strict.warnings.length, 6, strict.warnings.map((w) => w.text).join('\n'));
+
+  const invalid = await lintCss({
+    code,
+    rules: { 'rhythmguard/use-scale': [true, { allowHairlines: 'yes' }] },
+  });
+  assert.equal(invalid.invalidOptionWarnings.length, 1, JSON.stringify(invalid.invalidOptionWarnings));
+});

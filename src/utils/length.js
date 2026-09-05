@@ -25,6 +25,21 @@ function parseLengthToken(rawValue) {
   return { number, raw: value, unit };
 }
 
+/**
+ * A hairline is a non-zero length that resolves to one CSS pixel or less:
+ * 1px, -1px, 0.5px, 0.0625rem. Such values compensate for a border width or a
+ * rendering quirk; they are not spacing decisions, so the scale rules exempt
+ * them by default (`allowHairlines`).
+ */
+function isHairlineLength(parsedLength, baseFontSize) {
+  if (!parsedLength || parsedLength.number === 0 || parsedLength.unit === '%') {
+    return false;
+  }
+
+  const px = toPx(Math.abs(parsedLength.number), parsedLength.unit || 'px', baseFontSize);
+  return px !== null && px > 0 && px <= 1;
+}
+
 function toPx(number, unit, baseFontSize) {
   if (unit === '' || unit === 'px') {
     return number;
@@ -168,6 +183,7 @@ function nearestScaleValues(target, scale) {
 module.exports = {
   formatLength,
   fromPx,
+  isHairlineLength,
   nearestScaleValues,
   normalizeScale,
   normalizeScaleByUnit,

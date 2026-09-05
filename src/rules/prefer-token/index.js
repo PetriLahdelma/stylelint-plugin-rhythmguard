@@ -4,6 +4,7 @@ const stylelint = require('stylelint');
 const valueParser = require('postcss-value-parser');
 const {
   formatLength,
+  isHairlineLength,
   normalizeScale,
   normalizeScaleByUnit,
   numbersEqual,
@@ -216,6 +217,10 @@ const ruleFunction = (primary, secondaryOptions) => {
         // Percentages are relative to the container or the element itself; they are
         // never spacing-token candidates (translate(-50%, -50%) centering, inset: 100%).
         if (parsedLength.unit === '%') {
+          return false;
+        }
+
+        if (options.allowHairlines && isHairlineLength(parsedLength, options.baseFontSize)) {
           return false;
         }
 

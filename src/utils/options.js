@@ -431,6 +431,9 @@ function resolveUnits(options) {
 }
 
 const SCALE_VALIDATION_SCHEMA = Object.freeze({
+  allowHairlines: Object.freeze({
+    entryValidator: isBoolean,
+  }),
   allowNegative: Object.freeze({
     entryValidator: isBoolean,
   }),
@@ -514,6 +517,9 @@ const NO_OFFSCALE_TRANSFORM_VALIDATION_SCHEMA = Object.freeze({
 });
 
 const PREFER_TOKEN_VALIDATION_SCHEMA = Object.freeze({
+  allowHairlines: Object.freeze({
+    entryValidator: isBoolean,
+  }),
   allowNumericScale: Object.freeze({
     entryValidator: isBoolean,
   }),
@@ -610,6 +616,7 @@ function buildScaleOptions(rawOptions) {
   const scaleSelection = resolveScaleSelection(options, DEFAULT_SCALE);
 
   return {
+    allowHairlines: options.allowHairlines !== false,
     allowNegative: options.allowNegative !== false,
     allowPercentages: options.allowPercentages !== false,
     baseFontSize:
@@ -656,6 +663,7 @@ function buildTokenOptions(rawOptions) {
   const scaleSelection = resolveScaleSelection(options, DEFAULT_SCALE);
 
   return {
+    allowHairlines: options.allowHairlines !== false,
     allowNumericScale: options.allowNumericScale === true,
     baseFontSize:
       typeof options.baseFontSize === 'number' &&

@@ -13,6 +13,8 @@ export interface ScaleSource {
 }
 
 export interface RhythmguardRuleOptions {
+  /** Exempt non-zero lengths of one CSS pixel or less (1px, -1px, 0.5px, 0.0625rem). Default true. */
+  allowHairlines?: boolean;
   baseFontSize?: number;
   customScale?: ScaleValue[];
   includeMathFunctions?: boolean;

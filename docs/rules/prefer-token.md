@@ -31,6 +31,8 @@ Use it once your token system is stable. Until then, the `migration` config runs
 }
 ```
 
+Percentages are never reported: `translate(-50%, -50%)` and `inset: 100%` are relative to a box, not spacing decisions.
+
 Message for the failing case:
 
 ```
@@ -100,6 +102,7 @@ Nested DTCG groups are walked recursively and the key path becomes the variable 
 | `tokenMapFromTailwindSpacing` | `boolean` | `false` | Build the map from `theme.spacing` in a Tailwind config |
 | `tailwindConfigPath` | `string` | `null` | Tailwind config path for `tokenMapFromTailwindSpacing` (`.js`, `.cjs`, `.mjs`) |
 | `ignoreValues` | `string[]` | CSS global keywords + `auto` | Keyword literals to skip |
+| `allowHairlines` | `boolean` | `true` | Never asks for a token for non-zero lengths of one CSS pixel or less. See [Hairlines](./use-scale.md#hairlines) |
 | `propertyGroups` | `Array<'spacing' \| 'radius' \| 'typography' \| 'size'>` | `['spacing']` | Built-in property groups, used when `properties` is not set |
 | `properties` | `Array<string\|RegExp>` | built-in spacing patterns | Explicit property set; strings may be property names or `/regex/flags` |
 | `propertyScales` | `Record<propertyOrRegex, scaleOrPreset>` | `{}` | Per-property scale overrides for migration mode |
