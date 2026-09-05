@@ -13,6 +13,8 @@ Spacing scale and design-token governance for CSS and Tailwind. `padding: 13px` 
 
 Rhythmguard is scale-aware rather than a blanket ban: values on your scale pass, values off it are reported with the two nearest steps, and tokens are only ever suggested from a map you control. It works on CSS declarations through Stylelint and on Tailwind class strings through an ESLint companion, and it ships an audit CLI so you can measure drift and ratchet it down before enforcing anything.
 
+What it is not: it does not check colors or hex values, the Stylelint rules do not see Tailwind class strings (that is the separate ESLint companion below), and it does not parse SCSS in the audit. Pair it with a color linter if you need one; do not expect one tool to do both.
+
 ## Start here
 
 ```bash
@@ -89,6 +91,9 @@ The audit scans CSS declarations, Tailwind class strings and your token contract
 - [Framework setup](docs/FRAMEWORKS.md) for Vue, Lit, Astro and SvelteKit
 - [Comparison with adjacent plugins](docs/COMPARISON.md) and migration recipes
 - [Real before/after excerpts](docs/ADOPTION_DIFFS.md) from public codebases
+- [For shared-config authors](docs/FOR_CONFIG_AUTHORS.md): the `embed` entry point and how inference works per consumer
+- [For coding agents](docs/FOR_AGENTS.md): a paste-ready `AGENTS.md` block and the commands to run
+- [Quiet benchmark](docs/QUIET_BENCHMARK.md): findings on public design systems, checked on every change
 - [Product direction](docs/STRATEGY_2026-09.md)
 - Browser playground: [petrilahdelma.github.io/stylelint-plugin-rhythmguard](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/)
 
