@@ -1,6 +1,6 @@
 {
   "name": "stylelint-plugin-rhythmguard",
-  "version": "3.3.0",
+  "version": "3.4.0",
   "description": "Nobody chose 13px. Catches off-scale spacing in CSS and Tailwind class strings and snaps it to your scale or tokens. Stylelint rules, an ESLint companion, and an audit CLI.",
   "bin": {
     "rhythmguard": "src/cli/index.js"
