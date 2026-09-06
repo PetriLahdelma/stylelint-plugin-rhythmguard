@@ -27,7 +27,9 @@ export interface AuditOptions {
   configPath?: string;
   dir?: string;
   failOnNewDrift?: boolean;
-  format?: "json" | "json-v1" | "markdown" | "text" | "html" | "github";
+  /** Badge value when `format` is "badge": drift percent or off-scale count. */
+  badgeMetric?: "drift" | "findings";
+  format?: "json" | "json-v1" | "markdown" | "text" | "html" | "github" | "badge";
   ignorePath?: string;
   ignorePatterns?: string[];
   includeMotion?: boolean;

@@ -137,6 +137,26 @@ test('audit CLI markdown emits a PR-ready design-system report', () => {
   assert.match(result.stdout, /`md:p-\[12px\]`/);
 });
 
+test('audit CLI --format badge writes a shields.io endpoint document', () => {
+  const fixtureDir = createAuditFixture();
+  const result = runAudit(fixtureDir, '--format', 'badge');
+
+  assert.equal(result.status, 0, result.stderr);
+  const badge = JSON.parse(result.stdout);
+  assert.equal(badge.schemaVersion, 1);
+  assert.equal(badge.label, 'spacing drift');
+  assert.equal(badge.message, '100%');
+  assert.equal(badge.color, 'orange');
+
+  const counted = runAudit(fixtureDir, '--format', 'badge', '--badge-metric', 'findings');
+  assert.equal(counted.status, 0, counted.stderr);
+  assert.equal(JSON.parse(counted.stdout).message, '3');
+
+  const written = runAudit(fixtureDir, '--format', 'badge', '--output', path.join(fixtureDir, 'badges', 'spacing.json'));
+  assert.equal(written.status, 0, written.stderr);
+  assert.equal(JSON.parse(fs.readFileSync(path.join(fixtureDir, 'badges', 'spacing.json'), 'utf8')).label, 'spacing drift');
+});
+
 test('audit CLI ignores root-relative paths before scanning', () => {
   const fixtureDir = createAuditFixture();
   const ignoredDir = path.join(fixtureDir, 'src', 'legacy');

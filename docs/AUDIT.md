@@ -15,6 +15,7 @@ npx rhythmguard audit ./src --format markdown          # PR-ready report
 npx rhythmguard audit ./src --format json              # stable 2.0 contract
 npx rhythmguard audit ./src --format html --output rhythmguard-report.html
 npx rhythmguard audit ./src --format github            # GitHub Actions annotations
+npx rhythmguard audit ./src --format badge             # shields.io endpoint JSON for a README badge
 npx rhythmguard audit . --ignore "apps/legacy/**" --ignore "vendor/**"
 npx rhythmguard audit ./src --write-baseline
 npx rhythmguard audit ./src --since-baseline --fail-on-new-drift
@@ -77,6 +78,16 @@ Every CSS finding carries the `property` of its declaration (`padding`, `margin-
 ```
 
 The value histogram tells you which numbers drifted; the property table tells you where the layout decision lives. A table dominated by margins on siblings usually means the parent should own the spacing with `gap`, which removes the drift in one place instead of one declaration at a time. A table dominated by `padding` is component-internal and is fixed per component. Baselines and the quiet benchmark key findings by file, line and value, so the property does not affect either.
+
+## Badge
+
+`--format badge` writes a [shields.io endpoint](https://shields.io/badges/endpoint) document:
+
+```json
+{ "schemaVersion": 1, "label": "spacing drift", "message": "3%", "color": "green" }
+```
+
+`drift` (the default) is 100 minus scale cleanliness, the share of scanned files with at least one finding. `--badge-metric findings` reports the number of off-scale CSS values plus Tailwind class-string findings instead, labelled `off-scale values`. Colours: drift 0 to 2% brightgreen, to 5% green, to 15% yellow, above orange; findings 0 brightgreen, to 10 green, to 50 yellow, above orange. Publish the file somewhere public and embed `https://img.shields.io/endpoint?url=<file url>` in the README; the workflow is in [`CI_ADOPTION.md`](./CI_ADOPTION.md#5-show-a-badge).
 
 ## Config file
 

@@ -85,6 +85,8 @@ The audit scans CSS declarations, Tailwind class strings and your token contract
 
 `npx rhythmguard init` writes a starter config for your stack. `npx rhythmguard doctor` checks the setup.
 
+A README badge comes from the same audit: `--format badge` writes a shields.io endpoint document, see [`docs/CI_ADOPTION.md`](./docs/CI_ADOPTION.md#5-show-a-badge).
+
 ## Guides
 
 - [Tailwind integration](docs/TAILWIND.md), including v4 `@theme` tokens and what each layer covers

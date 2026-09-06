@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- `rhythmguard audit --format badge` writes a shields.io endpoint document for a README badge: `spacing drift` as a percentage by default, or the off-scale count with `--badge-metric findings`. Workflow in `docs/CI_ADOPTION.md`. ([#68](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/68))
+
 ## [3.1.0] - 2026-09-06
 
 ### Added
