@@ -20,15 +20,13 @@ const { buildReport, collectTokenDefinitions } = require('./contract');
 const { DEFAULT_SCALE, formatPath } = require('./shared');
 const {
   assessScale,
-  inferScaleFromDefinitions, discoverTokenPackages, scaleFromDefinitions } = require('../core/scale-inference');
-const {
-  assertDirectory,
-  collectCssFindings,
-  collectTailwindFindings,
-  collectTailwindMotionFindings,
-  getScanFiles,
-  runStylelintAudit,
-} = require('./scan');
+  discoverTokenPackages,
+  inferScaleFromDefinitions,
+  scaleFromDefinitions,
+} = require('../core/scale-inference');
+const { assertDirectory, getScanFiles } = require('./scan/files');
+const { collectCssFindings, runStylelintAudit } = require('./scan/stylesheets');
+const { collectTailwindFindings, collectTailwindMotionFindings } = require('./scan/templates');
 
 async function createAuditReport(options) {
   const parsed = normalizeCreateAuditOptions(options);

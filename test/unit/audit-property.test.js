@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const { findDeclarationProperty } = require('../../src/audit/scan');
+const { findDeclarationProperty } = require('../../src/audit/scan/stylesheets');
 
 test('findDeclarationProperty returns the property of the declaration at a warning position', () => {
   const source = [

@@ -15,6 +15,7 @@ The format follows Keep a Changelog principles and semantic versioning.
 ### Changed
 
 - Internal architecture, no behaviour change (the 57-repository benchmark check shows zero moved findings): `src/utils` is now `src/core` with domain-named modules; Stylelint-coupled code lives in `src/rules/report.js` and `src/rules/validate.js`; the four rules are assembled from shared primitives (`fixedLengthValue`, `createPropertyScaleResolver`, `withResolvedScale`, `reportValueNode`); the audit uses the same CSS token scanner as token sources; project discovery for `scale: "auto"` is cached per working directory and revalidated by file mtime; audit CLI flags are one option table from which `--help` is rendered. Executable rules for layer direction, cycles, dependency declaration and CJS/ESM parity live under `test/contracts/`. The map is [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
+- `src/audit/scan.js` (676 lines) is three modules by responsibility: `scan/files.js`, `scan/stylesheets.js`, `scan/templates.js`.
 - Tests are grouped by what they prove: `test/{unit,rules,cli,api,contracts,compat,bench}`.
 - CI and benchmark workflows cancel superseded runs on the same ref, skip docs-only changes, and can be dispatched by hand.
 
