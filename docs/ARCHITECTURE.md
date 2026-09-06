@@ -67,7 +67,7 @@ Messages are part of the public contract. They name the value, the two nearest s
 
 ## The audit
 
-`src/audit/` is the project-level product: it runs the rules through Stylelint's API over a directory, adds Tailwind class-string analysis for template files, recovers the CSS property of each finding from the source, infers one project-level scale with provenance, builds a token contract, compares against a baseline, and renders. The JSON 2.0 contract (`contracts.scale`, `contracts.tokens`, `findings`, `summary`) is stable across minors; renderers (`render-*.js`) are pure functions of the report. `src/audit/args.js` is a table of options from which `--help` is rendered.
+`src/audit/` is the project-level product. `scan/files.js` decides which files are looked at (walking, ignore patterns, git scoping), `scan/stylesheets.js` runs the rules through Stylelint's API over a directory and recovers each finding's property from the source, `scan/templates.js` reads Tailwind class strings out of template files. `report.js` composes them: it adds Tailwind class-string analysis for template files, recovers the CSS property of each finding from the source, infers one project-level scale with provenance, builds a token contract, compares against a baseline, and renders. The JSON 2.0 contract (`contracts.scale`, `contracts.tokens`, `findings`, `summary`) is stable across minors; renderers (`render-*.js`) are pure functions of the report. `src/audit/args.js` is a table of options from which `--help` is rendered.
 
 ## Invariants and where they are enforced
 
