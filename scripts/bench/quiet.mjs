@@ -147,6 +147,7 @@ async function auditRepo(repo, checkout, rules) {
       category: item.category,
       file: item.file,
       line: item.line,
+      property: item.property || (item.surface === 'tailwind' ? 'class-string' : null),
       value: item.value || item.rawValue || '',
     })),
     commit: checkout.commit,
