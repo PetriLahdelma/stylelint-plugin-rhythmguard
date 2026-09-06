@@ -66,6 +66,10 @@ If your shell's npm registry is overridden by a corporate `.npmrc`, add `--regis
 
 CI for this repository runs on self-hosted runners for pushes and same-repo branches. For pull requests from forks a separate job runs on GitHub-hosted runners with Node 22 and current Stylelint 16, covering lint, typecheck and the test suite. You will see its result on your PR. The full matrix and the benchmark run after merge.
 
+## Where things live
+
+[`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md) is the map: the layers under `src/`, which may depend on which, the primitives a rule is assembled from, and the invariants with the test that enforces each. Read it before a change that adds a module, and run `node --test test/contracts/architecture.test.js` after; it fails when a dependency crosses a layer line.
+
 ## How we write changes
 
 **Tests first.** Every behaviour change starts with a failing test. If you send a fix without one, expect the review to ask for it; the test is what proves the fix is the right one and keeps it that way.
