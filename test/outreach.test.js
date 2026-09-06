@@ -46,3 +46,13 @@ test('draftIssue for a fallback-scale repository asks where the tokens live and 
   assert.match(body, /I am not going to quote it/);
   assert.doesNotMatch(body, /- Values:/);
 });
+
+test('draftIssue treats an implausible inferred scale like a fallback and says why', async () => {
+  const { draftIssue } = await load();
+  const { body, title } = draftIssue({ ...base, scale: { source: 'scanned-css', values: [0, 2, 3, 5, 6, 25], tokenCount: 12, files: ['web/styles/app_variables.css'] } });
+
+  assert.match(title, /where do your spacing tokens live/);
+  assert.match(body, /picked up variables that do not form a spacing scale/);
+  assert.match(body, /`0, 2, 3, 5, 6, 25`/);
+  assert.doesNotMatch(body, /- Values:/);
+});

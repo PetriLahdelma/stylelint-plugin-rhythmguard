@@ -11,7 +11,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { topCounts } from './state-of-spacing.mjs';
+import { assessScale, topCounts } from './state-of-spacing.mjs';
 
 const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
 const resultsDir = path.join(repoRoot, 'benchmarks', 'quiet', 'results');
@@ -32,11 +32,12 @@ export function draftIssue(result) {
   const topValues = topCounts(drift, 'value', 5);
   const topProperties = topCounts(drift, 'property', 5);
   const fallback = result.scale.source === 'fallback';
+  const unreliable = !fallback && !assessScale(result.scale).plausible;
   const scale = result.scale.values.join(', ');
   const paths = result.paths.map((p) => `\`${p}\``).join(', ');
   const driftCount = result.summary.drift;
 
-  const title = fallback
+  const title = fallback || unreliable
     ? 'Spacing scale: where do your spacing tokens live? (audit from the Rhythmguard benchmark)'
     : `Spacing scale audit: ${driftCount} literal spacing values off your own token scale`;
 
@@ -47,7 +48,13 @@ export function draftIssue(result) {
     '',
   ];
 
-  if (fallback) {
+  if (unreliable) {
+    lines.push(
+      `**What it found.** Scale inference picked up variables that do not form a spacing scale (it derived \`${scale}\` from ${result.scale.files.slice(0, 2).map((f) => `\`${f}\``).join(', ')}${result.scale.files.length > 2 ? ' and others' : ''}), most likely component-local spacing variables rather than your tokens. Measured against that, it reported ${driftCount} values, which is my tool's mistake and not a number I will quote.`,
+      '',
+      '**The ask.** If you can point me at where the spacing scale is defined (a token file, a Sass map, a package), I will teach the tool to prefer it, re-run the audit on the real scale, and post the result here. If spacing is intentionally not on a scale, saying so is just as useful and I will mark the row that way.',
+    );
+  } else if (fallback) {
     lines.push(
       `**What it found.** The audit could not find a spacing token set here (it looks for \`--space-*\` / \`--spacing-*\` custom properties, Sass \`$spacer\` / \`$spacing-*\` variables and maps, or a Tailwind \`--spacing\` base), so it measured against a default 4px scale and reported ${driftCount} literal values off that scale. That number says more about my token discovery than about your CSS, so I am not going to quote it.`,
       '',
