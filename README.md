@@ -97,6 +97,7 @@ A README badge comes from the same audit: `--format badge` writes a shields.io e
 - [For coding agents](docs/FOR_AGENTS.md): a paste-ready `AGENTS.md` block, installable with `npx rhythmguard init --agents all` for Claude Code, Cursor and Copilot
 - [Quiet benchmark](docs/QUIET_BENCHMARK.md): findings on public design systems, checked on every change
 - [State of Spacing](docs/STATE_OF_SPACING.md): dated editions of the same data, ranked by drift density, with the values and properties that drifted
+- [Architecture](docs/ARCHITECTURE.md): the layers, the rule kit, the invariants and where each is enforced
 - [Product direction](docs/STRATEGY_2026-09.md)
 - Browser playground: [petrilahdelma.github.io/stylelint-plugin-rhythmguard](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/)
 

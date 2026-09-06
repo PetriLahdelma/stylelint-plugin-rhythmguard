@@ -6,6 +6,16 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- `postcss-value-parser` is declared as a runtime dependency. The rules require it at runtime but it was only a dev dependency, resolved through Stylelint's hoisted copy; strict package managers could not install the plugin without it.
+
+### Changed
+
+- Internal architecture, no behaviour change (the 57-repository benchmark check shows zero moved findings): `src/utils` is now `src/core` with domain-named modules; Stylelint-coupled code lives in `src/rules/report.js` and `src/rules/validate.js`; the four rules are assembled from shared primitives (`fixedLengthValue`, `createPropertyScaleResolver`, `withResolvedScale`, `reportValueNode`); the audit uses the same CSS token scanner as token sources; project discovery for `scale: "auto"` is cached per working directory and revalidated by file mtime; audit CLI flags are one option table from which `--help` is rendered. Executable rules for layer direction, cycles, dependency declaration and CJS/ESM parity live under `test/contracts/`. The map is [`docs/ARCHITECTURE.md`](./docs/ARCHITECTURE.md).
+- Tests are grouped by what they prove: `test/{unit,rules,cli,api,contracts,compat,bench}`.
+- CI and benchmark workflows cancel superseded runs on the same ref, skip docs-only changes, and can be dispatched by hand.
+
 ## [3.3.0] - 2026-09-06
 
 ### Fixed
