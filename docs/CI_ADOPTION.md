@@ -95,3 +95,45 @@ Keep motion checks opt-in until the team has reviewed local false positives:
 ```bash
 npx rhythmguard audit ./src --include-motion --format markdown
 ```
+
+## 5. Show a badge
+
+`--format badge` writes a shields.io endpoint document. Commit it to a branch that GitHub Pages serves, or push it to a gist, and embed it:
+
+```yaml
+name: Spacing badge
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  badge:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx rhythmguard audit ./src --scale auto --format badge --output badges/spacing.json
+      - name: Publish to the badges branch
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git fetch origin badges || git checkout --orphan badges
+          git checkout badges 2>/dev/null || true
+          git add badges/spacing.json
+          git commit -m "badge: spacing drift" || exit 0
+          git push origin badges
+```
+
+Then in the README:
+
+```md
+![spacing drift](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/<owner>/<repo>/badges/badges/spacing.json)
+```
+
+`--badge-metric findings` shows the off-scale count instead of the drift percentage.

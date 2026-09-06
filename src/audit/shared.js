@@ -18,7 +18,7 @@ const DEFAULT_AUDIT_TOKEN_PATTERN = '^--(space|spacing)-';
 
 const DEFAULT_TOKEN_CANDIDATE_MIN_COUNT = 2;
 
-const VALID_FORMATS = new Set(['text', 'json', 'json-v1', 'markdown', 'html', 'github']);
+const VALID_FORMATS = new Set(['text', 'json', 'json-v1', 'markdown', 'html', 'github', 'badge']);
 
 const SKIP_DIRS = new Set([
   '.git',
@@ -69,6 +69,7 @@ function createDefaultAuditOptions() {
     configPath: DEFAULT_CONFIG_PATH,
     dir: null,
     failOnNewDrift: false,
+    badgeMetric: 'drift',
     format: 'text',
     ignorePath: DEFAULT_IGNORE_PATH,
     ignorePatterns: [],

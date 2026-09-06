@@ -4,6 +4,7 @@ const {
   normalizeTokenKind,
   normalizeTokenSourceFormat,
 } = require('../utils/token-sources');
+const { BADGE_METRICS } = require('./render-badge');
 const {
   VALID_FORMATS,
   createDefaultAuditOptions,
@@ -13,12 +14,14 @@ const {
 const HELP = `Usage: rhythmguard audit <dir> [options]
 
 Options:
-  --format <text|json|json-v1|markdown|html|github> Output format (default: text)
+  --format <text|json|json-v1|markdown|html|github|badge> Output format (default: text)
                                  github = GitHub Actions workflow-command annotations
+                                 badge = shields.io endpoint JSON for a README badge
+  --badge-metric <drift|findings> Badge value: drift percent or off-scale count (default: drift)
   --json                         Alias for --format json
   --markdown                     Alias for --format markdown
   --schema                       Print the audit JSON schema and exit
-  --output <file>                Write json, markdown, or html output to a file
+  --output <file>                Write json, markdown, html or badge output to a file
   --config <file>                Load audit config (default: .rhythmguardrc.json when present)
   --no-config                    Ignore .rhythmguardrc.json discovery
   --ignore <pattern>             Exclude root-relative path/glob (repeatable, comma-separated)
@@ -283,6 +286,16 @@ function parseArgs(argv) {
       continue;
     }
 
+    if (arg === '--badge-metric') {
+      parsed.badgeMetric = String(argv[++index] || '').toLowerCase();
+      continue;
+    }
+
+    if (arg.startsWith('--badge-metric=')) {
+      parsed.badgeMetric = arg.slice('--badge-metric='.length).toLowerCase();
+      continue;
+    }
+
     if (arg === '--format') {
       parsed.format = String(argv[++index] || '').toLowerCase();
       continue;
@@ -327,6 +340,10 @@ function parseArgs(argv) {
 
   if (!VALID_FORMATS.has(parsed.format)) {
     throw new Error(`Invalid format "${parsed.format}". Expected text, json, json-v1, markdown, html, or github.`);
+  }
+
+  if (!BADGE_METRICS.has(parsed.badgeMetric)) {
+    throw new Error(`Invalid badge metric "${parsed.badgeMetric}". Expected drift or findings.`);
   }
 
   if (parsed.since && parsed.staged) {

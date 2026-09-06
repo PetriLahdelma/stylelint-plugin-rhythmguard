@@ -13,6 +13,7 @@ const {
   toAuditContractReport,
 } = require('../audit/contract');
 const { renderGithub } = require('../audit/render-github');
+const { renderBadge } = require('../audit/render-badge');
 const { renderHtml } = require('../audit/render-html');
 const { renderMarkdown } = require('../audit/render-markdown');
 const { renderText } = require('../audit/render-text');
@@ -73,6 +74,11 @@ async function run() {
     return;
   }
 
+  if (parsed.format === 'badge') {
+    writeOutput(renderBadge(report, { metric: parsed.badgeMetric }), parsed.outputPath);
+    return;
+  }
+
   if (parsed.format === 'github') {
     writeOutput(renderGithub(report), parsed.outputPath);
     finish(auditFailures);
@@ -108,6 +114,7 @@ module.exports = {
   createAuditReport,
   loadAuditConfig,
   parseArgs,
+  renderBadge,
   renderHtml,
   run,
   toAuditContractReport,
