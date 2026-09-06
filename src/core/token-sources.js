@@ -494,7 +494,16 @@ function splitTopLevel(text, separator) {
   return parts;
 }
 
+// Real token maps nest two or three levels; generated or adversarial input can
+// nest without bound. Past these limits the value is treated like any other
+// expression the evaluator cannot handle: skipped, never guessed, never thrown.
+const MAX_SCSS_MAP_DEPTH = 16;
+const MAX_SCSS_EXPRESSION_DEPTH = 64;
+
 function walkScssMap(raw, pathSegments, visit) {
+  if (pathSegments.length > MAX_SCSS_MAP_DEPTH) {
+    return;
+  }
   const inner = raw.slice(1, -1);
   for (const entry of splitTopLevel(inner, ',')) {
     const pair = splitTopLevel(entry, ':');
@@ -567,7 +576,18 @@ function evaluateScssExpression(expression, resolveVariable, stack) {
     return { number: op === '+' ? left.number + right.number : left.number - right.number, unit: left.unit || right.unit };
   };
 
+  let depth = 0;
   const parsePrimary = () => {
+    if (depth > MAX_SCSS_EXPRESSION_DEPTH) return null;
+    depth += 1;
+    try {
+      return parsePrimaryInner();
+    } finally {
+      depth -= 1;
+    }
+  };
+
+  const parsePrimaryInner = () => {
     const token = next();
     if (!token) return null;
     if (token.type === 'number') return parseNumber(token.raw);
