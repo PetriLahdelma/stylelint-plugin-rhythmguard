@@ -321,8 +321,8 @@
       "sha": "7c9eaba",
       "cssFiles": 13,
       "cleanliness": 99,
-      "drift": 58,
-      "driftPer100Files": 446,
+      "drift": 80,
+      "driftPer100Files": 615,
       "driftDelta": null,
       "scaleReliable": false,
       "scaleReasons": [
@@ -333,113 +333,52 @@
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
-        1.6,
         1.778,
-        3.2,
-        3.555,
         3.556,
-        4.8,
         5.333,
-        6.4,
-        7.11,
         7.111,
-        8,
-        8.888,
         8.889,
-        9.6,
-        10.666,
         10.667,
-        11.2,
-        12.443,
         12.444,
-        12.8,
-        14.221,
         14.222,
-        16,
-        17.776,
         17.778,
-        19.2,
-        21.331,
         21.333,
-        22.4,
-        24.886,
         24.889,
-        25.6,
-        28.442,
         28.444,
-        28.8,
-        31.997,
         32,
-        35.2,
-        35.552,
         35.556,
-        38.4,
-        39.107,
         39.111,
-        42.662,
         42.667,
-        44.8,
-        49.773,
         49.778,
-        51.2,
-        56.883,
         56.889,
-        64,
-        71.104,
         71.111,
-        76.8,
-        85.325,
         85.333,
-        89.6,
-        99.546,
         99.555,
-        102.4,
-        113.766,
         113.778,
-        115.2,
-        127.987,
         128,
-        140.8,
-        142.208,
         142.222,
-        153.6,
-        156.429,
         156.444,
-        166.4,
-        170.65,
         170.666,
-        179.2,
-        184.87,
         184.889,
-        192,
-        199.091,
         199.111,
-        204.8,
-        213.312,
         213.333,
-        227.533,
         227.555,
-        230.4,
-        255.974,
         256,
-        284.416,
         284.444,
-        307.2,
-        341.299,
         341.333
       ],
       "topProperties": [
         [
           "class-string",
-          47
+          54
         ],
         [
           "padding",
-          6
+          10
         ],
         [
           "margin-block-start",
-          2
+          7
         ]
       ],
       "topValues": [
@@ -452,8 +391,8 @@
           8
         ],
         [
-          "2px",
-          5
+          "1em",
+          7
         ]
       ]
     },
@@ -2421,6 +2360,58 @@
       ]
     },
     {
+      "name": "patternfly",
+      "url": "https://github.com/patternfly/patternfly",
+      "sha": "b62f051",
+      "cssFiles": 213,
+      "cleanliness": 94,
+      "drift": 14,
+      "driftPer100Files": 7,
+      "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        16,
+        24,
+        32,
+        48,
+        64,
+        80
+      ],
+      "topProperties": [
+        [
+          "inset-block-start",
+          3
+        ],
+        [
+          "inset-inline-start",
+          2
+        ],
+        [
+          "padding",
+          2
+        ]
+      ],
+      "topValues": [
+        [
+          ".3em",
+          2
+        ],
+        [
+          "6px",
+          2
+        ],
+        [
+          "-12px",
+          1
+        ]
+      ]
+    },
+    {
       "name": "penpot",
       "url": "https://github.com/penpot/penpot",
       "sha": "00e0492",
@@ -2469,58 +2460,6 @@
         [
           "-10px",
           2
-        ]
-      ]
-    },
-    {
-      "name": "patternfly",
-      "url": "https://github.com/patternfly/patternfly",
-      "sha": "b62f051",
-      "cssFiles": 213,
-      "cleanliness": 94,
-      "drift": 13,
-      "driftPer100Files": 6,
-      "driftDelta": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "inset-block-start",
-          3
-        ],
-        [
-          "inset-inline-start",
-          2
-        ],
-        [
-          "padding",
-          2
-        ]
-      ],
-      "topValues": [
-        [
-          ".3em",
-          2
-        ],
-        [
-          "6px",
-          2
-        ],
-        [
-          "-18px",
-          1
         ]
       ]
     },
@@ -3102,9 +3041,9 @@
   ],
   "totals": {
     "cssFiles": 8585,
-    "drift": 7471,
+    "drift": 7494,
     "repos": 57,
-    "fallbackScales": 39,
+    "fallbackScales": 38,
     "unreliableScales": 5
   }
 }

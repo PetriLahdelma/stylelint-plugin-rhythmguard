@@ -9,7 +9,7 @@ const { collectScssTokens, createTokenKindMatcher, parseTokenSources } = require
 const { getScalePreset } = require('../presets/scales');
 
 // Matches the audit default so lint and audit agree on what a spacing token is.
-const DEFAULT_AUTO_TOKEN_PATTERN = '(^--|-)(?<!letter-)(?<!word-)(space|spacing)(-|$)';
+const DEFAULT_AUTO_TOKEN_PATTERN = '(^--|-)(?<!letter-)(?<!word-)(space|spacing|spacer)(-|$)';
 // Tailwind v4 defines one base (`--spacing: 0.25rem`) and derives utilities by multiplying it.
 const TAILWIND_BASE_TOKENS = new Set(['--spacing', '--space']);
 const TAILWIND_SPACING_MULTIPLIERS = [
@@ -191,19 +191,36 @@ function scaleFromDefinitions(definitions, baseFontSize = 16) {
   return scale.length >= MIN_INFERRED_SCALE_LENGTH ? scale : null;
 }
 
-/** Merge Tailwind-style base multiples into a scale when a bare --spacing/--space base is defined. */
+/**
+ * Merge Tailwind-style base multiples into a scale when a bare --spacing/--space
+ * base is defined. Only the first base found is expanded: a project that ships
+ * several theme files with different bases (shadcn/ui) has one active base at a
+ * time, and a union of ladders is a scale nobody designed (issue #89).
+ */
 function expandTailwindBase(scale, baseKeys, baseFontSize) {
-  const bases = pxValuesFromKeys(baseKeys, baseFontSize).filter((value) => value > 0);
-  if (bases.length === 0) {
+  const base = firstPositivePx(baseKeys, baseFontSize);
+  if (base === null) {
     return scale;
   }
   const values = new Set(scale);
-  for (const base of bases) {
-    for (const multiplier of TAILWIND_SPACING_MULTIPLIERS) {
-      values.add(Math.round(base * multiplier * 1000) / 1000);
-    }
+  for (const multiplier of TAILWIND_SPACING_MULTIPLIERS) {
+    values.add(Math.round(base * multiplier * 1000) / 1000);
   }
   return Array.from(values).sort((a, b) => a - b);
+}
+
+function firstPositivePx(keys, baseFontSize) {
+  for (const key of keys) {
+    const parsed = parseLengthToken(String(key));
+    if (!parsed) {
+      continue;
+    }
+    const px = toPx(Math.abs(parsed.number), parsed.unit || 'px', baseFontSize);
+    if (px !== null && Number.isFinite(px) && px > 0) {
+      return px;
+    }
+  }
+  return null;
 }
 
 function rcTokenSources(cwd) {

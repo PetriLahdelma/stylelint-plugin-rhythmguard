@@ -49,7 +49,7 @@ You do not know each consumer's scale, and you should not have to. With `"auto"`
 1. `scaleSources` files, if the consumer or your config lists any
 2. `audit.tokenSources` from the consumer's `.rhythmguardrc.json`
 3. spacing custom properties in the linted stylesheet (`--space-*`, `--spacing-*`, prefixed variants like `--acme-spacing-md`, Tailwind v4's `--spacing` base, values written as `calc(4px * var(--scaling))`)
-4. spacing tokens shipped by installed design-token packages (`tailwindcss`, `@radix-ui/themes`, `@mantine/core`, `@primer/primitives`, `@shopify/polaris-tokens`, `@spectrum-css/tokens`)
+4. spacing tokens shipped by installed design-token packages (`tailwindcss`, `@radix-ui/themes`, `@mantine/core`, `@primer/primitives`, `@shopify/polaris-tokens`, `@spectrum-css/tokens`, `@carbon/layout`)
 5. `theme.spacing` from `tailwindConfigPath`
 6. the `rhythmic-4` preset, announced once in the first report of the file
 

@@ -296,3 +296,66 @@ test('scale "auto" reads Sass variables and maps from the linted SCSS file itsel
   assert.match(texts[1], /"2px"/, 'the component variable $dropdown-spacer must not have put 2px on the scale');
   assert.doesNotMatch(texts[0], /No spacing tokens/);
 });
+
+test('scale "auto" accepts tokens named spacer, as PatternFly names them (issue #85)', async () => {
+  const result = await lintCss({
+    code: [
+      ':root { --pf-t--global--spacer--100: 0.25rem; --pf-t--global--spacer--200: 0.5rem; --pf-t--global--spacer--300: 0.75rem; --pf-t--global--spacer--400: 1rem; --pf-t--global--spacer--500: 1.5rem; }',
+      '.a { margin: 16px; padding: 13px; gap: 20px; }',
+    ].join('\n'),
+    rules: useScaleAuto(),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 2, texts.join('\n'));
+  assert.match(texts[0], /"13px".*nearest: 12px or 16px/);
+  assert.doesNotMatch(texts[0], /using preset/);
+});
+
+test('scale "auto" reads the Carbon spacing scale from an installed @carbon/layout package (issue #87)', async () => {
+  const dir = tempDir('token-packages-carbon');
+  fs.mkdirSync(path.join(dir, 'node_modules', '@carbon', 'layout', 'scss', 'generated'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'package.json'), '{"name":"fixture","dependencies":{"@carbon/layout":"^11.0.0"}}');
+  fs.writeFileSync(path.join(dir, 'node_modules', '@carbon', 'layout', 'package.json'), '{"name":"@carbon/layout","version":"11.58.0"}');
+  fs.writeFileSync(
+    path.join(dir, 'node_modules', '@carbon', 'layout', 'scss', 'generated', '_spacing.scss'),
+    ['$spacing-01: 0.125rem !default;', '$spacing-02: 0.25rem !default;', '$spacing-03: 0.5rem !default;', '$spacing-04: 0.75rem !default;', '$spacing-05: 1rem !default;', '$spacing-06: 1.5rem !default;', '$spacing-07: 2rem !default;', '$spacing: (', '  spacing-01: $spacing-01,', '  spacing-02: $spacing-02,', ');', ''].join('\n'),
+  );
+
+  const previousCwd = process.cwd();
+  process.chdir(dir);
+  let result;
+  try {
+    result = await lintCss({
+      code: '.a { padding: 13px; margin: 24px; gap: 20px; }',
+      rules: useScaleAuto(),
+    });
+  } finally {
+    process.chdir(previousCwd);
+  }
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 2, texts.join('\n'));
+  assert.match(texts[0], /"13px".*nearest: 12px or 16px/);
+  assert.match(texts[1], /"20px".*nearest: 16px or 24px/);
+  assert.doesNotMatch(texts[0], /No spacing tokens/);
+});
+
+test('scale "auto" uses one Tailwind --spacing base when several theme blocks define different bases (issue #89)', async () => {
+  const result = await lintCss({
+    code: [
+      '@theme { --spacing: 0.25rem; }',
+      '@theme { --spacing: 0.2rem; }',
+      '.a { padding: 13px; margin: 12.8px; }',
+    ].join('\n'),
+    rules: useScaleAuto(),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 2, texts.join('\n'));
+  assert.match(texts[0], /"13px".*nearest: 12px or 14px/, 'the 0.25rem ladder, not a union with the 0.2rem ladder');
+  assert.match(texts[1], /"12\.8px"/, '12.8px belongs to the ignored second base and must be reported');
+});
