@@ -14,7 +14,7 @@ jobs:
     if: github.event_name != 'schedule' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v5
         with:
           node-version: 22
@@ -29,7 +29,7 @@ jobs:
     runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
       - uses: actions/setup-node@v5
         with:
           node-version: 22

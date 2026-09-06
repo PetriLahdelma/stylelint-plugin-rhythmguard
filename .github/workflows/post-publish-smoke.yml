@@ -21,7 +21,7 @@ jobs:
     runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     steps:
       - name: Checkout published commit
-        uses: actions/checkout@v5
+        uses: actions/checkout@v7
         with:
           ref: ${{ inputs.ref || github.event.workflow_run.head_sha || github.sha }}
 
