@@ -4,7 +4,7 @@ Hi. I maintain [stylelint-plugin-rhythmguard](https://github.com/PetriLahdelma/s
 
 **What was run.** `npx rhythmguard audit . --scale auto` at `3d30bf1` over `src/material`. Hairlines of one pixel or less, percentages, and generated or test paths are excluded. Anyone can reproduce it in a checkout of that commit.
 
-**What it found.** The audit could not find a spacing token set here (it looks for `--space-*` / `--spacing-*` custom properties, Sass `$spacer` / `$spacing-*` variables and maps, or a Tailwind `--spacing` base), so it measured against a default 4px scale and reported 30 literal values off that scale. That number says more about my token discovery than about your CSS, so I am not going to quote it.
+**What it found.** The audit could not find a spacing token set here (it looks for `--space-*` / `--spacing-*` custom properties, Sass `$spacer` / `$spacing-*` variables and maps, or a Tailwind `--spacing` base), so it measured against a default 4px scale instead. Against that default it reported 30 literal values, a number that says more about my token discovery than about your CSS, so I am not treating it as a finding.
 
 **The ask.** If you can point me at where the spacing scale is defined (a token file, a Sass map, a package), I will teach the tool to read it, re-run the audit on the real scale, and post the result here. If spacing is intentionally not on a scale, saying so is just as useful and I will mark the row that way.
 
