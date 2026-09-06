@@ -61,3 +61,4 @@ Every audit issue opened from the benchmark, and every response, so the pattern 
 | hashicorp-design-system | 2026-09-06 | skipped: blank issues disabled; use their template by hand |  |
 | fundamental-styles | 2026-09-06 | opened | https://github.com/SAP/fundamental-styles/issues/6390 |
 | ui5-webcomponents | 2026-09-06 | opened | https://github.com/UI5/webcomponents/issues/14027 |
+| govuk-frontend | 2026-09-06 | follow-up: tool now reads $govuk-spacing-points; 21 findings against their own scale posted | https://github.com/alphagov/govuk-frontend/issues/7401#issuecomment-5558916556 |
