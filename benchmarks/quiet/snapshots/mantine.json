@@ -5,8 +5,6 @@
     "source": "scanned-css",
     "values": [
       0,
-      1,
-      2,
       10,
       12,
       16,
@@ -16,17 +14,21 @@
     ]
   },
   "summary": {
-    "total": 30,
-    "drift": 30,
+    "total": 35,
+    "drift": 35,
     "falsePositives": 0
   },
   "findings": [
+    "packages/@mantine/core/src/components/Badge/Badge.module.css:72:2px:drift",
     "packages/@mantine/core/src/components/Blockquote/Blockquote.module.css:10:38px:drift",
     "packages/@mantine/core/src/components/Checkbox/Checkbox.module.css:107:5px:drift",
     "packages/@mantine/core/src/components/Checkbox/CheckboxIndicator/CheckboxIndicator.module.css:93:5px:drift",
+    "packages/@mantine/core/src/components/Code/Code.module.css:4:2px:drift",
     "packages/@mantine/core/src/components/ColorInput/ColorInput.module.css:34:8px:drift",
     "packages/@mantine/core/src/components/ColorPicker/ColorPicker.module.css:142:6px:drift",
+    "packages/@mantine/core/src/components/ColorPicker/ColorPicker.module.css:75:2px:drift",
     "packages/@mantine/core/src/components/ColorPicker/ColorPicker.module.css:82:5px:drift",
+    "packages/@mantine/core/src/components/ColorPicker/ColorPicker.module.css:83:-2px:drift",
     "packages/@mantine/core/src/components/Combobox/Combobox.module.css:203:8px:drift",
     "packages/@mantine/core/src/components/Kbd/Kbd.module.css:18:0.12em:drift",
     "packages/@mantine/core/src/components/Kbd/Kbd.module.css:18:0.45em:drift",
@@ -37,6 +39,7 @@
     "packages/@mantine/core/src/components/Menu/Menu.module.css:56:5px:drift",
     "packages/@mantine/core/src/components/NavLink/NavLink.module.css:9:8px:drift",
     "packages/@mantine/core/src/components/Notification/Notification.module.css:24:4px:drift",
+    "packages/@mantine/core/src/components/Notification/Notification.module.css:78:2px:drift",
     "packages/@mantine/core/src/components/Pill/Pill.module.css:120:0.1em:drift",
     "packages/@mantine/core/src/components/Pill/Pill.module.css:121:0.3em:drift",
     "packages/@mantine/core/src/components/Pill/Pill.module.css:20:0.8em:drift",

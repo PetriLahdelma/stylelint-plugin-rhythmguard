@@ -98,9 +98,19 @@ export interface AuditBaselineComparison {
 
 export type AuditScaleSource = "default" | "explicit" | "fallback" | "scanned-css" | "token-package" | "token-sources";
 
+export interface AuditScaleRejected {
+  files?: string[];
+  /** Why the inferred set was not accepted as a scale, for example "no common step". */
+  reasons: string[];
+  source: AuditScaleSource;
+  values: Array<number | string>;
+}
+
 export interface AuditScale {
   /** Files the scale was derived from (token sources or scanned stylesheets). Empty for explicit, default and fallback. */
   files: string[];
+  /** Present when `source` is "fallback" because an inferred scale failed the plausibility check. */
+  rejected?: AuditScaleRejected | null;
   source: AuditScaleSource;
   tokenCount: number;
   values: Array<number | string>;
@@ -139,6 +149,7 @@ export interface AuditContractReport {
       files: string[];
       offScaleProperties?: Record<string, number>;
       offScaleValues?: unknown;
+      rejected: AuditScaleRejected | null;
       source: AuditScaleSource;
       tokenOpportunities?: unknown;
       values: Array<number | string> | null;

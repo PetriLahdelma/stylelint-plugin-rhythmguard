@@ -830,3 +830,38 @@ test('audit CLI --scale auto reports token-package provenance when the scale com
   assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12, 16]);
   assert.deepEqual(report.contracts.scale.files, ['node_modules/@radix-ui/themes/tokens.css']);
 });
+
+test('audit CLI --scale auto rejects an incoherent inferred scale, falls back, and reports why (issue #88)', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-reject-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'chip.css'), ':root { --chip-spacing: 3px; --avatar-spacing: 2px; --badge-spacing: 5px; --modal-spacing: 25px; }\n.chip { padding: 13px; }\n');
+
+  const json = runAudit(fixtureDir, '--scale', 'auto', '--format', 'json');
+  assert.equal(json.status, 0, json.stderr);
+  const report = JSON.parse(json.stdout);
+  assert.equal(report.contracts.scale.source, 'fallback');
+  assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12, 16, 24, 32]);
+  assert.equal(report.contracts.scale.rejected.source, 'scanned-css');
+  assert.deepEqual(report.contracts.scale.rejected.reasons, ['no common step', 'sources are component files']);
+  assert.deepEqual(report.contracts.scale.rejected.values, [0, 2, 3, 5, 25]);
+
+  const markdown = runAudit(fixtureDir, '--scale', 'auto', '--format', 'markdown');
+  assert.match(markdown.stdout, /\| Scale source \| fallback \(scanned-css rejected: no common step, sources are component files\) \|/);
+});
+
+test('audit CLI --scale auto does not read a selector like .grid--auto-spacing:first-child as a token declaration', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-selector-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'grid.css'), [
+    ':root { --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; }',
+    '.grid--auto-spacing:first-child,',
+    '.grid--l { padding: 13px; }',
+    '',
+  ].join('\n'));
+
+  const result = runAudit(fixtureDir, '--scale', 'auto', '--format', 'json');
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.contracts.scale.source, 'scanned-css');
+  assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12, 16]);
+});

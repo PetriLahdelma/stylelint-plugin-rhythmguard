@@ -18,7 +18,8 @@ const {
 } = require('./config');
 const { buildReport, collectTokenDefinitions } = require('./contract');
 const { DEFAULT_SCALE, formatPath } = require('./shared');
-const { discoverTokenPackages, scaleFromDefinitions } = require('../utils/scale-inference');
+const {
+  assessScale, discoverTokenPackages, scaleFromDefinitions } = require('../utils/scale-inference');
 const {
   assertDirectory,
   collectCssFindings,
@@ -129,6 +130,7 @@ function resolveAuditScale({ baseFontSize, cssFiles, requested, tokenSourceResul
     }
   }
 
+  let rejected = null;
   const definitions = new Map();
   const matchesKind = createTokenKindMatcher('spacing');
   for (const filePath of cssFiles) {
@@ -155,12 +157,17 @@ function resolveAuditScale({ baseFontSize, cssFiles, requested, tokenSourceResul
           files.add(file);
         }
       }
-      return {
-        files: Array.from(files).sort(),
-        source: 'scanned-css',
-        tokenCount: definitions.size,
-        values,
-      };
+      const sortedFiles = Array.from(files).sort();
+      const assessment = assessScale({ files: sortedFiles, source: 'scanned-css', values });
+      if (assessment.plausible) {
+        return {
+          files: sortedFiles,
+          source: 'scanned-css',
+          tokenCount: definitions.size,
+          values,
+        };
+      }
+      rejected = { files: sortedFiles, reasons: assessment.reasons, source: 'scanned-css', values };
     }
   }
 
@@ -178,7 +185,7 @@ function resolveAuditScale({ baseFontSize, cssFiles, requested, tokenSourceResul
     }
   }
 
-  return { files: [], source: 'fallback', tokenCount: 0, values: DEFAULT_SCALE };
+  return { files: [], ...(rejected ? { rejected } : {}), source: 'fallback', tokenCount: 0, values: DEFAULT_SCALE };
 }
 
 function normalizeCreateAuditOptions(options = {}) {

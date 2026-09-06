@@ -359,3 +359,37 @@ test('scale "auto" uses one Tailwind --spacing base when several theme blocks de
   assert.match(texts[0], /"13px".*nearest: 12px or 14px/, 'the 0.25rem ladder, not a union with the 0.2rem ladder');
   assert.match(texts[1], /"12\.8px"/, '12.8px belongs to the ignored second base and must be reported');
 });
+
+test('scale "auto" rejects stylesheet tokens that do not form a coherent scale and says why (issue #88)', async () => {
+  const result = await lintCss({
+    code: [
+      ':root { --chip-spacing: 3px; --avatar-spacing: 2px; --badge-spacing: 5px; --modal-spacing: 25px; }',
+      '.a { margin: 8px; padding: 13px; }',
+    ].join('\n'),
+    rules: useScaleAuto(),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 1, texts.join('\n'));
+  assert.match(texts[0], /"13px".*nearest: 12px or 16px/, 'the preset is used, not the incoherent tokens');
+  assert.match(texts[0], /do not form a spacing scale \(no common step\); using preset "rhythmic-4"/);
+});
+
+test('assessScale accepts ladders with a common step and rejects fractional or stepless sets', () => {
+  const { assessScale } = require('../src/utils/scale-inference');
+  const ok = (scale) => assessScale(scale).plausible;
+
+  assert.equal(ok({ source: 'stylesheet', values: [0, 4, 8, 12, 16, 24, 32] }), true);
+  assert.equal(ok({ source: 'stylesheet', values: [0, 5, 10, 15, 20, 25, 30, 40, 50, 60] }), true, 'a five-based ladder is a scale too');
+  assert.equal(ok({ source: 'stylesheet', values: [0, 2, 3, 5, 6, 25] }), false);
+  assert.deepEqual(assessScale({ source: 'stylesheet', values: [0, 2, 3, 5, 6, 25] }).reasons, ['no common step']);
+  assert.equal(ok({ source: 'stylesheet', values: [0, 0.4, 0.7, 1, 1.4, 2] }), false);
+  assert.equal(ok({ source: 'stylesheet', values: [0, 4, 8] }), false, 'fewer than three steps');
+  assert.equal(ok({ source: 'scanned-css', values: [0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 22, 23, 24, 25, 26, 28, 29, 30, 31, 32, 34, 36, 40, 48, 50, 52, 60, 64, 68, 80, 100, 120, 132, 280], files: ['a/variables.scss'] }), false, 'every integer is not a scale even when most are even');
+  assert.equal(ok({ source: 'stylesheet', values: [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256, 288, 320, 384] }), true, 'a long four-based ladder such as an expanded Tailwind base is fine');
+  assert.equal(ok({ source: 'scaleSources', values: [0, 2, 3, 5, 6, 25] }), true, 'explicit sources are trusted');
+  assert.equal(ok({ source: 'fallback', values: [0, 4, 8, 12] }), false, 'fallback is never the project scale');
+  assert.equal(ok({ source: 'scanned-css', values: [0, 1, 2, 10, 12, 16, 20, 22, 32], files: ['a/Avatar.module.css', 'a/Chip.module.css', 'a/default-css-variables.css'] }), false, 'mostly component files and an imperfect ladder');
+  assert.equal(ok({ source: 'scanned-css', values: [0, 2, 4, 6, 8, 12, 16, 24, 32, 64], files: ['a/_primitives.scss', 'a/markdown.scss', 'a/markdown.scss'] }), true, 'a perfect ladder is trusted whatever the file names');
+});

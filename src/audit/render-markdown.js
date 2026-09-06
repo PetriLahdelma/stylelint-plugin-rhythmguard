@@ -4,6 +4,9 @@ const { sortCountMap } = require('./contract');
 const { escapeMarkdown } = require('./render-utils');
 
 function describeScaleSource(scale) {
+  if (scale.rejected) {
+    return `${scale.source} (${scale.rejected.source} rejected: ${scale.rejected.reasons.join(', ')})`;
+  }
   return scale.files.length > 0
     ? `${scale.source} (${scale.files.join(', ')})`
     : scale.source;

@@ -28,7 +28,8 @@ function renderText(report) {
   if (report.scale) {
     lines.push(`  Scale                    ${report.scale.values.join(', ')}`);
     const files = report.scale.files.length > 0 ? ` (${report.scale.files.join(', ')})` : '';
-    lines.push(`  Scale source             ${report.scale.source}${files}`);
+    const rejected = report.scale.rejected ? ` (${report.scale.rejected.source} rejected: ${report.scale.rejected.reasons.join(', ')})` : '';
+    lines.push(`  Scale source             ${report.scale.source}${files}${rejected}`);
   }
   lines.push('');
 

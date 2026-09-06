@@ -34,6 +34,8 @@ Scan paths are scoped to the directory argument. Common generated directories ar
 
 `--scale 0,4,8,12,16` sets the scale explicitly. `--scale auto` infers one project-level scale and reports where it came from: external `--token-source` files first, then spacing custom properties (`--space-*`, `--spacing-*`) and Sass variables found across the scanned CSS and SCSS, then spacing tokens shipped by installed design-token packages (`source: "token-package"`), then the default `rhythmic-4` values. The JSON contract carries it under `contracts.scale.values`, `contracts.scale.source` and `contracts.scale.files`; text and Markdown output print the scale and its source. A shared config that enables `scale: "auto"` on the rules and an audit run with `--scale auto` therefore agree on the scale.
 
+An inferred scale is only used when it looks like one (at least three steps, mostly whole pixels, a common step, and not mostly from component files). When the scan finds tokens that fail that check, the audit falls back to the default and reports the rejection: `contracts.scale.rejected` carries the source, the values and the reasons (for example `no common step`), and the text and Markdown output print `fallback (scanned-css rejected: no common step)` as the scale source. The fix on the project side is a `tokenSources` entry pointing at the real token file, or a tighter token pattern.
+
 ## SCSS
 
 `.scss` files are scanned alongside `.css` when `postcss-scss` can be resolved from the audited project or from the plugin. Install it as a dev dependency to opt in:

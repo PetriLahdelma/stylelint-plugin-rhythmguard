@@ -307,6 +307,7 @@ function resolveAutoScale({
     tokenRegex = new RegExp(DEFAULT_AUTO_TOKEN_PATTERN);
   }
 
+  let rejected = null;
   if (root) {
     const stylesheetMap = buildEffectiveTokenMap({
       options: { baseFontSize, tokenMap: {}, tokenMapFromCssCustomProperties: true },
@@ -315,7 +316,11 @@ function resolveAutoScale({
     });
     const scale = scaleFromTokenMap(stylesheetMap, baseFontSize, sassValuesFromRoot(root));
     if (scale) {
-      return { files: [], scale, source: 'stylesheet', tokenCount: scale.length - 1, warnings: [] };
+      const assessment = assessScale({ source: 'stylesheet', values: scale });
+      if (assessment.plausible) {
+        return { files: [], scale, source: 'stylesheet', tokenCount: scale.length - 1, warnings: [] };
+      }
+      rejected = { reasons: assessment.reasons, source: 'stylesheet', values: scale };
     }
   }
 
@@ -341,9 +346,56 @@ function resolveAutoScale({
     return { source: 'token-package', ...fromPackages };
   }
 
+  return fallbackInference(rejected);
+}
+
+const TRUSTED_SCALE_SOURCES = new Set(['scaleSources', 'rhythmguardrc', 'token-sources', 'tailwind', 'token-package', 'explicit', 'default']);
+const TOKEN_FILE_PATTERN = /(token|variable|spacing|space|theme|primitive|global|scale|layout)/i;
+const LADDER_STEPS = [2, 3, 4, 5, 8];
+const MIN_ASSESSED_STEPS = 3;
+// A scale with more steps than this must be a near-perfect ladder; otherwise it
+// is a list of every value a codebase happens to use (Semi Design: 42 steps).
+const MAX_LOOSE_STEPS = 24;
+
+/**
+ * Inference can pick up component-local variables (`--chip-spacing: 3px`) and
+ * assemble a "scale" nobody designed. Explicit sources are trusted. An inferred
+ * scale is plausible when it has at least three positive steps, is mostly whole
+ * pixels, mostly shares a common step (2, 3, 4, 5 or 8), and, past two dozen
+ * steps, is a near-perfect ladder. When the source
+ * files are known, a set that comes mostly from component files must be a
+ * near-perfect ladder to pass. Fallback is never the project's scale.
+ */
+function assessScale({ files = null, source, values = [] } = {}) {
+  if (source === 'fallback') {
+    return { plausible: false, reasons: ['fallback'] };
+  }
+  if (TRUSTED_SCALE_SOURCES.has(source)) {
+    return { plausible: true, reasons: [] };
+  }
+  const positives = values.map(Number).filter((value) => Number.isFinite(value) && value > 0);
+  const integers = positives.filter(Number.isInteger);
+  const integerShare = positives.length ? integers.length / positives.length : 0;
+  const coherence = positives.length
+    ? Math.max(...LADDER_STEPS.map((step) => integers.filter((value) => value % step === 0).length / positives.length))
+    : 0;
+  const reasons = [];
+  if (positives.length < MIN_ASSESSED_STEPS) reasons.push('fewer than three steps');
+  if (integerShare < 0.8) reasons.push('fractional values');
+  if (coherence < 0.7) reasons.push('no common step');
+  if (positives.length > MAX_LOOSE_STEPS && coherence < 0.9) reasons.push('too many steps');
+  if (Array.isArray(files) && files.length > 0) {
+    const tokenFileShare = files.filter((file) => TOKEN_FILE_PATTERN.test(file)).length / files.length;
+    if (tokenFileShare < 0.5 && coherence < 0.9) reasons.push('sources are component files');
+  }
+  return { plausible: reasons.length === 0, reasons };
+}
+
+function fallbackInference(rejected = null) {
   return {
     files: [],
     preset: FALLBACK_PRESET,
+    ...(rejected ? { rejected } : {}),
     scale: getScalePreset(FALLBACK_PRESET),
     source: 'fallback',
     tokenCount: 0,
@@ -355,12 +407,16 @@ function autoScaleFallbackNote(inference) {
   if (!inference || inference.source !== 'fallback') {
     return '';
   }
+  if (inference.rejected) {
+    return `The spacing tokens found do not form a spacing scale (${inference.rejected.reasons.join(', ')}); using preset "${inference.preset}".`;
+  }
 
   return `No spacing tokens were found for scale "auto"; using preset "${inference.preset}".`;
 }
 
 module.exports = {
   DEFAULT_AUTO_TOKEN_PATTERN,
+  assessScale,
   autoScaleFallbackNote,
   discoverTokenPackages,
   resolveAutoScale,
