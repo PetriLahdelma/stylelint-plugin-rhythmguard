@@ -132,3 +132,15 @@ test('collectCssTokens records whether a custom property is declared at root lev
     '$spacer': 'root',
   });
 });
+
+test('collectScssTokens fails predictably on adversarial nesting instead of overflowing the stack', () => {
+  const deepMap = `$spacing-map: ${'(a: '.repeat(2000)}4px${')'.repeat(2000)};`;
+  assert.doesNotThrow(() => collectScssTokens(deepMap, spacing));
+
+  const deepExpression = `$spacing-1: ${'('.repeat(5000)}4px${')'.repeat(5000)};`;
+  assert.doesNotThrow(() => collectScssTokens(deepExpression, spacing));
+
+  const shallow = byName(collectScssTokens('$spacing-1: ((4px));\n$spacing-map: (a: (b: (c: 8px)));', spacing));
+  assert.equal(shallow['$spacing-1'], '4px', 'ordinary nesting still evaluates');
+  assert.equal(shallow['$spacing-map.a.b.c'], '8px');
+});
