@@ -1,0 +1,37 @@
+{
+  "name": "patternfly",
+  "sha": "b62f051",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 13,
+    "drift": 13,
+    "falsePositives": 0
+  },
+  "findings": [
+    "src/patternfly/assets/fontawesome/_bordered-pulled.scss:19:.3em:drift",
+    "src/patternfly/assets/fontawesome/_bordered-pulled.scss:20:.3em:drift",
+    "src/patternfly/assets/fontawesome/_bordered-pulled.scss:8:.15em:drift",
+    "src/patternfly/assets/fontawesome/_bordered-pulled.scss:8:.2em:drift",
+    "src/patternfly/components/Button/examples/Button.css:2:6px:drift",
+    "src/patternfly/components/Button/examples/Button.css:3:6px:drift",
+    "src/patternfly/components/Nav/examples/Navigation.css:12:151px:drift",
+    "src/patternfly/components/Nav/examples/Navigation.css:13:265px:drift",
+    "src/patternfly/components/Skeleton/examples/Skeleton.css:12:2px:drift",
+    "src/patternfly/components/Table/examples/Table.css:8:440px:drift",
+    "src/patternfly/components/Table/examples/Table.css:9:-18px:drift",
+    "src/patternfly/components/TextInputGroup/examples/TextInputGroup.css:8:40px:drift",
+    "src/patternfly/demos/Card/examples/Card.css:2:180px:drift"
+  ],
+  "commit": "b62f0515d25284b5cb42ecb59379b12560657892"
+}

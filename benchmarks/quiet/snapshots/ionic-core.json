@@ -1,0 +1,32 @@
+{
+  "name": "ionic-core",
+  "sha": "5874331",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 8,
+    "drift": 8,
+    "falsePositives": 0
+  },
+  "findings": [
+    "core/src/components/header/header.ios.scss:86:13px:drift",
+    "core/src/components/progress-bar/progress-bar.scss:269:-10px:drift",
+    "core/src/components/tab-button/tab-button.ios.scss:76:2px:drift",
+    "core/src/components/tab-button/tab-button.ios.scss:77:2px:drift",
+    "core/src/components/tab-button/tab-button.ios.scss:89:2px:drift",
+    "core/src/components/textarea/textarea.ios.scss:45:2px:drift",
+    "core/src/components/textarea/textarea.ios.scss:54:10px:drift",
+    "core/src/components/textarea/textarea.md.scss:106:7px:drift"
+  ],
+  "commit": "5874331e96cbad080c41220a740a8fffd1a9699b"
+}

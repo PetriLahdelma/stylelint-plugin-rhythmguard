@@ -1,0 +1,54 @@
+{
+  "name": "angular-material",
+  "sha": "3d30bf1",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 30,
+    "drift": 30,
+    "falsePositives": 0
+  },
+  "findings": [
+    "src/material/button/fab.scss:182:20px:drift",
+    "src/material/button/fab.scss:183:20px:drift",
+    "src/material/core/typography/_typography.scss:246:56px:drift",
+    "src/material/core/typography/_typography.scss:253:64px:drift",
+    "src/material/core/typography/_typography.scss:260:64px:drift",
+    "src/material/core/typography/_typography.scss:267:64px:drift",
+    "src/material/datepicker/_datepicker-legacy-compat.scss:46:-2px:drift",
+    "src/material/dialog/dialog.scss:133:13px:drift",
+    "src/material/dialog/dialog.scss:133:6px:drift",
+    "src/material/dialog/dialog.scss:189:20px:drift",
+    "src/material/dialog/dialog.scss:195:20px:drift",
+    "src/material/expansion/expansion-panel-header.scss:152:3px:drift",
+    "src/material/form-field/_form-field-subscript.scss:11:-5px:drift",
+    "src/material/form-field/_mdc-text-field-structure.scss:310:-37.25px:drift",
+    "src/material/form-field/_mdc-text-field-structure.scss:324:-34.75px:drift",
+    "src/material/form-field/_mdc-text-field-structure.scss:479:2px:drift",
+    "src/material/form-field/_user-agent-overrides.scss:21:-2px:drift",
+    "src/material/list/_list-inherited-structure.scss:220:-20px:drift",
+    "src/material/list/_list-inherited-structure.scss:293:-20px:drift",
+    "src/material/list/_list-inherited-structure.scss:361:28px:drift",
+    "src/material/list/_list-inherited-structure.scss:366:28px:drift",
+    "src/material/list/list.scss:103:72px:drift",
+    "src/material/list/list.scss:106:72px:drift",
+    "src/material/progress-bar/progress-bar.scss:309:-10px:drift",
+    "src/material/snack-bar/snack-bar-container.scss:103:14px:drift",
+    "src/material/snack-bar/snack-bar-container.scss:103:14px:drift",
+    "src/material/sort/sort-header.scss:133:6px:drift",
+    "src/material/sort/sort-header.scss:138:6px:drift",
+    "src/material/tabs/tab-header.scss:18:5px:drift",
+    "src/material/tabs/tab-nav-bar/tab-link.scss:16:5px:drift"
+  ],
+  "commit": "3d30bf1b4301f494cfbf5defed8e268eb02ec35b"
+}

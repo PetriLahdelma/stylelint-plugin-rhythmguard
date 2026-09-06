@@ -172,6 +172,311 @@
         "packages/components/src"
       ],
       "notes": "SCSS. Consumes stylelint-plugin-logical-css at repo level."
+    },
+    {
+      "name": "govuk-frontend",
+      "url": "https://github.com/alphagov/govuk-frontend.git",
+      "paths": [
+        "packages/govuk-frontend/src/govuk"
+      ],
+      "notes": "GOV.UK Frontend: Sass with govuk-spacing() functions; expects partial visibility."
+    },
+    {
+      "name": "nhsuk-frontend",
+      "url": "https://github.com/nhsuk/nhsuk-frontend.git",
+      "paths": [
+        "packages/nhsuk-frontend/src",
+        "packages/nhsuk-frontend/scss"
+      ],
+      "notes": "NHS.UK frontend: Sass spacing functions derived from GOV.UK."
+    },
+    {
+      "name": "element-plus",
+      "url": "https://github.com/element-plus/element-plus.git",
+      "paths": [
+        "packages/theme-chalk/src"
+      ],
+      "notes": "Element Plus theme-chalk: SCSS with getCssVar() mixins."
+    },
+    {
+      "name": "foundation-sites",
+      "url": "https://github.com/foundation/foundation-sites.git",
+      "paths": [
+        "scss"
+      ],
+      "notes": "Foundation for Sites: rem-calc() based Sass."
+    },
+    {
+      "name": "tabler",
+      "url": "https://github.com/tabler/tabler.git",
+      "paths": [
+        "core/scss",
+        "src/scss"
+      ],
+      "notes": "Tabler: Bootstrap-derived SCSS."
+    },
+    {
+      "name": "coreui",
+      "url": "https://github.com/coreui/coreui.git",
+      "paths": [
+        "scss"
+      ],
+      "notes": "CoreUI: Bootstrap-derived SCSS with $spacer."
+    },
+    {
+      "name": "patternfly",
+      "url": "https://github.com/patternfly/patternfly.git",
+      "paths": [
+        "src/patternfly"
+      ],
+      "notes": "PatternFly: SCSS with --pf-t--global--spacer--* tokens."
+    },
+    {
+      "name": "cloudscape-components",
+      "url": "https://github.com/cloudscape-design/components.git",
+      "paths": [
+        "src"
+      ],
+      "notes": "AWS Cloudscape: SCSS modules with awsui.$space-* tokens; test files excluded by noise rules."
+    },
+    {
+      "name": "angular-material",
+      "url": "https://github.com/angular/components.git",
+      "paths": [
+        "src/material"
+      ],
+      "notes": "Angular Material: SCSS with token maps."
+    },
+    {
+      "name": "ionic-core",
+      "url": "https://github.com/ionic-team/ionic-framework.git",
+      "paths": [
+        "core/src/components"
+      ],
+      "notes": "Ionic core components: SCSS per component."
+    },
+    {
+      "name": "daisyui",
+      "url": "https://github.com/saadeghi/daisyui.git",
+      "paths": [
+        "packages/daisyui/src",
+        "src"
+      ],
+      "notes": "daisyUI: plain CSS component library on Tailwind."
+    },
+    {
+      "name": "mozilla-protocol",
+      "url": "https://github.com/mozilla/protocol.git",
+      "paths": [
+        "assets/sass"
+      ],
+      "notes": "Mozilla Protocol: SCSS with $spacing-* variables."
+    },
+    {
+      "name": "tachyons",
+      "url": "https://github.com/tachyons-css/tachyons.git",
+      "paths": [
+        "src"
+      ],
+      "notes": "Tachyons: utility CSS on a fixed spacing scale."
+    },
+    {
+      "name": "pure",
+      "url": "https://github.com/pure-css/pure.git",
+      "paths": [
+        "src"
+      ],
+      "notes": "Pure CSS: small plain-CSS modules."
+    },
+    {
+      "name": "forem",
+      "url": "https://github.com/forem/forem.git",
+      "paths": [
+        "app/assets/stylesheets"
+      ],
+      "notes": "Forem (dev.to): SCSS with --su-* spacing tokens."
+    },
+    {
+      "name": "discourse",
+      "url": "https://github.com/discourse/discourse.git",
+      "paths": [
+        "app/assets/stylesheets"
+      ],
+      "notes": "Discourse: large SCSS codebase."
+    },
+    {
+      "name": "ghost-admin",
+      "url": "https://github.com/TryGhost/Ghost.git",
+      "paths": [
+        "apps/ember-admin/app/styles",
+        "apps/shade/src"
+      ],
+      "notes": "Ghost admin (Ember) plain CSS plus the Shade design system (Tailwind class strings)."
+    },
+    {
+      "name": "excalidraw",
+      "url": "https://github.com/excalidraw/excalidraw.git",
+      "paths": [
+        "packages/excalidraw/css",
+        "packages/excalidraw/components"
+      ],
+      "notes": "Excalidraw: SCSS with --space-factor tokens."
+    },
+    {
+      "name": "docusaurus-theme-classic",
+      "url": "https://github.com/facebook/docusaurus.git",
+      "paths": [
+        "packages/docusaurus-theme-classic/src"
+      ],
+      "notes": "Docusaurus classic theme: CSS modules with --ifm-* tokens."
+    },
+    {
+      "name": "metabase",
+      "url": "https://github.com/metabase/metabase.git",
+      "paths": [
+        "frontend/src/metabase/css",
+        "frontend/src/metabase/ui"
+      ],
+      "notes": "Metabase: CSS modules and Mantine-based UI."
+    },
+    {
+      "name": "mattermost-webapp",
+      "url": "https://github.com/mattermost/mattermost.git",
+      "paths": [
+        "webapp/channels/src/sass"
+      ],
+      "notes": "Mattermost web app: SCSS."
+    },
+    {
+      "name": "zulip",
+      "url": "https://github.com/zulip/zulip.git",
+      "paths": [
+        "web/styles"
+      ],
+      "notes": "Zulip web: plain CSS with PostCSS."
+    },
+    {
+      "name": "directus-app",
+      "url": "https://github.com/directus/directus.git",
+      "paths": [
+        "app/src/styles"
+      ],
+      "notes": "Directus app: SCSS design tokens."
+    },
+    {
+      "name": "n8n-design-system",
+      "url": "https://github.com/n8n-io/n8n.git",
+      "paths": [
+        "packages/frontend/@n8n/design-system/src",
+        "packages/design-system/src"
+      ],
+      "notes": "n8n design system: SCSS with --spacing-* tokens."
+    },
+    {
+      "name": "semi-design",
+      "url": "https://github.com/DouyinFE/semi-design.git",
+      "paths": [
+        "packages/semi-foundation"
+      ],
+      "notes": "Semi Design: SCSS per component with $spacing-* variables."
+    },
+    {
+      "name": "vitepress-theme",
+      "url": "https://github.com/vuejs/vitepress.git",
+      "paths": [
+        "src/client/theme-default/styles"
+      ],
+      "notes": "VitePress default theme: plain CSS with --vp-* tokens."
+    },
+    {
+      "name": "starlight",
+      "url": "https://github.com/withastro/starlight.git",
+      "paths": [
+        "packages/starlight/src/style"
+      ],
+      "notes": "Astro Starlight: plain CSS with --sl-* tokens."
+    },
+    {
+      "name": "utrecht",
+      "url": "https://github.com/nl-design-system/utrecht.git",
+      "paths": [
+        "packages"
+      ],
+      "notes": "NL Design System Utrecht: plain CSS with --utrecht-* tokens."
+    },
+    {
+      "name": "grafana",
+      "url": "https://github.com/grafana/grafana.git",
+      "paths": [
+        "public/sass"
+      ],
+      "notes": "Grafana: legacy SCSS."
+    },
+    {
+      "name": "calcom",
+      "url": "https://github.com/calcom/cal.com.git",
+      "paths": [
+        "apps/web/styles",
+        "packages/ui/components"
+      ],
+      "notes": "Cal.com: Tailwind class strings with a small CSS layer."
+    },
+    {
+      "name": "skeleton",
+      "url": "https://github.com/skeletonlabs/skeleton.git",
+      "paths": [
+        "packages/skeleton/src"
+      ],
+      "notes": "Skeleton: Tailwind-based CSS with --spacing tokens."
+    },
+    {
+      "name": "adminlte",
+      "url": "https://github.com/ColorlibHQ/AdminLTE.git",
+      "paths": [
+        "src/scss"
+      ],
+      "notes": "AdminLTE: Bootstrap-derived SCSS."
+    },
+    {
+      "name": "vscode-base-ui",
+      "url": "https://github.com/microsoft/vscode.git",
+      "paths": [
+        "src/vs/base/browser/ui"
+      ],
+      "notes": "VS Code base UI widgets: plain CSS."
+    },
+    {
+      "name": "materialize",
+      "url": "https://github.com/materializecss/materialize.git",
+      "paths": [
+        "sass"
+      ],
+      "notes": "Materialize (community fork): SCSS."
+    },
+    {
+      "name": "hashicorp-design-system",
+      "url": "https://github.com/hashicorp/design-system.git",
+      "paths": [
+        "packages/components/src/styles",
+        "packages/tokens/dist/products/css"
+      ],
+      "notes": "HashiCorp Design System: SCSS with --token-* custom properties from the tokens package."
+    },
+    {
+      "name": "fundamental-styles",
+      "url": "https://github.com/SAP/fundamental-styles.git",
+      "paths": [
+        "packages/styles/src"
+      ],
+      "notes": "SAP Fundamental Styles (Fiori): SCSS with --sapContent_* and --fdSpacing tokens."
+    },
+    {
+      "name": "ui5-webcomponents",
+      "url": "https://github.com/SAP/ui5-webcomponents.git",
+      "paths": [
+        "packages/main/src/themes"
+      ],
+      "notes": "UI5 Web Components: CSS per component with --sapUiSpacing tokens; base theme parameters in a separate package."
     }
   ]
 }

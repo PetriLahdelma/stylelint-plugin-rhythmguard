@@ -1,0 +1,61 @@
+{
+  "name": "foundation-sites",
+  "sha": "337be7a",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 37,
+    "drift": 34,
+    "falsePositives": 3
+  },
+  "findings": [
+    "docs/assets/scss/_accordion-content.scss:4:3rem:drift",
+    "docs/assets/scss/_accordion-content.scss:5:3rem:drift",
+    "docs/assets/scss/_component-list.scss:60:0.85rem:drift",
+    "docs/assets/scss/_course-callout.scss:28:-6px:drift",
+    "docs/assets/scss/_course-callout.scss:42:30px:drift",
+    "docs/assets/scss/_course-callout.scss:45:30px:drift",
+    "docs/assets/scss/_course-callout.scss:56:30px:drift",
+    "docs/assets/scss/_course-callout.scss:5:10px:drift",
+    "docs/assets/scss/_course-callout.scss:60:30px:drift",
+    "docs/assets/scss/_docs-footer.scss:108:2.5rem:drift",
+    "docs/assets/scss/_docs-footer.scss:115:2.5rem:drift",
+    "docs/assets/scss/_docs-footer.scss:117:0.4rem:drift",
+    "docs/assets/scss/_docs-footer.scss:167:5rem:drift",
+    "docs/assets/scss/_docs-footer.scss:167:8rem:drift",
+    "docs/assets/scss/_docs-footer.scss:171:4rem:drift",
+    "docs/assets/scss/_docs-footer.scss:202:2.5rem:drift",
+    "docs/assets/scss/_docs-footer.scss:280:2.5rem:drift",
+    "docs/assets/scss/_docs-footer.scss:298:1.2rem:drift",
+    "docs/assets/scss/docs.scss:109:0.4rem:drift",
+    "docs/assets/scss/docs.scss:228:10px:drift",
+    "docs/assets/scss/docs.scss:229:15px:drift",
+    "docs/assets/scss/docs.scss:319:10px:drift",
+    "docs/assets/scss/docs.scss:403:0.3rem:drift",
+    "docs/assets/scss/docs.scss:472:1.1rem:drift",
+    "docs/assets/scss/docs.scss:78:-2px:drift",
+    "docs/assets/scss/docs.scss:91:-7px:drift",
+    "docs/assets/scss/docs.scss:98:15px:drift",
+    "docs/assets/scss/docs.scss:98:15px:drift",
+    "docs/assets/scss/examples/_grid.scss:29:10px:drift",
+    "docs/assets/scss/examples/_grid.scss:7:10px:drift",
+    "docs/assets/scss/examples/_orbit.scss:4:4rem:drift",
+    "scss/components/_slider.scss:24:1.25rem:drift",
+    "scss/components/_slider.scss:25:2.25rem:drift",
+    "scss/components/_slider.scss:88:1.25rem:drift",
+    "scss/vendor/normalize.scss:186:0.35em:noise:non-authored",
+    "scss/vendor/normalize.scss:186:0.625em:noise:non-authored",
+    "scss/vendor/normalize.scss:31:0.67em:noise:non-authored"
+  ],
+  "commit": "337be7a8d9d20d28f5d27d2d98131a6d3772506c"
+}

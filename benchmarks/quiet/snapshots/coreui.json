@@ -1,0 +1,34 @@
+{
+  "name": "coreui",
+  "sha": "be40d3f",
+  "scale": {
+    "source": "scanned-css",
+    "values": [
+      0,
+      4,
+      8,
+      16,
+      24,
+      48
+    ]
+  },
+  "summary": {
+    "total": 11,
+    "drift": 5,
+    "falsePositives": 6
+  },
+  "findings": [
+    "scss/_chip.scss:122:-.375rem:drift",
+    "scss/_chip.scss:162:-.375rem:drift",
+    "scss/_progress.scss:112:2px:drift",
+    "scss/_reboot.scss:165:2rem:drift",
+    "scss/mixins/_forms.scss:51:.1rem:drift",
+    "scss/tests/mixins/_utilities.test.scss:112:2rem:noise:non-authored",
+    "scss/tests/mixins/_utilities.test.scss:339:2rem:noise:non-authored",
+    "scss/tests/mixins/_utilities.test.scss:35:2rem:noise:non-authored",
+    "scss/tests/mixins/_utilities.test.scss:56:2rem:noise:non-authored",
+    "scss/tests/mixins/_utilities.test.scss:82:2rem:noise:non-authored",
+    "scss/tests/mixins/_utilities.test.scss:95:2rem:noise:non-authored"
+  ],
+  "commit": "be40d3f921eeef201647437d94dd6945cd5896ec"
+}

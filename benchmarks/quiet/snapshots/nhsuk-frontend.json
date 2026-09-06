@@ -1,0 +1,52 @@
+{
+  "name": "nhsuk-frontend",
+  "sha": "10caad9",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 28,
+    "drift": 28,
+    "falsePositives": 0
+  },
+  "findings": [
+    "packages/nhsuk-frontend/src/nhsuk/components/button/_index.scss:264:-6px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/button/_index.scss:265:6px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/button/_index.scss:270:6px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/button/_index.scss:271:-6px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/button/_index.scss:275:-6px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/button/_index.scss:276:-6px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/button/_index.scss:291:-6px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/button/_index.scss:299:-6px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/button/_index.scss:321:6px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/button/_index.scss:326:6px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/card/_index.scss:108:10px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/file-upload/_index.scss:35:2px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/hero/_index.scss:250:10px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/notification-banner/_index.scss:26:2px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/pagination/_index.scss:258:-0.175rem:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/pagination/_index.scss:262:-0.175rem:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/summary-list/_index.scss:140:10px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/tables/_index.scss:260:2px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/tables/_index.scss:261:6px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/tables/_index.scss:289:5px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/tables/_index.scss:370:-6px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/tables/_index.scss:373:-5px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/task-list/_index.scss:81:2px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/core/styles/_lists.scss:46:20px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/core/styles/_lists.scss:55:20px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/core/styles/_lists.scss:82:0.45em:drift",
+    "packages/nhsuk-frontend/src/nhsuk/core/styles/_typography.scss:490:0.45em:drift",
+    "packages/nhsuk-frontend/src/nhsuk/core/styles/_typography.scss:504:2px:drift"
+  ],
+  "commit": "10caad9feedfc1324186d0001a74bf7b927b741f"
+}

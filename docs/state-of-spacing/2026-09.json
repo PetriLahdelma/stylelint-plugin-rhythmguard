@@ -4,6 +4,53 @@
   "previousId": null,
   "rows": [
     {
+      "name": "zulip",
+      "url": "https://github.com/zulip/zulip",
+      "sha": "9b991a8",
+      "cssFiles": 67,
+      "cleanliness": 16,
+      "drift": 1743,
+      "driftPer100Files": 2601,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        2,
+        3,
+        5,
+        6,
+        25
+      ],
+      "topProperties": [
+        [
+          "padding",
+          658
+        ],
+        [
+          "margin",
+          349
+        ],
+        [
+          "margin-top",
+          178
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          437
+        ],
+        [
+          "20px",
+          206
+        ],
+        [
+          "4px",
+          122
+        ]
+      ]
+    },
+    {
       "name": "mastodon",
       "url": "https://github.com/mastodon/mastodon",
       "sha": "0a32b4a",
@@ -53,6 +100,198 @@
         [
           "5px",
           70
+        ]
+      ]
+    },
+    {
+      "name": "mattermost-webapp",
+      "url": "https://github.com/mattermost/mattermost",
+      "sha": "502cf7e",
+      "cssFiles": 103,
+      "cleanliness": 23,
+      "drift": 1058,
+      "driftPer100Files": 1027,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          400
+        ],
+        [
+          "margin",
+          219
+        ],
+        [
+          "margin-right",
+          90
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          162
+        ],
+        [
+          "5px",
+          150
+        ],
+        [
+          "20px",
+          108
+        ]
+      ]
+    },
+    {
+      "name": "calcom",
+      "url": "https://github.com/calcom/cal.com",
+      "sha": "e91bb0c",
+      "cssFiles": 4,
+      "cleanliness": 95,
+      "drift": 40,
+      "driftPer100Files": 1000,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          15
+        ],
+        [
+          "class-string",
+          13
+        ],
+        [
+          "margin",
+          2
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          9
+        ],
+        [
+          "2px",
+          9
+        ],
+        [
+          "6px",
+          3
+        ]
+      ]
+    },
+    {
+      "name": "grafana",
+      "url": "https://github.com/grafana/grafana",
+      "sha": "c6fad86",
+      "cssFiles": 6,
+      "cleanliness": 83,
+      "drift": 57,
+      "driftPer100Files": 950,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        2,
+        4,
+        8,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          34
+        ],
+        [
+          "padding-left",
+          8
+        ],
+        [
+          "margin-top",
+          4
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          9
+        ],
+        [
+          "15px",
+          9
+        ],
+        [
+          "5px",
+          7
+        ]
+      ]
+    },
+    {
+      "name": "ghost-admin",
+      "url": "https://github.com/TryGhost/Ghost",
+      "sha": "26746d3",
+      "cssFiles": 119,
+      "cleanliness": 82,
+      "drift": 745,
+      "driftPer100Files": 626,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          294
+        ],
+        [
+          "margin",
+          167
+        ],
+        [
+          "margin-top",
+          68
+        ]
+      ],
+      "topValues": [
+        [
+          "2px",
+          70
+        ],
+        [
+          "10px",
+          69
+        ],
+        [
+          "6px",
+          62
         ]
       ]
     },
@@ -193,6 +432,397 @@
       ]
     },
     {
+      "name": "forem",
+      "url": "https://github.com/forem/forem",
+      "sha": "e8a0729",
+      "cssFiles": 142,
+      "cleanliness": 53,
+      "drift": 590,
+      "driftPer100Files": 415,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          266
+        ],
+        [
+          "margin",
+          119
+        ],
+        [
+          "margin-top",
+          46
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          87
+        ],
+        [
+          "2px",
+          57
+        ],
+        [
+          "5px",
+          57
+        ]
+      ]
+    },
+    {
+      "name": "adminlte",
+      "url": "https://github.com/ColorlibHQ/AdminLTE",
+      "sha": "12b4b06",
+      "cssFiles": 46,
+      "cleanliness": 63,
+      "drift": 126,
+      "driftPer100Files": 274,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          50
+        ],
+        [
+          "margin-top",
+          17
+        ],
+        [
+          "margin",
+          15
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          20
+        ],
+        [
+          "1.25rem",
+          9
+        ],
+        [
+          "2px",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "directus-app",
+      "url": "https://github.com/directus/directus",
+      "sha": "3df2ba9",
+      "cssFiles": 29,
+      "cleanliness": 59,
+      "drift": 63,
+      "driftPer100Files": 217,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          17
+        ],
+        [
+          "inset-inline-start",
+          6
+        ],
+        [
+          "inset-block-start",
+          5
+        ]
+      ],
+      "topValues": [
+        [
+          "-0.3125rem",
+          17
+        ],
+        [
+          "0.4375rem",
+          9
+        ],
+        [
+          "-0.1875rem",
+          6
+        ]
+      ]
+    },
+    {
+      "name": "vitepress-theme",
+      "url": "https://github.com/vuejs/vitepress",
+      "sha": "3e681e2",
+      "cssFiles": 11,
+      "cleanliness": 45,
+      "drift": 23,
+      "driftPer100Files": 209,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          13
+        ],
+        [
+          "margin",
+          4
+        ],
+        [
+          "padding-left",
+          2
+        ]
+      ],
+      "topValues": [
+        [
+          "1.25rem",
+          6
+        ],
+        [
+          "0.375rem",
+          3
+        ],
+        [
+          "0.625rem",
+          2
+        ]
+      ]
+    },
+    {
+      "name": "vscode-base-ui",
+      "url": "https://github.com/microsoft/vscode",
+      "sha": "1512d0c",
+      "cssFiles": 38,
+      "cleanliness": 83,
+      "drift": 74,
+      "driftPer100Files": 195,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          33
+        ],
+        [
+          "margin",
+          13
+        ],
+        [
+          "margin-left",
+          6
+        ]
+      ],
+      "topValues": [
+        [
+          "2px",
+          19
+        ],
+        [
+          "5px",
+          10
+        ],
+        [
+          "6px",
+          10
+        ]
+      ]
+    },
+    {
+      "name": "pure",
+      "url": "https://github.com/pure-css/pure",
+      "sha": "d35fb6f",
+      "cssFiles": 16,
+      "cleanliness": 63,
+      "drift": 30,
+      "driftPer100Files": 188,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          12
+        ],
+        [
+          "margin",
+          7
+        ],
+        [
+          "margin-bottom",
+          5
+        ]
+      ],
+      "topValues": [
+        [
+          "0.3em",
+          6
+        ],
+        [
+          "0.2em",
+          3
+        ],
+        [
+          ".3em",
+          2
+        ]
+      ]
+    },
+    {
+      "name": "n8n-design-system",
+      "url": "https://github.com/n8n-io/n8n",
+      "sha": "7cb77fb",
+      "cssFiles": 77,
+      "cleanliness": 95,
+      "drift": 143,
+      "driftPer100Files": 186,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32,
+        48,
+        64,
+        128,
+        256
+      ],
+      "topProperties": [
+        [
+          "padding",
+          40
+        ],
+        [
+          "margin-left",
+          23
+        ],
+        [
+          "margin-right",
+          17
+        ]
+      ],
+      "topValues": [
+        [
+          "5px",
+          44
+        ],
+        [
+          "10px",
+          29
+        ],
+        [
+          "0.6em",
+          10
+        ]
+      ]
+    },
+    {
+      "name": "excalidraw",
+      "url": "https://github.com/excalidraw/excalidraw",
+      "sha": "214cd6e",
+      "cssFiles": 74,
+      "cleanliness": 79,
+      "drift": 126,
+      "driftPer100Files": 170,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          49
+        ],
+        [
+          "gap",
+          18
+        ],
+        [
+          "margin",
+          14
+        ]
+      ],
+      "topValues": [
+        [
+          "0.375rem",
+          10
+        ],
+        [
+          "0.625rem",
+          10
+        ],
+        [
+          "10px",
+          10
+        ]
+      ]
+    },
+    {
       "name": "wp-calypso-components",
       "url": "https://github.com/Automattic/wp-calypso",
       "sha": "7cc9ee9",
@@ -237,6 +867,54 @@
         [
           "5px",
           8
+        ]
+      ]
+    },
+    {
+      "name": "element-plus",
+      "url": "https://github.com/element-plus/element-plus",
+      "sha": "122a05f",
+      "cssFiles": 146,
+      "cleanliness": 48,
+      "drift": 222,
+      "driftPer100Files": 152,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          80
+        ],
+        [
+          "margin-right",
+          31
+        ],
+        [
+          "margin",
+          24
+        ]
+      ],
+      "topValues": [
+        [
+          "5px",
+          46
+        ],
+        [
+          "10px",
+          33
+        ],
+        [
+          "6px",
+          27
         ]
       ]
     },
@@ -289,6 +967,54 @@
       ]
     },
     {
+      "name": "hashicorp-design-system",
+      "url": "https://github.com/hashicorp/design-system",
+      "sha": "83cac84",
+      "cssFiles": 91,
+      "cleanliness": 53,
+      "drift": 109,
+      "driftPer100Files": 120,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          65
+        ],
+        [
+          "margin",
+          15
+        ],
+        [
+          "margin-top",
+          13
+        ]
+      ],
+      "topValues": [
+        [
+          "2px",
+          24
+        ],
+        [
+          "10px",
+          13
+        ],
+        [
+          "3px",
+          12
+        ]
+      ]
+    },
+    {
       "name": "carbon-styles",
       "url": "https://github.com/carbon-design-system/carbon",
       "sha": "4cc7900",
@@ -333,6 +1059,90 @@
         [
           "7px",
           19
+        ]
+      ]
+    },
+    {
+      "name": "discourse",
+      "url": "https://github.com/discourse/discourse",
+      "sha": "c7b7a0b",
+      "cssFiles": 374,
+      "cleanliness": 34,
+      "drift": 349,
+      "driftPer100Files": 93,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        1,
+        1.3,
+        2,
+        3,
+        4,
+        5,
+        5.28,
+        6,
+        7,
+        8,
+        9,
+        9.28,
+        10,
+        11,
+        12,
+        14,
+        16,
+        20,
+        24,
+        28,
+        32,
+        36,
+        40,
+        44,
+        48,
+        56,
+        64,
+        80,
+        96,
+        112,
+        128,
+        144,
+        160,
+        176,
+        192,
+        208,
+        224,
+        240,
+        256,
+        288,
+        320,
+        384
+      ],
+      "topProperties": [
+        [
+          "padding",
+          130
+        ],
+        [
+          "margin-top",
+          34
+        ],
+        [
+          "margin",
+          33
+        ]
+      ],
+      "topValues": [
+        [
+          "0.15em",
+          38
+        ],
+        [
+          "15px",
+          34
+        ],
+        [
+          "0.35em",
+          27
         ]
       ]
     },
@@ -387,6 +1197,150 @@
         [
           "7px",
           9
+        ]
+      ]
+    },
+    {
+      "name": "materialize",
+      "url": "https://github.com/materializecss/materialize",
+      "sha": "c9d6914",
+      "cssFiles": 15,
+      "cleanliness": 80,
+      "drift": 9,
+      "driftPer100Files": 60,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        48
+      ],
+      "topProperties": [
+        [
+          "padding",
+          5
+        ],
+        [
+          "padding-left",
+          2
+        ],
+        [
+          "margin",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          3
+        ],
+        [
+          "15px",
+          2
+        ],
+        [
+          "14px",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "metabase",
+      "url": "https://github.com/metabase/metabase",
+      "sha": "e621647",
+      "cssFiles": 98,
+      "cleanliness": 94,
+      "drift": 55,
+      "driftPer100Files": 56,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          24
+        ],
+        [
+          "padding-right",
+          8
+        ],
+        [
+          "padding-left",
+          3
+        ]
+      ],
+      "topValues": [
+        [
+          "0.375rem",
+          6
+        ],
+        [
+          "2px",
+          5
+        ],
+        [
+          "15px",
+          4
+        ]
+      ]
+    },
+    {
+      "name": "starlight",
+      "url": "https://github.com/withastro/starlight",
+      "sha": "38149a0",
+      "cssFiles": 8,
+      "cleanliness": 63,
+      "drift": 4,
+      "driftPer100Files": 50,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          2
+        ],
+        [
+          "margin-block",
+          1
+        ],
+        [
+          "margin-bottom",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "-0.125rem",
+          1
+        ],
+        [
+          "0.125rem",
+          1
+        ],
+        [
+          "0.375rem",
+          1
         ]
       ]
     },
@@ -534,6 +1488,246 @@
       ]
     },
     {
+      "name": "docusaurus-theme-classic",
+      "url": "https://github.com/facebook/docusaurus",
+      "sha": "a3e5eba",
+      "cssFiles": 76,
+      "cleanliness": 90,
+      "drift": 33,
+      "driftPer100Files": 43,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          12
+        ],
+        [
+          "margin-right",
+          6
+        ],
+        [
+          "margin-left",
+          4
+        ]
+      ],
+      "topValues": [
+        [
+          "0.3rem",
+          8
+        ],
+        [
+          "0.4rem",
+          8
+        ],
+        [
+          "0.2rem",
+          4
+        ]
+      ]
+    },
+    {
+      "name": "fundamental-styles",
+      "url": "https://github.com/SAP/fundamental-styles",
+      "sha": "e31a128",
+      "cssFiles": 343,
+      "cleanliness": 70,
+      "drift": 137,
+      "driftPer100Files": 40,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding-inline",
+          40
+        ],
+        [
+          "padding-block",
+          33
+        ],
+        [
+          "gap",
+          12
+        ]
+      ],
+      "topValues": [
+        [
+          "0.125rem",
+          32
+        ],
+        [
+          "0.375rem",
+          22
+        ],
+        [
+          "0.625rem",
+          17
+        ]
+      ]
+    },
+    {
+      "name": "daisyui",
+      "url": "https://github.com/saadeghi/daisyui",
+      "sha": "1435c65",
+      "cssFiles": 110,
+      "cleanliness": 93,
+      "drift": 37,
+      "driftPer100Files": 34,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          12
+        ],
+        [
+          "inset-inline-end",
+          5
+        ],
+        [
+          "class-string",
+          4
+        ]
+      ],
+      "topValues": [
+        [
+          "0.125rem",
+          3
+        ],
+        [
+          "1.4rem",
+          3
+        ],
+        [
+          "5px",
+          3
+        ]
+      ]
+    },
+    {
+      "name": "utrecht",
+      "url": "https://github.com/nl-design-system/utrecht",
+      "sha": "ecedc4b",
+      "cssFiles": 162,
+      "cleanliness": 99,
+      "drift": 47,
+      "driftPer100Files": 29,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          12
+        ],
+        [
+          "margin-bottom",
+          4
+        ],
+        [
+          "margin-left",
+          4
+        ]
+      ],
+      "topValues": [
+        [
+          "3rem",
+          8
+        ],
+        [
+          "26px",
+          7
+        ],
+        [
+          "10px",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "foundation-sites",
+      "url": "https://github.com/foundation/foundation-sites",
+      "sha": "337be7a",
+      "cssFiles": 119,
+      "cleanliness": 85,
+      "drift": 34,
+      "driftPer100Files": 29,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          11
+        ],
+        [
+          "margin-bottom",
+          8
+        ],
+        [
+          "transform",
+          4
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          5
+        ],
+        [
+          "2.5rem",
+          4
+        ],
+        [
+          "30px",
+          4
+        ]
+      ]
+    },
+    {
       "name": "mantine",
       "url": "https://github.com/mantinedev/mantine",
       "sha": "3862b09",
@@ -580,6 +1774,150 @@
         [
           "8px",
           4
+        ]
+      ]
+    },
+    {
+      "name": "nhsuk-frontend",
+      "url": "https://github.com/nhsuk/nhsuk-frontend",
+      "sha": "10caad9",
+      "cssFiles": 146,
+      "cleanliness": 97,
+      "drift": 28,
+      "driftPer100Files": 19,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "margin-left",
+          8
+        ],
+        [
+          "margin-right",
+          8
+        ],
+        [
+          "padding-top",
+          5
+        ]
+      ],
+      "topValues": [
+        [
+          "-6px",
+          7
+        ],
+        [
+          "2px",
+          5
+        ],
+        [
+          "6px",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "mozilla-protocol",
+      "url": "https://github.com/mozilla/protocol",
+      "sha": "6bcf867",
+      "cssFiles": 106,
+      "cleanliness": 83,
+      "drift": 18,
+      "driftPer100Files": 17,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          5
+        ],
+        [
+          "transform",
+          4
+        ],
+        [
+          "margin",
+          3
+        ]
+      ],
+      "topValues": [
+        [
+          "-60px",
+          2
+        ],
+        [
+          "0.35em",
+          2
+        ],
+        [
+          "1.25em",
+          2
+        ]
+      ]
+    },
+    {
+      "name": "ui5-webcomponents",
+      "url": "https://github.com/SAP/ui5-webcomponents",
+      "sha": "9856f4f",
+      "cssFiles": 522,
+      "cleanliness": 85,
+      "drift": 75,
+      "driftPer100Files": 14,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          21
+        ],
+        [
+          "inset",
+          7
+        ],
+        [
+          "margin-inline-start",
+          6
+        ]
+      ],
+      "topValues": [
+        [
+          "0.125rem",
+          18
+        ],
+        [
+          "0.375rem",
+          7
+        ],
+        [
+          "0.1875rem",
+          6
         ]
       ]
     },
@@ -680,6 +2018,54 @@
       ]
     },
     {
+      "name": "angular-material",
+      "url": "https://github.com/angular/components",
+      "sha": "3d30bf1",
+      "cssFiles": 280,
+      "cleanliness": 96,
+      "drift": 30,
+      "driftPer100Files": 11,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "margin",
+          9
+        ],
+        [
+          "padding",
+          7
+        ],
+        [
+          "transform",
+          4
+        ]
+      ],
+      "topValues": [
+        [
+          "20px",
+          4
+        ],
+        [
+          "64px",
+          3
+        ],
+        [
+          "6px",
+          3
+        ]
+      ]
+    },
+    {
       "name": "primer-react",
       "url": "https://github.com/primer/react",
       "sha": "dc8387f",
@@ -724,6 +2110,151 @@
         [
           "3px",
           4
+        ]
+      ]
+    },
+    {
+      "name": "cloudscape-components",
+      "url": "https://github.com/cloudscape-design/components",
+      "sha": "0c1c9fd",
+      "cssFiles": 320,
+      "cleanliness": 99,
+      "drift": 27,
+      "driftPer100Files": 8,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "transform",
+          6
+        ],
+        [
+          "inset-block-start",
+          5
+        ],
+        [
+          "inset-inline-start",
+          5
+        ]
+      ],
+      "topValues": [
+        [
+          "-5px",
+          5
+        ],
+        [
+          "-9999px",
+          4
+        ],
+        [
+          "2px",
+          4
+        ]
+      ]
+    },
+    {
+      "name": "tachyons",
+      "url": "https://github.com/tachyons-css/tachyons",
+      "sha": "2cb90e9",
+      "cssFiles": 60,
+      "cleanliness": 97,
+      "drift": 5,
+      "driftPer100Files": 8,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        16,
+        32,
+        64,
+        128,
+        256
+      ],
+      "topProperties": [
+        [
+          "padding",
+          3
+        ],
+        [
+          "margin",
+          1
+        ],
+        [
+          "margin-top",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "0.35em",
+          1
+        ],
+        [
+          "0.625em",
+          1
+        ],
+        [
+          "0.67em",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "govuk-frontend",
+      "url": "https://github.com/alphagov/govuk-frontend",
+      "sha": "356d461",
+      "cssFiles": 311,
+      "cleanliness": 98,
+      "drift": 21,
+      "driftPer100Files": 7,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "margin-top",
+          5
+        ],
+        [
+          "margin-bottom",
+          4
+        ],
+        [
+          "padding",
+          3
+        ]
+      ],
+      "topValues": [
+        [
+          "2px",
+          6
+        ],
+        [
+          "14px",
+          2
+        ],
+        [
+          "3px",
+          2
         ]
       ]
     },
@@ -776,6 +2307,109 @@
       ]
     },
     {
+      "name": "patternfly",
+      "url": "https://github.com/patternfly/patternfly",
+      "sha": "b62f051",
+      "cssFiles": 213,
+      "cleanliness": 94,
+      "drift": 13,
+      "driftPer100Files": 6,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "inset-block-start",
+          3
+        ],
+        [
+          "inset-inline-start",
+          2
+        ],
+        [
+          "padding",
+          2
+        ]
+      ],
+      "topValues": [
+        [
+          ".3em",
+          2
+        ],
+        [
+          "6px",
+          2
+        ],
+        [
+          "-18px",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "tabler",
+      "url": "https://github.com/tabler/tabler",
+      "sha": "ac001f8",
+      "cssFiles": 203,
+      "cleanliness": 88,
+      "drift": 12,
+      "driftPer100Files": 6,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        0.64,
+        4,
+        8,
+        16,
+        24,
+        32,
+        40,
+        48,
+        64,
+        80,
+        96,
+        112,
+        128
+      ],
+      "topProperties": [
+        [
+          "transform",
+          7
+        ],
+        [
+          "padding",
+          2
+        ],
+        [
+          "margin",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "-90px",
+          3
+        ],
+        [
+          "85px",
+          3
+        ],
+        [
+          "-2px",
+          1
+        ]
+      ]
+    },
+    {
       "name": "radix-themes",
       "url": "https://github.com/radix-ui/themes",
       "sha": "1faff10",
@@ -822,6 +2456,53 @@
         ],
         [
           "-2px",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "coreui",
+      "url": "https://github.com/coreui/coreui",
+      "sha": "be40d3f",
+      "cssFiles": 193,
+      "cleanliness": 96,
+      "drift": 5,
+      "driftPer100Files": 3,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        16,
+        24,
+        48
+      ],
+      "topProperties": [
+        [
+          "margin-inline-start",
+          2
+        ],
+        [
+          "margin-bottom",
+          1
+        ],
+        [
+          "margin-top",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "-.375rem",
+          2
+        ],
+        [
+          ".1rem",
+          1
+        ],
+        [
+          "2px",
           1
         ]
       ]
@@ -931,6 +2612,54 @@
       ]
     },
     {
+      "name": "ionic-core",
+      "url": "https://github.com/ionic-team/ionic-framework",
+      "sha": "5874331",
+      "cssFiles": 367,
+      "cleanliness": 99,
+      "drift": 8,
+      "driftPer100Files": 2,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "margin-top",
+          5
+        ],
+        [
+          "margin-bottom",
+          1
+        ],
+        [
+          "padding-bottom",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "2px",
+          4
+        ],
+        [
+          "-10px",
+          1
+        ],
+        [
+          "10px",
+          1
+        ]
+      ]
+    },
+    {
       "name": "spectrum-css",
       "url": "https://github.com/adobe/spectrum-css",
       "sha": "3762086",
@@ -1015,6 +2744,87 @@
       ]
     },
     {
+      "name": "semi-design",
+      "url": "https://github.com/DouyinFE/semi-design",
+      "sha": "8bed560",
+      "cssFiles": 277,
+      "cleanliness": 98,
+      "drift": 2,
+      "driftPer100Files": 1,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        0.4,
+        0.7,
+        0.8,
+        1,
+        1.1,
+        1.4,
+        2,
+        3,
+        4,
+        5,
+        6,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15,
+        16,
+        17,
+        18,
+        20,
+        22,
+        23,
+        24,
+        25,
+        26,
+        28,
+        29,
+        30,
+        31,
+        32,
+        34,
+        36,
+        40,
+        48,
+        50,
+        52,
+        60,
+        64,
+        68,
+        80,
+        100,
+        120,
+        132,
+        280
+      ],
+      "topProperties": [
+        [
+          "padding-left",
+          1
+        ],
+        [
+          "padding-right",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "0.8em",
+          1
+        ],
+        [
+          "3.8em",
+          1
+        ]
+      ]
+    },
+    {
       "name": "open-props",
       "url": "https://github.com/argyleink/open-props",
       "sha": "530682d",
@@ -1035,12 +2845,61 @@
       ],
       "topProperties": [],
       "topValues": []
+    },
+    {
+      "name": "skeleton",
+      "url": "https://github.com/skeletonlabs/skeleton",
+      "sha": "e65535e",
+      "cssFiles": 51,
+      "cleanliness": 100,
+      "drift": 0,
+      "driftPer100Files": 0,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        20,
+        24,
+        28,
+        32,
+        36,
+        40,
+        44,
+        48,
+        56,
+        64,
+        80,
+        96,
+        112,
+        128,
+        144,
+        160,
+        176,
+        192,
+        208,
+        224,
+        240,
+        256,
+        288,
+        320,
+        384
+      ],
+      "topProperties": [],
+      "topValues": []
     }
   ],
   "totals": {
-    "cssFiles": 3262,
-    "drift": 1373,
-    "repos": 20,
-    "fallbackScales": 12
+    "cssFiles": 8585,
+    "drift": 7471,
+    "repos": 57,
+    "fallbackScales": 39
   }
 }

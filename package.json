@@ -116,7 +116,8 @@
     "test:watch": "node --test --watch test/*.test.js",
     "typecheck": "tsc -p tsconfig.typecheck.json",
     "build:agents": "node scripts/build-agents.mjs",
-    "bench:state-of-spacing": "node scripts/bench/state-of-spacing.mjs"
+    "bench:state-of-spacing": "node scripts/bench/state-of-spacing.mjs",
+    "bench:outreach": "node scripts/bench/outreach.mjs"
   },
   "repository": {
     "type": "git",

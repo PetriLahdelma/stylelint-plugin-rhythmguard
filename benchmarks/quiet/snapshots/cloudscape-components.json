@@ -1,0 +1,51 @@
+{
+  "name": "cloudscape-components",
+  "sha": "0c1c9fd",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 27,
+    "drift": 27,
+    "falsePositives": 0
+  },
+  "findings": [
+    "src/annotation-context/annotation/styles.scss:49:40px:drift",
+    "src/app-layout/visual-refresh-toolbar/drawer/styles.scss:361:-5px:drift",
+    "src/app-layout/visual-refresh-toolbar/toolbar/styles.scss:105:-5px:drift",
+    "src/breadcrumb-group/styles.scss:32:-9000px:drift",
+    "src/code-editor/ace-editor.scss:69:-21px:drift",
+    "src/icon/styles.scss:71:-3px:drift",
+    "src/internal/styles/forms/mixins.scss:324:-7px:drift",
+    "src/internal/styles/forms/mixins.scss:347:2px:drift",
+    "src/internal/styles/global.scss:50:-5px:drift",
+    "src/internal/styles/global.scss:55:5px:drift",
+    "src/internal/styles/motion/animations.scss:56:-5px:drift",
+    "src/internal/styles/motion/animations.scss:61:5px:drift",
+    "src/internal/styles/utils/mixins.scss:10:-9999px:drift",
+    "src/internal/styles/utils/mixins.scss:9:-9999px:drift",
+    "src/modal/motion.scss:9:10px:drift",
+    "src/pagination/styles.scss:87:15px:drift",
+    "src/pagination/styles.scss:92:-0.6em:drift",
+    "src/popover/container.scss:12:-9999px:drift",
+    "src/popover/container.scss:13:-9999px:drift",
+    "src/select/parts/styles.scss:128:-1.5px:drift",
+    "src/table/sticky-scrollbar/styles.scss:30:-15px:drift",
+    "src/table/sticky-scrollbar/styles.scss:47:-5px:drift",
+    "src/tree-view/tree-item/styles.scss:49:2px:drift",
+    "src/tree-view/tree-item/styles.scss:52:-2px:drift",
+    "src/tree-view/tree-item/styles.scss:61:2px:drift",
+    "src/tree-view/tree-item/styles.scss:71:2px:drift",
+    "src/wizard/styles.scss:96:6px:drift"
+  ],
+  "commit": "0c1c9fd2e4302cc7d8b08b5db18cbe1b7ee4c5bc"
+}
