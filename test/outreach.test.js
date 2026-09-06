@@ -43,7 +43,7 @@ test('draftIssue for a fallback-scale repository asks where the tokens live and 
 
   assert.match(title, /where do your spacing tokens live/);
   assert.match(body, /could not find a spacing token set/);
-  assert.match(body, /I am not going to quote it/);
+  assert.match(body, /not treating it as a finding/);
   assert.doesNotMatch(body, /- Values:/);
 });
 

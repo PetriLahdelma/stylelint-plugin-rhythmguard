@@ -56,7 +56,7 @@ export function draftIssue(result) {
     );
   } else if (fallback) {
     lines.push(
-      `**What it found.** The audit could not find a spacing token set here (it looks for \`--space-*\` / \`--spacing-*\` custom properties, Sass \`$spacer\` / \`$spacing-*\` variables and maps, or a Tailwind \`--spacing\` base), so it measured against a default 4px scale and reported ${driftCount} literal values off that scale. That number says more about my token discovery than about your CSS, so I am not going to quote it.`,
+      `**What it found.** The audit could not find a spacing token set here (it looks for \`--space-*\` / \`--spacing-*\` custom properties, Sass \`$spacer\` / \`$spacing-*\` variables and maps, or a Tailwind \`--spacing\` base), so it measured against a default 4px scale instead. Against that default it reported ${driftCount} literal values, a number that says more about my token discovery than about your CSS, so I am not treating it as a finding.`,
       '',
       '**The ask.** If you can point me at where the spacing scale is defined (a token file, a Sass map, a package), I will teach the tool to read it, re-run the audit on the real scale, and post the result here. If spacing is intentionally not on a scale, saying so is just as useful and I will mark the row that way.',
     );
