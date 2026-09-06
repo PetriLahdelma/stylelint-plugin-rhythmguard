@@ -127,3 +127,27 @@ test('embed config is the one-liner for shared-config authors: use-scale on auto
   assert.equal(packageJson.exports['./configs/embed'].require, './src/configs/embed.js');
   assert.equal(packageJson.exports['./configs/embed'].import, './src/configs/embed.mjs');
 });
+
+test('every package export resolves to the same module through require and import', async () => {
+  const root = path.join(__dirname, '..');
+  for (const [subpath, conditions] of Object.entries(packageJson.exports)) {
+    assert.ok(conditions.require && conditions.import && conditions.types, `${subpath} declares types, require and import`);
+    for (const file of [conditions.require, conditions.import, conditions.types]) {
+      assert.ok(fs.existsSync(path.join(root, file)), `${subpath}: ${file} exists`);
+    }
+    const cjs = require(path.join(root, conditions.require));
+    const esm = await import(pathToFileURL(path.join(root, conditions.import)).href);
+    assert.equal(esm.default, cjs, `${subpath}: the ESM default export is the CommonJS module object`);
+    for (const name of Object.keys(esm)) {
+      if (name === 'default') continue;
+      assert.equal(esm[name], cjs[name], `${subpath}: named export ${name} is the same value in both formats`);
+    }
+  }
+});
+
+test('the CLI binary and the main entry point are inside the published files list', () => {
+  const published = packageJson.files;
+  for (const file of [packageJson.main, packageJson.bin.rhythmguard, packageJson.types]) {
+    assert.ok(published.some((entry) => file.replace(/^\.\//, '').startsWith(entry)), `${file} is published`);
+  }
+});
