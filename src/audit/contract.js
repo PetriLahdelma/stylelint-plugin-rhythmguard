@@ -3,7 +3,7 @@
 const fs = require('node:fs');
 const {
   addDefinition,
-  collectScssTokens,
+  collectCssTokens,
   createTokenKindMatcher,
   getNormalizedValueKeys,
 } = require('../core/token-sources');
@@ -95,33 +95,10 @@ function collectTokenContract({
   };
 }
 
+/** Custom properties and Sass tokens declared in one stylesheet, added to the definitions map. */
 function collectTokenDefinitions(source, file, definitions, matchesKind, baseFontSize) {
-  const declarationPattern = /(--[\w-]+)\s*:\s*([^;{}]+)/g;
-  let match;
-
-  while ((match = declarationPattern.exec(source)) !== null) {
-    const token = match[1];
-    if (!matchesKind(token)) {
-      continue;
-    }
-
-    addDefinition(definitions, {
-      baseFontSize,
-      file,
-      source: file,
-      token,
-      value: match[2].trim(),
-    });
-  }
-
-  for (const sassToken of collectScssTokens(source, matchesKind)) {
-    addDefinition(definitions, {
-      baseFontSize,
-      file,
-      source: file,
-      token: sassToken.token,
-      value: sassToken.value,
-    });
+  for (const { token, value } of collectCssTokens(source, matchesKind)) {
+    addDefinition(definitions, { baseFontSize, file, source: file, token, value });
   }
 }
 

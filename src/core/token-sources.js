@@ -748,6 +748,7 @@ module.exports = {
   VALID_TOKEN_KINDS,
   VALID_TOKEN_SOURCE_FORMATS,
   addDefinition,
+  collectCssTokens,
   collectScssTokens,
   createTokenKindMatcher,
   getNormalizedValueKeys,
