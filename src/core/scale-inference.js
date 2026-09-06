@@ -403,6 +403,27 @@ function fallbackInference(rejected = null) {
   };
 }
 
+/**
+ * Apply `scale: "auto"` to built rule options: the inferred scale replaces the
+ * placeholder and the inference is kept for the fallback note. Options with
+ * an explicit scale pass through untouched.
+ */
+function withResolvedScale(options, root) {
+  if (!options.scaleAuto) {
+    return options;
+  }
+  const inference = resolveAutoScale({
+    baseFontSize: options.baseFontSize,
+    root,
+    scaleSources: options.scaleSources,
+    tailwindConfigPath: options.tailwindConfigPath,
+    tokenPattern: options.tokenPatternExplicit ? options.tokenPattern : DEFAULT_AUTO_TOKEN_PATTERN,
+  });
+  options.scale = inference.scale;
+  options.scaleInference = inference;
+  return options;
+}
+
 function autoScaleFallbackNote(inference) {
   if (!inference || inference.source !== 'fallback') {
     return '';
@@ -421,4 +442,5 @@ module.exports = {
   discoverTokenPackages,
   resolveAutoScale,
   scaleFromDefinitions,
+  withResolvedScale,
 };

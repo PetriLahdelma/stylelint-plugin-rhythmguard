@@ -3,22 +3,19 @@
 const stylelint = require('stylelint');
 const valueParser = require('postcss-value-parser');
 const {
+  fixedLengthValue,
   formatLength,
-  fromPx,
   isHairlineLength,
   nearestScaleValues,
-  normalizeScale,
-  normalizeScaleByUnit,
   numbersEqual,
   parseLengthToken,
   toPx,
 } = require('../../core/length');
 const {
   buildScaleOptions,
-  resolvePropertyScale,
+  createPropertyScaleResolver,
 } = require('../../core/options');
 const {
-  declarationValueIndex,
   isKeyword,
   isMathFunction,
   isTokenFunction,
@@ -29,13 +26,12 @@ const {
 } = require('../../core/value-nodes');
 
 const {
-  DEFAULT_AUTO_TOKEN_PATTERN,
   autoScaleFallbackNote,
-  resolveAutoScale,
+  withResolvedScale,
 } = require('../../core/scale-inference');
 
-const { createTokenRegex } = require('../report');
-const { validateUseScaleSecondaryOptions } = require('../validate');
+const { createTokenRegex, reportInvalidPreset, reportValueNode } = require('../report');
+const { validatePrimary, validateUseScaleSecondaryOptions } = require('../validate');
 
 const ruleName = 'rhythmguard/use-scale';
 
@@ -45,28 +41,6 @@ const messages = stylelint.utils.ruleMessages(ruleName, {
   rejected: (value, lower, upper, note = '') =>
     `Unexpected off-scale value "${value}". Use scale values (nearest: ${lower} or ${upper}).${note ? ` ${note}` : ''}`,
 });
-
-function getFixedNodeValue(parsedLength, nearestPx, options) {
-  const unit = parsedLength.unit || 'px';
-
-  if (unit === '%' || !options.units.includes(unit)) {
-    return null;
-  }
-
-  const signedNearest = parsedLength.number < 0 ? -Math.abs(nearestPx) : nearestPx;
-
-  if (options.unitStrategy === 'exact') {
-    return formatLength(signedNearest, parsedLength.unit || 'px');
-  }
-
-  const converted = fromPx(signedNearest, unit, options.baseFontSize);
-
-  if (converted === null) {
-    return null;
-  }
-
-  return formatLength(converted, unit);
-}
 
 function checkLengthValue({
   decl,
@@ -136,7 +110,7 @@ function checkLengthValue({
     }
 
     const fixedValue = options.fixToScale
-      ? getFixedNodeValue(parsedLength, nearest.nearest, options)
+      ? fixedLengthValue(parsedLength, nearest.nearest, options)
       : null;
 
     report(node.value, decl, node, nearest, fixedValue, unit);
@@ -160,7 +134,7 @@ function checkLengthValue({
   }
 
   const fixedValue = options.fixToScale
-    ? getFixedNodeValue(parsedLength, nearest.nearest, options)
+    ? fixedLengthValue(parsedLength, nearest.nearest, options)
     : null;
 
   report(node.value, decl, node, nearest, fixedValue, 'px');
@@ -169,10 +143,7 @@ function checkLengthValue({
 
 const ruleFunction = (primary, secondaryOptions) => {
   return (root, result) => {
-    const valid = stylelint.utils.validateOptions(result, ruleName, {
-      actual: primary,
-      possible: [true],
-    });
+    const valid = validatePrimary(result, ruleName, primary);
 
     if (!valid) {
       return;
@@ -188,71 +159,26 @@ const ruleFunction = (primary, secondaryOptions) => {
     }
 
     const options = buildScaleOptions(secondaryOptions);
-    if (options.invalidPreset) {
-      stylelint.utils.report({
-        message: messages.invalidPreset(options.invalidPreset, options.presetNames),
-        node: root,
-        result,
-        ruleName,
-      });
-    }
+    reportInvalidPreset(options, { message: messages.invalidPreset, result, root, ruleName });
 
-    if (options.scaleAuto) {
-      const inference = resolveAutoScale({
-        baseFontSize: options.baseFontSize,
-        root,
-        scaleSources: options.scaleSources,
-        tailwindConfigPath: options.tailwindConfigPath,
-        tokenPattern: options.tokenPatternExplicit ? options.tokenPattern : DEFAULT_AUTO_TOKEN_PATTERN,
-      });
-      options.scale = inference.scale;
-      options.scaleInference = inference;
-    }
+    withResolvedScale(options, root);
 
     const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);
-    const scaleCache = new Map();
     let fallbackNote = autoScaleFallbackNote(options.scaleInference);
-
-    const getScaleStateForProperty = (prop) => {
-      const cached = scaleCache.get(prop);
-      if (cached) {
-        return cached;
-      }
-
-      const selectedScale = resolvePropertyScale(prop, options);
-      const next = {
-        scaleByUnit: normalizeScaleByUnit(selectedScale),
-        scalePx: normalizeScale(selectedScale, options.baseFontSize),
-      };
-
-      scaleCache.set(prop, next);
-      return next;
-    };
+    const getScaleStateForProperty = createPropertyScaleResolver(options);
 
     const report = (value, decl, node, nearest, fixedValue = null, nearestUnit = 'px') => {
-      const index = declarationValueIndex(decl) + node.sourceIndex;
-      const endIndex = index + node.value.length;
       const lower = nearest ? formatLength(nearest.lower, nearestUnit) : 'n/a';
       const upper = nearest ? formatLength(nearest.upper, nearestUnit) : 'n/a';
-
-      const payload = {
-        endIndex,
-        index,
+      reportValueNode({
+        decl,
         message: messages.rejected(value, lower, upper, fallbackNote),
-        node: decl,
+        node,
+        replacement: fixedValue,
         result,
         ruleName,
-      };
-
-      if (fixedValue) {
-        payload.fix = () => {
-          node.value = fixedValue;
-          return true;
-        };
-      }
-
+      });
       fallbackNote = '';
-      stylelint.utils.report(payload);
     };
 
     root.walkDecls((decl) => {

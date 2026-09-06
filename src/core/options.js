@@ -1,5 +1,7 @@
 'use strict';
 
+const { normalizeScale, normalizeScaleByUnit } = require('./length');
+
 const { all: knownCssProperties = [] } = require('known-css-properties');
 const {
   DEFAULT_IGNORE_KEYWORDS,
@@ -639,6 +641,27 @@ function buildTokenOptions(rawOptions) {
   };
 }
 
+/**
+ * Per-property scale lookup with a cache, because a stylesheet repeats the
+ * same few properties thousands of times and normalising a scale is not free.
+ */
+function createPropertyScaleResolver(options) {
+  const cache = new Map();
+  return (prop) => {
+    const cached = cache.get(prop);
+    if (cached) {
+      return cached;
+    }
+    const selectedScale = resolvePropertyScale(prop, options);
+    const state = {
+      scaleByUnit: normalizeScaleByUnit(selectedScale),
+      scalePx: normalizeScale(selectedScale, options.baseFontSize),
+    };
+    cache.set(prop, state);
+    return state;
+  };
+}
+
 function resolvePropertyScale(prop, options) {
   if (!Array.isArray(options.propertyScaleOverrides)) {
     return options.scale;
@@ -674,6 +697,7 @@ module.exports = {
   USE_SCALE_VALIDATION_SCHEMA,
   buildScaleOptions,
   buildTokenOptions,
+  createPropertyScaleResolver,
   isPlainObject,
   resolvePropertyScale,
 };

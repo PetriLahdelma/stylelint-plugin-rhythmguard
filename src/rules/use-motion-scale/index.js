@@ -7,7 +7,6 @@ const {
   numbersEqual,
 } = require('../../core/length');
 const {
-  declarationValueIndex,
   walkRootValueNodes,
 } = require('../../core/value-nodes');
 const {
@@ -18,6 +17,9 @@ const {
   parseTimeToken,
   toMs,
 } = require('../../core/time');
+
+const { reportValueNode } = require('../report');
+const { validatePrimary } = require('../validate');
 
 const ruleName = 'rhythmguard/use-motion-scale';
 const DURATION_PROPERTIES = new Set([
@@ -99,12 +101,7 @@ function functionToString(node) {
 
 const ruleFunction = (primary, secondaryOptions) => {
   return (root, result) => {
-    const valid = stylelint.utils.validateOptions(result, ruleName, {
-      actual: primary,
-      possible: [true],
-    });
-
-    if (!valid || !validateSecondaryOptions(result, secondaryOptions)) {
+    if (!validatePrimary(result, ruleName, primary) || !validateSecondaryOptions(result, secondaryOptions)) {
       return;
     }
 
@@ -120,10 +117,8 @@ const ruleFunction = (primary, secondaryOptions) => {
       let changed = false;
 
       const reportDuration = (node, nearest, fixedValue = null) => {
-        const index = declarationValueIndex(decl) + node.sourceIndex;
-        const payload = {
-          endIndex: index + node.value.length,
-          index,
+        reportValueNode({
+          decl,
           message: nearest
             ? messages.rejectedDuration(
               node.value,
@@ -131,43 +126,31 @@ const ruleFunction = (primary, secondaryOptions) => {
               formatTime(nearest.upper, 'ms'),
             )
             : messages.invalidDuration(node.value),
-          node: decl,
+          node,
+          replacement: fixedValue,
           result,
           ruleName,
-        };
-
-        if (fixedValue) {
-          payload.fix = () => {
-            node.value = fixedValue;
-            return true;
-          };
-        }
-
-        stylelint.utils.report(payload);
+        });
       };
 
       const reportEasing = (node, replacement = null) => {
         const source = functionToString(node);
-        const index = declarationValueIndex(decl) + node.sourceIndex;
-        const payload = {
-          endIndex: index + source.length,
-          index,
+        reportValueNode({
+          decl,
+          fix: replacement
+            ? () => {
+              node.type = 'word';
+              node.value = replacement;
+              delete node.nodes;
+              return true;
+            }
+            : null,
+          length: source.length,
           message: messages.rejectedEasing(source),
-          node: decl,
+          node,
           result,
           ruleName,
-        };
-
-        if (replacement) {
-          payload.fix = () => {
-            node.type = 'word';
-            node.value = replacement;
-            delete node.nodes;
-            return true;
-          };
-        }
-
-        stylelint.utils.report(payload);
+        });
       };
 
       walkRootValueNodes(parsed, (node) => {
