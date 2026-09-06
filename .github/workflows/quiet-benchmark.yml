@@ -3,15 +3,23 @@ name: Quiet Benchmark
 on:
   push:
     branches: [main]
+    # The benchmark only moves when the rules, inference, or the manifest move.
+    paths: ['src/**', 'benchmarks/quiet/**', 'scripts/bench/**', 'package.json', 'package-lock.json', '.github/workflows/quiet-benchmark.yml']
   pull_request:
+    paths: ['src/**', 'benchmarks/quiet/**', 'scripts/bench/**', 'package.json', 'package-lock.json', '.github/workflows/quiet-benchmark.yml']
   schedule:
     # Weekly: audit upstream HEADs to spot new drift or inference regressions early.
     - cron: '17 6 * * 1'
+  workflow_dispatch:
+
+concurrency:
+  group: quiet-benchmark-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   check:
     name: findings match snapshots (pinned commits)
-    if: github.event_name != 'schedule' && (github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository)
+    if: github.event_name != 'schedule' && (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository)
     runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     steps:
       - uses: actions/checkout@v7
