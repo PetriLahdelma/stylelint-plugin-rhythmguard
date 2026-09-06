@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-09-06
+
 ### Fixed
 
 - The Sass token evaluator bounds map nesting (16 levels) and expression nesting (64 levels). Generated or adversarial input past those limits is skipped like any other expression it cannot evaluate, instead of overflowing the stack and aborting the audit.
