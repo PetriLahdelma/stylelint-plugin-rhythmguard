@@ -3,8 +3,8 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const { formatLength } = require('../src/utils/length');
-const { getNormalizedValueKeys } = require('../src/utils/token-sources');
+const { formatLength } = require('../src/core/length');
+const { getNormalizedValueKeys } = require('../src/core/token-sources');
 const { lintCss } = require('./helpers/lint');
 
 test('formatLength keeps the zeros of whole numbers and trims only fractional zeros', () => {

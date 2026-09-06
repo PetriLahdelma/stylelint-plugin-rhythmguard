@@ -12,14 +12,12 @@ const {
   numbersEqual,
   parseLengthToken,
   toPx,
-} = require('../../utils/length');
+} = require('../../core/length');
 const {
   buildScaleOptions,
   resolvePropertyScale,
-  validateUseScaleSecondaryOptions,
-} = require('../../utils/options');
+} = require('../../core/options');
 const {
-  createTokenRegex,
   declarationValueIndex,
   isKeyword,
   isMathFunction,
@@ -28,13 +26,16 @@ const {
   shouldLintMathArgument,
   walkRootValueNodes,
   walkTransformTranslateNodes,
-} = require('../../utils/value-utils');
+} = require('../../core/value-nodes');
 
 const {
   DEFAULT_AUTO_TOKEN_PATTERN,
   autoScaleFallbackNote,
   resolveAutoScale,
-} = require('../../utils/scale-inference');
+} = require('../../core/scale-inference');
+
+const { createTokenRegex } = require('../report');
+const { validateUseScaleSecondaryOptions } = require('../validate');
 
 const ruleName = 'rhythmguard/use-scale';
 

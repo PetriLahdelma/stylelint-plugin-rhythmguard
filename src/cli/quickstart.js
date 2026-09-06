@@ -14,7 +14,7 @@ const path = require('node:path');
 
 const { createAuditReport } = require('../audit/report');
 const { detect } = require('./init');
-const { discoverTokenPackages } = require('../utils/scale-inference');
+const { discoverTokenPackages } = require('../core/scale-inference');
 
 const TOKEN_FILE_PATTERN = /(^|[.-])tokens?\.json$/i;
 const TOKEN_DIRS = ['tokens', 'design-tokens', path.join('src', 'tokens'), path.join('dist', 'tokens')];

@@ -6,7 +6,7 @@ const {
   collectScssTokens,
   createTokenKindMatcher,
   getNormalizedValueKeys,
-} = require('../utils/token-sources');
+} = require('../core/token-sources');
 const { formatPath } = require('./shared');
 
 function collectTokenContract({

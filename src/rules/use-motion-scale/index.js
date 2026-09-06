@@ -5,11 +5,11 @@ const valueParser = require('postcss-value-parser');
 const {
   nearestScaleValues,
   numbersEqual,
-} = require('../../utils/length');
+} = require('../../core/length');
 const {
   declarationValueIndex,
   walkRootValueNodes,
-} = require('../../utils/value-utils');
+} = require('../../core/value-nodes');
 const {
   formatTime,
   fromMs,
@@ -17,7 +17,7 @@ const {
   normalizeDurationUnits,
   parseTimeToken,
   toMs,
-} = require('../../utils/time');
+} = require('../../core/time');
 
 const ruleName = 'rhythmguard/use-motion-scale';
 const DURATION_PROPERTIES = new Set([

@@ -10,14 +10,12 @@ const {
   numbersEqual,
   parseLengthToken,
   toPx,
-} = require('../../utils/length');
+} = require('../../core/length');
 const {
   buildTokenOptions,
   resolvePropertyScale,
-  validatePreferTokenSecondaryOptions,
-} = require('../../utils/options');
+} = require('../../core/options');
 const {
-  createTokenRegex,
   declarationValueIndex,
   isKeyword,
   isMathFunction,
@@ -26,13 +24,16 @@ const {
   shouldLintMathArgument,
   walkRootValueNodes,
   walkTransformTranslateNodes,
-} = require('../../utils/value-utils');
-const { buildEffectiveTokenMap } = require('../../utils/token-map');
+} = require('../../core/value-nodes');
+const { buildEffectiveTokenMap } = require('../../core/token-map');
 
 const {
   DEFAULT_AUTO_TOKEN_PATTERN,
   resolveAutoScale,
-} = require('../../utils/scale-inference');
+} = require('../../core/scale-inference');
+
+const { createTokenRegex } = require('../report');
+const { validatePreferTokenSecondaryOptions } = require('../validate');
 
 const ruleName = 'rhythmguard/prefer-token';
 

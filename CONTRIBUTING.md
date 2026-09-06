@@ -10,7 +10,7 @@ Thank you for being here. Rhythmguard is a small, opinionated tool with one job:
 
 **Review a drift list.** Each benchmark repo has a list of findings that heuristics call real drift. Labelling them as real or as an allowance in `benchmarks/quiet/labels/<repo>.json` with a one-line reason turns a heuristic number into a reviewed one, and any systematic pattern you find becomes a candidate default.
 
-**Teach inference a new token source.** Sass variables and maps, token packages, framework theme files. If your scale lives somewhere the tool cannot see, the fix is a parser in `src/utils/token-sources.js` and a test.
+**Teach inference a new token source.** Sass variables and maps, token packages, framework theme files. If your scale lives somewhere the tool cannot see, the fix is a parser in `src/core/token-sources.js` and a test.
 
 **Improve a rule page.** Every rule has a page under `docs/rules/`. A clearer example or a missing edge case is a welcome PR.
 

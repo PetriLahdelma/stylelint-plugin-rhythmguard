@@ -1,7 +1,7 @@
 'use strict';
 
-const { formatLength } = require('../../utils/length');
-const { createTailwindClassAnalyzer } = require('../../utils/tailwind-class-analysis');
+const { formatLength } = require('../../core/length');
+const { createTailwindClassAnalyzer } = require('../../core/tailwind-class-analysis');
 
 const RULE_NAME = 'tailwind-class-use-scale';
 

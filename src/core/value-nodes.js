@@ -1,11 +1,10 @@
 'use strict';
 
 const valueParser = require('postcss-value-parser');
-const stylelint = require('stylelint');
 const {
   MATH_FUNCTIONS,
   TRANSLATE_FUNCTIONS,
-} = require('./constants');
+} = require('./css-vocabulary');
 
 function propertyMatches(prop, patterns) {
   const normalized = prop.toLowerCase();
@@ -24,20 +23,6 @@ function propertyMatches(prop, patterns) {
 
 function isKeyword(value, ignoreValues) {
   return ignoreValues.includes(String(value).toLowerCase());
-}
-
-function createTokenRegex(tokenPattern, result, ruleName) {
-  try {
-    return new RegExp(tokenPattern);
-  } catch {
-    stylelint.utils.report({
-      message: `Invalid tokenPattern regex: ${tokenPattern}`,
-      result,
-      ruleName,
-    });
-
-    return /^--space-/;
-  }
 }
 
 function isTokenFunction(node, tokenFunctions, tokenRegex) {
@@ -213,7 +198,6 @@ function declarationValueIndex(decl) {
 }
 
 module.exports = {
-  createTokenRegex,
   declarationValueIndex,
   isKeyword,
   isMathFunction,

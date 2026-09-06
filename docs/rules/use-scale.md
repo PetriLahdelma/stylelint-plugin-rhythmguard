@@ -76,7 +76,7 @@ Deterministic: the value is replaced with the nearest scale step, preserving sig
 1. `scaleSources`: token files listed in the rule options. CSS custom properties (including Tailwind v4 `@theme`), flat JSON, Style Dictionary JSON, or DTCG JSON.
 2. `audit.tokenSources` in a `.rhythmguardrc.json` in the working directory, so lint and `rhythmguard audit` read the same token contract.
 3. Custom properties in the linted stylesheet whose names match `tokenPattern` (default for auto: names containing `space`, `spacing` or `spacer` as a segment, so `--space-3`, `--mantine-spacing-md` and `--pf-t--global--spacer--200` all match, while `letter-spacing` and `word-spacing` do not).
-4. Spacing tokens shipped by design-token packages the project has installed: `tailwindcss` (the v4 `--spacing` base in `theme.css`), `@radix-ui/themes`, `@mantine/core`, `@primer/primitives`, `@shopify/polaris-tokens`, `@spectrum-css/tokens`. The allowlist lives in `src/utils/token-packages.json` and additions are welcome.
+4. Spacing tokens shipped by design-token packages the project has installed: `tailwindcss` (the v4 `--spacing` base in `theme.css`), `@radix-ui/themes`, `@mantine/core`, `@primer/primitives`, `@shopify/polaris-tokens`, `@spectrum-css/tokens`. The allowlist lives in `src/core/token-packages.json` and additions are welcome.
 5. `theme.spacing` from `tailwindConfigPath` (Tailwind v3 JS config).
 6. Fallback to the `rhythmic-4` preset. The first report in the file says so: `No spacing tokens were found for scale "auto"; using preset "rhythmic-4".`
 

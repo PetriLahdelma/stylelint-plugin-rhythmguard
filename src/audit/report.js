@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const {
   createTokenKindMatcher,
   parseTokenSources,
-} = require('../utils/token-sources');
+} = require('../core/token-sources');
 const {
   applyBaselineComparison,
   writeBaseline,
@@ -19,7 +19,7 @@ const {
 const { buildReport, collectTokenDefinitions } = require('./contract');
 const { DEFAULT_SCALE, formatPath } = require('./shared');
 const {
-  assessScale, discoverTokenPackages, scaleFromDefinitions } = require('../utils/scale-inference');
+  assessScale, discoverTokenPackages, scaleFromDefinitions } = require('../core/scale-inference');
 const {
   assertDirectory,
   collectCssFindings,

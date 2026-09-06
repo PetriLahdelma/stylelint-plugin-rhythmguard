@@ -12,24 +12,25 @@ const {
   numbersEqual,
   parseLengthToken,
   toPx,
-} = require('../../utils/length');
+} = require('../../core/length');
 const {
   buildScaleOptions,
   resolvePropertyScale,
-  validateNoOffscaleTransformSecondaryOptions,
-} = require('../../utils/options');
+} = require('../../core/options');
 const {
   declarationValueIndex,
   isMathFunction,
   shouldLintMathArgument,
   walkRootValueNodes,
   walkTransformTranslateNodes,
-} = require('../../utils/value-utils');
+} = require('../../core/value-nodes');
 
 const {
   DEFAULT_AUTO_TOKEN_PATTERN,
   resolveAutoScale,
-} = require('../../utils/scale-inference');
+} = require('../../core/scale-inference');
+
+const { validateNoOffscaleTransformSecondaryOptions } = require('../validate');
 
 const ruleName = 'rhythmguard/no-offscale-transform';
 const messages = stylelint.utils.ruleMessages(ruleName, {

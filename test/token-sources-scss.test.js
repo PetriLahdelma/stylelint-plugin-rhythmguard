@@ -2,7 +2,7 @@
 
 const assert = require('node:assert/strict');
 const test = require('node:test');
-const { collectScssTokens, createTokenKindMatcher } = require('../src/utils/token-sources');
+const { collectScssTokens, createTokenKindMatcher } = require('../src/core/token-sources');
 
 const spacing = createTokenKindMatcher('spacing');
 const byName = (tokens) => Object.fromEntries(tokens.map((t) => [t.token, t.value]));

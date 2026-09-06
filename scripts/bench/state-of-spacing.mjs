@@ -33,7 +33,7 @@ export function topCounts(items, key, limit = 3) {
     .slice(0, limit);
 }
 
-import { assessScale as coreAssessScale } from '../../src/utils/scale-inference.js';
+import { assessScale as coreAssessScale } from '../../src/core/scale-inference.js';
 
 /** Same check the rule and the audit apply (issue #88); re-exported for the bench tests. */
 export function assessScale(scale) {

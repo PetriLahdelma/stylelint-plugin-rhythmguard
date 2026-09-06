@@ -3,10 +3,10 @@
 const { execFileSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
-const { formatLength } = require('../utils/length');
-const { createTailwindClassAnalyzer } = require('../utils/tailwind-class-analysis');
-const { createTailwindMotionAnalyzer } = require('../utils/tailwind-motion-analysis');
-const { formatTime } = require('../utils/time');
+const { formatLength } = require('../core/length');
+const { createTailwindClassAnalyzer } = require('../core/tailwind-class-analysis');
+const { createTailwindMotionAnalyzer } = require('../core/tailwind-motion-analysis');
+const { formatTime } = require('../core/time');
 const {
   DEFAULT_AUDIT_TOKEN_PATTERN,
   SKIP_DIRS,
