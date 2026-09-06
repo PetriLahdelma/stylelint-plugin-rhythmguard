@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.3.0] - 2026-09-06
+
 ### Fixed
 
 - Whole numbers ending in zero were printed without their zeros: a scale containing `30px` and `60px` produced messages such as `nearest: 3px or 6px`, autofix wrote `3px` for a value snapped to `30px`, and scale inference added phantom small steps (`3px`, `6px`) to every scale that contained `30px` or `60px`. This affected all three Stylelint rules, the ESLint rule's suggested classes, the audit and `scale: "auto"`. Found while reading why GOV.UK's scale came out as `1, 2, 3, 4, 5, 6, 10, 15, ...`. If you use a scale with round-ten values, rerun `--fix` on files that were fixed with an earlier version.
