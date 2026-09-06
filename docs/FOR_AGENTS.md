@@ -20,6 +20,22 @@ This project enforces its spacing scale with stylelint-plugin-rhythmguard.
 
 Trim it to the lines that apply. The whole value of an agent instruction is that it is short and true.
 
+### Install it as a pack
+
+The same block ships in the package as ready-made files for the agents that read a fixed location:
+
+```bash
+npx rhythmguard init --agents all       # or: claude, cursor, copilot
+```
+
+| Target | Written to | Notes |
+| --- | --- | --- |
+| `claude` | `.claude/skills/rhythmguard/SKILL.md` | Claude Code skill with frontmatter; overwritten on rerun |
+| `cursor` | `.cursor/rules/rhythmguard.mdc` | Cursor rule, `alwaysApply: true`; overwritten on rerun |
+| `copilot` | `.github/copilot-instructions.md` | Shared file: the block is appended between `<!-- rhythmguard:agents -->` markers and replaced in place on rerun |
+
+The three files are generated from this page by `npm run build:agents` and a test fails if they drift, so what an agent reads is always the block above.
+
 ## Commands and what they return
 
 | Command | Use it when | Output |

@@ -12,6 +12,7 @@ Commands:
   quickstart    Same as running with no command
   audit <dir>   Report design-system drift across CSS and Tailwind class strings
   init          Scaffold a Rhythmguard config for your project
+                --agents <claude|cursor|copilot|all> installs the agent instruction packs instead
   doctor        Validate your Rhythmguard setup
 
 Options:
@@ -22,6 +23,7 @@ Examples:
   npx rhythmguard audit ./src
   npx rhythmguard audit ./src --format markdown
   npx rhythmguard init
+  npx rhythmguard init --agents all
   npx rhythmguard doctor
 `;
 

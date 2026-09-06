@@ -1,0 +1,13 @@
+## Spacing scale
+
+This project enforces its spacing scale with stylelint-plugin-rhythmguard.
+
+- Before finishing any change to CSS or to Tailwind class strings, run `npx rhythmguard audit . --format json` (or `npx stylelint "**/*.css"` if a config exists) and fix every `off-scale` finding.
+- A finding names the value and the two nearest on-scale values. Prefer the design token for that value when one exists; otherwise use the nearest on-scale value. Never invent a new spacing value.
+- Do not use `--fix` on spacing findings unless the task says so. Snapping a value can change layout; choose the value deliberately.
+- Values of one pixel or less (hairlines) and percentages are allowed and are not findings.
+- Tailwind arbitrary spacing values such as `p-[13px]` are findings too; use the scale utility (`p-3`) or an on-scale arbitrary value.
+- When the audit's `contracts.scale.offScaleProperties` table is dominated by margins on sibling elements, put a `gap` on the parent instead of fixing each margin. The parent owns the spacing between its children.
+- If the audit reports the scale source as `fallback`, the project has no discoverable spacing tokens. Ask before adding any; do not guess a scale.
+
+Source: docs/FOR_AGENTS.md in the stylelint-plugin-rhythmguard repository (https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/FOR_AGENTS.md). Regenerate with `npx rhythmguard init --agents`.

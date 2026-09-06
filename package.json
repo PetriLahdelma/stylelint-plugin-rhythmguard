@@ -89,6 +89,7 @@
     }
   },
   "files": [
+    "agents",
     "examples",
     "scales",
     "schemas",
@@ -113,7 +114,8 @@
     "test:npm-smoke": "node scripts/ci/npm-registry-smoke.mjs --package stylelint-plugin-rhythmguard --version latest",
     "test:pack-smoke": "node scripts/ci/pack-smoke.mjs",
     "test:watch": "node --test --watch test/*.test.js",
-    "typecheck": "tsc -p tsconfig.typecheck.json"
+    "typecheck": "tsc -p tsconfig.typecheck.json",
+    "build:agents": "node scripts/build-agents.mjs"
   },
   "repository": {
     "type": "git",
