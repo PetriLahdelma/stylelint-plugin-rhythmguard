@@ -284,16 +284,40 @@ function collectScssTokens(source, matchesKind) {
   };
 
   const tokens = [];
-  const push = (tokenName, value) => {
-    if (!value || !matchesKind(tokenName)) {
+  const push = (tokenName, value, force = false) => {
+    if (!value || (!force && !matchesKind(tokenName))) {
       return;
     }
-    tokens.push({ token: tokenName, value: formatScssValue(value) });
+    const formatted = formatScssValue(value);
+    // A unitless number is a multiplier or a map index, not a length. Zero is fine.
+    if (/^-?\d*\.?\d+$/.test(formatted) && parseFloat(formatted) !== 0) {
+      return;
+    }
+    tokens.push({ token: tokenName, value: formatted });
   };
+  // Namespaced maps such as GOV.UK's $govuk-spacing-points are only accepted
+  // for the spacing kind, and only when they hold a real ladder (issue #86).
+  const spacingKind = matchesKind('$spacing-probe');
 
   for (const [name, raw] of declarations) {
     const tokenName = `$${name}`;
     if (isScssMap(raw)) {
+      if (!matchesKind(tokenName) && spacingKind && NAMESPACED_SPACING_MAP.test(tokenName)) {
+        const entries = [];
+        walkScssMap(raw, [tokenName], (pathName, expression) => {
+          const value = evaluateScssExpression(expression, resolveVariable, new Set());
+          if (value) {
+            entries.push([pathName, value]);
+          }
+        });
+        const distinct = new Set(entries.map(([, value]) => formatScssValue(value)).filter((value) => /^-?\d*\.?\d+(?:px|rem|em)$/.test(value) && parseFloat(value) !== 0));
+        if (distinct.size >= MIN_NAMESPACED_MAP_LENGTHS) {
+          for (const [pathName, value] of entries) {
+            push(pathName, value, true);
+          }
+        }
+        continue;
+      }
       walkScssMap(raw, [tokenName], (pathName, expression) => {
         push(pathName, evaluateScssExpression(expression, resolveVariable, new Set()));
       });
@@ -304,6 +328,10 @@ function collectScssTokens(source, matchesKind) {
 
   return tokens;
 }
+
+/** `$<namespace>-spacing-points`, `$<ns>-space-scale`: one namespace segment before the anchor. */
+const NAMESPACED_SPACING_MAP = /^\$[a-z0-9]+-(?:space|spacing|spacer)s?(?:-|$)/i;
+const MIN_NAMESPACED_MAP_LENGTHS = 4;
 
 function stripScssComments(source) {
   return source

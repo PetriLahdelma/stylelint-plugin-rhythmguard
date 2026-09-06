@@ -394,6 +394,7 @@ function toAuditContractReport(report) {
         files: report.scale ? report.scale.files : [],
         offScaleProperties: report.offScaleProperties || {},
         offScaleValues: report.offScaleValues,
+        rejected: report.scale && report.scale.rejected ? report.scale.rejected : null,
         source: report.scale ? report.scale.source : 'default',
         tokenOpportunities: report.tokenOpportunities,
         values: report.scale ? report.scale.values : null,

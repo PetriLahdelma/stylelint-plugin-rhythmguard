@@ -1,13 +1,13 @@
-# Spacing scale audit: 11 literal spacing values off your own token scale
+# Spacing scale audit: 26 literal spacing values off your own token scale
 
 Hi. I maintain [stylelint-plugin-rhythmguard](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard), a Stylelint rule that checks spacing values against a project's own scale. To keep it quiet on code I do not control, I run it against public design systems on pinned commits and publish the numbers. This repository is one of them, and I would rather you saw the audit here than in a report first.
 
 **What was run.** `npx rhythmguard audit . --scale auto` at `eed8a5e` over `packages`. Hairlines of one pixel or less, percentages, and generated or test paths are excluded. Anyone can reproduce it in a checkout of that commit.
 
-**What it found.** Scale `0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 12, 16, 24, 32, 40, 48, 56, 64, 72` inferred from your own spacing tokens in the stylesheets. 11 literal spacing values are off that scale.
+**What it found.** Scale `0, 1, 2, 8, 16, 24, 32` inferred from your own spacing tokens in the stylesheets. 26 literal spacing values are off that scale.
 
-- Values: `10px` ×4, `20px` ×4, `0.2rem` ×1, `0.3rem` ×1, `0.67em` ×1
-- Properties: `padding` ×8, `margin` ×1, `margin-top` ×1, `padding-top` ×1
+- Values: `0.25em` ×4, `10px` ×4, `20px` ×4, `5px` ×4, `12px` ×3
+- Properties: `padding` ×13, `margin-top` ×4, `padding-top` ×4, `margin-bottom` ×2, `margin` ×1
 
 Three values usually explain most of the count, and each is a single decision: a step the scale is missing, a slip, or a token nobody defined. A property table led by sibling margins often means the parent could own the spacing with `gap`.
 

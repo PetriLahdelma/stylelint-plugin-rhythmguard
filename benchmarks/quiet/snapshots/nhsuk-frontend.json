@@ -2,15 +2,18 @@
   "name": "nhsuk-frontend",
   "sha": "10caad9",
   "scale": {
-    "source": "fallback",
+    "source": "scanned-css",
     "values": [
       0,
       4,
       8,
-      12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      56,
+      64
     ]
   },
   "summary": {

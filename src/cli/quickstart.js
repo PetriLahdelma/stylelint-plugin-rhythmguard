@@ -160,7 +160,10 @@ async function run() {
   out.push('  Scale');
   out.push(`    Scale           ${scale.values.join(', ')}`);
   out.push(`    Source          ${describeScale(scale)}`);
-  if (scale.source === 'fallback') {
+  if (scale.source === 'fallback' && scale.rejected) {
+    out.push(`    Note            Spacing tokens were found but do not form a scale (${scale.rejected.reasons.join(', ')}); the rhythmic-4 preset is being used.`);
+    out.push('                    Point scaleSources at your real token file, or tighten tokenPattern.');
+  } else if (scale.source === 'fallback') {
     out.push('    Note            No spacing tokens found; the rhythmic-4 preset is being used.');
     out.push('                    Add scaleSources or define --space-*/--spacing-* custom properties to lint against your own scale.');
   }

@@ -2,15 +2,18 @@
   "name": "govuk-frontend",
   "sha": "356d461",
   "scale": {
-    "source": "fallback",
+    "source": "scanned-css",
     "values": [
       0,
-      4,
-      8,
-      12,
-      16,
-      24,
-      32
+      5,
+      10,
+      15,
+      20,
+      25,
+      30,
+      40,
+      50,
+      60
     ]
   },
   "summary": {
@@ -32,13 +35,13 @@
     "packages/govuk-frontend/src/govuk/components/notification-banner/_mixin.scss:24:2px:drift",
     "packages/govuk-frontend/src/govuk/components/notification-banner/_mixin.scss:34:2px:drift",
     "packages/govuk-frontend/src/govuk/components/pagination/_mixin.scss:229:0.326em:drift",
-    "packages/govuk-frontend/src/govuk/components/summary-list/_mixin.scss:234:10px:drift",
     "packages/govuk-frontend/src/govuk/components/tag/_mixin.scss:61:-2px:drift",
     "packages/govuk-frontend/src/govuk/components/tag/_mixin.scss:62:-3px:drift",
     "packages/govuk-frontend/src/govuk/components/tag/_mixin.scss:64:2px:drift",
+    "packages/govuk-frontend/src/govuk/components/tag/_mixin.scss:65:8px:drift",
     "packages/govuk-frontend/src/govuk/components/tag/_mixin.scss:66:3px:drift",
+    "packages/govuk-frontend/src/govuk/components/tag/_mixin.scss:67:8px:drift",
     "packages/govuk-frontend/src/govuk/components/warning-text/_mixin.scss:23:-7px:drift",
-    "packages/govuk-frontend/src/govuk/components/warning-text/_mixin.scss:26:-5px:drift",
     "packages/govuk-frontend/src/govuk/components/warning-text/_mixin.scss:60:45px:drift"
   ],
   "commit": "356d461da2bbcc69987749886527a633e207a09f"

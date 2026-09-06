@@ -69,8 +69,10 @@ function formatNumber(value) {
     return '0';
   }
 
+  // String() already prints the shortest form (1.5, not 1.50). The old
+  // trailing-zero strip also turned 30 into 3 and 100 into 1.
   const rounded = Math.round(value * 10000) / 10000;
-  return String(rounded).replace(/\.?0+$/, '');
+  return String(rounded);
 }
 
 function formatLength(number, unit) {

@@ -80,6 +80,8 @@ Deterministic: the value is replaced with the nearest scale step, preserving sig
 5. `theme.spacing` from `tailwindConfigPath` (Tailwind v3 JS config).
 6. Fallback to the `rhythmic-4` preset. The first report in the file says so: `No spacing tokens were found for scale "auto"; using preset "rhythmic-4".`
 
+Tokens found in the stylesheet are only used when they look like a scale: at least three positive steps, mostly whole pixels, and mostly sharing a common step (2, 3, 4, 5 or 8 pixels). Component-local variables such as `--chip-spacing: 3px; --modal-spacing: 25px` do not pass, and the first report then says `The spacing tokens found do not form a spacing scale (no common step); using preset "rhythmic-4".` Point `scaleSources` at the real token file, or tighten `tokenPattern`, when that happens.
+
 ```json
 {
   "rules": {

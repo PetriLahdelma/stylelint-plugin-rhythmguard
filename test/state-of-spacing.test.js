@@ -109,3 +109,13 @@ test('buildEdition marks unreliable scales and counts them with fallbacks', asyn
   assert.match(markdown, /\| \[zulip\]\([^)]*\) \| `abc1234` \| scanned-css \(unreliable\) \|/);
   assert.match(markdown, /1 more had an inference the plausibility check rejected/);
 });
+
+test('buildEdition shows a fallback caused by a rejected inference as such', async () => {
+  const { buildEdition, renderEdition } = await load();
+  const edition = buildEdition([
+    result({ name: 'zulip', scale: { source: 'fallback', values: [0, 4, 8, 12, 16, 24, 32], tokenCount: 0, files: [], rejected: { source: 'scanned-css', values: [0, 2, 3, 5, 6, 25], reasons: ['no common step'] } } }),
+  ], { id: '2026-09' });
+
+  assert.equal(edition.totals.unreliableScales, 1);
+  assert.match(renderEdition(edition), /\| \[zulip\]\([^)]*\) \| `abc1234` \| fallback \(scanned-css rejected\) \|/);
+});

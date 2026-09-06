@@ -33,32 +33,11 @@ export function topCounts(items, key, limit = 3) {
     .slice(0, limit);
 }
 
-const TOKEN_PATH_PATTERN = /(token|variable|spacing|space|theme|primitive|global|scale|layout)/i;
+import { assessScale as coreAssessScale } from '../../src/utils/scale-inference.js';
 
-/**
- * Inference can pick up component-local variables (`--chip-spacing: 3px`) and
- * report a "scale" nobody designed. Explicit sources are trusted; a scanned
- * scale is plausible when it is a ladder of mostly whole, mostly four-multiple
- * values, and either most of its files look like token files or the ladder is
- * overwhelmingly four-multiples. Fallback is never plausible: it is not the
- * repository's scale.
- */
+/** Same check the rule and the audit apply (issue #88); re-exported for the bench tests. */
 export function assessScale(scale) {
-  if (!scale || scale.source === 'fallback') return { plausible: false, reasons: ['fallback'] };
-  if (scale.source !== 'scanned-css') return { plausible: true, reasons: [] };
-  const positives = (scale.values || []).map(Number).filter((value) => Number.isFinite(value) && value > 0);
-  const integers = positives.filter(Number.isInteger);
-  const multiplesOfFour = integers.filter((value) => value % 4 === 0);
-  const integerShare = positives.length ? integers.length / positives.length : 0;
-  const fourShare = positives.length ? multiplesOfFour.length / positives.length : 0;
-  const files = scale.files || [];
-  const tokenFileShare = files.length ? files.filter((file) => TOKEN_PATH_PATTERN.test(file)).length / files.length : 0;
-  const reasons = [];
-  if (positives.length < 4) reasons.push('fewer than four positive steps');
-  if (integerShare < 0.8) reasons.push('fractional values');
-  if (fourShare < 0.5) reasons.push('not a four-based ladder');
-  if (tokenFileShare < 0.5 && fourShare < 0.8) reasons.push('sources are component files');
-  return { plausible: reasons.length === 0, reasons };
+  return coreAssessScale(scale || {});
 }
 
 export function buildEdition(results, { id, previous = null, generatedAt = new Date().toISOString().slice(0, 10) } = {}) {
@@ -82,6 +61,7 @@ export function buildEdition(results, { id, previous = null, generatedAt = new D
       driftDelta: before ? driftCount - before.drift : null,
       scaleReliable: assessment.plausible,
       scaleReasons: assessment.reasons,
+      scaleRejected: result.scale && result.scale.rejected ? { reasons: result.scale.rejected.reasons, source: result.scale.rejected.source } : null,
       scaleSource: result.scale ? result.scale.source : 'unknown',
       scaleValues: result.scale ? result.scale.values : [],
       topProperties: topCounts(drift, 'property'),
@@ -101,7 +81,7 @@ export function buildEdition(results, { id, previous = null, generatedAt = new D
       drift: rows.reduce((sum, row) => sum + row.drift, 0),
       repos: rows.length,
       fallbackScales: rows.filter((row) => row.scaleSource === 'fallback').length,
-      unreliableScales: rows.filter((row) => row.scaleSource !== 'fallback' && !row.scaleReliable).length,
+      unreliableScales: rows.filter((row) => (row.scaleSource !== 'fallback' && !row.scaleReliable) || row.scaleRejected).length,
     },
   };
 }
@@ -129,7 +109,7 @@ export function renderEdition(edition) {
     'npx rhythmguard audit . --scale auto --format markdown',
     '```',
     '',
-    `Across the set: ${edition.totals.drift} off-scale values in ${edition.totals.cssFiles} CSS files; ${edition.totals.fallbackScales} of ${edition.totals.repos} repositories had no discoverable spacing tokens and were measured against the \`rhythmic-4\` fallback, which says more about token discovery than about their CSS${edition.totals.unreliableScales > 0 ? `, and ${edition.totals.unreliableScales} more had an inference the plausibility check rejected (marked \`unreliable\`; usually component-local variables, see issue #54)` : ''}.${withDelta ? ` Changes are since ${edition.previousId}.` : ''}`,
+    `Across the set: ${edition.totals.drift} off-scale values in ${edition.totals.cssFiles} CSS files; ${edition.totals.fallbackScales} of ${edition.totals.repos} repositories had no discoverable spacing tokens and were measured against the \`rhythmic-4\` fallback, which says more about token discovery than about their CSS${edition.totals.unreliableScales > 0 ? `, and ${edition.totals.unreliableScales} more had an inference the plausibility check rejected (marked \`rejected\`, or \`unreliable\` when the bench alone rejects it; usually component-local variables, see issues #54 and #88)` : ''}.${withDelta ? ` Changes are since ${edition.previousId}.` : ''}`,
     '',
     '## Repositories',
     '',
@@ -138,7 +118,7 @@ export function renderEdition(edition) {
   ];
 
   for (const row of edition.rows) {
-    lines.push(`| [${row.name}](${row.url}) | \`${row.sha}\` | ${row.scaleSource}${row.scaleSource !== 'fallback' && !row.scaleReliable ? ' (unreliable)' : ''} | ${row.drift} | ${row.driftPer100Files} | ${row.cleanliness}% | ${formatCounts(row.topValues)} | ${formatCounts(row.topProperties)} |${withDelta ? ` ${formatDelta(row.driftDelta)} |` : ''}`);
+    lines.push(`| [${row.name}](${row.url}) | \`${row.sha}\` | ${row.scaleSource}${row.scaleRejected ? ` (${row.scaleRejected.source} rejected)` : row.scaleSource !== 'fallback' && !row.scaleReliable ? ' (unreliable)' : ''} | ${row.drift} | ${row.driftPer100Files} | ${row.cleanliness}% | ${formatCounts(row.topValues)} | ${formatCounts(row.topProperties)} |${withDelta ? ` ${formatDelta(row.driftDelta)} |` : ''}`);
   }
 
   lines.push(
@@ -149,7 +129,7 @@ export function renderEdition(edition) {
     '- **Top values** are the numbers that drifted. Three values usually explain most of a repository\'s drift, and each one is a single decision: a missing step, a mistake, or a token that was never defined.',
     '- **Top properties** are where the layout decision lives. A table led by sibling margins usually means the parent should own the spacing with `gap`; a table led by `padding` is component-internal and is fixed per component.',
     '- **Top properties** may include `class-string`, which is a Tailwind arbitrary value in a template rather than a CSS declaration.',
-    '- **Scale source** `unreliable` marks a scanned scale that failed a plausibility check (fractional steps, no four-based ladder, or sources that are component files rather than token files). Its row is measured against a scale the repository probably did not design; treat it like a fallback.',
+    '- **Scale source** `fallback (scanned-css rejected)` means tokens were found but the rule itself rejected them as a scale and measured against the preset instead. `unreliable` marks a scanned scale that failed a plausibility check (fractional steps, no four-based ladder, or sources that are component files rather than token files). Its row is measured against a scale the repository probably did not design; treat it like a fallback.',
     '- **Scale source** `fallback` means the audit found fewer than three spacing tokens and used a default scale. Treat those rows as a to-do for token discovery, not as a verdict on the CSS.',
     '',
     '## Method and caveats',

@@ -60,3 +60,48 @@ test('collectScssTokens walks nested maps, skips keywords, strings and calls it 
     '$space-div': '16px',
   });
 });
+
+test('collectScssTokens reads a namespaced spacing map with at least four lengths, as GOV.UK and NHS.UK define theirs (issue #86)', () => {
+  const tokens = byName(collectScssTokens([
+    '$govuk-spacing-points: (',
+    '  0: 0,',
+    '  1: 5px,',
+    '  2: 10px,',
+    '  3: 15px,',
+    '  4: 20px,',
+    '  5: 25px,',
+    ') !default;',
+    '$dropdown-spacer: .125rem !default;',
+    '$card-spacer-y: 1rem !default;',
+    '$widget-spacing-steps: (1: 4px, 2: 8px);',
+  ].join('\n'), spacing));
+
+  assert.equal(tokens['$govuk-spacing-points.1'], '5px');
+  assert.equal(tokens['$govuk-spacing-points.5'], '25px');
+  assert.equal(tokens['$dropdown-spacer'], undefined, 'a namespaced scalar stays excluded');
+  assert.equal(tokens['$card-spacer-y'], undefined);
+  assert.equal(tokens['$widget-spacing-steps.1'], undefined, 'a namespaced map with fewer than four lengths stays excluded');
+});
+
+test('namespaced maps are only accepted for the spacing kind', () => {
+  const radius = createTokenKindMatcher('radius');
+  const tokens = collectScssTokens('$govuk-spacing-points: (1: 5px, 2: 10px, 3: 15px, 4: 20px);', radius);
+  assert.deepEqual(tokens, []);
+});
+
+test('collectScssTokens ignores unitless numbers such as mixin parameter defaults (GOV.UK $spacing-responsive: 6)', () => {
+  const tokens = byName(collectScssTokens([
+    '@mixin govuk-main-wrapper($spacing-responsive: 6, $spacing-static: 4) {',
+    '  padding-top: govuk-spacing($spacing-responsive);',
+    '}',
+    '$spacing-unit: 8;',
+    '$spacing-1: 4px;',
+    '$spacing-none: 0;',
+  ].join('\n'), spacing));
+
+  assert.equal(tokens['$spacing-responsive'], undefined, 'mixin parameter defaults are not tokens');
+  assert.equal(tokens['$spacing-static'], undefined);
+  assert.equal(tokens['$spacing-unit'], undefined, 'a unitless multiplier is not a length');
+  assert.equal(tokens['$spacing-1'], '4px');
+  assert.equal(tokens['$spacing-none'], '0');
+});
