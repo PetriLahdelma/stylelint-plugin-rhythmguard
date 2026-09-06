@@ -386,7 +386,9 @@
       "paths": [
         "src/client/theme-default/styles"
       ],
-      "notes": "VitePress default theme: plain CSS with --vp-* tokens."
+      "notes": "VitePress default theme: plain CSS with --vp-* tokens. Maintainer (vuejs/vitepress#5423): no spacing scale, none planned; measured against the fallback for information only.",
+      "scaleIntent": "none",
+      "scaleIntentSource": "https://github.com/vuejs/vitepress/issues/5423"
     },
     {
       "name": "starlight",
