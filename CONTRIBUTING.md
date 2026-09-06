@@ -27,7 +27,19 @@ npm ci
 npm test
 ```
 
-Node 20.19 or newer. No build step; the source runs as is. Tests use `node --test` and take about five seconds.
+Node 20.19 or newer. No build step; the source runs as is. Tests use `node --test` and take about ten seconds. They are grouped by what they prove:
+
+| Folder | Proves | Run one |
+| --- | --- | --- |
+| `test/unit/` | a core primitive (lengths, options, token sources, inference cache) | `node --test test/unit/length-format.test.js` |
+| `test/rules/` | a Stylelint or ESLint rule end to end through the real linter | `node --test test/rules/use-scale.test.js` |
+| `test/cli/` | a command as a user runs it, in a temp directory | `node --test test/cli/audit-cli.test.js` |
+| `test/api/` | the programmatic audit API | |
+| `test/contracts/` | what must stay true for consumers: package exports, CJS/ESM parity, layer rules, rule docs | `node --test test/contracts/architecture.test.js` |
+| `test/compat/` | the Stylelint 16.0.0 floor | `npm run test:compat-floor` |
+| `test/bench/` | the benchmark and report scripts | |
+
+Put a new test where its subject lives. If it needs the real linter, it is a rule test; if it needs a temp directory and `spawnSync`, it is a CLI test; if it asserts something about the repository itself, it is a contract.
 
 ## The local gate
 
@@ -36,7 +48,7 @@ Run these before you push. They are what CI runs, so a green local run means a g
 ```bash
 npm run lint        # eslint
 npm run typecheck   # the published TypeScript declarations against a consumer file and the examples
-npm test            # 150+ tests, Stylelint 16
+npm test            # 200+ tests, Stylelint 16
 ```
 
 Optional, depending on what you touched:

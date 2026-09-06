@@ -1,0 +1,178 @@
+'use strict';
+
+const assert = require('node:assert/strict');
+const test = require('node:test');
+const { lintCss } = require('../helpers/lint');
+
+const baseRule = {
+  'rhythmguard/prefer-token': [
+    true,
+    {
+      tokenPattern: '^--space-',
+      scale: [0, 4, 8, 12, 16, 24, 32],
+    },
+  ],
+};
+
+test('prefer-token rejects raw spacing values', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: 12px; }',
+    rules: baseRule,
+  });
+
+  assert.equal(result.warnings.length, 1);
+  assert.equal(result.warnings[0].rule, 'rhythmguard/prefer-token');
+  assert.match(result.warnings[0].text, /raw scale value/);
+});
+
+test('prefer-token accepts tokenized values', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: var(--space-3); margin: token(space.2); }',
+    rules: baseRule,
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
+
+test('prefer-token can allow numeric scale values during migration', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: 12px; margin: 13px; }',
+    rules: {
+      'rhythmguard/prefer-token': [
+        true,
+        {
+          allowNumericScale: true,
+          scale: [0, 4, 8, 12, 16, 24, 32],
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0].text, /13px/);
+});
+
+test('prefer-token can autofix with tokenMap', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: 12px; }',
+    fix: true,
+    rules: {
+      'rhythmguard/prefer-token': [
+        true,
+        {
+          tokenMap: {
+            '12px': 'var(--space-3)',
+          },
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.code, '.stack { gap: var(--space-3); }');
+});
+
+test('prefer-token allows token functions inside transform translate values', async () => {
+  const result = await lintCss({
+    code: '.stack { transform: translateY(theme(spacing.4)); }',
+    rules: baseRule,
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
+
+test('prefer-token supports built-in preset scales in migration mode', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: 21px; margin: 22px; }',
+    rules: {
+      'rhythmguard/prefer-token': [
+        true,
+        {
+          allowNumericScale: true,
+          preset: 'fibonacci',
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 1);
+  assert.match(result.warnings[0].text, /22px/);
+});
+
+test('prefer-token custom scale overrides preset in migration mode', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: 18px; }',
+    rules: {
+      'rhythmguard/prefer-token': [
+        true,
+        {
+          allowNumericScale: true,
+          customScale: [0, 6, 12, 18, 24],
+          preset: 'fibonacci',
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
+
+test('prefer-token ignores unitless non-zero values', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: 13; }',
+    rules: baseRule,
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
+
+test('prefer-token skips math internals by default', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: calc(12px + 2px); }',
+    rules: baseRule,
+  });
+
+  assert.equal(result.warnings.length, 0);
+});
+
+test('prefer-token can lint inside math functions when enabled', async () => {
+  const result = await lintCss({
+    code: '.stack { gap: calc(12px + 2px); }',
+    rules: {
+      'rhythmguard/prefer-token': [
+        true,
+        {
+          tokenPattern: '^--space-',
+          enforceInsideMathFunctions: true,
+        },
+      ],
+    },
+  });
+
+  assert.equal(result.warnings.length, 2);
+  assert.ok(result.warnings.every((warning) => warning.rule === 'rhythmguard/prefer-token'));
+});
+
+test('prefer-token never treats percentages as token opportunities', async () => {
+  const { lintCss: lint } = require('../helpers/lint');
+  const assertStrict = require('node:assert/strict');
+  const result = await lint({
+    code: '.center { transform: translate(-50%, -50%); margin-inline: 5%; inset: 100% auto; padding: 12px; }',
+    rules: { 'rhythmguard/prefer-token': [true, { tokenMap: { '12px': 'var(--space-3)' } }] },
+  });
+  const texts = result.warnings.map((w) => w.text);
+  assertStrict.equal(texts.length, 1, texts.join('\n'));
+  assertStrict.match(texts[0], /"12px"/);
+});
+
+test('prefer-token does not ask for a token for hairline offsets unless allowHairlines is false', async () => {
+  const { lintCss: lint } = require('../helpers/lint');
+  const assertStrict = require('node:assert/strict');
+  const code = '.a { margin: -1px; inset: 0.5px; padding: 12px; }';
+
+  const relaxed = await lint({ code, rules: { 'rhythmguard/prefer-token': [true, { tokenMap: { '12px': 'var(--space-3)' } }] } });
+  assertStrict.equal(relaxed.warnings.length, 1, relaxed.warnings.map((w) => w.text).join('\n'));
+  assertStrict.match(relaxed.warnings[0].text, /"12px"/);
+
+  const strict = await lint({ code, rules: { 'rhythmguard/prefer-token': [true, { allowHairlines: false, tokenMap: { '12px': 'var(--space-3)' } }] } });
+  assertStrict.equal(strict.warnings.length, 3, strict.warnings.map((w) => w.text).join('\n'));
+});

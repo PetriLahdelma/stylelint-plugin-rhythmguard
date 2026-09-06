@@ -3,7 +3,16 @@ name: CI
 on:
   push:
     branches: [main]
+    paths-ignore: ['docs/**', '**/*.md', 'assets/**', 'agents/**']
   pull_request:
+    paths-ignore: ['docs/**', '**/*.md', 'assets/**', 'agents/**']
+  workflow_dispatch:
+
+# A newer commit on the same branch makes the older run's result irrelevant.
+# Cancelling it keeps the two-runner farm from queueing a day's worth of merges.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   verify:
