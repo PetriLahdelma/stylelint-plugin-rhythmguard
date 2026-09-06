@@ -76,6 +76,7 @@ async function run() {
 
   if (parsed.format === 'badge') {
     writeOutput(renderBadge(report, { metric: parsed.badgeMetric }), parsed.outputPath);
+    finish(auditFailures);
     return;
   }
 
