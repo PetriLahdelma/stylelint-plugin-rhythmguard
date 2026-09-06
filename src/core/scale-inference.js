@@ -5,7 +5,13 @@ const path = require('node:path');
 
 const { parseLengthToken, toPx } = require('./length');
 const { buildEffectiveTokenMap } = require('./token-map');
-const { collectScssTokens, createTokenKindMatcher, parseTokenSources } = require('./token-sources');
+const {
+  addDefinition,
+  collectScssTokens,
+  createTokenKindMatcher,
+  parseTokenSources,
+  parseTokenValueLength,
+} = require('./token-sources');
 const { getScalePreset } = require('../presets/scales');
 
 // Matches the audit default so lint and audit agree on what a spacing token is.
@@ -213,8 +219,38 @@ function scaleFromSources(sources, baseFontSize) {
   return outcome;
 }
 
-/** Build a px scale from token definitions as produced by token-sources.js / contract.js. */
+/**
+ * Build a px scale from token definitions. Root-level declarations win: when
+ * the definitions declared in `:root`, `html` or `@theme` form a scale on
+ * their own, component-local variables (`--chip-spacing: 3px` inside `.chip`)
+ * are left out, because they are a component's parameters, not the project's
+ * scale (issue #54). When the root does not carry a scale, everything counts
+ * and the plausibility check is the backstop. Returns the values and the
+ * definitions that produced them, so provenance can name only those files.
+ */
+function inferScaleFromDefinitions(definitions, baseFontSize = 16) {
+  const rootOnly = new Map();
+  for (const [token, definition] of definitions) {
+    if (!definition.scopes || definition.scopes.has('root')) {
+      rootOnly.set(token, definition);
+    }
+  }
+  if (rootOnly.size > 0 && rootOnly.size < definitions.size) {
+    const fromRoot = scaleFromAllDefinitions(rootOnly, baseFontSize);
+    if (fromRoot) {
+      return { definitions: rootOnly, values: fromRoot };
+    }
+  }
+  const values = scaleFromAllDefinitions(definitions, baseFontSize);
+  return values ? { definitions, values } : null;
+}
+
 function scaleFromDefinitions(definitions, baseFontSize = 16) {
+  const inferred = inferScaleFromDefinitions(definitions, baseFontSize);
+  return inferred ? inferred.values : null;
+}
+
+function scaleFromAllDefinitions(definitions, baseFontSize) {
   const keys = [];
   const baseKeys = [];
   for (const definition of definitions.values()) {
@@ -226,6 +262,44 @@ function scaleFromDefinitions(definitions, baseFontSize = 16) {
   }
   const scale = expandTailwindBase(pxValuesFromKeys(keys, baseFontSize), baseKeys, baseFontSize);
   return scale.length >= MIN_INFERRED_SCALE_LENGTH ? scale : null;
+}
+
+/** The scope of a declaration node: the AST-side twin of customPropertyDeclarations. */
+function scopeOfNode(decl) {
+  for (let node = decl.parent; node; node = node.parent) {
+    if (node.type === 'rule') {
+      return String(node.selector).split(',').every((selector) => ROOT_SELECTOR.test(selector.trim())) ? 'root' : 'component';
+    }
+    if (node.type === 'atrule') {
+      const name = String(node.name).toLowerCase();
+      if (name === 'theme') return 'root';
+      if (!TRANSPARENT_AT_RULES.has(name)) return 'component';
+    }
+  }
+  return 'root';
+}
+
+const ROOT_SELECTOR = /^(?::root|html|:host|:(?:where|is)\(\s*(?::root|html)\s*\))$/i;
+const TRANSPARENT_AT_RULES = new Set(['media', 'supports', 'layer', 'container', 'scope', 'document']);
+
+/** Token definitions declared in the linted stylesheet itself: custom properties with their scope, plus Sass variables and maps. */
+function stylesheetDefinitions(root, tokenRegex, baseFontSize) {
+  const definitions = new Map();
+  root.walkDecls((decl) => {
+    const prop = decl.prop.toLowerCase();
+    if (!prop.startsWith('--') || !tokenRegex.test(prop)) {
+      return;
+    }
+    const parsed = parseTokenValueLength(decl.value);
+    if (!parsed || parsed.number === 0) {
+      return;
+    }
+    addDefinition(definitions, { baseFontSize, file: 'stylesheet', scope: scopeOfNode(decl), source: 'stylesheet', token: decl.prop, value: decl.value });
+  });
+  for (const sassToken of sassTokensFromRoot(root)) {
+    addDefinition(definitions, { baseFontSize, file: 'stylesheet', scope: 'root', source: 'stylesheet', token: sassToken.token, value: sassToken.value });
+  }
+  return definitions;
 }
 
 /**
@@ -295,7 +369,7 @@ function rcTokenSourcesUncached(rcPath) {
  * same collector the audit uses; component variables such as $dropdown-spacer
  * are excluded by the anchored name rule.
  */
-function sassValuesFromRoot(root) {
+function sassTokensFromRoot(root) {
   const lines = [];
   root.walkDecls((decl) => {
     if (typeof decl.prop === 'string' && decl.prop.startsWith('$')) {
@@ -305,7 +379,7 @@ function sassValuesFromRoot(root) {
   if (lines.length === 0) {
     return [];
   }
-  return collectScssTokens(lines.join('\n'), createTokenKindMatcher('spacing')).map((token) => token.value);
+  return collectScssTokens(lines.join('\n'), createTokenKindMatcher('spacing'));
 }
 
 function scaleFromTokenMap(map, baseFontSize, extraKeys = []) {
@@ -353,12 +427,7 @@ function resolveAutoScale({
 
   let rejected = null;
   if (root) {
-    const stylesheetMap = buildEffectiveTokenMap({
-      options: { baseFontSize, tokenMap: {}, tokenMapFromCssCustomProperties: true },
-      root,
-      tokenRegex,
-    });
-    const scale = scaleFromTokenMap(stylesheetMap, baseFontSize, sassValuesFromRoot(root));
+    const scale = scaleFromDefinitions(stylesheetDefinitions(root, tokenRegex, baseFontSize), baseFontSize);
     if (scale) {
       const assessment = assessScale({ source: 'stylesheet', values: scale });
       if (assessment.plausible) {
@@ -484,6 +553,7 @@ module.exports = {
   assessScale,
   autoScaleFallbackNote,
   discoverTokenPackages,
+  inferScaleFromDefinitions,
   resolveAutoScale,
   scaleFromDefinitions,
   withResolvedScale,

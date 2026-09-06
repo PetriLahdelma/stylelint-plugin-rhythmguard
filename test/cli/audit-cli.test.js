@@ -865,3 +865,17 @@ test('audit CLI --scale auto does not read a selector like .grid--auto-spacing:f
   assert.equal(report.contracts.scale.source, 'scanned-css');
   assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12, 16]);
 });
+
+test('audit CLI --scale auto infers from root-level tokens and reports only their files when components redefine spacing (issue #54)', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-root-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src', 'components', 'Chip'), { recursive: true });
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'theme.css'), ':root { --m-spacing-xs: 10px; --m-spacing-sm: 12px; --m-spacing-md: 16px; --m-spacing-lg: 20px; --m-spacing-xl: 32px; }\n');
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'components', 'Chip', 'Chip.module.css'), '.chip { --chip-spacing: 3px; --chip-spacing-lg: 22px; padding: 22px; }\n');
+
+  const result = runAudit(fixtureDir, '--scale', 'auto', '--format', 'json');
+  assert.equal(result.status, 0, result.stderr);
+  const scale = JSON.parse(result.stdout).contracts.scale;
+  assert.equal(scale.source, 'scanned-css');
+  assert.deepEqual(scale.values, [0, 10, 12, 16, 20, 32]);
+  assert.deepEqual(scale.files.map((file) => path.basename(file)), ['theme.css']);
+});

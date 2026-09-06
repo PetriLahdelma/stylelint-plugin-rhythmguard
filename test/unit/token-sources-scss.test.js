@@ -105,3 +105,30 @@ test('collectScssTokens ignores unitless numbers such as mixin parameter default
   assert.equal(tokens['$spacing-1'], '4px');
   assert.equal(tokens['$spacing-none'], '0');
 });
+
+test('collectCssTokens records whether a custom property is declared at root level or inside a component (issue #54)', () => {
+  const { collectCssTokens } = require('../../src/core/token-sources');
+  const scopes = Object.fromEntries(collectCssTokens([
+    '/* generated, do not edit */',
+    ':root,',
+    ':host { --space-1: 4px; }',
+    'html, :root { --space-2: 8px; }',
+    '@theme { --spacing: 0.25rem; }',
+    '@media (min-width: 40em) { :root { --space-3: 12px; } }',
+    '@layer base { html { --space-4: 16px; } }',
+    '.chip { --chip-spacing: 3px; }',
+    '.card:hover .inner { --card-spacing-y: 5px; }',
+    '$spacer: 1rem;',
+  ].join('\n'), spacing).map((entry) => [entry.token, entry.scope]));
+
+  assert.deepEqual(scopes, {
+    '--space-1': 'root',
+    '--space-2': 'root',
+    '--spacing': 'root',
+    '--space-3': 'root',
+    '--space-4': 'root',
+    '--chip-spacing': 'component',
+    '--card-spacing-y': 'component',
+    '$spacer': 'root',
+  });
+});

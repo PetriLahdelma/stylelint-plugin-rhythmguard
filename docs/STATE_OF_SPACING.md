@@ -8,7 +8,7 @@ This is not a ranking of teams. It is a reading of one signal on a fixed commit,
 npx rhythmguard audit . --scale auto --format markdown
 ```
 
-Across the set: 8333 off-scale values in 8585 CSS files; 40 of 57 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS, and 4 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
+Across the set: 8334 off-scale values in 8585 CSS files; 40 of 57 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS, and 4 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
 
 ## Repositories
 
@@ -44,8 +44,8 @@ Across the set: 8333 off-scale values in 8585 CSS files; 40 of 57 repositories h
 | [bootstrap](https://github.com/twbs/bootstrap) | `12cb8b9` | scanned-css | 53 | 43 | 84% | `.125rem` ×9, `.75rem` ×8, `1.25rem` ×8 | `padding` ×22, `margin-top` ×9, `margin` ×4 |
 | [docusaurus-theme-classic](https://github.com/facebook/docusaurus) | `a3e5eba` | fallback | 33 | 43 | 90% | `0.3rem` ×8, `0.4rem` ×8, `0.2rem` ×4 | `padding` ×12, `margin-right` ×6, `margin-left` ×4 |
 | [fundamental-styles](https://github.com/SAP/fundamental-styles) | `e31a128` | fallback | 137 | 40 | 70% | `0.125rem` ×32, `0.375rem` ×22, `0.625rem` ×17 | `padding-inline` ×40, `padding-block` ×33, `gap` ×12 |
+| [mantine](https://github.com/mantinedev/mantine) | `3862b09` | scanned-css | 36 | 35 | 98% | `4px` ×6, `5px` ×6, `2px` ×4 | `padding` ×11, `inset-inline-start` ×3, `margin-bottom` ×3 |
 | [daisyui](https://github.com/saadeghi/daisyui) | `1435c65` | fallback | 37 | 34 | 93% | `0.125rem` ×3, `1.4rem` ×3, `5px` ×3 | `padding` ×12, `inset-inline-end` ×5, `class-string` ×4 |
-| [mantine](https://github.com/mantinedev/mantine) | `3862b09` | scanned-css | 35 | 34 | 98% | `4px` ×6, `5px` ×6, `2px` ×4 | `padding` ×11, `inset-inline-start` ×3, `margin-bottom` ×3 |
 | [utrecht](https://github.com/nl-design-system/utrecht) | `ecedc4b` | fallback | 47 | 29 | 99% | `3rem` ×8, `26px` ×7, `10px` ×5 | `padding` ×12, `margin-bottom` ×4, `margin-left` ×4 |
 | [foundation-sites](https://github.com/foundation/foundation-sites) | `337be7a` | fallback | 34 | 29 | 85% | `10px` ×5, `2.5rem` ×4, `30px` ×4 | `padding` ×11, `margin-bottom` ×8, `transform` ×4 |
 | [nhsuk-frontend](https://github.com/nhsuk/nhsuk-frontend) | `10caad9` | scanned-css | 28 | 19 | 97% | `-6px` ×7, `2px` ×5, `6px` ×5 | `margin-left` ×8, `margin-right` ×8, `padding-top` ×5 |

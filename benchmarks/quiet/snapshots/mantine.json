@@ -9,13 +9,12 @@
       12,
       16,
       20,
-      22,
       32
     ]
   },
   "summary": {
-    "total": 35,
-    "drift": 35,
+    "total": 36,
+    "drift": 36,
     "falsePositives": 0
   },
   "findings": [
@@ -38,6 +37,7 @@
     "packages/@mantine/core/src/components/Menu/Menu.module.css:2:4px:drift",
     "packages/@mantine/core/src/components/Menu/Menu.module.css:56:5px:drift",
     "packages/@mantine/core/src/components/NavLink/NavLink.module.css:9:8px:drift",
+    "packages/@mantine/core/src/components/Notification/Notification.module.css:10:22px:drift",
     "packages/@mantine/core/src/components/Notification/Notification.module.css:24:4px:drift",
     "packages/@mantine/core/src/components/Notification/Notification.module.css:78:2px:drift",
     "packages/@mantine/core/src/components/Pill/Pill.module.css:120:0.1em:drift",

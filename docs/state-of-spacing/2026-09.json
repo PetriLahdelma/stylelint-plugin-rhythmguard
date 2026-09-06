@@ -1616,6 +1616,56 @@
       ]
     },
     {
+      "name": "mantine",
+      "url": "https://github.com/mantinedev/mantine",
+      "sha": "3862b09",
+      "cssFiles": 102,
+      "cleanliness": 98,
+      "drift": 36,
+      "driftPer100Files": 35,
+      "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
+      "scaleRejected": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        10,
+        12,
+        16,
+        20,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          11
+        ],
+        [
+          "inset-inline-start",
+          3
+        ],
+        [
+          "margin-bottom",
+          3
+        ]
+      ],
+      "topValues": [
+        [
+          "4px",
+          6
+        ],
+        [
+          "5px",
+          6
+        ],
+        [
+          "2px",
+          4
+        ]
+      ]
+    },
+    {
       "name": "daisyui",
       "url": "https://github.com/saadeghi/daisyui",
       "sha": "1435c65",
@@ -1665,57 +1715,6 @@
         [
           "5px",
           3
-        ]
-      ]
-    },
-    {
-      "name": "mantine",
-      "url": "https://github.com/mantinedev/mantine",
-      "sha": "3862b09",
-      "cssFiles": 102,
-      "cleanliness": 98,
-      "drift": 35,
-      "driftPer100Files": 34,
-      "driftDelta": null,
-      "scaleReliable": true,
-      "scaleReasons": [],
-      "scaleRejected": null,
-      "scaleSource": "scanned-css",
-      "scaleValues": [
-        0,
-        10,
-        12,
-        16,
-        20,
-        22,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding",
-          11
-        ],
-        [
-          "inset-inline-start",
-          3
-        ],
-        [
-          "margin-bottom",
-          3
-        ]
-      ],
-      "topValues": [
-        [
-          "4px",
-          6
-        ],
-        [
-          "5px",
-          6
-        ],
-        [
-          "2px",
-          4
         ]
       ]
     },
@@ -3011,7 +3010,7 @@
   ],
   "totals": {
     "cssFiles": 8585,
-    "drift": 8333,
+    "drift": 8334,
     "repos": 57,
     "fallbackScales": 40,
     "unreliableScales": 4

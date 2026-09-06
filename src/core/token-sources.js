@@ -238,23 +238,107 @@ function detectJsonTokenFormat(parsed) {
 
 function collectCssTokens(source, matchesKind) {
   const tokens = [];
-  const declarationPattern = /(--[\w-]+)\s*:\s*([^;{}]+)/g;
-  let match;
+  for (const declaration of customPropertyDeclarations(source)) {
+    if (matchesKind(declaration.token)) {
+      tokens.push(declaration);
+    }
+  }
+  for (const sassToken of collectScssTokens(source, matchesKind)) {
+    tokens.push({ ...sassToken, scope: 'root' });
+  }
+  return tokens;
+}
 
-  while ((match = declarationPattern.exec(source)) !== null) {
-    const token = match[1];
-    if (!matchesKind(token)) {
+const ROOT_SELECTOR = /^(?::root|html|:host|:(?:where|is)\(\s*(?::root|html)\s*\))$/i;
+// At-rules that only condition their contents; the enclosing selector still decides the scope.
+const TRANSPARENT_AT_RULES = new Set(['media', 'supports', 'layer', 'container', 'scope', 'document']);
+
+function stripComments(text) {
+  return text.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+}
+
+function scopeOfBlockHeaders(headers) {
+  for (let index = headers.length - 1; index >= 0; index -= 1) {
+    const header = headers[index];
+    if (header.startsWith('@')) {
+      const name = header.slice(1).match(/^[\w-]+/);
+      if (name && name[0].toLowerCase() === 'theme') return 'root';
+      if (name && TRANSPARENT_AT_RULES.has(name[0].toLowerCase())) continue;
+      return 'component';
+    }
+    return header.split(',').every((selector) => ROOT_SELECTOR.test(selector.trim())) ? 'root' : 'component';
+  }
+  return 'root';
+}
+
+/**
+ * Custom property declarations with the scope they are declared in: `root`
+ * for `:root`, `html`, `:host` and `@theme` blocks (through conditional
+ * at-rules), `component` for anything else. One pass over the source that
+ * skips comments and strings, so a brace in a comment cannot shift the
+ * scope; this is the text-side twin of scopeOfNode in scale-inference.js.
+ */
+function customPropertyDeclarations(source) {
+  const declarations = [];
+  const headers = [];
+  let headerStart = 0;
+  let index = 0;
+  const length = source.length;
+
+  while (index < length) {
+    const char = source[index];
+    const next = source[index + 1];
+
+    if (char === '/' && next === '*') {
+      const end = source.indexOf('*/', index + 2);
+      index = end === -1 ? length : end + 2;
       continue;
     }
-
-    tokens.push({
-      token,
-      value: match[2].trim(),
-    });
+    if (char === '/' && next === '/') {
+      const end = source.indexOf('\n', index);
+      index = end === -1 ? length : end;
+      continue;
+    }
+    if (char === '"' || char === "'") {
+      let end = index + 1;
+      while (end < length && source[end] !== char) end += source[end] === '\\' ? 2 : 1;
+      index = end + 1;
+      continue;
+    }
+    if (char === '{') {
+      if (source[index - 1] === '#') {
+        const end = source.indexOf('}', index);
+        index = end === -1 ? length : end + 1;
+        continue;
+      }
+      headers.push(stripComments(source.slice(headerStart, index)).trim().replace(/\s+/g, ' '));
+      headerStart = index + 1;
+      index += 1;
+      continue;
+    }
+    if (char === '}') {
+      headers.pop();
+      headerStart = index + 1;
+      index += 1;
+      continue;
+    }
+    if (char === ';') {
+      headerStart = index + 1;
+      index += 1;
+      continue;
+    }
+    if (char === '-' && next === '-' && !/[\w-]/.test(source[index - 1] || '')) {
+      const match = /^(--[\w-]+)\s*:\s*([^;{}]+)/.exec(source.slice(index));
+      if (match) {
+        declarations.push({ scope: scopeOfBlockHeaders(headers), token: match[1], value: match[2].trim() });
+        index += match[0].length;
+        continue;
+      }
+    }
+    index += 1;
   }
 
-  tokens.push(...collectScssTokens(source, matchesKind));
-  return tokens;
+  return declarations;
 }
 
 /**
@@ -662,6 +746,7 @@ function extractTokenName(value) {
 function addDefinition(definitions, {
   baseFontSize,
   file,
+  scope = 'root',
   source,
   token,
   value,
@@ -669,12 +754,14 @@ function addDefinition(definitions, {
   const entry = definitions.get(token) || {
     files: new Set(),
     normalizedValues: new Set(),
+    scopes: new Set(),
     sources: new Set(),
     token,
     values: new Set(),
   };
 
   entry.files.add(file);
+  entry.scopes.add(scope);
   entry.sources.add(source);
   entry.values.add(String(value).trim());
 
@@ -750,6 +837,7 @@ module.exports = {
   addDefinition,
   collectCssTokens,
   collectScssTokens,
+  customPropertyDeclarations,
   createTokenKindMatcher,
   getNormalizedValueKeys,
   normalizeTokenKind,

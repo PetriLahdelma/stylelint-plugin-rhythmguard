@@ -8,6 +8,7 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Fixed
 
+- `scale: "auto"` prefers root-level declarations. When the custom properties in `:root`, `html`, `:host` or `@theme` (through conditional at-rules) form a scale on their own, variables declared inside component selectors no longer join it. Mantine now infers exactly its `--mantine-spacing-*` ladder instead of a mix with `--chip-spacing`. When the root carries no scale, every declaration still counts. ([#54](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/54))
 - `postcss-value-parser` is declared as a runtime dependency. The rules require it at runtime but it was only a dev dependency, resolved through Stylelint's hoisted copy; strict package managers could not install the plugin without it.
 
 ### Changed
