@@ -3,7 +3,7 @@
 const {
   normalizeTokenKind,
   normalizeTokenSourceFormat,
-} = require('../utils/token-sources');
+} = require('../core/token-sources');
 const { BADGE_METRICS } = require('./render-badge');
 const {
   VALID_FORMATS,

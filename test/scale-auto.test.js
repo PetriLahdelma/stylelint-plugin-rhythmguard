@@ -377,7 +377,7 @@ test('scale "auto" rejects stylesheet tokens that do not form a coherent scale a
 });
 
 test('assessScale accepts ladders with a common step and rejects fractional or stepless sets', () => {
-  const { assessScale } = require('../src/utils/scale-inference');
+  const { assessScale } = require('../src/core/scale-inference');
   const ok = (scale) => assessScale(scale).plausible;
 
   assert.equal(ok({ source: 'stylesheet', values: [0, 4, 8, 12, 16, 24, 32] }), true);

@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { normalizeTokenSourceFormat } = require('../utils/token-sources');
+const { normalizeTokenSourceFormat } = require('../core/token-sources');
 
 const cwd = process.cwd();
 let issues = 0;

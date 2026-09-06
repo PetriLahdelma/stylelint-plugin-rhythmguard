@@ -1,7 +1,7 @@
 'use strict';
 
-const { formatTime } = require('../../utils/time');
-const { createTailwindMotionAnalyzer } = require('../../utils/tailwind-motion-analysis');
+const { formatTime } = require('../../core/time');
+const { createTailwindMotionAnalyzer } = require('../../core/tailwind-motion-analysis');
 
 const RULE_NAME = 'tailwind-class-use-motion-scale';
 

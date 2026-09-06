@@ -5,7 +5,7 @@ const path = require('node:path');
 const {
   normalizeTokenKind,
   normalizeTokenSourceFormat,
-} = require('../utils/token-sources');
+} = require('../core/token-sources');
 const {
   parseBaseFontSize,
   parseNonNegativeInteger,
