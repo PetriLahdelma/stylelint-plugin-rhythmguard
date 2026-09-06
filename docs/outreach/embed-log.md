@@ -62,3 +62,7 @@ Every audit issue opened from the benchmark, and every response, so the pattern 
 | fundamental-styles | 2026-09-06 | opened | https://github.com/SAP/fundamental-styles/issues/6390 |
 | ui5-webcomponents | 2026-09-06 | opened | https://github.com/UI5/webcomponents/issues/14027 |
 | govuk-frontend | 2026-09-06 | follow-up: tool now reads $govuk-spacing-points; 21 findings against their own scale posted | https://github.com/alphagov/govuk-frontend/issues/7401#issuecomment-5558916556 |
+| element-plus | 2026-09-06 | closed by bot: repository requires its Issue Helper form; audit does not fit a bug form, not re-posted | https://github.com/element-plus/element-plus/issues/24827 |
+| vitepress-theme | 2026-09-06 | maintainer: no scaling tokens, none planned; row marked "no scale by design" | https://github.com/vuejs/vitepress/issues/5423 |
+| metabase | 2026-09-06 | triaged into their tracker (ENG-10915, priority P3) | https://github.com/metabase/metabase/issues/81996 |
+| mantine | 2026-09-06 | closed as completed, no comment | https://github.com/mantinedev/mantine/issues/9178 |

@@ -119,3 +119,18 @@ test('buildEdition shows a fallback caused by a rejected inference as such', asy
   assert.equal(edition.totals.unreliableScales, 1);
   assert.match(renderEdition(edition), /\| \[zulip\]\([^)]*\) \| `abc1234` \| fallback \(scanned-css rejected\) \|/);
 });
+
+test('a repository whose maintainers said there is no spacing scale is listed without a count and sorted last', async () => {
+  const { buildEdition, renderEdition } = await load();
+  const edition = buildEdition([
+    result({ name: 'vitepress', scaleIntent: 'none', scale: { source: 'fallback', values: [0, 4, 8], tokenCount: 0, files: [] } }),
+    result(),
+  ], { id: '2026-09' });
+
+  assert.deepEqual(edition.rows.map((row) => row.name), ['acme', 'vitepress']);
+  assert.equal(edition.totals.noScaleByDesign, 1);
+  assert.equal(edition.totals.fallbackScales, 0, 'a declared no-scale repo is not a token-discovery gap');
+  const markdown = renderEdition(edition);
+  assert.match(markdown, /\| \[vitepress\]\([^)]*\) \| `abc1234` \| none, by design \(maintainer\) \| n\/a \| n\/a \|/);
+  assert.match(markdown, /1 told us they have no spacing scale by design/);
+});

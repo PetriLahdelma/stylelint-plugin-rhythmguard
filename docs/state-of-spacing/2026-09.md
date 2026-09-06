@@ -8,7 +8,7 @@ This is not a ranking of teams. It is a reading of one signal on a fixed commit,
 npx rhythmguard audit . --scale auto --format markdown
 ```
 
-Across the set: 8334 off-scale values in 8585 CSS files; 40 of 57 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS, and 4 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
+Across the set: 8334 off-scale values in 8585 CSS files; 39 of 57 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS; 1 told us they have no spacing scale by design and are listed without a count, and 4 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
 
 ## Repositories
 
@@ -25,7 +25,6 @@ Across the set: 8334 off-scale values in 8585 CSS files; 40 of 57 repositories h
 | [adminlte](https://github.com/ColorlibHQ/AdminLTE) | `12b4b06` | fallback | 126 | 274 | 63% | `10px` ×20, `1.25rem` ×9, `2px` ×9 | `padding` ×50, `margin-top` ×17, `margin` ×15 |
 | [discourse](https://github.com/discourse/discourse) | `c7b7a0b` | fallback (scanned-css rejected) | 970 | 259 | 34% | `10px` ×171, `5px` ×147, `20px` ×55 | `padding` ×313, `margin` ×126, `margin-right` ×90 |
 | [directus-app](https://github.com/directus/directus) | `3df2ba9` | fallback | 63 | 217 | 59% | `-0.3125rem` ×17, `0.4375rem` ×9, `-0.1875rem` ×6 | `padding` ×17, `inset-inline-start` ×6, `inset-block-start` ×5 |
-| [vitepress-theme](https://github.com/vuejs/vitepress) | `3e681e2` | fallback | 23 | 209 | 45% | `1.25rem` ×6, `0.375rem` ×3, `0.625rem` ×2 | `padding` ×13, `margin` ×4, `padding-left` ×2 |
 | [vscode-base-ui](https://github.com/microsoft/vscode) | `1512d0c` | fallback | 74 | 195 | 83% | `2px` ×19, `5px` ×10, `6px` ×10 | `padding` ×33, `margin` ×13, `margin-left` ×6 |
 | [pure](https://github.com/pure-css/pure) | `d35fb6f` | fallback | 30 | 188 | 63% | `0.3em` ×6, `0.2em` ×3, `.3em` ×2 | `padding` ×12, `margin` ×7, `margin-bottom` ×5 |
 | [n8n-design-system](https://github.com/n8n-io/n8n) | `7cb77fb` | scanned-css | 143 | 186 | 95% | `5px` ×44, `10px` ×29, `0.6em` ×10 | `padding` ×40, `margin-left` ×23, `margin-right` ×17 |
@@ -71,6 +70,7 @@ Across the set: 8334 off-scale values in 8585 CSS files; 40 of 57 repositories h
 | [mittwald-flow](https://github.com/mittwald/flow) | `17efdf9` | fallback | 2 | 2 | 100% | `2px` ×2 | `padding-inline-end` ×1, `padding-inline-start` ×1 |
 | [open-props](https://github.com/argyleink/open-props) | `530682d` | fallback | 0 | 0 | 100% | none | none |
 | [skeleton](https://github.com/skeletonlabs/skeleton) | `e65535e` | scanned-css | 0 | 0 | 100% | none | none |
+| [vitepress-theme](https://github.com/vuejs/vitepress) | `3e681e2` | none, by design (maintainer) | n/a | n/a | 45% | not measured | not measured |
 
 ## Reading the columns
 
@@ -78,6 +78,7 @@ Across the set: 8334 off-scale values in 8585 CSS files; 40 of 57 repositories h
 - **Top values** are the numbers that drifted. Three values usually explain most of a repository's drift, and each one is a single decision: a missing step, a mistake, or a token that was never defined.
 - **Top properties** are where the layout decision lives. A table led by sibling margins usually means the parent should own the spacing with `gap`; a table led by `padding` is component-internal and is fixed per component.
 - **Top properties** may include `class-string`, which is a Tailwind arbitrary value in a template rather than a CSS declaration.
+- **Scale source** `none, by design` means the maintainers told us the project has no spacing scale. The row stays for completeness and nothing is counted against it.
 - **Scale source** `fallback (scanned-css rejected)` means tokens were found but the rule itself rejected them as a scale and measured against the preset instead. `unreliable` marks a scanned scale that failed a plausibility check (fractional steps, no four-based ladder, or sources that are component files rather than token files). Its row is measured against a scale the repository probably did not design; treat it like a fallback.
 - **Scale source** `fallback` means the audit found fewer than three spacing tokens and used a default scale. Treat those rows as a to-do for token discovery, not as a verdict on the CSS.
 

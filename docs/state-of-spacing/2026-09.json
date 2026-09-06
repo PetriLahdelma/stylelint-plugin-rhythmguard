@@ -12,6 +12,7 @@
       "drift": 1952,
       "driftPer100Files": 2913,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -70,6 +71,7 @@
       "drift": 564,
       "driftPer100Files": 1567,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -126,6 +128,7 @@
       "drift": 1058,
       "driftPer100Files": 1027,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -179,6 +182,7 @@
       "drift": 40,
       "driftPer100Files": 1000,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -232,6 +236,7 @@
       "drift": 57,
       "driftPer100Files": 950,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -283,6 +288,7 @@
       "drift": 745,
       "driftPer100Files": 626,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -336,6 +342,7 @@
       "drift": 61,
       "driftPer100Files": 469,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -397,6 +404,7 @@
       "drift": 590,
       "driftPer100Files": 415,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -450,6 +458,7 @@
       "drift": 126,
       "driftPer100Files": 274,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -503,6 +512,7 @@
       "drift": 970,
       "driftPer100Files": 259,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -562,6 +572,7 @@
       "drift": 63,
       "driftPer100Files": 217,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -607,59 +618,6 @@
       ]
     },
     {
-      "name": "vitepress-theme",
-      "url": "https://github.com/vuejs/vitepress",
-      "sha": "3e681e2",
-      "cssFiles": 11,
-      "cleanliness": 45,
-      "drift": 23,
-      "driftPer100Files": 209,
-      "driftDelta": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding",
-          13
-        ],
-        [
-          "margin",
-          4
-        ],
-        [
-          "padding-left",
-          2
-        ]
-      ],
-      "topValues": [
-        [
-          "1.25rem",
-          6
-        ],
-        [
-          "0.375rem",
-          3
-        ],
-        [
-          "0.625rem",
-          2
-        ]
-      ]
-    },
-    {
       "name": "vscode-base-ui",
       "url": "https://github.com/microsoft/vscode",
       "sha": "1512d0c",
@@ -668,6 +626,7 @@
       "drift": 74,
       "driftPer100Files": 195,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -721,6 +680,7 @@
       "drift": 30,
       "driftPer100Files": 188,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -774,6 +734,7 @@
       "drift": 143,
       "driftPer100Files": 186,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -832,6 +793,7 @@
       "drift": 126,
       "driftPer100Files": 170,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -885,6 +847,7 @@
       "drift": 80,
       "driftPer100Files": 157,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -938,6 +901,7 @@
       "drift": 222,
       "driftPer100Files": 152,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -991,6 +955,7 @@
       "drift": 9,
       "driftPer100Files": 150,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1044,6 +1009,7 @@
       "drift": 109,
       "driftPer100Files": 120,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1097,6 +1063,7 @@
       "drift": 272,
       "driftPer100Files": 96,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1150,6 +1117,7 @@
       "drift": 103,
       "driftPer100Files": 91,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -1207,6 +1175,7 @@
       "drift": 9,
       "driftPer100Files": 60,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -1258,6 +1227,7 @@
       "drift": 55,
       "driftPer100Files": 56,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1311,6 +1281,7 @@
       "drift": 4,
       "driftPer100Files": 50,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1364,6 +1335,7 @@
       "drift": 37,
       "driftPer100Files": 49,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -1415,6 +1387,7 @@
       "drift": 35,
       "driftPer100Files": 44,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1468,6 +1441,7 @@
       "drift": 53,
       "driftPer100Files": 43,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -1518,6 +1492,7 @@
       "drift": 33,
       "driftPer100Files": 43,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1571,6 +1546,7 @@
       "drift": 137,
       "driftPer100Files": 40,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1624,6 +1600,7 @@
       "drift": 36,
       "driftPer100Files": 35,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -1674,6 +1651,7 @@
       "drift": 37,
       "driftPer100Files": 34,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1727,6 +1705,7 @@
       "drift": 47,
       "driftPer100Files": 29,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1780,6 +1759,7 @@
       "drift": 34,
       "driftPer100Files": 29,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1833,6 +1813,7 @@
       "drift": 28,
       "driftPer100Files": 19,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -1887,6 +1868,7 @@
       "drift": 18,
       "driftPer100Files": 17,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1940,6 +1922,7 @@
       "drift": 75,
       "driftPer100Files": 14,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1993,6 +1976,7 @@
       "drift": 58,
       "driftPer100Files": 13,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2046,6 +2030,7 @@
       "drift": 7,
       "driftPer100Files": 13,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2099,6 +2084,7 @@
       "drift": 30,
       "driftPer100Files": 11,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2152,6 +2138,7 @@
       "drift": 22,
       "driftPer100Files": 11,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2205,6 +2192,7 @@
       "drift": 27,
       "driftPer100Files": 8,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2258,6 +2246,7 @@
       "drift": 5,
       "driftPer100Files": 8,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2310,6 +2299,7 @@
       "drift": 21,
       "driftPer100Files": 7,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2364,6 +2354,7 @@
       "drift": 14,
       "driftPer100Files": 7,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2417,6 +2408,7 @@
       "drift": 17,
       "driftPer100Files": 6,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2470,6 +2462,7 @@
       "drift": 12,
       "driftPer100Files": 6,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2528,6 +2521,7 @@
       "drift": 7,
       "driftPer100Files": 5,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2582,6 +2576,7 @@
       "drift": 26,
       "driftPer100Files": 4,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2633,6 +2628,7 @@
       "drift": 10,
       "driftPer100Files": 4,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2691,6 +2687,7 @@
       "drift": 5,
       "driftPer100Files": 3,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2741,6 +2738,7 @@
       "drift": 3,
       "driftPer100Files": 3,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2790,6 +2788,7 @@
       "drift": 8,
       "driftPer100Files": 2,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2843,6 +2842,7 @@
       "drift": 5,
       "driftPer100Files": 2,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2896,6 +2896,7 @@
       "drift": 2,
       "driftPer100Files": 2,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2937,6 +2938,7 @@
       "drift": 0,
       "driftPer100Files": 0,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2964,6 +2966,7 @@
       "drift": 0,
       "driftPer100Files": 0,
       "driftDelta": null,
+      "scaleIntent": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -3006,13 +3009,68 @@
       ],
       "topProperties": [],
       "topValues": []
+    },
+    {
+      "name": "vitepress-theme",
+      "url": "https://github.com/vuejs/vitepress",
+      "sha": "3e681e2",
+      "cssFiles": 11,
+      "cleanliness": 45,
+      "drift": 23,
+      "driftPer100Files": 209,
+      "driftDelta": null,
+      "scaleIntent": "none",
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
+      "scaleRejected": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          13
+        ],
+        [
+          "margin",
+          4
+        ],
+        [
+          "padding-left",
+          2
+        ]
+      ],
+      "topValues": [
+        [
+          "1.25rem",
+          6
+        ],
+        [
+          "0.375rem",
+          3
+        ],
+        [
+          "0.625rem",
+          2
+        ]
+      ]
     }
   ],
   "totals": {
     "cssFiles": 8585,
     "drift": 8334,
     "repos": 57,
-    "fallbackScales": 40,
+    "fallbackScales": 39,
+    "noScaleByDesign": 1,
     "unreliableScales": 4
   }
 }

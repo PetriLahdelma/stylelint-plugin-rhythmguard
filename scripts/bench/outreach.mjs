@@ -31,7 +31,7 @@ export function draftIssue(result) {
   const drift = (result.classified || []).filter((item) => item.category === 'drift');
   const topValues = topCounts(drift, 'value', 5);
   const topProperties = topCounts(drift, 'property', 5);
-  const fallback = result.scale.source === 'fallback';
+  const fallback = result.scale.source === 'fallback' || result.scaleIntent === 'none';
   const unreliable = !fallback && !assessScale(result.scale).plausible;
   const scale = result.scale.values.join(', ');
   const paths = result.paths.map((p) => `\`${p}\``).join(', ');
