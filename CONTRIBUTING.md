@@ -6,7 +6,7 @@ Thank you for being here. Rhythmguard is a small, opinionated tool with one job:
 
 **Report a false positive.** A finding your team considers wrong is the most valuable report we get. It is how percentages and hairlines stopped being findings. Open a [false-positive report](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/new?template=false-positive.yml) with the CSS or class string and your config. No fix required.
 
-**Add a repository to the quiet benchmark.** The benchmark audits public design systems and fails CI when the findings change. Adding a repo is one JSON entry in `benchmarks/quiet/repos.json` plus `npm run bench:quiet -- --only <name>` to create its snapshot. Systems with tokens in unusual places are the most useful additions.
+**Add a repository to the quiet benchmark.** The benchmark audits public design systems and fails CI when the findings change. Adding a repo is one JSON entry in `benchmarks/quiet/repos.json` plus `npm run bench:quiet -- --only <name>` to create its snapshot. Systems with tokens in unusual places are the most useful additions. The same results feed the dated [State of Spacing](./docs/STATE_OF_SPACING.md) editions, so every repository you add widens that report.
 
 **Review a drift list.** Each benchmark repo has a list of findings that heuristics call real drift. Labelling them as real or as an allowance in `benchmarks/quiet/labels/<repo>.json` with a one-line reason turns a heuristic number into a reviewed one, and any systematic pattern you find becomes a candidate default.
 

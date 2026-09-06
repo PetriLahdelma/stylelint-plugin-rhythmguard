@@ -1,0 +1,54 @@
+# State of Spacing, 2026-09
+
+How consistently 20 public design systems keep their spacing on their own scale, measured by `rhythmguard audit --scale auto` on pinned commits and generated on 2026-09-06. Off-scale means a literal length that is not on the scale the repository itself defines; hairlines, percentages and generated or test paths are excluded. The full method and the false-positive accounting are in [`QUIET_BENCHMARK.md`](./QUIET_BENCHMARK.md).
+
+This is not a ranking of teams. It is a reading of one signal on a fixed commit, and the row order is drift per 100 CSS files so that large codebases are not penalised for size. Every row reproduces with one command in a checkout of that commit:
+
+```bash
+npx rhythmguard audit . --scale auto --format markdown
+```
+
+Across the set: 1373 off-scale values in 3262 CSS files; 12 of 20 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS.
+
+## Repositories
+
+| Repo | Commit | Scale source | Off-scale | per 100 CSS files | Cleanliness | Top values | Top properties |
+| --- | --- | --- | ---: | ---: | ---: | --- | --- |
+| [mastodon](https://github.com/mastodon/mastodon) | `0a32b4a` | scanned-css | 564 | 1567 | 53% | `10px` ×165, `15px` ×112, `5px` ×70 | `padding` ×206, `margin-bottom` ×99, `gap` ×41 |
+| [shadcn-ui](https://github.com/shadcn-ui/ui) | `7c9eaba` | scanned-css | 58 | 446 | 99% | `-2.5rem` ×8, `2.5rem` ×8, `2px` ×5 | `class-string` ×47, `padding` ×6, `margin-block-start` ×2 |
+| [wp-calypso-components](https://github.com/Automattic/wp-calypso) | `7cc9ee9` | fallback | 80 | 157 | 86% | `10px` ×15, `20px` ×8, `5px` ×8 | `padding` ×32, `margin-right` ×13, `margin-left` ×10 |
+| [liveblocks-react-ui](https://github.com/liveblocks/liveblocks) | `98332db` | fallback | 9 | 150 | 99% | `-0.35rem` ×2, `0.1em` ×1, `0.2em` ×1 | `padding` ×4, `padding-inline-start` ×2, `inset-block-start` ×1 |
+| [carbon-styles](https://github.com/carbon-design-system/carbon) | `4cc7900` | fallback | 272 | 96 | 81% | `13px` ×28, `2px` ×23, `7px` ×19 | `inset-block-start` ×60, `padding` ×37, `padding-block` ×36 |
+| [primer-css](https://github.com/primer/css) | `72564a3` | scanned-css | 103 | 91 | 75% | `5px` ×17, `6px` ×11, `7px` ×9 | `padding` ×45, `margin` ×22, `margin-left` ×8 |
+| [bulma](https://github.com/jgthms/bulma) | `741da22` | scanned-css | 37 | 49 | 75% | `2em` ×7, `-0.375em` ×5, `0.375em` ×4 | `margin-inline-start` ×6, `margin-bottom` ×5, `margin-inline-end` ×5 |
+| [gutenberg-components](https://github.com/WordPress/gutenberg) | `ec62b33` | fallback | 35 | 44 | 97% | `2px` ×7, `6px` ×6, `-2px` ×4 | `padding` ×16, `margin` ×7, `margin-left` ×3 |
+| [bootstrap](https://github.com/twbs/bootstrap) | `12cb8b9` | scanned-css | 53 | 43 | 84% | `.125rem` ×9, `.75rem` ×8, `1.25rem` ×8 | `padding` ×22, `margin-top` ×9, `margin` ×4 |
+| [mantine](https://github.com/mantinedev/mantine) | `3862b09` | scanned-css | 30 | 29 | 98% | `4px` ×6, `5px` ×6, `8px` ×4 | `padding` ×10, `inset-inline-start` ×3, `margin-top` ×3 |
+| [salesforce-lightning](https://github.com/salesforce-ux/design-system) | `9bc6a40` | fallback | 58 | 13 | 98% | `2.5rem` ×3, `-0.35rem` ×2, `-2.25rem` ×2 | `padding-left` ×21, `padding-right` ×21, `transform` ×5 |
+| [pico](https://github.com/picocss/pico) | `1039a47` | fallback | 7 | 13 | 91% | `-0.3rem` ×2, `-0.125em` ×1, `0.125rem` ×1 | `transform` ×4, `padding` ×2, `margin-top` ×1 |
+| [primer-react](https://github.com/primer/react) | `dc8387f` | fallback | 22 | 11 | 97% | `6px` ×6, `10px` ×4, `3px` ×4 | `padding-bottom` ×4, `padding-top` ×4, `margin-left` ×3 |
+| [penpot](https://github.com/penpot/penpot) | `00e0492` | fallback | 17 | 6 | 93% | `-2px` ×3, `7px` ×3, `-10px` ×2 | `transform` ×11, `padding` ×2, `gap` ×1 |
+| [radix-themes](https://github.com/radix-ui/themes) | `1faff10` | scanned-css | 7 | 5 | 98% | `5px` ×3, `3px` ×2, `-2px` ×1 | `padding-right` ×2, `transform` ×2, `margin-bottom` ×1 |
+| [gitlab-ui](https://gitlab.com/gitlab-org/gitlab-ui) | `8660f9f` | fallback | 3 | 3 | 99% | `-2px` ×1, `3px` ×1, `5px` ×1 | `padding` ×2, `margin-bottom` ×1 |
+| [uswds](https://github.com/uswds/uswds) | `eed8a5e` | scanned-css | 11 | 2 | 99% | `10px` ×4, `20px` ×4, `0.2rem` ×1 | `padding` ×8, `margin` ×1, `margin-top` ×1 |
+| [spectrum-css](https://github.com/adobe/spectrum-css) | `3762086` | fallback | 5 | 2 | 99% | `-10px` ×3, `20px` ×1, `40px` ×1 | `inset-block-end` ×1, `margin` ×1, `margin-inline-end` ×1 |
+| [mittwald-flow](https://github.com/mittwald/flow) | `17efdf9` | fallback | 2 | 2 | 100% | `2px` ×2 | `padding-inline-end` ×1, `padding-inline-start` ×1 |
+| [open-props](https://github.com/argyleink/open-props) | `530682d` | fallback | 0 | 0 | 100% | none | none |
+
+## Reading the columns
+
+- **Off-scale** counts findings a maintainer would be asked to look at, after the benchmark's noise and allowance classification. **Cleanliness** is the share of scanned files with no finding at all.
+- **Top values** are the numbers that drifted. Three values usually explain most of a repository's drift, and each one is a single decision: a missing step, a mistake, or a token that was never defined.
+- **Top properties** are where the layout decision lives. A table led by sibling margins usually means the parent should own the spacing with `gap`; a table led by `padding` is component-internal and is fixed per component.
+- **Top properties** may include `class-string`, which is a Tailwind arbitrary value in a template rather than a CSS declaration.
+- **Scale source** `fallback` means the audit found fewer than three spacing tokens and used a default scale. Treat those rows as a to-do for token discovery, not as a verdict on the CSS.
+
+## Method and caveats
+
+- Sass variables and functions are not evaluated, so systems that route spacing through `$spacer` or `spacing()` show few literal findings and, often, a fallback scale.
+- Editions are cut from the same pinned commits as the benchmark snapshots. A repository moves between editions only when its pin is updated with `npm run bench:quiet -- --latest --update-snapshots`.
+- Repositories are added through `benchmarks/quiet/repos.json`; a contributor guide is in `CONTRIBUTING.md`.
+
+## Editions
+
+- [2026-09](./state-of-spacing/2026-09.md) (this page)

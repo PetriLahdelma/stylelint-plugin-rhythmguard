@@ -255,6 +255,8 @@ The deferral in section 6 ("articles until B4 has produced two embedded configs"
 
 ### 9.1 The artifact: State of Spacing (issue #70)
 
+Status 2026-09-06: generator shipped (`npm run bench:state-of-spacing`, output in [`STATE_OF_SPACING.md`](./STATE_OF_SPACING.md) and `docs/state-of-spacing/<edition>.{md,json}`), first edition cut at 20 repositories and unpublished. Publication waits for the 50-repository manifest and the audit issues.
+
 A standing report generated from the benchmark: every repository, its inferred scale and where it came from, off-scale count, cleanliness, top three values, top three properties, and the trend since the last edition. Published as `docs/STATE_OF_SPACING.md` from the same script that writes `QUIET_BENCHMARK.md`, cut as a dated edition each quarter, and posted once as an article with the table embedded. The framing is consistency, not shame: each row links to the audit the maintainer can run themselves, and the edition is published only after every repository in it has an issue with its audit attached (B4, which this makes concrete). Widen from 20 to 50 repositories before the first edition so no single team feels singled out. Rankings are what get quoted; the property table is what gets argued about, and argument is the goal.
 
 ### 9.2 The badge (issue #68)

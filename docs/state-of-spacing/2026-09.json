@@ -1,0 +1,1046 @@
+{
+  "generatedAt": "2026-09-06",
+  "id": "2026-09",
+  "previousId": null,
+  "rows": [
+    {
+      "name": "mastodon",
+      "url": "https://github.com/mastodon/mastodon",
+      "sha": "0a32b4a",
+      "cssFiles": 36,
+      "cleanliness": 53,
+      "drift": 564,
+      "driftPer100Files": 1567,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        2,
+        4,
+        8,
+        12,
+        16,
+        20,
+        24,
+        28,
+        32,
+        36,
+        40
+      ],
+      "topProperties": [
+        [
+          "padding",
+          206
+        ],
+        [
+          "margin-bottom",
+          99
+        ],
+        [
+          "gap",
+          41
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          165
+        ],
+        [
+          "15px",
+          112
+        ],
+        [
+          "5px",
+          70
+        ]
+      ]
+    },
+    {
+      "name": "shadcn-ui",
+      "url": "https://github.com/shadcn-ui/ui",
+      "sha": "7c9eaba",
+      "cssFiles": 13,
+      "cleanliness": 99,
+      "drift": 58,
+      "driftPer100Files": 446,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        1.6,
+        1.778,
+        3.2,
+        3.555,
+        3.556,
+        4.8,
+        5.333,
+        6.4,
+        7.11,
+        7.111,
+        8,
+        8.888,
+        8.889,
+        9.6,
+        10.666,
+        10.667,
+        11.2,
+        12.443,
+        12.444,
+        12.8,
+        14.221,
+        14.222,
+        16,
+        17.776,
+        17.778,
+        19.2,
+        21.331,
+        21.333,
+        22.4,
+        24.886,
+        24.889,
+        25.6,
+        28.442,
+        28.444,
+        28.8,
+        31.997,
+        32,
+        35.2,
+        35.552,
+        35.556,
+        38.4,
+        39.107,
+        39.111,
+        42.662,
+        42.667,
+        44.8,
+        49.773,
+        49.778,
+        51.2,
+        56.883,
+        56.889,
+        64,
+        71.104,
+        71.111,
+        76.8,
+        85.325,
+        85.333,
+        89.6,
+        99.546,
+        99.555,
+        102.4,
+        113.766,
+        113.778,
+        115.2,
+        127.987,
+        128,
+        140.8,
+        142.208,
+        142.222,
+        153.6,
+        156.429,
+        156.444,
+        166.4,
+        170.65,
+        170.666,
+        179.2,
+        184.87,
+        184.889,
+        192,
+        199.091,
+        199.111,
+        204.8,
+        213.312,
+        213.333,
+        227.533,
+        227.555,
+        230.4,
+        255.974,
+        256,
+        284.416,
+        284.444,
+        307.2,
+        341.299,
+        341.333
+      ],
+      "topProperties": [
+        [
+          "class-string",
+          47
+        ],
+        [
+          "padding",
+          6
+        ],
+        [
+          "margin-block-start",
+          2
+        ]
+      ],
+      "topValues": [
+        [
+          "-2.5rem",
+          8
+        ],
+        [
+          "2.5rem",
+          8
+        ],
+        [
+          "2px",
+          5
+        ]
+      ]
+    },
+    {
+      "name": "wp-calypso-components",
+      "url": "https://github.com/Automattic/wp-calypso",
+      "sha": "7cc9ee9",
+      "cssFiles": 51,
+      "cleanliness": 86,
+      "drift": 80,
+      "driftPer100Files": 157,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          32
+        ],
+        [
+          "margin-right",
+          13
+        ],
+        [
+          "margin-left",
+          10
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          15
+        ],
+        [
+          "20px",
+          8
+        ],
+        [
+          "5px",
+          8
+        ]
+      ]
+    },
+    {
+      "name": "liveblocks-react-ui",
+      "url": "https://github.com/liveblocks/liveblocks",
+      "sha": "98332db",
+      "cssFiles": 6,
+      "cleanliness": 99,
+      "drift": 9,
+      "driftPer100Files": 150,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          4
+        ],
+        [
+          "padding-inline-start",
+          2
+        ],
+        [
+          "inset-block-start",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "-0.35rem",
+          2
+        ],
+        [
+          "0.1em",
+          1
+        ],
+        [
+          "0.2em",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "carbon-styles",
+      "url": "https://github.com/carbon-design-system/carbon",
+      "sha": "4cc7900",
+      "cssFiles": 284,
+      "cleanliness": 81,
+      "drift": 272,
+      "driftPer100Files": 96,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "inset-block-start",
+          60
+        ],
+        [
+          "padding",
+          37
+        ],
+        [
+          "padding-block",
+          36
+        ]
+      ],
+      "topValues": [
+        [
+          "13px",
+          28
+        ],
+        [
+          "2px",
+          23
+        ],
+        [
+          "7px",
+          19
+        ]
+      ]
+    },
+    {
+      "name": "primer-css",
+      "url": "https://github.com/primer/css",
+      "sha": "72564a3",
+      "cssFiles": 113,
+      "cleanliness": 75,
+      "drift": 103,
+      "driftPer100Files": 91,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        16,
+        24,
+        32,
+        40,
+        48,
+        64,
+        80,
+        96,
+        112,
+        128
+      ],
+      "topProperties": [
+        [
+          "padding",
+          45
+        ],
+        [
+          "margin",
+          22
+        ],
+        [
+          "margin-left",
+          8
+        ]
+      ],
+      "topValues": [
+        [
+          "5px",
+          17
+        ],
+        [
+          "6px",
+          11
+        ],
+        [
+          "7px",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "bulma",
+      "url": "https://github.com/jgthms/bulma",
+      "sha": "741da22",
+      "cssFiles": 75,
+      "cleanliness": 75,
+      "drift": 37,
+      "driftPer100Files": 49,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        48
+      ],
+      "topProperties": [
+        [
+          "margin-inline-start",
+          6
+        ],
+        [
+          "margin-bottom",
+          5
+        ],
+        [
+          "margin-inline-end",
+          5
+        ]
+      ],
+      "topValues": [
+        [
+          "2em",
+          7
+        ],
+        [
+          "-0.375em",
+          5
+        ],
+        [
+          "0.375em",
+          4
+        ]
+      ]
+    },
+    {
+      "name": "gutenberg-components",
+      "url": "https://github.com/WordPress/gutenberg",
+      "sha": "ec62b33",
+      "cssFiles": 79,
+      "cleanliness": 97,
+      "drift": 35,
+      "driftPer100Files": 44,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          16
+        ],
+        [
+          "margin",
+          7
+        ],
+        [
+          "margin-left",
+          3
+        ]
+      ],
+      "topValues": [
+        [
+          "2px",
+          7
+        ],
+        [
+          "6px",
+          6
+        ],
+        [
+          "-2px",
+          4
+        ]
+      ]
+    },
+    {
+      "name": "bootstrap",
+      "url": "https://github.com/twbs/bootstrap",
+      "sha": "12cb8b9",
+      "cssFiles": 122,
+      "cleanliness": 84,
+      "drift": 53,
+      "driftPer100Files": 43,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        16,
+        24,
+        48
+      ],
+      "topProperties": [
+        [
+          "padding",
+          22
+        ],
+        [
+          "margin-top",
+          9
+        ],
+        [
+          "margin",
+          4
+        ]
+      ],
+      "topValues": [
+        [
+          ".125rem",
+          9
+        ],
+        [
+          ".75rem",
+          8
+        ],
+        [
+          "1.25rem",
+          8
+        ]
+      ]
+    },
+    {
+      "name": "mantine",
+      "url": "https://github.com/mantinedev/mantine",
+      "sha": "3862b09",
+      "cssFiles": 102,
+      "cleanliness": 98,
+      "drift": 30,
+      "driftPer100Files": 29,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        1,
+        2,
+        10,
+        12,
+        16,
+        20,
+        22,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          10
+        ],
+        [
+          "inset-inline-start",
+          3
+        ],
+        [
+          "margin-top",
+          3
+        ]
+      ],
+      "topValues": [
+        [
+          "4px",
+          6
+        ],
+        [
+          "5px",
+          6
+        ],
+        [
+          "8px",
+          4
+        ]
+      ]
+    },
+    {
+      "name": "salesforce-lightning",
+      "url": "https://github.com/salesforce-ux/design-system",
+      "sha": "9bc6a40",
+      "cssFiles": 459,
+      "cleanliness": 98,
+      "drift": 58,
+      "driftPer100Files": 13,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding-left",
+          21
+        ],
+        [
+          "padding-right",
+          21
+        ],
+        [
+          "transform",
+          5
+        ]
+      ],
+      "topValues": [
+        [
+          "2.5rem",
+          3
+        ],
+        [
+          "-0.35rem",
+          2
+        ],
+        [
+          "-2.25rem",
+          2
+        ]
+      ]
+    },
+    {
+      "name": "pico",
+      "url": "https://github.com/picocss/pico",
+      "sha": "1039a47",
+      "cssFiles": 54,
+      "cleanliness": 91,
+      "drift": 7,
+      "driftPer100Files": 13,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "transform",
+          4
+        ],
+        [
+          "padding",
+          2
+        ],
+        [
+          "margin-top",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "-0.3rem",
+          2
+        ],
+        [
+          "-0.125em",
+          1
+        ],
+        [
+          "0.125rem",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "primer-react",
+      "url": "https://github.com/primer/react",
+      "sha": "dc8387f",
+      "cssFiles": 204,
+      "cleanliness": 97,
+      "drift": 22,
+      "driftPer100Files": 11,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding-bottom",
+          4
+        ],
+        [
+          "padding-top",
+          4
+        ],
+        [
+          "margin-left",
+          3
+        ]
+      ],
+      "topValues": [
+        [
+          "6px",
+          6
+        ],
+        [
+          "10px",
+          4
+        ],
+        [
+          "3px",
+          4
+        ]
+      ]
+    },
+    {
+      "name": "penpot",
+      "url": "https://github.com/penpot/penpot",
+      "sha": "00e0492",
+      "cssFiles": 294,
+      "cleanliness": 93,
+      "drift": 17,
+      "driftPer100Files": 6,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "transform",
+          11
+        ],
+        [
+          "padding",
+          2
+        ],
+        [
+          "gap",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "-2px",
+          3
+        ],
+        [
+          "7px",
+          3
+        ],
+        [
+          "-10px",
+          2
+        ]
+      ]
+    },
+    {
+      "name": "radix-themes",
+      "url": "https://github.com/radix-ui/themes",
+      "sha": "1faff10",
+      "cssFiles": 150,
+      "cleanliness": 98,
+      "drift": 7,
+      "driftPer100Files": 5,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32,
+        40,
+        48,
+        64
+      ],
+      "topProperties": [
+        [
+          "padding-right",
+          2
+        ],
+        [
+          "transform",
+          2
+        ],
+        [
+          "margin-bottom",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "5px",
+          3
+        ],
+        [
+          "3px",
+          2
+        ],
+        [
+          "-2px",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "gitlab-ui",
+      "url": "https://gitlab.com/gitlab-org/gitlab-ui",
+      "sha": "8660f9f",
+      "cssFiles": 93,
+      "cleanliness": 99,
+      "drift": 3,
+      "driftPer100Files": 3,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          2
+        ],
+        [
+          "margin-bottom",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "-2px",
+          1
+        ],
+        [
+          "3px",
+          1
+        ],
+        [
+          "5px",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "uswds",
+      "url": "https://github.com/uswds/uswds",
+      "sha": "eed8a5e",
+      "cssFiles": 682,
+      "cleanliness": 99,
+      "drift": 11,
+      "driftPer100Files": 2,
+      "driftDelta": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        12,
+        16,
+        24,
+        32,
+        40,
+        48,
+        56,
+        64,
+        72
+      ],
+      "topProperties": [
+        [
+          "padding",
+          8
+        ],
+        [
+          "margin",
+          1
+        ],
+        [
+          "margin-top",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          4
+        ],
+        [
+          "20px",
+          4
+        ],
+        [
+          "0.2rem",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "spectrum-css",
+      "url": "https://github.com/adobe/spectrum-css",
+      "sha": "3762086",
+      "cssFiles": 236,
+      "cleanliness": 99,
+      "drift": 5,
+      "driftPer100Files": 2,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "inset-block-end",
+          1
+        ],
+        [
+          "margin",
+          1
+        ],
+        [
+          "margin-inline-end",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "-10px",
+          3
+        ],
+        [
+          "20px",
+          1
+        ],
+        [
+          "40px",
+          1
+        ]
+      ]
+    },
+    {
+      "name": "mittwald-flow",
+      "url": "https://github.com/mittwald/flow",
+      "sha": "17efdf9",
+      "cssFiles": 130,
+      "cleanliness": 100,
+      "drift": 2,
+      "driftPer100Files": 2,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding-inline-end",
+          1
+        ],
+        [
+          "padding-inline-start",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "2px",
+          2
+        ]
+      ]
+    },
+    {
+      "name": "open-props",
+      "url": "https://github.com/argyleink/open-props",
+      "sha": "530682d",
+      "cssFiles": 79,
+      "cleanliness": 100,
+      "drift": 0,
+      "driftPer100Files": 0,
+      "driftDelta": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [],
+      "topValues": []
+    }
+  ],
+  "totals": {
+    "cssFiles": 3262,
+    "drift": 1373,
+    "repos": 20,
+    "fallbackScales": 12
+  }
+}
