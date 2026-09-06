@@ -47,10 +47,40 @@ function readDirectDependencies(dir) {
  * installs are found by walking up; a stray global node_modules is never
  * consulted because the walk stops at the repository.
  */
-function projectRoots(cwd) {
+/**
+ * Editors and pre-commit hooks lint one file at a time, and each lint asked
+ * the filesystem the same questions: which package.json files sit between
+ * cwd and the repository, what they declare, and whether a token package is
+ * installed. The answers change only when one of those files changes, so
+ * the result is cached per cwd and revalidated by mtime, which costs a stat
+ * per file instead of a read, a JSON parse and a directory walk.
+ */
+const discoveryCache = new Map();
+
+function fileStamp(file) {
+  try {
+    return fs.statSync(file).mtimeMs;
+  } catch {
+    return null;
+  }
+}
+
+function cachedByFiles(cacheKey, compute) {
+  const cached = discoveryCache.get(cacheKey);
+  if (cached && cached.stamps.every(([file, stamp]) => fileStamp(file) === stamp)) {
+    return cached.value;
+  }
+  const consulted = [];
+  const value = compute((file) => consulted.push([file, fileStamp(file)]));
+  discoveryCache.set(cacheKey, { stamps: consulted, value });
+  return value;
+}
+
+function projectRoots(cwd, consult = () => {}) {
   const roots = [];
   let current = path.resolve(cwd);
   for (;;) {
+    consult(path.join(current, 'package.json'));
     const direct = readDirectDependencies(current);
     if (direct) {
       roots.push({ dir: current, direct });
@@ -65,8 +95,12 @@ function projectRoots(cwd) {
 }
 
 function discoverTokenPackages(cwd = process.cwd()) {
+  return cachedByFiles(`packages:${path.resolve(cwd)}`, (consult) => discoverTokenPackagesUncached(cwd, consult));
+}
+
+function discoverTokenPackagesUncached(cwd, consult) {
   const sources = [];
-  const roots = projectRoots(cwd);
+  const roots = projectRoots(cwd, consult);
   for (const entry of TOKEN_PACKAGES) {
     // Only packages the project depends on directly count. A transitive
     // tailwindcss (for example via stylelint-config-tailwindcss) must not hand
@@ -75,14 +109,17 @@ function discoverTokenPackages(cwd = process.cwd()) {
     if (!owner) {
       continue;
     }
-    const root = roots
-      .map((candidate) => path.join(candidate.dir, 'node_modules', entry.name))
-      .find((dir) => fs.existsSync(path.join(dir, 'package.json')));
+    const candidates = roots.map((candidate) => path.join(candidate.dir, 'node_modules', entry.name));
+    for (const dir of candidates) {
+      consult(path.join(dir, 'package.json'));
+    }
+    const root = candidates.find((dir) => fs.existsSync(path.join(dir, 'package.json')));
     if (!root) {
       continue;
     }
     for (const file of entry.files) {
       const resolved = path.join(root, file);
+      consult(resolved);
       if (fs.existsSync(resolved)) {
         sources.push({
           format: 'auto',
@@ -225,6 +262,13 @@ function firstPositivePx(keys, baseFontSize) {
 
 function rcTokenSources(cwd) {
   const rcPath = path.join(cwd, RC_FILE);
+  return cachedByFiles(`rc:${rcPath}`, (consult) => {
+    consult(rcPath);
+    return rcTokenSourcesUncached(rcPath);
+  });
+}
+
+function rcTokenSourcesUncached(rcPath) {
   if (!fs.existsSync(rcPath)) {
     return [];
   }
