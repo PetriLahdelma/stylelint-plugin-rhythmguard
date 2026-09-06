@@ -29,8 +29,10 @@ module.exports = [
     languageOptions: {
       ecmaVersion: 'latest',
       globals: {
+        Buffer: 'readonly',
         console: 'readonly',
         process: 'readonly',
+        setTimeout: 'readonly',
       },
       sourceType: 'module',
     },

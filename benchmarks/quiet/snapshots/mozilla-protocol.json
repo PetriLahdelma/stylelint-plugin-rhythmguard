@@ -1,0 +1,42 @@
+{
+  "name": "mozilla-protocol",
+  "sha": "6bcf867",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 18,
+    "drift": 18,
+    "falsePositives": 0
+  },
+  "findings": [
+    "assets/sass/protocol/base/elements/_common.scss:14:1.25em:drift",
+    "assets/sass/protocol/base/elements/_tables.scss:24:10px:drift",
+    "assets/sass/protocol/base/includes/_animations.scss:56:60px:drift",
+    "assets/sass/protocol/base/includes/_animations.scss:68:60px:drift",
+    "assets/sass/protocol/base/includes/_animations.scss:80:-60px:drift",
+    "assets/sass/protocol/base/includes/_animations.scss:92:-60px:drift",
+    "assets/sass/protocol/base/utilities/_rich-text.scss:94:1.25em:drift",
+    "assets/sass/protocol/components/_billboard.scss:106:-42px:drift",
+    "assets/sass/protocol/components/_billboard.scss:41:-125px:drift",
+    "assets/sass/protocol/components/_button.scss:237:-0.15em:drift",
+    "assets/sass/protocol/components/_button.scss:66:10px:drift",
+    "assets/sass/protocol/components/_navigation.scss:113:7px:drift",
+    "assets/sass/protocol/components/_navigation.scss:65:120px:drift",
+    "assets/sass/protocol/components/_sidebar-menu.scss:108:0.35em:drift",
+    "assets/sass/protocol/components/_sidebar-menu.scss:62:0.35em:drift",
+    "assets/sass/protocol/components/_sticky-promo.scss:84:40px:drift",
+    "assets/sass/protocol/components/forms/_choice.scss:47:3px:drift",
+    "assets/sass/protocol/includes/forms/index.scss:107:2px:drift"
+  ],
+  "commit": "6bcf867741353be77f237cbf306d7ba04fb4e6c2"
+}

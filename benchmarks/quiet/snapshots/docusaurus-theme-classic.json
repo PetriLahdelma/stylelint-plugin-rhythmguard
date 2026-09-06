@@ -1,0 +1,57 @@
+{
+  "name": "docusaurus-theme-classic",
+  "sha": "a3e5eba",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 33,
+    "drift": 33,
+    "falsePositives": 0
+  },
+  "findings": [
+    "packages/docusaurus-theme-classic/src/theme/Admonition/Layout/styles.module.css:20:0.3rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/Admonition/Layout/styles.module.css:30:0.4em:drift",
+    "packages/docusaurus-theme-classic/src/theme/AnnouncementBar/Content/styles.module.css:11:5px:drift",
+    "packages/docusaurus-theme-classic/src/theme/Blog/Components/Author/Socials/styles.module.css:33:0.4rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/Blog/Components/Author/styles.module.css:72:0.1rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/Blog/Components/Author/styles.module.css:72:0.4rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/Blog/Components/Author/styles.module.css:73:0.3rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/BlogPostItem/Header/Authors/styles.module.css:18:0.3rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/BlogPostItem/Header/Authors/styles.module.css:19:0.3rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/BlogSidebar/Desktop/styles.module.css:25:0.7rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/BlogSidebar/Desktop/styles.module.css:48:1.6rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/BlogSidebar/Desktop/styles.module.css:49:0.4rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/CodeBlock/Buttons/styles.module.css:10:0.2rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/CodeBlock/Buttons/styles.module.css:24:0.4rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/DocBreadcrumbs/styles.module.css:10:0.8rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/DocCard/Heading/Icon/styles.module.css:10:0.6rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/EditMetaRow/styles.module.css:11:0.2rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/Icon/Edit/styles.module.css:9:0.3em:drift",
+    "packages/docusaurus-theme-classic/src/theme/Icon/ExternalLink/styles.module.css:9:0.3rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/Layout/styles.module.css:21:3rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/NavbarItem/LocaleDropdownNavbarItem/styles.module.css:10:5px:drift",
+    "packages/docusaurus-theme-classic/src/theme/TOC/styles.module.css:21:0.3rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/TOCCollapsible/CollapseButton/styles.module.css:13:0.4rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/TOCCollapsible/CollapseButton/styles.module.css:13:0.8rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/TOCCollapsible/styles.module.css:17:0.2rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/TOCCollapsible/styles.module.css:22:0.4rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/TOCCollapsible/styles.module.css:22:0.8rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/Tag/styles.module.css:24:0.2rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/Tag/styles.module.css:24:0.3rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/Tag/styles.module.css:68:0.1rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/Tag/styles.module.css:68:0.4rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/Tag/styles.module.css:69:0.3rem:drift",
+    "packages/docusaurus-theme-classic/src/theme/TagsListInline/styles.module.css:13:0.4rem:drift"
+  ],
+  "commit": "a3e5eba69a405a686385da933bd271678fc44e65"
+}

@@ -1,0 +1,28 @@
+{
+  "name": "starlight",
+  "sha": "38149a0",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 4,
+    "drift": 4,
+    "falsePositives": 0
+  },
+  "findings": [
+    "packages/starlight/src/style/markdown.css:109:-0.125rem:drift",
+    "packages/starlight/src/style/markdown.css:110:0.125rem:drift",
+    "packages/starlight/src/style/markdown.css:110:0.375rem:drift",
+    "packages/starlight/src/style/markdown.css:59:1.25rem:drift"
+  ],
+  "commit": "38149a0597e99bc250160c7f4d27ccccaec3a18a"
+}

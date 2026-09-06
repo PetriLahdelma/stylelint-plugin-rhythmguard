@@ -1,0 +1,47 @@
+{
+  "name": "vitepress-theme",
+  "sha": "3e681e2",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 23,
+    "drift": 23,
+    "falsePositives": 0
+  },
+  "findings": [
+    "src/client/theme-default/styles/base.css:153:1.25rem:drift",
+    "src/client/theme-default/styles/components/vp-code-group.css:84:1.25rem:drift",
+    "src/client/theme-default/styles/components/vp-doc.css:169:1.25rem:drift",
+    "src/client/theme-default/styles/components/vp-doc.css:203:-1.25rem:drift",
+    "src/client/theme-default/styles/components/vp-doc.css:203:0.125rem:drift",
+    "src/client/theme-default/styles/components/vp-doc.css:228:1.25rem:drift",
+    "src/client/theme-default/styles/components/vp-doc.css:324:0.1875rem:drift",
+    "src/client/theme-default/styles/components/vp-doc.css:324:0.375rem:drift",
+    "src/client/theme-default/styles/components/vp-doc.css:386:1.25rem:drift",
+    "src/client/theme-default/styles/components/vp-doc.css:487:1.25rem:drift",
+    "src/client/theme-default/styles/components/vp-doc.css:48:3rem:drift",
+    "src/client/theme-default/styles/components/vp-doc.css:557:0.625rem:drift",
+    "src/client/theme-default/styles/components/vp-doc.css:597:0.6875rem:drift",
+    "src/client/theme-default/styles/components/vp-doc.css:76:-0.87em:drift",
+    "src/client/theme-default/styles/components/vp-sponsor.css:26:0.6875rem:drift",
+    "src/client/theme-default/styles/components/vp-sponsor.css:26:0.8125rem:drift",
+    "src/client/theme-default/styles/components/vp-sponsor.css:31:0.4375rem:drift",
+    "src/client/theme-default/styles/components/vp-sponsor.css:31:0.5625rem:drift",
+    "src/client/theme-default/styles/docsearch.css:62:0.625rem:drift",
+    "src/client/theme-default/styles/docsearch.css:76:0.375rem:drift",
+    "src/client/theme-default/styles/docsearch.css:94:0.2em:drift",
+    "src/client/theme-default/styles/docsearch.css:94:0.4em:drift",
+    "src/client/theme-default/styles/docsearch.css:99:0.375rem:drift"
+  ],
+  "commit": "3e681e2ffd89b84d017fe0516d4b3af365950abb"
+}

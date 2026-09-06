@@ -1,0 +1,54 @@
+{
+  "name": "pure",
+  "sha": "d35fb6f",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 30,
+    "drift": 30,
+    "falsePositives": 0
+  },
+  "findings": [
+    "site/src/pages/grids/styles.css:3:4.5em:drift",
+    "site/src/pages/grids/styles.css:7:-4.5em:drift",
+    "site/src/pages/layouts/styles.css:16:0.5714em:drift",
+    "site/src/pages/layouts/styles.css:41:0.5714em:drift",
+    "site/src/pages/layouts/styles.css:46:5px:drift",
+    "site/src/pages/start/styles.css:15:3em:drift",
+    "site/src/pages/start/styles.css:185:0.625em:drift",
+    "site/src/pages/start/styles.css:93:0.3em:drift",
+    "site/src/pages/styles.css:238:3em:drift",
+    "site/src/pages/styles.css:30:40px:drift",
+    "site/src/pages/styles.css:76:1.45em:drift",
+    "src/forms/css/forms-r.css:22:0.3em:drift",
+    "src/forms/css/forms-r.css:3:0.7em:drift",
+    "src/forms/css/forms-r.css:45:0.3em:drift",
+    "src/forms/css/forms-r.css:60:0.2em:drift",
+    "src/forms/css/forms-r.css:60:0.8em:drift",
+    "src/forms/css/forms.css:155:0.2em:drift",
+    "src/forms/css/forms.css:159:0.35em:drift",
+    "src/forms/css/forms.css:165:0.3em:drift",
+    "src/forms/css/forms.css:166:0.3em:drift",
+    "src/forms/css/forms.css:224:11em:drift",
+    "src/forms/css/forms.css:236:10px:drift",
+    "src/forms/css/forms.css:241:10px:drift",
+    "src/forms/css/forms.css:25:0.6em:drift",
+    "src/forms/css/forms.css:270:0.35em:drift",
+    "src/forms/css/forms.css:295:0.3em:drift",
+    "src/forms/css/forms.css:39:0.6em:drift",
+    "src/forms/css/forms.css:51:0.2em:drift",
+    "src/menus/css/menus-skin.css:13:.3em:drift",
+    "src/menus/css/menus-skin.css:7:.3em:drift"
+  ],
+  "commit": "d35fb6fcbcd888da11a7215fe61d1efeda374699"
+}

@@ -1,0 +1,61 @@
+{
+  "name": "daisyui",
+  "sha": "1435c65",
+  "scale": {
+    "source": "fallback",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      32
+    ]
+  },
+  "summary": {
+    "total": 37,
+    "drift": 37,
+    "falsePositives": 0
+  },
+  "findings": [
+    "packages/daisyui/src/components/calendar.css:1287:0.125rem:drift",
+    "packages/daisyui/src/components/calendar.css:1419:0.35rem:drift",
+    "packages/daisyui/src/components/calendar.css:1426:-5px:drift",
+    "packages/daisyui/src/components/calendar.css:1467:0.125rem:drift",
+    "packages/daisyui/src/components/calendar.css:383:3px:drift",
+    "packages/daisyui/src/components/calendar.css:383:5px:drift",
+    "packages/daisyui/src/components/calendar.css:473:5px:drift",
+    "packages/daisyui/src/components/calendar.css:620:1.25rem:drift",
+    "packages/daisyui/src/components/calendar.css:671:1.75rem:drift",
+    "packages/daisyui/src/components/collapse.css:253:1.4rem:drift",
+    "packages/daisyui/src/components/collapse.css:275:1.4rem:drift",
+    "packages/daisyui/src/components/collapse.css:290:3rem:drift",
+    "packages/daisyui/src/components/collapse.css:87:3rem:drift",
+    "packages/daisyui/src/components/diff.css:53:0.32rem:drift",
+    "packages/daisyui/src/components/input.css:37:-0.15em:drift",
+    "packages/daisyui/src/components/input.css:42:-10px:drift",
+    "packages/daisyui/src/components/megamenu.css:158:4rem:drift",
+    "packages/daisyui/src/components/megamenu.css:27:1.4rem:drift",
+    "packages/daisyui/src/components/mockup.css:111:6px:drift",
+    "packages/daisyui/src/components/radio.css:107:0.125rem:drift",
+    "packages/daisyui/src/components/radio.css:116:0.1875rem:drift",
+    "packages/daisyui/src/components/radio.css:134:0.3125rem:drift",
+    "packages/daisyui/src/components/radio.css:143:0.375rem:drift",
+    "packages/daisyui/src/components/radio.css:152:5px:drift",
+    "packages/daisyui/src/components/radio.css:156:3px:drift",
+    "packages/daisyui/src/utilities/typography.css:24:0.2em:drift",
+    "packages/docs/src/components/ColorPicker.svelte:135:2px:drift",
+    "packages/docs/src/global.css:144:5rem:drift",
+    "packages/docs/src/global.css:233:0.3em:drift",
+    "packages/docs/src/global.css:248:0.161em:drift",
+    "packages/docs/src/global.css:536:-500px:drift",
+    "packages/docs/src/global.css:546:-65px:drift",
+    "packages/docs/src/global.css:554:-28px:drift",
+    "packages/docs/src/global.css:91:2.5rem:drift",
+    "packages/docs/src/routes/(routes)/+page.svelte:1468:1px:drift",
+    "packages/docs/src/routes/(routes)/+page.svelte:65:0.5px:drift",
+    "packages/docs/src/routes/(routes)/blueprint/+page.svelte:1634:6.5rem:drift"
+  ],
+  "commit": "1435c6598bf6b93bf59c5b99e6669cf2720f5e81"
+}

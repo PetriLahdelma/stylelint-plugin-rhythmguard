@@ -1,6 +1,6 @@
 # State of Spacing, 2026-09
 
-How consistently 20 public design systems keep their spacing on their own scale, measured by `rhythmguard audit --scale auto` on pinned commits and generated on 2026-09-06. Off-scale means a literal length that is not on the scale the repository itself defines; hairlines, percentages and generated or test paths are excluded. The full method and the false-positive accounting are in [`QUIET_BENCHMARK.md`](./QUIET_BENCHMARK.md).
+How consistently 57 public design systems keep their spacing on their own scale, measured by `rhythmguard audit --scale auto` on pinned commits and generated on 2026-09-06. Off-scale means a literal length that is not on the scale the repository itself defines; hairlines, percentages and generated or test paths are excluded. The full method and the false-positive accounting are in [`QUIET_BENCHMARK.md`](./QUIET_BENCHMARK.md).
 
 This is not a ranking of teams. It is a reading of one signal on a fixed commit, and the row order is drift per 100 CSS files so that large codebases are not penalised for size. Every row reproduces with one command in a checkout of that commit:
 
@@ -8,32 +8,69 @@ This is not a ranking of teams. It is a reading of one signal on a fixed commit,
 npx rhythmguard audit . --scale auto --format markdown
 ```
 
-Across the set: 1373 off-scale values in 3262 CSS files; 12 of 20 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS.
+Across the set: 7471 off-scale values in 8585 CSS files; 39 of 57 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS.
 
 ## Repositories
 
 | Repo | Commit | Scale source | Off-scale | per 100 CSS files | Cleanliness | Top values | Top properties |
 | --- | --- | --- | ---: | ---: | ---: | --- | --- |
+| [zulip](https://github.com/zulip/zulip) | `9b991a8` | scanned-css | 1743 | 2601 | 16% | `10px` ×437, `20px` ×206, `4px` ×122 | `padding` ×658, `margin` ×349, `margin-top` ×178 |
 | [mastodon](https://github.com/mastodon/mastodon) | `0a32b4a` | scanned-css | 564 | 1567 | 53% | `10px` ×165, `15px` ×112, `5px` ×70 | `padding` ×206, `margin-bottom` ×99, `gap` ×41 |
+| [mattermost-webapp](https://github.com/mattermost/mattermost) | `502cf7e` | fallback | 1058 | 1027 | 23% | `10px` ×162, `5px` ×150, `20px` ×108 | `padding` ×400, `margin` ×219, `margin-right` ×90 |
+| [calcom](https://github.com/calcom/cal.com) | `e91bb0c` | fallback | 40 | 1000 | 95% | `10px` ×9, `2px` ×9, `6px` ×3 | `padding` ×15, `class-string` ×13, `margin` ×2 |
+| [grafana](https://github.com/grafana/grafana) | `c6fad86` | scanned-css | 57 | 950 | 83% | `10px` ×9, `15px` ×9, `5px` ×7 | `padding` ×34, `padding-left` ×8, `margin-top` ×4 |
+| [ghost-admin](https://github.com/TryGhost/Ghost) | `26746d3` | fallback | 745 | 626 | 82% | `2px` ×70, `10px` ×69, `6px` ×62 | `padding` ×294, `margin` ×167, `margin-top` ×68 |
 | [shadcn-ui](https://github.com/shadcn-ui/ui) | `7c9eaba` | scanned-css | 58 | 446 | 99% | `-2.5rem` ×8, `2.5rem` ×8, `2px` ×5 | `class-string` ×47, `padding` ×6, `margin-block-start` ×2 |
+| [forem](https://github.com/forem/forem) | `e8a0729` | fallback | 590 | 415 | 53% | `10px` ×87, `2px` ×57, `5px` ×57 | `padding` ×266, `margin` ×119, `margin-top` ×46 |
+| [adminlte](https://github.com/ColorlibHQ/AdminLTE) | `12b4b06` | fallback | 126 | 274 | 63% | `10px` ×20, `1.25rem` ×9, `2px` ×9 | `padding` ×50, `margin-top` ×17, `margin` ×15 |
+| [directus-app](https://github.com/directus/directus) | `3df2ba9` | fallback | 63 | 217 | 59% | `-0.3125rem` ×17, `0.4375rem` ×9, `-0.1875rem` ×6 | `padding` ×17, `inset-inline-start` ×6, `inset-block-start` ×5 |
+| [vitepress-theme](https://github.com/vuejs/vitepress) | `3e681e2` | fallback | 23 | 209 | 45% | `1.25rem` ×6, `0.375rem` ×3, `0.625rem` ×2 | `padding` ×13, `margin` ×4, `padding-left` ×2 |
+| [vscode-base-ui](https://github.com/microsoft/vscode) | `1512d0c` | fallback | 74 | 195 | 83% | `2px` ×19, `5px` ×10, `6px` ×10 | `padding` ×33, `margin` ×13, `margin-left` ×6 |
+| [pure](https://github.com/pure-css/pure) | `d35fb6f` | fallback | 30 | 188 | 63% | `0.3em` ×6, `0.2em` ×3, `.3em` ×2 | `padding` ×12, `margin` ×7, `margin-bottom` ×5 |
+| [n8n-design-system](https://github.com/n8n-io/n8n) | `7cb77fb` | scanned-css | 143 | 186 | 95% | `5px` ×44, `10px` ×29, `0.6em` ×10 | `padding` ×40, `margin-left` ×23, `margin-right` ×17 |
+| [excalidraw](https://github.com/excalidraw/excalidraw) | `214cd6e` | fallback | 126 | 170 | 79% | `0.375rem` ×10, `0.625rem` ×10, `10px` ×10 | `padding` ×49, `gap` ×18, `margin` ×14 |
 | [wp-calypso-components](https://github.com/Automattic/wp-calypso) | `7cc9ee9` | fallback | 80 | 157 | 86% | `10px` ×15, `20px` ×8, `5px` ×8 | `padding` ×32, `margin-right` ×13, `margin-left` ×10 |
+| [element-plus](https://github.com/element-plus/element-plus) | `122a05f` | fallback | 222 | 152 | 48% | `5px` ×46, `10px` ×33, `6px` ×27 | `padding` ×80, `margin-right` ×31, `margin` ×24 |
 | [liveblocks-react-ui](https://github.com/liveblocks/liveblocks) | `98332db` | fallback | 9 | 150 | 99% | `-0.35rem` ×2, `0.1em` ×1, `0.2em` ×1 | `padding` ×4, `padding-inline-start` ×2, `inset-block-start` ×1 |
+| [hashicorp-design-system](https://github.com/hashicorp/design-system) | `83cac84` | fallback | 109 | 120 | 53% | `2px` ×24, `10px` ×13, `3px` ×12 | `padding` ×65, `margin` ×15, `margin-top` ×13 |
 | [carbon-styles](https://github.com/carbon-design-system/carbon) | `4cc7900` | fallback | 272 | 96 | 81% | `13px` ×28, `2px` ×23, `7px` ×19 | `inset-block-start` ×60, `padding` ×37, `padding-block` ×36 |
+| [discourse](https://github.com/discourse/discourse) | `c7b7a0b` | scanned-css | 349 | 93 | 34% | `0.15em` ×38, `15px` ×34, `0.35em` ×27 | `padding` ×130, `margin-top` ×34, `margin` ×33 |
 | [primer-css](https://github.com/primer/css) | `72564a3` | scanned-css | 103 | 91 | 75% | `5px` ×17, `6px` ×11, `7px` ×9 | `padding` ×45, `margin` ×22, `margin-left` ×8 |
+| [materialize](https://github.com/materializecss/materialize) | `c9d6914` | scanned-css | 9 | 60 | 80% | `10px` ×3, `15px` ×2, `14px` ×1 | `padding` ×5, `padding-left` ×2, `margin` ×1 |
+| [metabase](https://github.com/metabase/metabase) | `e621647` | fallback | 55 | 56 | 94% | `0.375rem` ×6, `2px` ×5, `15px` ×4 | `padding` ×24, `padding-right` ×8, `padding-left` ×3 |
+| [starlight](https://github.com/withastro/starlight) | `38149a0` | fallback | 4 | 50 | 63% | `-0.125rem` ×1, `0.125rem` ×1, `0.375rem` ×1 | `padding` ×2, `margin-block` ×1, `margin-bottom` ×1 |
 | [bulma](https://github.com/jgthms/bulma) | `741da22` | scanned-css | 37 | 49 | 75% | `2em` ×7, `-0.375em` ×5, `0.375em` ×4 | `margin-inline-start` ×6, `margin-bottom` ×5, `margin-inline-end` ×5 |
 | [gutenberg-components](https://github.com/WordPress/gutenberg) | `ec62b33` | fallback | 35 | 44 | 97% | `2px` ×7, `6px` ×6, `-2px` ×4 | `padding` ×16, `margin` ×7, `margin-left` ×3 |
 | [bootstrap](https://github.com/twbs/bootstrap) | `12cb8b9` | scanned-css | 53 | 43 | 84% | `.125rem` ×9, `.75rem` ×8, `1.25rem` ×8 | `padding` ×22, `margin-top` ×9, `margin` ×4 |
+| [docusaurus-theme-classic](https://github.com/facebook/docusaurus) | `a3e5eba` | fallback | 33 | 43 | 90% | `0.3rem` ×8, `0.4rem` ×8, `0.2rem` ×4 | `padding` ×12, `margin-right` ×6, `margin-left` ×4 |
+| [fundamental-styles](https://github.com/SAP/fundamental-styles) | `e31a128` | fallback | 137 | 40 | 70% | `0.125rem` ×32, `0.375rem` ×22, `0.625rem` ×17 | `padding-inline` ×40, `padding-block` ×33, `gap` ×12 |
+| [daisyui](https://github.com/saadeghi/daisyui) | `1435c65` | fallback | 37 | 34 | 93% | `0.125rem` ×3, `1.4rem` ×3, `5px` ×3 | `padding` ×12, `inset-inline-end` ×5, `class-string` ×4 |
+| [utrecht](https://github.com/nl-design-system/utrecht) | `ecedc4b` | fallback | 47 | 29 | 99% | `3rem` ×8, `26px` ×7, `10px` ×5 | `padding` ×12, `margin-bottom` ×4, `margin-left` ×4 |
+| [foundation-sites](https://github.com/foundation/foundation-sites) | `337be7a` | fallback | 34 | 29 | 85% | `10px` ×5, `2.5rem` ×4, `30px` ×4 | `padding` ×11, `margin-bottom` ×8, `transform` ×4 |
 | [mantine](https://github.com/mantinedev/mantine) | `3862b09` | scanned-css | 30 | 29 | 98% | `4px` ×6, `5px` ×6, `8px` ×4 | `padding` ×10, `inset-inline-start` ×3, `margin-top` ×3 |
+| [nhsuk-frontend](https://github.com/nhsuk/nhsuk-frontend) | `10caad9` | fallback | 28 | 19 | 97% | `-6px` ×7, `2px` ×5, `6px` ×5 | `margin-left` ×8, `margin-right` ×8, `padding-top` ×5 |
+| [mozilla-protocol](https://github.com/mozilla/protocol) | `6bcf867` | fallback | 18 | 17 | 83% | `-60px` ×2, `0.35em` ×2, `1.25em` ×2 | `padding` ×5, `transform` ×4, `margin` ×3 |
+| [ui5-webcomponents](https://github.com/SAP/ui5-webcomponents) | `9856f4f` | fallback | 75 | 14 | 85% | `0.125rem` ×18, `0.375rem` ×7, `0.1875rem` ×6 | `padding` ×21, `inset` ×7, `margin-inline-start` ×6 |
 | [salesforce-lightning](https://github.com/salesforce-ux/design-system) | `9bc6a40` | fallback | 58 | 13 | 98% | `2.5rem` ×3, `-0.35rem` ×2, `-2.25rem` ×2 | `padding-left` ×21, `padding-right` ×21, `transform` ×5 |
 | [pico](https://github.com/picocss/pico) | `1039a47` | fallback | 7 | 13 | 91% | `-0.3rem` ×2, `-0.125em` ×1, `0.125rem` ×1 | `transform` ×4, `padding` ×2, `margin-top` ×1 |
+| [angular-material](https://github.com/angular/components) | `3d30bf1` | fallback | 30 | 11 | 96% | `20px` ×4, `64px` ×3, `6px` ×3 | `margin` ×9, `padding` ×7, `transform` ×4 |
 | [primer-react](https://github.com/primer/react) | `dc8387f` | fallback | 22 | 11 | 97% | `6px` ×6, `10px` ×4, `3px` ×4 | `padding-bottom` ×4, `padding-top` ×4, `margin-left` ×3 |
+| [cloudscape-components](https://github.com/cloudscape-design/components) | `0c1c9fd` | fallback | 27 | 8 | 99% | `-5px` ×5, `-9999px` ×4, `2px` ×4 | `transform` ×6, `inset-block-start` ×5, `inset-inline-start` ×5 |
+| [tachyons](https://github.com/tachyons-css/tachyons) | `2cb90e9` | scanned-css | 5 | 8 | 97% | `0.35em` ×1, `0.625em` ×1, `0.67em` ×1 | `padding` ×3, `margin` ×1, `margin-top` ×1 |
+| [govuk-frontend](https://github.com/alphagov/govuk-frontend) | `356d461` | fallback | 21 | 7 | 98% | `2px` ×6, `14px` ×2, `3px` ×2 | `margin-top` ×5, `margin-bottom` ×4, `padding` ×3 |
 | [penpot](https://github.com/penpot/penpot) | `00e0492` | fallback | 17 | 6 | 93% | `-2px` ×3, `7px` ×3, `-10px` ×2 | `transform` ×11, `padding` ×2, `gap` ×1 |
+| [patternfly](https://github.com/patternfly/patternfly) | `b62f051` | fallback | 13 | 6 | 94% | `.3em` ×2, `6px` ×2, `-18px` ×1 | `inset-block-start` ×3, `inset-inline-start` ×2, `padding` ×2 |
+| [tabler](https://github.com/tabler/tabler) | `ac001f8` | scanned-css | 12 | 6 | 88% | `-90px` ×3, `85px` ×3, `-2px` ×1 | `transform` ×7, `padding` ×2, `margin` ×1 |
 | [radix-themes](https://github.com/radix-ui/themes) | `1faff10` | scanned-css | 7 | 5 | 98% | `5px` ×3, `3px` ×2, `-2px` ×1 | `padding-right` ×2, `transform` ×2, `margin-bottom` ×1 |
+| [coreui](https://github.com/coreui/coreui) | `be40d3f` | scanned-css | 5 | 3 | 96% | `-.375rem` ×2, `.1rem` ×1, `2px` ×1 | `margin-inline-start` ×2, `margin-bottom` ×1, `margin-top` ×1 |
 | [gitlab-ui](https://gitlab.com/gitlab-org/gitlab-ui) | `8660f9f` | fallback | 3 | 3 | 99% | `-2px` ×1, `3px` ×1, `5px` ×1 | `padding` ×2, `margin-bottom` ×1 |
 | [uswds](https://github.com/uswds/uswds) | `eed8a5e` | scanned-css | 11 | 2 | 99% | `10px` ×4, `20px` ×4, `0.2rem` ×1 | `padding` ×8, `margin` ×1, `margin-top` ×1 |
+| [ionic-core](https://github.com/ionic-team/ionic-framework) | `5874331` | fallback | 8 | 2 | 99% | `2px` ×4, `-10px` ×1, `10px` ×1 | `margin-top` ×5, `margin-bottom` ×1, `padding-bottom` ×1 |
 | [spectrum-css](https://github.com/adobe/spectrum-css) | `3762086` | fallback | 5 | 2 | 99% | `-10px` ×3, `20px` ×1, `40px` ×1 | `inset-block-end` ×1, `margin` ×1, `margin-inline-end` ×1 |
 | [mittwald-flow](https://github.com/mittwald/flow) | `17efdf9` | fallback | 2 | 2 | 100% | `2px` ×2 | `padding-inline-end` ×1, `padding-inline-start` ×1 |
+| [semi-design](https://github.com/DouyinFE/semi-design) | `8bed560` | scanned-css | 2 | 1 | 98% | `0.8em` ×1, `3.8em` ×1 | `padding-left` ×1, `padding-right` ×1 |
 | [open-props](https://github.com/argyleink/open-props) | `530682d` | fallback | 0 | 0 | 100% | none | none |
+| [skeleton](https://github.com/skeletonlabs/skeleton) | `e65535e` | scanned-css | 0 | 0 | 100% | none | none |
 
 ## Reading the columns
 

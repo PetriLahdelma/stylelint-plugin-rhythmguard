@@ -1,0 +1,50 @@
+{
+  "name": "tabler",
+  "sha": "ac001f8",
+  "scale": {
+    "source": "scanned-css",
+    "values": [
+      0,
+      0.64,
+      4,
+      8,
+      16,
+      24,
+      32,
+      40,
+      48,
+      64,
+      80,
+      96,
+      112,
+      128
+    ]
+  },
+  "summary": {
+    "total": 19,
+    "drift": 12,
+    "falsePositives": 7
+  },
+  "findings": [
+    "core/scss/marketing/_hero.scss:7:6.5rem:drift",
+    "core/scss/marketing/_pricing.scss:82:0.75rem:drift",
+    "core/scss/marketing/_sections.scss:15:-90px:drift",
+    "core/scss/marketing/_sections.scss:19:85px:drift",
+    "core/scss/marketing/_sections.scss:25:-90px:drift",
+    "core/scss/marketing/_sections.scss:29:85px:drift",
+    "core/scss/marketing/_sections.scss:5:85px:drift",
+    "core/scss/marketing/_sections.scss:9:-90px:drift",
+    "core/scss/mixins/bootstrap/_caret.scss:48:0.1em:drift",
+    "core/scss/mixins/bootstrap/_forms.scss:41:0.1rem:drift",
+    "core/scss/tests/_caret.test.scss:105:0.1em:noise:non-authored",
+    "core/scss/tests/_caret.test.scss:106:0.306em:noise:non-authored",
+    "core/scss/tests/_caret.test.scss:81:0.1em:noise:non-authored",
+    "core/scss/tests/_caret.test.scss:82:0.306em:noise:non-authored",
+    "core/scss/ui/_cards.scss:282:-2px:drift",
+    "core/scss/ui/_type.scss:146:2px:drift",
+    "core/scss/vendor/_apexcharts.scss:58:2px:noise:non-authored",
+    "core/scss/vendor/_coloris.scss:27:2px:noise:non-authored",
+    "core/scss/vendor/_coloris.scss:56:6px:noise:non-authored"
+  ],
+  "commit": "ac001f81d459bd01f9c7d7ad9d9314238d72eb04"
+}

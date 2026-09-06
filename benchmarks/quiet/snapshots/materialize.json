@@ -1,0 +1,33 @@
+{
+  "name": "materialize",
+  "sha": "c9d6914",
+  "scale": {
+    "source": "scanned-css",
+    "values": [
+      0,
+      4,
+      8,
+      12,
+      16,
+      24,
+      48
+    ]
+  },
+  "summary": {
+    "total": 9,
+    "drift": 9,
+    "falsePositives": 0
+  },
+  "findings": [
+    "sass/_global.scss:253:5rem:drift",
+    "sass/_global.scss:269:10px:drift",
+    "sass/_global.scss:322:15px:drift",
+    "sass/_global.scss:322:5px:drift",
+    "sass/_global.scss:356:10px:drift",
+    "sass/_global.scss:386:10px:drift",
+    "sass/_global.scss:94:20px:drift",
+    "sass/_table_of_contents.scss:19:15px:drift",
+    "sass/_table_of_contents.scss:24:14px:drift"
+  ],
+  "commit": "c9d69145a581d2893b6609f392f2946d6254a592"
+}
