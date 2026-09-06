@@ -5,18 +5,15 @@ const valueParser = require('postcss-value-parser');
 const {
   formatLength,
   isHairlineLength,
-  normalizeScale,
-  normalizeScaleByUnit,
   numbersEqual,
   parseLengthToken,
   toPx,
 } = require('../../core/length');
 const {
   buildTokenOptions,
-  resolvePropertyScale,
+  createPropertyScaleResolver,
 } = require('../../core/options');
 const {
-  declarationValueIndex,
   isKeyword,
   isMathFunction,
   isTokenFunction,
@@ -28,12 +25,11 @@ const {
 const { buildEffectiveTokenMap } = require('../../core/token-map');
 
 const {
-  DEFAULT_AUTO_TOKEN_PATTERN,
-  resolveAutoScale,
+  withResolvedScale,
 } = require('../../core/scale-inference');
 
-const { createTokenRegex } = require('../report');
-const { validatePreferTokenSecondaryOptions } = require('../validate');
+const { createTokenRegex, reportInvalidPreset, reportValueNode } = require('../report');
+const { validatePrimary, validatePreferTokenSecondaryOptions } = require('../validate');
 
 const ruleName = 'rhythmguard/prefer-token';
 
@@ -91,10 +87,7 @@ function resolveTokenReplacement(tokenMap, raw, parsedLength, options) {
 
 const ruleFunction = (primary, secondaryOptions) => {
   return (root, result) => {
-    const valid = stylelint.utils.validateOptions(result, ruleName, {
-      actual: primary,
-      possible: [true],
-    });
+    const valid = validatePrimary(result, ruleName, primary);
 
     if (!valid) {
       return;
@@ -110,26 +103,9 @@ const ruleFunction = (primary, secondaryOptions) => {
     }
 
     const options = buildTokenOptions(secondaryOptions);
-    if (options.invalidPreset) {
-      stylelint.utils.report({
-        message: messages.invalidPreset(options.invalidPreset, options.presetNames),
-        node: root,
-        result,
-        ruleName,
-      });
-    }
+    reportInvalidPreset(options, { message: messages.invalidPreset, result, root, ruleName });
 
-    if (options.scaleAuto) {
-      const inference = resolveAutoScale({
-        baseFontSize: options.baseFontSize,
-        root,
-        scaleSources: options.scaleSources,
-        tailwindConfigPath: options.tailwindConfigPath,
-        tokenPattern: options.tokenPatternExplicit ? options.tokenPattern : DEFAULT_AUTO_TOKEN_PATTERN,
-      });
-      options.scale = inference.scale;
-      options.scaleInference = inference;
-    }
+    withResolvedScale(options, root);
 
     const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);
     const tokenMap = buildEffectiveTokenMap({
@@ -138,23 +114,7 @@ const ruleFunction = (primary, secondaryOptions) => {
       tokenRegex,
     });
 
-    const scaleCache = new Map();
-
-    const getScaleStateForProperty = (prop) => {
-      const cached = scaleCache.get(prop);
-      if (cached) {
-        return cached;
-      }
-
-      const selectedScale = resolvePropertyScale(prop, options);
-      const next = {
-        scaleByUnit: normalizeScaleByUnit(selectedScale),
-        scalePx: normalizeScale(selectedScale, options.baseFontSize),
-      };
-
-      scaleCache.set(prop, next);
-      return next;
-    };
+    const getScaleStateForProperty = createPropertyScaleResolver(options);
 
     root.walkDecls((decl) => {
       const prop = decl.prop.toLowerCase();
@@ -171,26 +131,7 @@ const ruleFunction = (primary, secondaryOptions) => {
       let changed = false;
 
       const reportNode = (node, replacement = null) => {
-        const index = declarationValueIndex(decl) + node.sourceIndex;
-        const endIndex = index + node.value.length;
-
-        const payload = {
-          endIndex,
-          index,
-          message: messages.rejected(node.value),
-          node: decl,
-          result,
-          ruleName,
-        };
-
-        if (replacement) {
-          payload.fix = () => {
-            node.value = replacement;
-            return true;
-          };
-        }
-
-        stylelint.utils.report(payload);
+        reportValueNode({ decl, message: messages.rejected(node.value), node, replacement, result, ruleName });
       };
 
       const checkWordNode = (node, context) => {

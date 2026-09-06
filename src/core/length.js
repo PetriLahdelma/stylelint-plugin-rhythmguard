@@ -182,7 +182,28 @@ function nearestScaleValues(target, scale) {
   };
 }
 
+/**
+ * The replacement text for an off-scale length, or null when the value's unit
+ * is not one the rule may rewrite. Keeps the sign, and with the `exact` unit
+ * strategy keeps the unit as written instead of converting through px.
+ */
+function fixedLengthValue(parsedLength, nearestPx, { baseFontSize, unitStrategy, units }) {
+  const unit = parsedLength.unit || 'px';
+  if (unit === '%' || !units.includes(unit)) {
+    return null;
+  }
+
+  const signedNearest = parsedLength.number < 0 ? -Math.abs(nearestPx) : nearestPx;
+  if (unitStrategy === 'exact') {
+    return formatLength(signedNearest, unit);
+  }
+
+  const converted = fromPx(signedNearest, unit, baseFontSize);
+  return converted === null ? null : formatLength(converted, unit);
+}
+
 module.exports = {
+  fixedLengthValue,
   formatLength,
   fromPx,
   isHairlineLength,

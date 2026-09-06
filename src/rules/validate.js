@@ -119,7 +119,13 @@ function validatePreferTokenSecondaryOptions(result, ruleName, secondaryOptions)
   });
 }
 
+/** Every Rhythmguard rule takes `true` as its primary option and nothing else. */
+function validatePrimary(result, ruleName, primary) {
+  return stylelint.utils.validateOptions(result, ruleName, { actual: primary, possible: [true] });
+}
+
 module.exports = {
+  validatePrimary,
   validateNoOffscaleTransformSecondaryOptions,
   validatePreferTokenSecondaryOptions,
   validateUseScaleSecondaryOptions,
