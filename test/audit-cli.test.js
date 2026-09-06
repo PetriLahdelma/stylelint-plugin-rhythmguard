@@ -152,6 +152,10 @@ test('audit CLI --format badge writes a shields.io endpoint document', () => {
   assert.equal(counted.status, 0, counted.stderr);
   assert.equal(JSON.parse(counted.stdout).message, '3');
 
+  const gated = runAudit(fixtureDir, '--format', 'badge', '--max-findings', '0');
+  assert.equal(gated.status, 1, 'gate flags apply to the badge format too');
+  assert.equal(JSON.parse(gated.stdout).label, 'spacing drift', 'the badge is still written when the gate fails');
+
   const written = runAudit(fixtureDir, '--format', 'badge', '--output', path.join(fixtureDir, 'badges', 'spacing.json'));
   assert.equal(written.status, 0, written.stderr);
   assert.equal(JSON.parse(fs.readFileSync(path.join(fixtureDir, 'badges', 'spacing.json'), 'utf8')).label, 'spacing drift');
