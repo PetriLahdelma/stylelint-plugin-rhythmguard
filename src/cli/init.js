@@ -98,7 +98,84 @@ function selectProfile(stack) {
   return 'recommended';
 }
 
+const AGENT_TARGETS = {
+  claude: { source: 'claude-code/SKILL.md', target: path.join('.claude', 'skills', 'rhythmguard', 'SKILL.md'), mode: 'write' },
+  cursor: { source: 'cursor/rhythmguard.mdc', target: path.join('.cursor', 'rules', 'rhythmguard.mdc'), mode: 'write' },
+  copilot: { source: 'copilot/copilot-instructions.md', target: path.join('.github', 'copilot-instructions.md'), mode: 'append' },
+};
+const AGENT_BLOCK_START = '<!-- rhythmguard:agents:start -->';
+const AGENT_BLOCK_END = '<!-- rhythmguard:agents:end -->';
+
+function parseInitArgs(argv) {
+  const parsed = { agents: null };
+  for (let index = 0; index < argv.length; index += 1) {
+    const arg = argv[index];
+    if (arg === '--agents') {
+      parsed.agents = String(argv[++index] || 'all').toLowerCase();
+    } else if (arg.startsWith('--agents=')) {
+      parsed.agents = arg.slice('--agents='.length).toLowerCase();
+    }
+  }
+  return parsed;
+}
+
+/**
+ * Copies the generated packs under <package>/agents into the locations each
+ * agent reads. Claude Code and Cursor files are owned by Rhythmguard and
+ * overwritten; copilot-instructions.md is shared, so the block is appended
+ * between markers and replaced in place on later runs.
+ */
+function installAgents(selection, cwd = process.cwd()) {
+  const names = selection === 'all' ? Object.keys(AGENT_TARGETS) : [selection];
+  const unknown = names.filter((name) => !AGENT_TARGETS[name]);
+  if (unknown.length > 0) {
+    throw new Error(`Unknown agents target "${unknown[0]}". Use claude, cursor, copilot or all.`);
+  }
+
+  const packsDir = path.join(__dirname, '..', '..', 'agents');
+  const written = [];
+  for (const name of names) {
+    const { mode, source, target } = AGENT_TARGETS[name];
+    const content = fs.readFileSync(path.join(packsDir, source), 'utf8');
+    const targetPath = path.join(cwd, target);
+    fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+
+    if (mode === 'append' && fs.existsSync(targetPath)) {
+      const existing = fs.readFileSync(targetPath, 'utf8');
+      const block = `${AGENT_BLOCK_START}\n${content.trimEnd()}\n${AGENT_BLOCK_END}\n`;
+      const start = existing.indexOf(AGENT_BLOCK_START);
+      const end = existing.indexOf(AGENT_BLOCK_END);
+      const next = start !== -1 && end !== -1
+        ? `${existing.slice(0, start)}${block}${existing.slice(end + AGENT_BLOCK_END.length).replace(/^\n/, '')}`
+        : `${existing.trimEnd()}\n\n${block}`;
+      fs.writeFileSync(targetPath, next);
+    } else {
+      fs.writeFileSync(targetPath, content);
+    }
+    written.push(target);
+  }
+  return written;
+}
+
 async function run() {
+  const args = parseInitArgs(process.argv.slice(3));
+
+  if (args.agents) {
+    let written;
+    try {
+      written = installAgents(args.agents);
+    } catch (error) {
+      process.stderr.write(`${error.message}\n`);
+      process.exit(1);
+    }
+    process.stdout.write('\nRhythmguard agent packs\n\n');
+    for (const file of written) {
+      process.stdout.write(`✓ Wrote ${file}\n`);
+    }
+    process.stdout.write('\nThe block is the one in docs/FOR_AGENTS.md. Trim it to the lines that apply.\n\n');
+    return;
+  }
+
   const prompter = createPrompter();
 
   try {
@@ -152,7 +229,7 @@ async function run() {
   }
 }
 
-module.exports = { detect, run, selectProfile };
+module.exports = { AGENT_TARGETS, detect, installAgents, run, selectProfile };
 
 if (require.main === module) {
   run();
