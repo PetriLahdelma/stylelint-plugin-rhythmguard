@@ -43,6 +43,13 @@
         "dist/css/global-vars.css"
       ],
       "note": "--spectrum-spacing-* in px"
+    },
+    {
+      "name": "@carbon/layout",
+      "files": [
+        "scss/generated/_spacing.scss"
+      ],
+      "note": "$spacing-01..13 in rem, Sass variables; Carbon's styles package forwards them from here"
     }
   ]
 }

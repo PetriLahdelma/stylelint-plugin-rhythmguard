@@ -6,6 +6,12 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- `scale: "auto"` accepts tokens named `spacer`, so PatternFly's `--pf-t--global--spacer--*` ladder is read instead of falling back. ([#85](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/85))
+- Token-package discovery reads `@carbon/layout`, where Carbon defines `$spacing-01` to `$spacing-13`. `.scss` files are accepted as token sources, in `scaleSources` and `--token-source` too. ([#87](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/87))
+- When several Tailwind v4 `--spacing` bases are found, only the first is expanded. A union of ladders from several theme files produced fractional steps that matched nothing on shadcn/ui. ([#89](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/89))
+
 ### Changed
 
 - The quiet benchmark manifest grew from 20 to 57 repositories: design systems (GOV.UK, NHS.UK, PatternFly, Cloudscape, Angular Material, Ionic, Element Plus, HashiCorp, SAP Fundamental Styles and UI5 Web Components, daisyUI, Skeleton, Semi, n8n, Utrecht, Mozilla Protocol, Foundation, CoreUI, Tabler, AdminLTE, Materialize, Pure, Tachyons) and CSS-heavy applications (Mastodon already; now Forem, Discourse, Zulip, Mattermost, Grafana, Metabase, Directus, Excalidraw, Ghost, Cal.com, VS Code base UI, Docusaurus, VitePress and Starlight themes). Every repository has a pinned snapshot and the State of Spacing edition is regenerated over the full set.

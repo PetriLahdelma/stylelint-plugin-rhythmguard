@@ -1,12 +1,17 @@
-# Spacing scale: where do your spacing tokens live? (audit from the Rhythmguard benchmark)
+# Spacing scale audit: 14 literal spacing values off your own token scale
 
 Hi. I maintain [stylelint-plugin-rhythmguard](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard), a Stylelint rule that checks spacing values against a project's own scale. To keep it quiet on code I do not control, I run it against public design systems on pinned commits and publish the numbers. This repository is one of them, and I would rather you saw the audit here than in a report first.
 
 **What was run.** `npx rhythmguard audit . --scale auto` at `b62f051` over `src/patternfly`. Hairlines of one pixel or less, percentages, and generated or test paths are excluded. Anyone can reproduce it in a checkout of that commit.
 
-**What it found.** The audit could not find a spacing token set here (it looks for `--space-*` / `--spacing-*` custom properties, Sass `$spacer` / `$spacing-*` variables and maps, or a Tailwind `--spacing` base), so it measured against a default 4px scale instead. Against that default it reported 13 literal values, a number that says more about my token discovery than about your CSS, so I am not treating it as a finding.
+**What it found.** Scale `0, 4, 8, 16, 24, 32, 48, 64, 80` inferred from your own spacing tokens in the stylesheets. 14 literal spacing values are off that scale.
 
-**The ask.** If you can point me at where the spacing scale is defined (a token file, a Sass map, a package), I will teach the tool to read it, re-run the audit on the real scale, and post the result here. If spacing is intentionally not on a scale, saying so is just as useful and I will mark the row that way.
+- Values: `.3em` ×2, `6px` ×2, `-12px` ×1, `-18px` ×1, `.15em` ×1
+- Properties: `inset-block-start` ×3, `inset-inline-start` ×2, `padding` ×2, `margin` ×1, `margin-block-end` ×1
+
+Three values usually explain most of the count, and each is a single decision: a step the scale is missing, a slip, or a token nobody defined. A property table led by sibling margins often means the parent could own the spacing with `gap`.
+
+**The ask.** Nothing is required. If the numbers are useful, I can open a small PR for the top value with before and after screenshots, or a one-rule Stylelint config at warning level that reports new off-scale values against your tokens and nothing else. If the findings are wrong for this codebase, tell me which ones; false positives are the most valuable report the tool gets and they change its defaults.
 
 The row for this repository will appear in a periodic "State of Spacing" table in the Rhythmguard repository, with this issue linked. If you would rather not be listed, say so here and I will remove it.
 

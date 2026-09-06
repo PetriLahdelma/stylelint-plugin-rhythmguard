@@ -53,7 +53,7 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [n8n-design-system](https://github.com/n8n-io/n8n.git) | `7cb77fb` | 77 | 654 | 143 | 143 | 0 | 0 | 0% | 216 | scanned-css (14 tokens) |
 | [nhsuk-frontend](https://github.com/nhsuk/nhsuk-frontend.git) | `10caad9` | 146 | 235 | 28 | 28 | 0 | 0 | 0% | 38 | fallback (no spacing tokens found) |
 | [open-props](https://github.com/argyleink/open-props.git) | `530682d` | 79 | 23 | 0 | 0 | 0 | 0 | 0% | 0 | fallback (no spacing tokens found) |
-| [patternfly](https://github.com/patternfly/patternfly.git) | `b62f051` | 213 | 0 | 13 | 13 | 0 | 0 | 0% | 23 | fallback (no spacing tokens found) |
+| [patternfly](https://github.com/patternfly/patternfly.git) | `b62f051` | 213 | 0 | 14 | 14 | 0 | 0 | 0% | 23 | scanned-css (54 tokens) |
 | [penpot](https://github.com/penpot/penpot.git) | `00e0492` | 294 | 31 | 17 | 17 | 0 | 0 | 0% | 43 | fallback (no spacing tokens found) |
 | [pico](https://github.com/picocss/pico.git) | `1039a47` | 54 | 1 | 7 | 7 | 0 | 0 | 0% | 23 | fallback (no spacing tokens found) |
 | [primer-css](https://github.com/primer/css.git) | `72564a3` | 113 | 0 | 103 | 103 | 0 | 0 | 0% | 116 | scanned-css (32 tokens) |
@@ -62,11 +62,11 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [radix-themes](https://github.com/radix-ui/themes.git) | `1faff10` | 150 | 149 | 7 | 7 | 0 | 0 | 0% | 19 | scanned-css (9 tokens) |
 | [salesforce-lightning](https://github.com/salesforce-ux/design-system.git) | `9bc6a40` | 459 | 558 | 75 | 58 | 17 | 0 | 23% | 98 | fallback (no spacing tokens found) |
 | [semi-design](https://github.com/DouyinFE/semi-design.git) | `8bed560` | 277 | 287 | 2 | 2 | 0 | 0 | 0% | 27 | scanned-css (757 tokens) |
-| [shadcn-ui](https://github.com/shadcn-ui/ui.git) | `7c9eaba` | 13 | 1829 | 58 | 58 | 0 | 0 | 0% | 26 | scanned-css (2 tokens) |
+| [shadcn-ui](https://github.com/shadcn-ui/ui.git) | `7c9eaba` | 13 | 1829 | 80 | 80 | 0 | 0 | 0% | 26 | scanned-css (2 tokens) |
 | [skeleton](https://github.com/skeletonlabs/skeleton.git) | `e65535e` | 51 | 0 | 0 | 0 | 0 | 0 | 0% | 0 | scanned-css (14 tokens) |
 | [spectrum-css](https://github.com/adobe/spectrum-css.git) | `3762086` | 236 | 252 | 5 | 5 | 0 | 0 | 0% | 7 | fallback (no spacing tokens found) |
 | [starlight](https://github.com/withastro/starlight.git) | `38149a0` | 8 | 0 | 4 | 4 | 0 | 0 | 0% | 23 | fallback (no spacing tokens found) |
-| [tabler](https://github.com/tabler/tabler.git) | `ac001f8` | 203 | 3 | 19 | 12 | 7 | 0 | 37% | 82 | scanned-css (30 tokens) |
+| [tabler](https://github.com/tabler/tabler.git) | `ac001f8` | 203 | 3 | 19 | 12 | 7 | 0 | 37% | 82 | scanned-css (35 tokens) |
 | [tachyons](https://github.com/tachyons-css/tachyons.git) | `2cb90e9` | 60 | 0 | 5 | 5 | 0 | 0 | 0% | 5 | scanned-css (8 tokens) |
 | [ui5-webcomponents](https://github.com/SAP/ui5-webcomponents.git) | `9856f4f` | 522 | 0 | 75 | 75 | 0 | 0 | 0% | 239 | fallback (no spacing tokens found) |
 | [uswds](https://github.com/uswds/uswds.git) | `eed8a5e` | 682 | 205 | 17 | 11 | 6 | 0 | 35% | 46 | scanned-css (30 tokens) |
@@ -74,7 +74,7 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [vitepress-theme](https://github.com/vuejs/vitepress.git) | `3e681e2` | 11 | 0 | 23 | 23 | 0 | 0 | 0% | 74 | fallback (no spacing tokens found) |
 | [vscode-base-ui](https://github.com/microsoft/vscode.git) | `1512d0c` | 38 | 77 | 74 | 74 | 0 | 0 | 0% | 130 | fallback (no spacing tokens found) |
 | [wp-calypso-components](https://github.com/Automattic/wp-calypso.git) | `7cc9ee9` | 51 | 204 | 80 | 80 | 0 | 0 | 0% | 173 | fallback (no spacing tokens found) |
-| [zulip](https://github.com/zulip/zulip.git) | `9b991a8` | 67 | 0 | 1743 | 1743 | 0 | 0 | 0% | 2376 | scanned-css (12 tokens) |
+| [zulip](https://github.com/zulip/zulip.git) | `9b991a8` | 67 | 0 | 1743 | 1743 | 0 | 0 | 0% | 2376 | scanned-css (13 tokens) |
 
 ## Per-repo detail
 
@@ -1011,7 +1011,7 @@ Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
 
 Paths: `src/patternfly`. PatternFly: SCSS with --pf-t--global--spacer--* tokens.
 
-Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+Inferred scale: `0, 4, 8, 16, 24, 32, 48, 64, 80` from scanned-css (src/patternfly/base/tokens/tokens-default.scss, src/patternfly/base/tokens/tokens-felt-glass.scss, src/patternfly/base/tokens/tokens-glass.scss, +9 more).
 
 Top drift values:
 
@@ -1248,7 +1248,7 @@ Drift examples for maintainer review:
 
 Paths: `apps/v4/app`, `apps/v4/registry`, `apps/v4/components`. Tailwind v4 with @theme in globals.css plus TSX class strings; exercises the Tailwind side of the audit.
 
-Inferred scale: `0, 1.6, 1.778, 3.2, 3.555, 3.556, 4.8, 5.333, 6.4, 7.11, 7.111, 8, 8.888, 8.889, 9.6, 10.666, 10.667, 11.2, 12.443, 12.444, 12.8, 14.221, 14.222, 16, 17.776, 17.778, 19.2, 21.331, 21.333, 22.4, 24.886, 24.889, 25.6, 28.442, 28.444, 28.8, 31.997, 32, 35.2, 35.552, 35.556, 38.4, 39.107, 39.111, 42.662, 42.667, 44.8, 49.773, 49.778, 51.2, 56.883, 56.889, 64, 71.104, 71.111, 76.8, 85.325, 85.333, 89.6, 99.546, 99.555, 102.4, 113.766, 113.778, 115.2, 127.987, 128, 140.8, 142.208, 142.222, 153.6, 156.429, 156.444, 166.4, 170.65, 170.666, 179.2, 184.87, 184.889, 192, 199.091, 199.111, 204.8, 213.312, 213.333, 227.533, 227.555, 230.4, 255.974, 256, 284.416, 284.444, 307.2, 341.299, 341.333` from scanned-css (apps/v4/app/legacy-themes.css, apps/v4/registry/styles/style-luma.css, apps/v4/registry/styles/style-lyra.css, +6 more).
+Inferred scale: `0, 1.778, 3.556, 5.333, 7.111, 8.889, 10.667, 12.444, 14.222, 17.778, 21.333, 24.889, 28.444, 32, 35.556, 39.111, 42.667, 49.778, 56.889, 71.111, 85.333, 99.555, 113.778, 128, 142.222, 156.444, 170.666, 184.889, 199.111, 213.333, 227.555, 256, 284.444, 341.333` from scanned-css (apps/v4/app/legacy-themes.css, apps/v4/registry/styles/style-luma.css, apps/v4/registry/styles/style-lyra.css, +6 more).
 
 Top drift values:
 
@@ -1256,20 +1256,20 @@ Top drift values:
 | --- | ---: |
 | `2.5rem` | 8 |
 | `-2.5rem` | 8 |
+| `1em` | 7 |
 | `2px` | 5 |
+| `0.5em` | 4 |
 | `0.25em` | 4 |
 | `-5px` | 4 |
-| `0.75em` | 2 |
-| `3px` | 2 |
-| `50px` | 2 |
+| `0.3rem` | 3 |
 
 Drift examples for maintainer review:
 
+- `apps/v4/app/(app)/(typeset)/typeset.css:105` `1em`
 - `apps/v4/app/(app)/(typeset)/typeset.css:144` `0.15em`
 - `apps/v4/app/(app)/(typeset)/typeset.css:202` `1.5em`
-- `apps/v4/app/(app)/(typeset)/typeset.css:221` `0.25em`
-- `apps/v4/app/(app)/(typeset)/typeset.css:250` `0.35em`
-- `apps/v4/app/(app)/(typeset)/typeset.css:263` `0.25em`
+- `apps/v4/app/(app)/(typeset)/typeset.css:205` `0.5em`
+- `apps/v4/app/(app)/(typeset)/typeset.css:206` `0.4em`
 
 ### skeleton
 
@@ -1325,7 +1325,7 @@ Drift examples for maintainer review:
 
 Paths: `core/scss`, `src/scss`. Tabler: Bootstrap-derived SCSS.
 
-Inferred scale: `0, 0.64, 4, 8, 16, 24, 32, 40, 48, 64, 80, 96, 112, 128` from scanned-css (core/scss/_variables.scss, core/scss/bootstrap/_toasts.scss).
+Inferred scale: `0, 0.64, 4, 8, 16, 24, 32, 40, 48, 64, 80, 96, 112, 128` from scanned-css (core/scss/_variables.scss, core/scss/bootstrap/_card.scss, core/scss/bootstrap/_dropdown.scss, +2 more).
 
 Top drift values:
 

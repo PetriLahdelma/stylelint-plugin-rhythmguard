@@ -2,20 +2,22 @@
   "name": "patternfly",
   "sha": "b62f051",
   "scale": {
-    "source": "fallback",
+    "source": "scanned-css",
     "values": [
       0,
       4,
       8,
-      12,
       16,
       24,
-      32
+      32,
+      48,
+      64,
+      80
     ]
   },
   "summary": {
-    "total": 13,
-    "drift": 13,
+    "total": 14,
+    "drift": 14,
     "falsePositives": 0
   },
   "findings": [
@@ -31,6 +33,7 @@
     "src/patternfly/components/Table/examples/Table.css:8:440px:drift",
     "src/patternfly/components/Table/examples/Table.css:9:-18px:drift",
     "src/patternfly/components/TextInputGroup/examples/TextInputGroup.css:8:40px:drift",
+    "src/patternfly/demos/Card/examples/Card.css:12:-12px:drift",
     "src/patternfly/demos/Card/examples/Card.css:2:180px:drift"
   ],
   "commit": "b62f0515d25284b5cb42ecb59379b12560657892"

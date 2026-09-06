@@ -8,7 +8,7 @@ This is not a ranking of teams. It is a reading of one signal on a fixed commit,
 npx rhythmguard audit . --scale auto --format markdown
 ```
 
-Across the set: 7471 off-scale values in 8585 CSS files; 39 of 57 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS, and 5 more had an inference the plausibility check rejected (marked `unreliable`; usually component-local variables, see issue #54).
+Across the set: 7494 off-scale values in 8585 CSS files; 38 of 57 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS, and 5 more had an inference the plausibility check rejected (marked `unreliable`; usually component-local variables, see issue #54).
 
 ## Repositories
 
@@ -20,7 +20,7 @@ Across the set: 7471 off-scale values in 8585 CSS files; 39 of 57 repositories h
 | [calcom](https://github.com/calcom/cal.com) | `e91bb0c` | fallback | 40 | 1000 | 95% | `10px` ×9, `2px` ×9, `6px` ×3 | `padding` ×15, `class-string` ×13, `margin` ×2 |
 | [grafana](https://github.com/grafana/grafana) | `c6fad86` | scanned-css | 57 | 950 | 83% | `10px` ×9, `15px` ×9, `5px` ×7 | `padding` ×34, `padding-left` ×8, `margin-top` ×4 |
 | [ghost-admin](https://github.com/TryGhost/Ghost) | `26746d3` | fallback | 745 | 626 | 82% | `2px` ×70, `10px` ×69, `6px` ×62 | `padding` ×294, `margin` ×167, `margin-top` ×68 |
-| [shadcn-ui](https://github.com/shadcn-ui/ui) | `7c9eaba` | scanned-css (unreliable) | 58 | 446 | 99% | `-2.5rem` ×8, `2.5rem` ×8, `2px` ×5 | `class-string` ×47, `padding` ×6, `margin-block-start` ×2 |
+| [shadcn-ui](https://github.com/shadcn-ui/ui) | `7c9eaba` | scanned-css (unreliable) | 80 | 615 | 99% | `-2.5rem` ×8, `2.5rem` ×8, `1em` ×7 | `class-string` ×54, `padding` ×10, `margin-block-start` ×7 |
 | [forem](https://github.com/forem/forem) | `e8a0729` | fallback | 590 | 415 | 53% | `10px` ×87, `2px` ×57, `5px` ×57 | `padding` ×266, `margin` ×119, `margin-top` ×46 |
 | [adminlte](https://github.com/ColorlibHQ/AdminLTE) | `12b4b06` | fallback | 126 | 274 | 63% | `10px` ×20, `1.25rem` ×9, `2px` ×9 | `padding` ×50, `margin-top` ×17, `margin` ×15 |
 | [directus-app](https://github.com/directus/directus) | `3df2ba9` | fallback | 63 | 217 | 59% | `-0.3125rem` ×17, `0.4375rem` ×9, `-0.1875rem` ×6 | `padding` ×17, `inset-inline-start` ×6, `inset-block-start` ×5 |
@@ -58,8 +58,8 @@ Across the set: 7471 off-scale values in 8585 CSS files; 39 of 57 repositories h
 | [cloudscape-components](https://github.com/cloudscape-design/components) | `0c1c9fd` | fallback | 27 | 8 | 99% | `-5px` ×5, `-9999px` ×4, `2px` ×4 | `transform` ×6, `inset-block-start` ×5, `inset-inline-start` ×5 |
 | [tachyons](https://github.com/tachyons-css/tachyons) | `2cb90e9` | scanned-css | 5 | 8 | 97% | `0.35em` ×1, `0.625em` ×1, `0.67em` ×1 | `padding` ×3, `margin` ×1, `margin-top` ×1 |
 | [govuk-frontend](https://github.com/alphagov/govuk-frontend) | `356d461` | fallback | 21 | 7 | 98% | `2px` ×6, `14px` ×2, `3px` ×2 | `margin-top` ×5, `margin-bottom` ×4, `padding` ×3 |
+| [patternfly](https://github.com/patternfly/patternfly) | `b62f051` | scanned-css | 14 | 7 | 94% | `.3em` ×2, `6px` ×2, `-12px` ×1 | `inset-block-start` ×3, `inset-inline-start` ×2, `padding` ×2 |
 | [penpot](https://github.com/penpot/penpot) | `00e0492` | fallback | 17 | 6 | 93% | `-2px` ×3, `7px` ×3, `-10px` ×2 | `transform` ×11, `padding` ×2, `gap` ×1 |
-| [patternfly](https://github.com/patternfly/patternfly) | `b62f051` | fallback | 13 | 6 | 94% | `.3em` ×2, `6px` ×2, `-18px` ×1 | `inset-block-start` ×3, `inset-inline-start` ×2, `padding` ×2 |
 | [tabler](https://github.com/tabler/tabler) | `ac001f8` | scanned-css | 12 | 6 | 88% | `-90px` ×3, `85px` ×3, `-2px` ×1 | `transform` ×7, `padding` ×2, `margin` ×1 |
 | [radix-themes](https://github.com/radix-ui/themes) | `1faff10` | scanned-css | 7 | 5 | 98% | `5px` ×3, `3px` ×2, `-2px` ×1 | `padding-right` ×2, `transform` ×2, `margin-bottom` ×1 |
 | [coreui](https://github.com/coreui/coreui) | `be40d3f` | scanned-css | 5 | 3 | 96% | `-.375rem` ×2, `.1rem` ×1, `2px` ×1 | `margin-inline-start` ×2, `margin-bottom` ×1, `margin-top` ×1 |
