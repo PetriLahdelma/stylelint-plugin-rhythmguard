@@ -80,3 +80,32 @@ test('renderEdition shows deltas with a sign and marks new rows', async () => {
   assert.match(markdown, /\| new \|/);
   assert.match(markdown, /since 2026-06/);
 });
+
+test('assessScale flags inferred scales that do not look like a spacing scale', async () => {
+  const { assessScale } = await load();
+  const ok = (scale) => assessScale(scale).plausible;
+
+  assert.equal(ok({ source: 'scanned-css', values: [0, 4, 8, 12, 16, 24, 32], files: ['src/tokens/space.css'] }), true);
+  assert.equal(ok({ source: 'scanned-css', values: [0, 2, 4, 6, 8, 12, 16, 20, 24, 32, 48, 64], files: ['src/_primitives.scss', 'src/markdown.scss', 'src/markdown.scss'] }), true, 'mostly multiples of four passes even from mixed files');
+  assert.equal(ok({ source: 'scanned-css', values: [0, 2, 3, 5, 6, 25], files: ['web/styles/app_variables.css'] }), false, 'zulip: not a spacing ladder');
+  assert.equal(ok({ source: 'scanned-css', values: [0, 1, 2, 10, 12, 16, 20, 22, 32], files: ['core/src/components/Avatar/Avatar.module.css', 'core/src/components/Chip/Chip.module.css', 'core/src/core/MantineProvider/default-css-variables.css'] }), false, 'mantine: polluted by component-local variables');
+  assert.equal(ok({ source: 'scanned-css', values: [0, 0.4, 0.7, 0.8, 1, 1.1, 1.4, 2, 3, 4], files: ['a/variables.scss'] }), false, 'fractional values');
+  assert.equal(ok({ source: 'fallback', values: [0, 4, 8], files: [] }), false, 'fallback is never plausible');
+  assert.equal(ok({ source: 'token-sources', values: [0, 4, 8, 12], files: ['tokens.json'] }), true, 'explicit sources are trusted');
+});
+
+test('buildEdition marks unreliable scales and counts them with fallbacks', async () => {
+  const { buildEdition, renderEdition } = await load();
+  const edition = buildEdition([
+    result({ name: 'zulip', scale: { source: 'scanned-css', values: [0, 2, 3, 5, 6, 25], tokenCount: 12, files: ['web/styles/app_variables.css'] } }),
+    result(),
+  ], { id: '2026-09' });
+
+  const zulip = edition.rows.find((row) => row.name === 'zulip');
+  assert.equal(zulip.scaleReliable, false);
+  assert.equal(edition.rows.find((row) => row.name === 'acme').scaleReliable, true);
+  assert.equal(edition.totals.unreliableScales, 1);
+  const markdown = renderEdition(edition);
+  assert.match(markdown, /\| \[zulip\]\([^)]*\) \| `abc1234` \| scanned-css \(unreliable\) \|/);
+  assert.match(markdown, /1 more had an inference the plausibility check rejected/);
+});

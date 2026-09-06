@@ -12,6 +12,10 @@
       "drift": 1743,
       "driftPer100Files": 2601,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "not a four-based ladder"
+      ],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -59,6 +63,8 @@
       "drift": 564,
       "driftPer100Files": 1567,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -112,6 +118,10 @@
       "drift": 1058,
       "driftPer100Files": 1027,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -160,6 +170,10 @@
       "drift": 40,
       "driftPer100Files": 1000,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -208,6 +222,8 @@
       "drift": 57,
       "driftPer100Files": 950,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -256,6 +272,10 @@
       "drift": 745,
       "driftPer100Files": 626,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -304,6 +324,12 @@
       "drift": 58,
       "driftPer100Files": 446,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fractional values",
+        "not a four-based ladder",
+        "sources are component files"
+      ],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -440,6 +466,10 @@
       "drift": 590,
       "driftPer100Files": 415,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -488,6 +518,10 @@
       "drift": 126,
       "driftPer100Files": 274,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -536,6 +570,10 @@
       "drift": 63,
       "driftPer100Files": 217,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -584,6 +622,10 @@
       "drift": 23,
       "driftPer100Files": 209,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -632,6 +674,10 @@
       "drift": 74,
       "driftPer100Files": 195,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -680,6 +726,10 @@
       "drift": 30,
       "driftPer100Files": 188,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -728,6 +778,8 @@
       "drift": 143,
       "driftPer100Files": 186,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -783,6 +835,10 @@
       "drift": 126,
       "driftPer100Files": 170,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -831,6 +887,10 @@
       "drift": 80,
       "driftPer100Files": 157,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -879,6 +939,10 @@
       "drift": 222,
       "driftPer100Files": 152,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -927,6 +991,10 @@
       "drift": 9,
       "driftPer100Files": 150,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -975,6 +1043,10 @@
       "drift": 109,
       "driftPer100Files": 120,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1023,6 +1095,10 @@
       "drift": 272,
       "driftPer100Files": 96,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1071,6 +1147,10 @@
       "drift": 349,
       "driftPer100Files": 93,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "sources are component files"
+      ],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -1155,6 +1235,8 @@
       "drift": 103,
       "driftPer100Files": 91,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -1209,6 +1291,8 @@
       "drift": 9,
       "driftPer100Files": 60,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -1257,6 +1341,10 @@
       "drift": 55,
       "driftPer100Files": 56,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1305,6 +1393,10 @@
       "drift": 4,
       "driftPer100Files": 50,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1353,6 +1445,8 @@
       "drift": 37,
       "driftPer100Files": 49,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -1401,6 +1495,10 @@
       "drift": 35,
       "driftPer100Files": 44,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1449,6 +1547,8 @@
       "drift": 53,
       "driftPer100Files": 43,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -1496,6 +1596,10 @@
       "drift": 33,
       "driftPer100Files": 43,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1544,6 +1648,10 @@
       "drift": 137,
       "driftPer100Files": 40,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1592,6 +1700,10 @@
       "drift": 37,
       "driftPer100Files": 34,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1640,6 +1752,10 @@
       "drift": 47,
       "driftPer100Files": 29,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1688,6 +1804,10 @@
       "drift": 34,
       "driftPer100Files": 29,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1736,6 +1856,10 @@
       "drift": 30,
       "driftPer100Files": 29,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "sources are component files"
+      ],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -1786,6 +1910,10 @@
       "drift": 28,
       "driftPer100Files": 19,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1834,6 +1962,10 @@
       "drift": 18,
       "driftPer100Files": 17,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1882,6 +2014,10 @@
       "drift": 75,
       "driftPer100Files": 14,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1930,6 +2066,10 @@
       "drift": 58,
       "driftPer100Files": 13,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -1978,6 +2118,10 @@
       "drift": 7,
       "driftPer100Files": 13,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -2026,6 +2170,10 @@
       "drift": 30,
       "driftPer100Files": 11,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -2074,6 +2222,10 @@
       "drift": 22,
       "driftPer100Files": 11,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -2122,6 +2274,10 @@
       "drift": 27,
       "driftPer100Files": 8,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -2170,6 +2326,8 @@
       "drift": 5,
       "driftPer100Files": 8,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -2219,6 +2377,10 @@
       "drift": 21,
       "driftPer100Files": 7,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -2267,6 +2429,10 @@
       "drift": 17,
       "driftPer100Files": 6,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -2315,6 +2481,10 @@
       "drift": 13,
       "driftPer100Files": 6,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -2363,6 +2533,8 @@
       "drift": 12,
       "driftPer100Files": 6,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -2418,6 +2590,8 @@
       "drift": 7,
       "driftPer100Files": 5,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -2469,6 +2643,8 @@
       "drift": 5,
       "driftPer100Files": 3,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -2516,6 +2692,10 @@
       "drift": 3,
       "driftPer100Files": 3,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -2560,6 +2740,8 @@
       "drift": 11,
       "driftPer100Files": 2,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -2620,6 +2802,10 @@
       "drift": 8,
       "driftPer100Files": 2,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -2668,6 +2854,10 @@
       "drift": 5,
       "driftPer100Files": 2,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -2716,6 +2906,10 @@
       "drift": 2,
       "driftPer100Files": 2,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -2752,6 +2946,10 @@
       "drift": 2,
       "driftPer100Files": 1,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "not a four-based ladder"
+      ],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -2833,6 +3031,10 @@
       "drift": 0,
       "driftPer100Files": 0,
       "driftDelta": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
       "scaleSource": "fallback",
       "scaleValues": [
         0,
@@ -2855,6 +3057,8 @@
       "drift": 0,
       "driftPer100Files": 0,
       "driftDelta": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleSource": "scanned-css",
       "scaleValues": [
         0,
@@ -2900,6 +3104,7 @@
     "cssFiles": 8585,
     "drift": 7471,
     "repos": 57,
-    "fallbackScales": 39
+    "fallbackScales": 39,
+    "unreliableScales": 5
   }
 }
