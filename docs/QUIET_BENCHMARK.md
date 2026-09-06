@@ -37,13 +37,13 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [fundamental-styles](https://github.com/SAP/fundamental-styles.git) | `e31a128` | 343 | 0 | 137 | 137 | 0 | 0 | 0% | 602 | fallback (no spacing tokens found) |
 | [ghost-admin](https://github.com/TryGhost/Ghost.git) | `26746d3` | 119 | 202 | 745 | 745 | 0 | 0 | 0% | 1280 | fallback (no spacing tokens found) |
 | [gitlab-ui](https://gitlab.com/gitlab-org/gitlab-ui.git) | `8660f9f` | 93 | 373 | 3 | 3 | 0 | 0 | 0% | 4 | fallback (no spacing tokens found) |
-| [govuk-frontend](https://github.com/alphagov/govuk-frontend.git) | `356d461` | 311 | 167 | 21 | 21 | 0 | 0 | 0% | 23 | scanned-css (27 tokens) |
+| [govuk-frontend](https://github.com/alphagov/govuk-frontend.git) | `356d461` | 311 | 167 | 21 | 21 | 0 | 0 | 0% | 23 | scanned-css (26 tokens) |
 | [grafana](https://github.com/grafana/grafana.git) | `c6fad86` | 6 | 0 | 57 | 57 | 0 | 0 | 0% | 77 | scanned-css (13 tokens) |
 | [gutenberg-components](https://github.com/WordPress/gutenberg.git) | `ec62b33` | 79 | 845 | 35 | 35 | 0 | 0 | 0% | 51 | fallback (no spacing tokens found) |
 | [hashicorp-design-system](https://github.com/hashicorp/design-system.git) | `83cac84` | 91 | 0 | 109 | 109 | 0 | 0 | 0% | 319 | fallback (no spacing tokens found) |
 | [ionic-core](https://github.com/ionic-team/ionic-framework.git) | `5874331` | 367 | 667 | 8 | 8 | 0 | 0 | 0% | 18 | fallback (no spacing tokens found) |
 | [liveblocks-react-ui](https://github.com/liveblocks/liveblocks.git) | `98332db` | 6 | 184 | 9 | 9 | 0 | 0 | 0% | 29 | fallback (no spacing tokens found) |
-| [mantine](https://github.com/mantinedev/mantine.git) | `3862b09` | 102 | 849 | 35 | 35 | 0 | 0 | 0% | 36 | scanned-css (15 tokens) |
+| [mantine](https://github.com/mantinedev/mantine.git) | `3862b09` | 102 | 849 | 36 | 36 | 0 | 0 | 0% | 36 | scanned-css (5 tokens) |
 | [mastodon](https://github.com/mastodon/mastodon.git) | `0a32b4a` | 36 | 0 | 564 | 564 | 0 | 0 | 0% | 1255 | scanned-css (13 tokens) |
 | [materialize](https://github.com/materializecss/materialize.git) | `c9d6914` | 15 | 0 | 9 | 9 | 0 | 0 | 0% | 14 | scanned-css (7 tokens) |
 | [mattermost-webapp](https://github.com/mattermost/mattermost.git) | `502cf7e` | 103 | 0 | 1058 | 1058 | 0 | 0 | 0% | 1658 | fallback (no spacing tokens found) |
@@ -53,7 +53,7 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [n8n-design-system](https://github.com/n8n-io/n8n.git) | `7cb77fb` | 77 | 654 | 143 | 143 | 0 | 0 | 0% | 216 | scanned-css (14 tokens) |
 | [nhsuk-frontend](https://github.com/nhsuk/nhsuk-frontend.git) | `10caad9` | 146 | 235 | 28 | 28 | 0 | 0 | 0% | 38 | scanned-css (30 tokens) |
 | [open-props](https://github.com/argyleink/open-props.git) | `530682d` | 79 | 23 | 0 | 0 | 0 | 0 | 0% | 0 | fallback (no spacing tokens found) |
-| [patternfly](https://github.com/patternfly/patternfly.git) | `b62f051` | 213 | 0 | 14 | 14 | 0 | 0 | 0% | 23 | scanned-css (54 tokens) |
+| [patternfly](https://github.com/patternfly/patternfly.git) | `b62f051` | 213 | 0 | 14 | 14 | 0 | 0 | 0% | 23 | scanned-css (51 tokens) |
 | [penpot](https://github.com/penpot/penpot.git) | `00e0492` | 294 | 31 | 17 | 17 | 0 | 0 | 0% | 43 | fallback (no spacing tokens found) |
 | [pico](https://github.com/picocss/pico.git) | `1039a47` | 54 | 1 | 7 | 7 | 0 | 0 | 0% | 23 | fallback (no spacing tokens found) |
 | [primer-css](https://github.com/primer/css.git) | `72564a3` | 113 | 0 | 103 | 103 | 0 | 0 | 0% | 116 | scanned-css (32 tokens) |
@@ -66,7 +66,7 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [skeleton](https://github.com/skeletonlabs/skeleton.git) | `e65535e` | 51 | 0 | 0 | 0 | 0 | 0 | 0% | 0 | scanned-css (14 tokens) |
 | [spectrum-css](https://github.com/adobe/spectrum-css.git) | `3762086` | 236 | 252 | 5 | 5 | 0 | 0 | 0% | 7 | fallback (no spacing tokens found) |
 | [starlight](https://github.com/withastro/starlight.git) | `38149a0` | 8 | 0 | 4 | 4 | 0 | 0 | 0% | 23 | fallback (no spacing tokens found) |
-| [tabler](https://github.com/tabler/tabler.git) | `ac001f8` | 203 | 3 | 19 | 12 | 7 | 0 | 37% | 82 | scanned-css (35 tokens) |
+| [tabler](https://github.com/tabler/tabler.git) | `ac001f8` | 203 | 3 | 19 | 12 | 7 | 0 | 37% | 82 | scanned-css (29 tokens) |
 | [tachyons](https://github.com/tachyons-css/tachyons.git) | `2cb90e9` | 60 | 0 | 5 | 5 | 0 | 0 | 0% | 5 | scanned-css (8 tokens) |
 | [ui5-webcomponents](https://github.com/SAP/ui5-webcomponents.git) | `9856f4f` | 522 | 0 | 75 | 75 | 0 | 0 | 0% | 239 | fallback (no spacing tokens found) |
 | [uswds](https://github.com/uswds/uswds.git) | `eed8a5e` | 682 | 205 | 35 | 26 | 9 | 0 | 26% | 46 | scanned-css (9 tokens) |
@@ -618,7 +618,7 @@ Drift examples for maintainer review:
 
 Paths: `packages/govuk-frontend/src/govuk`. GOV.UK Frontend: Sass with govuk-spacing() functions; expects partial visibility.
 
-Inferred scale: `0, 5, 10, 15, 20, 25, 30, 40, 50, 60` from scanned-css (packages/govuk-frontend/src/govuk/objects/_main-wrapper.mixin.scss, packages/govuk-frontend/src/govuk/settings/_spacing.scss).
+Inferred scale: `0, 5, 10, 15, 20, 25, 30, 40, 50, 60` from scanned-css (packages/govuk-frontend/src/govuk/settings/_spacing.scss).
 
 Top drift values:
 
@@ -777,7 +777,7 @@ Drift examples for maintainer review:
 
 Paths: `packages/@mantine/core/src`. CSS Modules. Spacing tokens are --mantine-spacing-*, which the default spacing pattern does not match; a fallback here is a token-discovery to-do.
 
-Inferred scale: `0, 10, 12, 16, 20, 22, 32` from scanned-css (packages/@mantine/core/src/components/Avatar/Avatar.module.css, packages/@mantine/core/src/components/Chip/Chip.module.css, packages/@mantine/core/src/components/ColorPicker/ColorPicker.module.css, +2 more).
+Inferred scale: `0, 10, 12, 16, 20, 32` from scanned-css (packages/@mantine/core/src/core/MantineProvider/default-css-variables.css).
 
 Top drift values:
 
@@ -1014,7 +1014,7 @@ Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
 
 Paths: `src/patternfly`. PatternFly: SCSS with --pf-t--global--spacer--* tokens.
 
-Inferred scale: `0, 4, 8, 16, 24, 32, 48, 64, 80` from scanned-css (src/patternfly/base/tokens/tokens-default.scss, src/patternfly/base/tokens/tokens-felt-glass.scss, src/patternfly/base/tokens/tokens-glass.scss, +9 more).
+Inferred scale: `0, 4, 8, 16, 24, 32, 48, 64, 80` from scanned-css (src/patternfly/base/tokens/tokens-default.scss, src/patternfly/base/tokens/tokens-felt-glass.scss, src/patternfly/base/tokens/tokens-glass.scss, +6 more).
 
 Top drift values:
 
@@ -1334,7 +1334,7 @@ Drift examples for maintainer review:
 
 Paths: `core/scss`, `src/scss`. Tabler: Bootstrap-derived SCSS.
 
-Inferred scale: `0, 0.64, 4, 8, 16, 24, 32, 40, 48, 64, 80, 96, 112, 128` from scanned-css (core/scss/_variables.scss, core/scss/bootstrap/_card.scss, core/scss/bootstrap/_dropdown.scss, +2 more).
+Inferred scale: `0, 0.64, 4, 8, 16, 24, 32, 40, 48, 64, 80, 96, 112, 128` from scanned-css (core/scss/_variables.scss).
 
 Top drift values:
 

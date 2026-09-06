@@ -19,7 +19,8 @@ const {
 const { buildReport, collectTokenDefinitions } = require('./contract');
 const { DEFAULT_SCALE, formatPath } = require('./shared');
 const {
-  assessScale, discoverTokenPackages, scaleFromDefinitions } = require('../core/scale-inference');
+  assessScale,
+  inferScaleFromDefinitions, discoverTokenPackages, scaleFromDefinitions } = require('../core/scale-inference');
 const {
   assertDirectory,
   collectCssFindings,
@@ -149,10 +150,11 @@ function resolveAuditScale({ baseFontSize, cssFiles, requested, tokenSourceResul
   }
 
   if (definitions.size > 0) {
-    const values = scaleFromDefinitions(definitions, baseFontSize);
-    if (values) {
+    const inferred = inferScaleFromDefinitions(definitions, baseFontSize);
+    if (inferred) {
+      const { values } = inferred;
       const files = new Set();
-      for (const definition of definitions.values()) {
+      for (const definition of inferred.definitions.values()) {
         for (const file of definition.files) {
           files.add(file);
         }
@@ -163,7 +165,7 @@ function resolveAuditScale({ baseFontSize, cssFiles, requested, tokenSourceResul
         return {
           files: sortedFiles,
           source: 'scanned-css',
-          tokenCount: definitions.size,
+          tokenCount: inferred.definitions.size,
           values,
         };
       }

@@ -97,8 +97,8 @@ function collectTokenContract({
 
 /** Custom properties and Sass tokens declared in one stylesheet, added to the definitions map. */
 function collectTokenDefinitions(source, file, definitions, matchesKind, baseFontSize) {
-  for (const { token, value } of collectCssTokens(source, matchesKind)) {
-    addDefinition(definitions, { baseFontSize, file, source: file, token, value });
+  for (const { scope, token, value } of collectCssTokens(source, matchesKind)) {
+    addDefinition(definitions, { baseFontSize, file, scope, source: file, token, value });
   }
 }
 

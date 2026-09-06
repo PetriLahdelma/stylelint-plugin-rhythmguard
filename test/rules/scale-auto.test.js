@@ -393,3 +393,36 @@ test('assessScale accepts ladders with a common step and rejects fractional or s
   assert.equal(ok({ source: 'scanned-css', values: [0, 1, 2, 10, 12, 16, 20, 22, 32], files: ['a/Avatar.module.css', 'a/Chip.module.css', 'a/default-css-variables.css'] }), false, 'mostly component files and an imperfect ladder');
   assert.equal(ok({ source: 'scanned-css', values: [0, 2, 4, 6, 8, 12, 16, 24, 32, 64], files: ['a/_primitives.scss', 'a/markdown.scss', 'a/markdown.scss'] }), true, 'a perfect ladder is trusted whatever the file names');
 });
+
+test('scale "auto" prefers root-level tokens over component-local variables when the root set is a scale (issue #54)', async () => {
+  const result = await lintCss({
+    code: [
+      ':root { --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; }',
+      '.chip { --chip-spacing-xs: 10px; --chip-spacing-sm: 22px; }',
+      '.a { margin: 10px; padding: 22px; gap: 12px; }',
+    ].join('\n'),
+    rules: useScaleAuto(),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 2, texts.join('\n'));
+  assert.match(texts[0], /"10px".*nearest: 8px or 12px/, 'the component variable did not join the scale');
+  assert.match(texts[1], /"22px".*nearest: 16px or 16px|"22px".*nearest: 16px/);
+});
+
+test('scale "auto" uses component-level tokens when the root does not define a scale of its own', async () => {
+  const result = await lintCss({
+    code: [
+      ':root { --space-1: 4px; }',
+      '.stack { --stack-spacing-1: 8px; --stack-spacing-2: 12px; --stack-spacing-3: 16px; }',
+      '.a { margin: 13px; padding: 12px; }',
+    ].join('\n'),
+    rules: useScaleAuto(),
+  });
+
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 1, texts.join('\n'));
+  assert.match(texts[0], /"13px".*nearest: 12px or 16px/);
+  assert.doesNotMatch(texts[0], /using preset/);
+});

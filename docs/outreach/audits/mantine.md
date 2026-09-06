@@ -1,10 +1,10 @@
-# Spacing scale audit: 35 literal spacing values off your own token scale
+# Spacing scale audit: 36 literal spacing values off your own token scale
 
 Hi. I maintain [stylelint-plugin-rhythmguard](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard), a Stylelint rule that checks spacing values against a project's own scale. To keep it quiet on code I do not control, I run it against public design systems on pinned commits and publish the numbers. This repository is one of them, and I would rather you saw the audit here than in a report first.
 
 **What was run.** `npx rhythmguard audit . --scale auto` at `3862b09` over `packages/@mantine/core/src`. Hairlines of one pixel or less, percentages, and generated or test paths are excluded. Anyone can reproduce it in a checkout of that commit.
 
-**What it found.** Scale `0, 10, 12, 16, 20, 22, 32` inferred from your own spacing tokens in the stylesheets. 35 literal spacing values are off that scale.
+**What it found.** Scale `0, 10, 12, 16, 20, 32` inferred from your own spacing tokens in the stylesheets. 36 literal spacing values are off that scale.
 
 - Values: `4px` ×6, `5px` ×6, `2px` ×4, `8px` ×4, `-4px` ×2
 - Properties: `padding` ×11, `inset-inline-start` ×3, `margin-bottom` ×3, `margin-top` ×3, `padding-inline` ×3
