@@ -4,9 +4,12 @@ const { getAllFindings } = require('./baseline');
 
 function renderGithub(report) {
   const findings = getAllFindings(report);
-  const lines = findings.map((finding) =>
+  const lines = report.baseline
+    ? [`::notice title=Rhythmguard audit::Since baseline: ${report.baseline.resolvedFindingsCount} resolved, ${report.baseline.newFindingsCount} new`]
+    : [];
+  lines.push(...findings.map((finding) =>
     `::warning file=${escapeGithubProperty(finding.file)},line=${finding.line || 1},col=${finding.column || 1},title=${escapeGithubProperty(finding.rule || 'rhythmguard')}::${escapeGithubData(finding.text || '')}`,
-  );
+  ));
   const findingWord = findings.length === 1 ? 'finding' : 'findings';
   const fileWord = report.filesWithIssues === 1 ? 'file' : 'files';
   lines.push(

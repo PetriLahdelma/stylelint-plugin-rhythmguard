@@ -895,3 +895,72 @@ test('audit CLI honours a per-source tokenPattern from the config file for scale
   assert.equal(scale.source, 'token-sources');
   assert.deepEqual(scale.values, [0, 4, 8, 16, 24]);
 });
+
+test('baseline keys survive line shifts and still catch an identical new occurrence', () => {
+  const fixtureDir = createAuditFixture();
+  const cssPath = path.join(fixtureDir, 'src', 'card.css');
+  const baselinePath = path.join(fixtureDir, 'drift.json');
+  assert.equal(runAudit(fixtureDir, '--write-baseline', baselinePath).status, 0);
+  assert.equal(JSON.parse(fs.readFileSync(baselinePath, 'utf8')).formatVersion, 2);
+
+  // Two comment lines at the top move every finding down; nothing changed.
+  fs.writeFileSync(cssPath, `/* header */\n/* header */\n${fs.readFileSync(cssPath, 'utf8')}`);
+  let result = runAudit(fixtureDir, '--since-baseline', baselinePath, '--format', 'json');
+  assert.equal(result.status, 0, result.stderr);
+  let baseline = JSON.parse(result.stdout).baseline;
+  assert.equal(baseline.newFindingsCount, 0, 'a line shift is not new drift');
+  assert.equal(baseline.resolvedFindingsCount, 0, 'a line shift resolves nothing');
+
+  // A second, identical off-scale padding in the same file is new drift.
+  fs.appendFileSync(cssPath, '.card-footer { padding: 13px; }\n');
+  result = runAudit(fixtureDir, '--since-baseline', baselinePath, '--format', 'json');
+  baseline = JSON.parse(result.stdout).baseline;
+  assert.equal(baseline.newFindingsCount, 2, 'an identical second occurrence is new: use-scale and prefer-token each report it');
+  assert.equal(baseline.resolvedFindingsCount, 0);
+});
+
+test('a formatVersion 1 baseline keyed by line still compares', () => {
+  const fixtureDir = createAuditFixture();
+  const baselinePath = path.join(fixtureDir, 'legacy.json');
+  const report = JSON.parse(runAudit(fixtureDir, '--format', 'json-v1').stdout);
+  const legacy = {
+    createdAt: '2026-01-01T00:00:00.000Z',
+    directory: report.directory,
+    formatVersion: 1,
+    findings: [...report.findings.css, ...report.findings.tailwind].map((finding) => ({
+      column: finding.column,
+      file: finding.file,
+      key: [finding.rule || '', finding.type || '', finding.file || '', finding.line || '', finding.column || '', finding.value || finding.rawValue || finding.token || '', finding.text || ''].join('\u001f'),
+      line: finding.line,
+      rule: finding.rule,
+      text: finding.text,
+      token: finding.token,
+      type: finding.type,
+      value: finding.value || finding.rawValue,
+    })),
+  };
+  fs.writeFileSync(baselinePath, JSON.stringify(legacy));
+
+  const result = runAudit(fixtureDir, '--since-baseline', baselinePath, '--format', 'json');
+  assert.equal(result.status, 0, result.stderr);
+  const baseline = JSON.parse(result.stdout).baseline;
+  assert.equal(baseline.newFindingsCount, 0);
+  assert.equal(baseline.resolvedFindingsCount, 0);
+});
+
+test('outputs lead with what changed since the baseline', () => {
+  const fixtureDir = createAuditFixture();
+  const baselinePath = path.join(fixtureDir, 'drift.json');
+  runAudit(fixtureDir, '--write-baseline', baselinePath);
+  // Removing the off-scale padding resolves both findings on it (use-scale and prefer-token).
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'card.css'), '@theme { --spacing-4: 16px; }\n.card { gap: 16px; margin: var(--spacing-missing); }\n');
+
+  const markdown = runAudit(fixtureDir, '--since-baseline', baselinePath, '--format', 'markdown').stdout;
+  assert.match(markdown, /^# Rhythmguard Design-System Audit\n\n\*\*Since baseline:\*\* 2 resolved, 0 new\./m);
+
+  const text = runAudit(fixtureDir, '--since-baseline', baselinePath).stdout;
+  assert.match(text, /Since baseline\s+2 resolved, 0 new/);
+
+  const github = runAudit(fixtureDir, '--since-baseline', baselinePath, '--format', 'github').stdout;
+  assert.match(github.split('\n')[0], /^::notice title=Rhythmguard audit::Since baseline: 2 resolved, 0 new/);
+});

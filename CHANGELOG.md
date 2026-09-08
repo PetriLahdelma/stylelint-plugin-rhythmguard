@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- Baselines key findings by content (rule, file, property, value, occurrence) instead of line and column, so moving or reformatting code no longer produces matching "new" and "resolved" pairs while a second identical off-scale declaration is still new. Baseline files are `formatVersion: 2`; version 1 files still compare and upgrade on the next `--write-baseline`. Text, Markdown and GitHub output lead with `Since baseline: N resolved, M new`.
+
 ## [3.5.0] - 2026-09-08
 
 ### Fixed
