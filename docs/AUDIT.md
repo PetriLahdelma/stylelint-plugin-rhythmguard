@@ -91,6 +91,36 @@ The value histogram tells you which numbers drifted; the property table tells yo
 
 `drift` (the default) is 100 minus scale cleanliness, the share of scanned files with at least one finding. `--badge-metric findings` reports the number of off-scale CSS values plus Tailwind class-string findings instead, labelled `off-scale values`. Colours: drift 0 to 2% brightgreen, to 5% green, to 15% yellow, above orange; findings 0 brightgreen, to 10 green, to 50 yellow, above orange. Publish the file somewhere public and embed `https://img.shields.io/endpoint?url=<file url>` in the README; the workflow is in [`CI_ADOPTION.md`](./CI_ADOPTION.md#5-show-a-badge).
 
+## Decisions
+
+Real drift is a handful of decisions, not hundreds of mistakes: Mastodon's `10px` appears 165 times and is one missing step or one unnamed token, not 165 slips. The `decisions` section of `.rhythmguardrc.json` records those decisions once, and both the Stylelint rules and the audit honour them.
+
+```bash
+npx rhythmguard audit ./src --plan
+```
+
+prints a proposed section with one entry per off-scale value: how often it occurs, the properties it sits on, the two nearest steps, and `"decision": "undecided"`. Paste it into `.rhythmguardrc.json` and decide:
+
+```json
+{
+  "decisions": [
+    { "value": "10px", "decision": "adopt", "as": "--space-2xs" },
+    { "value": "15px", "decision": "snap" },
+    { "value": "2px", "decision": "allow", "reason": "borders and focus rings", "properties": ["outline-offset", "border-*"] },
+    { "value": "22px", "decision": "undecided" }
+  ]
+}
+```
+
+| Decision | Meaning | Effect |
+| --- | --- | --- |
+| `adopt` | The value is part of the scale; `as` names the token it should become | Stops being a finding in the rules and the audit |
+| `allow` | Intentional and not rhythm | Stops being a finding, on every property or only those in `properties` (`border-*` matches a prefix) |
+| `snap` | A slip to fix | Still a finding; `rhythmguard fix` executes it |
+| `undecided` | Nobody has looked yet | Still a finding; counted so the team sees it |
+
+Values match by px, so `10px` and `0.625rem` are one decision. The audit reports the counts in `contracts.decisions` (`adopt`, `allow`, `snap`, `undecided`, and `suppressed` findings) and in the summary table; `--plan` keeps decisions already made, with their current counts, and adds `undecided` entries for new values. A rule with `decisions: false` ignores the section; the audit sets that on its own Stylelint run so decisions are applied once, in the audit.
+
 ## Config file
 
 Shared settings go in `.rhythmguardrc.json`, loaded automatically when present. `--config <file>` points at another file, `--no-config` skips discovery.

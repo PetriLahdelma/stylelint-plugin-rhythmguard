@@ -24,6 +24,7 @@ const {
   inferScaleFromDefinitions,
   scaleFromDefinitions,
 } = require('../core/scale-inference');
+const { applyDecisions, buildDecisionPlan } = require('./decisions');
 const { assertDirectory, getScanFiles } = require('./scan/files');
 const { collectCssFindings, runStylelintAudit } = require('./scan/stylesheets');
 const { collectTailwindFindings, collectTailwindMotionFindings } = require('./scan/templates');
@@ -62,7 +63,13 @@ async function createAuditReport(options) {
 
   const cssResults = await runStylelintAudit(cssFiles, lintOptions);
   const stylelintFindings = collectCssFindings(cssResults);
-  const cssFindings = stylelintFindings.filter((finding) => !finding.type.startsWith('motion-'));
+  const decided = applyDecisions({
+    baseFontSize: parsed.baseFontSize,
+    cssFindings: stylelintFindings.filter((finding) => !finding.type.startsWith('motion-')),
+    decisions: parsed.decisions || [],
+    tailwindFindings: collectTailwindFindings(templateFiles, lintOptions),
+  });
+  const cssFindings = decided.cssFindings;
   const motionFindings = [
     ...stylelintFindings.filter((finding) => finding.type.startsWith('motion-')),
     ...collectTailwindMotionFindings(templateFiles, lintOptions),
@@ -81,12 +88,23 @@ async function createAuditReport(options) {
     scanScope,
     scssFiles: cssResults.scssFiles || 0,
     scssSkipped: cssResults.scssSkipped || 0,
-    tailwindFindings: collectTailwindFindings(templateFiles, lintOptions),
+    tailwindFindings: decided.tailwindFindings,
     templateFiles,
     tokenCandidateMinCount: parsed.tokenCandidateMinCount,
     tokenKind: parsed.tokenKind,
     tokenSourceReports: tokenSourceResult.sources,
     tokenSourceWarnings: tokenSourceResult.warnings,
+  });
+
+  report.decisions = decided.summary;
+  report.decisionPlan = buildDecisionPlan({
+    baseFontSize: parsed.baseFontSize,
+    decisions: parsed.decisions || [],
+    offScaleFindings: [
+      ...stylelintFindings.filter((finding) => finding.type === 'off-scale'),
+      ...collectTailwindFindings(templateFiles, lintOptions),
+    ],
+    scale: scale.values,
   });
 
   if (parsed.sinceBaseline) {

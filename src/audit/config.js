@@ -2,6 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { normalizeDecisions } = require('../core/decisions');
 const {
   normalizeTokenKind,
   normalizeTokenSourceFormat,
@@ -58,6 +59,7 @@ function loadAuditConfig(parsed) {
 
   return {
     audit,
+    decisions: config.decisions,
     file: formatPath(resolvedPath),
     rootDir: path.dirname(resolvedPath),
   };
@@ -76,6 +78,7 @@ function applyAuditConfig(parsed, configResult) {
 
   if (!configResult) {
     next.tokenSources = normalizeCliTokenSources(parsed.tokenSources, parsed.tokenSourceFormat);
+    next.decisions = [];
     delete next.cliOptions;
     return next;
   }
@@ -112,6 +115,8 @@ function applyAuditConfig(parsed, configResult) {
     }
     return parseScale(String(value));
   });
+
+  next.decisions = normalizeDecisions(configResult.decisions, { baseFontSize: next.baseFontSize });
 
   delete next.cliOptions;
   return next;

@@ -29,6 +29,7 @@ const OPTIONS = [
   { flag: '--json', kind: 'flag', help: 'Alias for --format json', apply: (p) => { p.format = 'json'; } },
   { flag: '--markdown', kind: 'flag', help: 'Alias for --format markdown', apply: (p) => { p.format = 'markdown'; } },
   { flag: '--schema', kind: 'flag', help: 'Print the audit JSON schema and exit', apply: (p) => { p.schema = true; p.format = 'json'; } },
+  { flag: '--plan', kind: 'flag', help: 'Print a proposed decisions section for .rhythmguardrc.json: one entry per off-scale value', apply: (p) => { p.plan = true; } },
   { flag: '--output', kind: 'value', value: '<file>', help: 'Write json, markdown, html or badge output to a file',
     apply: (p, raw) => { p.outputPath = parsePathOption(raw, '--output'); setFrom(p, 'outputPath'); } },
   { flag: '--config', kind: 'value', value: '<file>', help: 'Load audit config (default: .rhythmguardrc.json when present)',
