@@ -76,3 +76,5 @@ Every audit issue opened from the benchmark, and every response, so the pattern 
 | patternfly | 2026-09-08 | maintainer: tokens are --pf-t--global--spacer--100..800 in tokens-default.scss and @patternfly/patternfly/base/patternfly-variables.css; read since 3.3.0; package added to the allowlist | https://github.com/patternfly/patternfly/issues/8579 |
 | primer-css | 2026-09-08 | maintainer asks whether the tool can find the tokens in primer/primitives space.json5; @primer/primitives already in the allowlist (--base-size-*); row marked "in dependency" | https://github.com/primer/css/issues/3166 |
 | primer-react | 2026-09-08 | same question as primer-css; same answer | https://github.com/primer/react/issues/8387 |
+| primer-css | 2026-09-08 | replied (confirmed by Petri): ladder is --base-size-* from @primer/primitives, already read; stack tokens are consumers | https://github.com/primer/css/issues/3166#issuecomment-5590360951 |
+| primer-react | 2026-09-08 | replied (confirmed by Petri): pointer to the primer/css answer | https://github.com/primer/react/issues/8387#issuecomment-5590361297 |
