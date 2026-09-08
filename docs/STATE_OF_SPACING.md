@@ -1,6 +1,6 @@
 # State of Spacing, 2026-09
 
-How consistently 57 public design systems keep their spacing on their own scale, measured by `rhythmguard audit --scale auto` on pinned commits and generated on 2026-09-06. Off-scale means a literal length that is not on the scale the repository itself defines; hairlines, percentages and generated or test paths are excluded. The full method and the false-positive accounting are in [`QUIET_BENCHMARK.md`](./QUIET_BENCHMARK.md).
+How consistently 57 public design systems keep their spacing on their own scale, measured by `rhythmguard audit --scale auto` on pinned commits and generated on 2026-09-08. Off-scale means a literal length that is not on the scale the repository itself defines; hairlines, percentages and generated or test paths are excluded. The full method and the false-positive accounting are in [`QUIET_BENCHMARK.md`](./QUIET_BENCHMARK.md).
 
 This is not a ranking of teams. It is a reading of one signal on a fixed commit, and the row order is drift per 100 CSS files so that large codebases are not penalised for size. Every row reproduces with one command in a checkout of that commit:
 
@@ -8,7 +8,7 @@ This is not a ranking of teams. It is a reading of one signal on a fixed commit,
 npx rhythmguard audit . --scale auto --format markdown
 ```
 
-Across the set: 8334 off-scale values in 8585 CSS files; 39 of 57 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS; 1 told us they have no spacing scale by design and are listed without a count, and 4 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
+Across the set: 8334 off-scale values in 8585 CSS files; 34 of 57 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS; 6 told us the scale lives in a dependency package a source scan cannot see and are listed without a count until the benchmark can install it; 1 told us they have no spacing scale by design and are listed without a count, and 4 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
 
 ## Repositories
 
@@ -22,7 +22,6 @@ Across the set: 8334 off-scale values in 8585 CSS files; 39 of 57 repositories h
 | [ghost-admin](https://github.com/TryGhost/Ghost) | `26746d3` | fallback | 745 | 626 | 82% | `2px` ×70, `10px` ×69, `6px` ×62 | `padding` ×294, `margin` ×167, `margin-top` ×68 |
 | [shadcn-ui](https://github.com/shadcn-ui/ui) | `7c9eaba` | fallback (scanned-css rejected) | 61 | 469 | 99% | `-2.5rem` ×8, `2.5rem` ×8, `2px` ×5 | `class-string` ×53, `padding` ×5, `padding-block` ×1 |
 | [forem](https://github.com/forem/forem) | `e8a0729` | fallback | 590 | 415 | 53% | `10px` ×87, `2px` ×57, `5px` ×57 | `padding` ×266, `margin` ×119, `margin-top` ×46 |
-| [adminlte](https://github.com/ColorlibHQ/AdminLTE) | `12b4b06` | fallback | 126 | 274 | 63% | `10px` ×20, `1.25rem` ×9, `2px` ×9 | `padding` ×50, `margin-top` ×17, `margin` ×15 |
 | [discourse](https://github.com/discourse/discourse) | `c7b7a0b` | fallback (scanned-css rejected) | 970 | 259 | 34% | `10px` ×171, `5px` ×147, `20px` ×55 | `padding` ×313, `margin` ×126, `margin-right` ×90 |
 | [directus-app](https://github.com/directus/directus) | `3df2ba9` | fallback | 63 | 217 | 59% | `-0.3125rem` ×17, `0.4375rem` ×9, `-0.1875rem` ×6 | `padding` ×17, `inset-inline-start` ×6, `inset-block-start` ×5 |
 | [vscode-base-ui](https://github.com/microsoft/vscode) | `1512d0c` | fallback | 74 | 195 | 83% | `2px` ×19, `5px` ×10, `6px` ×10 | `padding` ×33, `margin` ×13, `margin-left` ×6 |
@@ -34,7 +33,6 @@ Across the set: 8334 off-scale values in 8585 CSS files; 39 of 57 repositories h
 | [liveblocks-react-ui](https://github.com/liveblocks/liveblocks) | `98332db` | fallback | 9 | 150 | 99% | `-0.35rem` ×2, `0.1em` ×1, `0.2em` ×1 | `padding` ×4, `padding-inline-start` ×2, `inset-block-start` ×1 |
 | [hashicorp-design-system](https://github.com/hashicorp/design-system) | `83cac84` | fallback | 109 | 120 | 53% | `2px` ×24, `10px` ×13, `3px` ×12 | `padding` ×65, `margin` ×15, `margin-top` ×13 |
 | [carbon-styles](https://github.com/carbon-design-system/carbon) | `4cc7900` | fallback | 272 | 96 | 81% | `13px` ×28, `2px` ×23, `7px` ×19 | `inset-block-start` ×60, `padding` ×37, `padding-block` ×36 |
-| [primer-css](https://github.com/primer/css) | `72564a3` | scanned-css | 103 | 91 | 75% | `5px` ×17, `6px` ×11, `7px` ×9 | `padding` ×45, `margin` ×22, `margin-left` ×8 |
 | [materialize](https://github.com/materializecss/materialize) | `c9d6914` | scanned-css | 9 | 60 | 80% | `10px` ×3, `15px` ×2, `14px` ×1 | `padding` ×5, `padding-left` ×2, `margin` ×1 |
 | [metabase](https://github.com/metabase/metabase) | `e621647` | fallback | 55 | 56 | 94% | `0.375rem` ×6, `2px` ×5, `15px` ×4 | `padding` ×24, `padding-right` ×8, `padding-left` ×3 |
 | [starlight](https://github.com/withastro/starlight) | `38149a0` | fallback | 4 | 50 | 63% | `-0.125rem` ×1, `0.125rem` ×1, `0.375rem` ×1 | `padding` ×2, `margin-block` ×1, `margin-bottom` ×1 |
@@ -42,18 +40,15 @@ Across the set: 8334 off-scale values in 8585 CSS files; 39 of 57 repositories h
 | [gutenberg-components](https://github.com/WordPress/gutenberg) | `ec62b33` | fallback | 35 | 44 | 97% | `2px` ×7, `6px` ×6, `-2px` ×4 | `padding` ×16, `margin` ×7, `margin-left` ×3 |
 | [bootstrap](https://github.com/twbs/bootstrap) | `12cb8b9` | scanned-css | 53 | 43 | 84% | `.125rem` ×9, `.75rem` ×8, `1.25rem` ×8 | `padding` ×22, `margin-top` ×9, `margin` ×4 |
 | [docusaurus-theme-classic](https://github.com/facebook/docusaurus) | `a3e5eba` | fallback | 33 | 43 | 90% | `0.3rem` ×8, `0.4rem` ×8, `0.2rem` ×4 | `padding` ×12, `margin-right` ×6, `margin-left` ×4 |
-| [fundamental-styles](https://github.com/SAP/fundamental-styles) | `e31a128` | fallback | 137 | 40 | 70% | `0.125rem` ×32, `0.375rem` ×22, `0.625rem` ×17 | `padding-inline` ×40, `padding-block` ×33, `gap` ×12 |
 | [mantine](https://github.com/mantinedev/mantine) | `3862b09` | scanned-css | 36 | 35 | 98% | `4px` ×6, `5px` ×6, `2px` ×4 | `padding` ×11, `inset-inline-start` ×3, `margin-bottom` ×3 |
 | [daisyui](https://github.com/saadeghi/daisyui) | `1435c65` | fallback | 37 | 34 | 93% | `0.125rem` ×3, `1.4rem` ×3, `5px` ×3 | `padding` ×12, `inset-inline-end` ×5, `class-string` ×4 |
 | [utrecht](https://github.com/nl-design-system/utrecht) | `ecedc4b` | fallback | 47 | 29 | 99% | `3rem` ×8, `26px` ×7, `10px` ×5 | `padding` ×12, `margin-bottom` ×4, `margin-left` ×4 |
 | [foundation-sites](https://github.com/foundation/foundation-sites) | `337be7a` | fallback | 34 | 29 | 85% | `10px` ×5, `2.5rem` ×4, `30px` ×4 | `padding` ×11, `margin-bottom` ×8, `transform` ×4 |
 | [nhsuk-frontend](https://github.com/nhsuk/nhsuk-frontend) | `10caad9` | scanned-css | 28 | 19 | 97% | `-6px` ×7, `2px` ×5, `6px` ×5 | `margin-left` ×8, `margin-right` ×8, `padding-top` ×5 |
 | [mozilla-protocol](https://github.com/mozilla/protocol) | `6bcf867` | fallback | 18 | 17 | 83% | `-60px` ×2, `0.35em` ×2, `1.25em` ×2 | `padding` ×5, `transform` ×4, `margin` ×3 |
-| [ui5-webcomponents](https://github.com/SAP/ui5-webcomponents) | `9856f4f` | fallback | 75 | 14 | 85% | `0.125rem` ×18, `0.375rem` ×7, `0.1875rem` ×6 | `padding` ×21, `inset` ×7, `margin-inline-start` ×6 |
 | [salesforce-lightning](https://github.com/salesforce-ux/design-system) | `9bc6a40` | fallback | 58 | 13 | 98% | `2.5rem` ×3, `-0.35rem` ×2, `-2.25rem` ×2 | `padding-left` ×21, `padding-right` ×21, `transform` ×5 |
 | [pico](https://github.com/picocss/pico) | `1039a47` | fallback | 7 | 13 | 91% | `-0.3rem` ×2, `-0.125em` ×1, `0.125rem` ×1 | `transform` ×4, `padding` ×2, `margin-top` ×1 |
 | [angular-material](https://github.com/angular/components) | `3d30bf1` | fallback | 30 | 11 | 96% | `20px` ×4, `64px` ×3, `6px` ×3 | `margin` ×9, `padding` ×7, `transform` ×4 |
-| [primer-react](https://github.com/primer/react) | `dc8387f` | fallback | 22 | 11 | 97% | `6px` ×6, `10px` ×4, `3px` ×4 | `padding-bottom` ×4, `padding-top` ×4, `margin-left` ×3 |
 | [cloudscape-components](https://github.com/cloudscape-design/components) | `0c1c9fd` | fallback | 27 | 8 | 99% | `-5px` ×5, `-9999px` ×4, `2px` ×4 | `transform` ×6, `inset-block-start` ×5, `inset-inline-start` ×5 |
 | [tachyons](https://github.com/tachyons-css/tachyons) | `2cb90e9` | scanned-css | 5 | 8 | 97% | `0.35em` ×1, `0.625em` ×1, `0.67em` ×1 | `padding` ×3, `margin` ×1, `margin-top` ×1 |
 | [govuk-frontend](https://github.com/alphagov/govuk-frontend) | `356d461` | scanned-css | 21 | 7 | 98% | `2px` ×6, `14px` ×2, `3px` ×2 | `margin-bottom` ×4, `margin-top` ×4, `padding` ×3 |
@@ -67,10 +62,15 @@ Across the set: 8334 off-scale values in 8585 CSS files; 39 of 57 repositories h
 | [gitlab-ui](https://gitlab.com/gitlab-org/gitlab-ui) | `8660f9f` | fallback | 3 | 3 | 99% | `-2px` ×1, `3px` ×1, `5px` ×1 | `padding` ×2, `margin-bottom` ×1 |
 | [ionic-core](https://github.com/ionic-team/ionic-framework) | `5874331` | fallback | 8 | 2 | 99% | `2px` ×4, `-10px` ×1, `10px` ×1 | `margin-top` ×5, `margin-bottom` ×1, `padding-bottom` ×1 |
 | [spectrum-css](https://github.com/adobe/spectrum-css) | `3762086` | fallback | 5 | 2 | 99% | `-10px` ×3, `20px` ×1, `40px` ×1 | `inset-block-end` ×1, `margin` ×1, `margin-inline-end` ×1 |
-| [mittwald-flow](https://github.com/mittwald/flow) | `17efdf9` | fallback | 2 | 2 | 100% | `2px` ×2 | `padding-inline-end` ×1, `padding-inline-start` ×1 |
 | [open-props](https://github.com/argyleink/open-props) | `530682d` | fallback | 0 | 0 | 100% | none | none |
 | [skeleton](https://github.com/skeletonlabs/skeleton) | `e65535e` | scanned-css | 0 | 0 | 100% | none | none |
+| [adminlte](https://github.com/ColorlibHQ/AdminLTE) | `12b4b06` | in `bootstrap` (dependency) | n/a | n/a | 63% | not measured | not measured |
 | [vitepress-theme](https://github.com/vuejs/vitepress) | `3e681e2` | none, by design (maintainer) | n/a | n/a | 45% | not measured | not measured |
+| [primer-css](https://github.com/primer/css) | `72564a3` | in `@primer/primitives` (dependency) | n/a | n/a | 75% | not measured | not measured |
+| [fundamental-styles](https://github.com/SAP/fundamental-styles) | `e31a128` | in `@sap-theming/theming-base-content` (dependency) | n/a | n/a | 70% | not measured | not measured |
+| [ui5-webcomponents](https://github.com/SAP/ui5-webcomponents) | `9856f4f` | in `@sap-theming/theming-base-content` (dependency) | n/a | n/a | 85% | not measured | not measured |
+| [primer-react](https://github.com/primer/react) | `dc8387f` | in `@primer/primitives` (dependency) | n/a | n/a | 97% | not measured | not measured |
+| [mittwald-flow](https://github.com/mittwald/flow) | `17efdf9` | in `@mittwald/flow-design-tokens` (dependency) | n/a | n/a | 100% | not measured | not measured |
 
 ## Reading the columns
 
@@ -78,6 +78,7 @@ Across the set: 8334 off-scale values in 8585 CSS files; 39 of 57 repositories h
 - **Top values** are the numbers that drifted. Three values usually explain most of a repository's drift, and each one is a single decision: a missing step, a mistake, or a token that was never defined.
 - **Top properties** are where the layout decision lives. A table led by sibling margins usually means the parent should own the spacing with `gap`; a table led by `padding` is component-internal and is fixed per component.
 - **Top properties** may include `class-string`, which is a Tailwind arbitrary value in a template rather than a CSS declaration.
+- **Scale source** `in <package> (dependency)` means the maintainers told us where the scale lives: an npm package the sparse checkout does not install. `scale: "auto"` reads it in a real project through the token-package allowlist; the benchmark row carries no count until the harness can install dependencies.
 - **Scale source** `none, by design` means the maintainers told us the project has no spacing scale. The row stays for completeness and nothing is counted against it.
 - **Scale source** `fallback (scanned-css rejected)` means tokens were found but the rule itself rejected them as a scale and measured against the preset instead. `unreliable` marks a scanned scale that failed a plausibility check (fractional steps, no four-based ladder, or sources that are component files rather than token files). Its row is measured against a scale the repository probably did not design; treat it like a fallback.
 - **Scale source** `fallback` means the audit found fewer than three spacing tokens and used a default scale. Treat those rows as a to-do for token discovery, not as a verdict on the CSS.
