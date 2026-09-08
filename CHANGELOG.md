@@ -8,10 +8,12 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Added
 
+- **Token chains.** The audit follows every spacing-named custom property through `var()` references to its terminal values and reports, in `contracts.tokens.chains` and a Markdown section, whether each resolves on the scale, off it, to an undeclared token or a cycle, to several lengths at once (themes), to a computed expression, or to a non-length. Fallbacks are honoured; declarations from token sources and installed packages count. This is the measurement token-layered systems need, where a literal scan finds almost nothing. ([#110](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/110))
 - `rhythmguard fix <dir> --value <length> --to <replacement>` replaces one spacing literal everywhere it appears, matching by px, keeping the sign, never touching token definitions, token functions or non-spacing properties; dry run until `--write`, idempotent, SCSS through `postcss-scss`. `--decided` executes every `snap` decision whose `to` names the replacement. `postcss` is now a declared runtime dependency (the rules always received its AST; the codemod parses files itself).
 
 ### Fixed
 
+- Token values of the form `calc(var(--x) * 2)` are no longer read as a 2px token; the calc forms require a unit on the factor, as in Radix's `calc(4px * var(--scaling))`.
 - `prefer-token` autofix writes a negative token as `calc(-1 * var(--token))`. It wrote `-var(--token)`, which is not valid CSS.
 
 ### Added

@@ -53,6 +53,7 @@ function renderMarkdown(report) {
   appendMarkdownCounts(lines, 'Tailwind Class-String Drift', report.tailwindArbitraryValues);
   appendMarkdownCounts(lines, 'Motion Rhythm Drift', report.motion.values);
   appendTokenContractMarkdown(lines, report.tokenContract);
+  appendTokenChainsMarkdown(lines, report.tokenContract.chains);
   appendBaselineMarkdown(lines, report);
 
   if (report.topAffectedFiles.length > 0) {
@@ -89,6 +90,31 @@ function renderMarkdown(report) {
   lines.push('');
 
   return `${lines.join('\n')}\n`;
+}
+
+function appendTokenChainsMarkdown(lines, chains) {
+  if (!chains || chains.summary.total === 0) {
+    return;
+  }
+  const { summary } = chains;
+  lines.push('## Token Chains');
+  lines.push('');
+  const attention = ['off-scale', 'unresolved', 'ambiguous', 'computed', 'non-length']
+    .filter((outcome) => summary[outcome] > 0)
+    .map((outcome) => `${summary[outcome]} ${outcome}`);
+  lines.push(`${summary['on-scale']} of ${summary.total} spacing tokens resolve to the scale${attention.length > 0 ? `; ${attention.join(', ')}` : ''}. A token is followed through \`var()\` to its terminal value; the token layer, not the literal, is where a system like this keeps its discipline.`);
+  lines.push('');
+  if (chains.entries.length > 0) {
+    lines.push('| Token | Outcome | Detail |');
+    lines.push('| --- | --- | --- |');
+    for (const entry of chains.entries.slice(0, 50)) {
+      const detail = entry.reason
+        ? entry.reason
+        : entry.terminals.map((terminal) => `\`${terminal}\``).join(', ');
+      lines.push(`| \`${escapeMarkdown(entry.token)}\` | ${entry.outcome} | ${detail}${entry.via.length > 0 ? ` via ${entry.via.map((name) => `\`${name}\``).join(' → ')}` : ''} |`);
+    }
+    lines.push('');
+  }
 }
 
 function appendTokenContractMarkdown(lines, tokenContract) {

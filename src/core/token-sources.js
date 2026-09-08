@@ -792,8 +792,9 @@ function addDefinition(definitions, {
   definitions.set(token, entry);
 }
 
-const CALC_LENGTH_TIMES_VAR = /^calc\(\s*(-?[\d.]+(?:px|rem|em)?)\s*\*\s*var\([^()]*\)\s*\)$/i;
-const CALC_VAR_TIMES_LENGTH = /^calc\(\s*var\([^()]*\)\s*\*\s*(-?[\d.]+(?:px|rem|em)?)\s*\)$/i;
+// The factor must carry a unit: `calc(4px * var(--scaling))` is a length, `calc(var(--x) * 2)` is a multiplier.
+const CALC_LENGTH_TIMES_VAR = /^calc\(\s*(-?[\d.]+(?:px|rem|em))\s*\*\s*var\([^()]*\)\s*\)$/i;
+const CALC_VAR_TIMES_LENGTH = /^calc\(\s*var\([^()]*\)\s*\*\s*(-?[\d.]+(?:px|rem|em))\s*\)$/i;
 
 /**
  * Parse the length a token value carries. Accepts plain lengths and the

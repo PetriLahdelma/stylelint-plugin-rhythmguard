@@ -8,7 +8,7 @@ This is not a ranking of teams. It is a reading of one signal on a fixed commit,
 npx rhythmguard audit . --scale auto --format markdown
 ```
 
-Across the set: 8334 off-scale values in 8585 CSS files; 34 of 57 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS; 6 told us the scale lives in a dependency package a source scan cannot see and are listed without a count until the benchmark can install it; 1 told us they have no spacing scale by design and are listed without a count, and 4 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
+Across the set: 7933 off-scale values in 8585 CSS files; 33 of 57 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS; 6 told us the scale lives in a dependency package a source scan cannot see and are listed without a count until the benchmark can install it; 1 told us they have no spacing scale by design and are listed without a count, and 3 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
 
 ## Repositories
 
@@ -22,13 +22,13 @@ Across the set: 8334 off-scale values in 8585 CSS files; 34 of 57 repositories h
 | [ghost-admin](https://github.com/TryGhost/Ghost) | `26746d3` | fallback | 745 | 626 | 82% | `2px` ×70, `10px` ×69, `6px` ×62 | `padding` ×294, `margin` ×167, `margin-top` ×68 |
 | [shadcn-ui](https://github.com/shadcn-ui/ui) | `7c9eaba` | fallback (scanned-css rejected) | 61 | 469 | 99% | `-2.5rem` ×8, `2.5rem` ×8, `2px` ×5 | `class-string` ×53, `padding` ×5, `padding-block` ×1 |
 | [forem](https://github.com/forem/forem) | `e8a0729` | fallback | 590 | 415 | 53% | `10px` ×87, `2px` ×57, `5px` ×57 | `padding` ×266, `margin` ×119, `margin-top` ×46 |
-| [discourse](https://github.com/discourse/discourse) | `c7b7a0b` | fallback (scanned-css rejected) | 970 | 259 | 34% | `10px` ×171, `5px` ×147, `20px` ×55 | `padding` ×313, `margin` ×126, `margin-right` ×90 |
 | [directus-app](https://github.com/directus/directus) | `3df2ba9` | fallback | 63 | 217 | 59% | `-0.3125rem` ×17, `0.4375rem` ×9, `-0.1875rem` ×6 | `padding` ×17, `inset-inline-start` ×6, `inset-block-start` ×5 |
 | [vscode-base-ui](https://github.com/microsoft/vscode) | `1512d0c` | fallback | 74 | 195 | 83% | `2px` ×19, `5px` ×10, `6px` ×10 | `padding` ×33, `margin` ×13, `margin-left` ×6 |
 | [pure](https://github.com/pure-css/pure) | `d35fb6f` | fallback | 30 | 188 | 63% | `0.3em` ×6, `0.2em` ×3, `.3em` ×2 | `padding` ×12, `margin` ×7, `margin-bottom` ×5 |
 | [n8n-design-system](https://github.com/n8n-io/n8n) | `7cb77fb` | scanned-css | 143 | 186 | 95% | `5px` ×44, `10px` ×29, `0.6em` ×10 | `padding` ×40, `margin-left` ×23, `margin-right` ×17 |
 | [excalidraw](https://github.com/excalidraw/excalidraw) | `214cd6e` | fallback | 126 | 170 | 79% | `0.375rem` ×10, `0.625rem` ×10, `10px` ×10 | `padding` ×49, `gap` ×18, `margin` ×14 |
 | [wp-calypso-components](https://github.com/Automattic/wp-calypso) | `7cc9ee9` | fallback | 80 | 157 | 86% | `10px` ×15, `20px` ×8, `5px` ×8 | `padding` ×32, `margin-right` ×13, `margin-left` ×10 |
+| [discourse](https://github.com/discourse/discourse) | `c7b7a0b` | scanned-css | 569 | 152 | 34% | `5px` ×147, `0.15em` ×38, `3px` ×36 | `padding` ×193, `margin` ×60, `margin-right` ×60 |
 | [element-plus](https://github.com/element-plus/element-plus) | `122a05f` | fallback | 222 | 152 | 48% | `5px` ×46, `10px` ×33, `6px` ×27 | `padding` ×80, `margin-right` ×31, `margin` ×24 |
 | [liveblocks-react-ui](https://github.com/liveblocks/liveblocks) | `98332db` | fallback | 9 | 150 | 99% | `-0.35rem` ×2, `0.1em` ×1, `0.2em` ×1 | `padding` ×4, `padding-inline-start` ×2, `inset-block-start` ×1 |
 | [hashicorp-design-system](https://github.com/hashicorp/design-system) | `83cac84` | fallback | 109 | 120 | 53% | `2px` ×24, `10px` ×13, `3px` ×12 | `padding` ×65, `margin` ×15, `margin-top` ×13 |
