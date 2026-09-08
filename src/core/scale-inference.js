@@ -26,6 +26,8 @@ const FALLBACK_PRESET = 'rhythmic-4';
 const MIN_INFERRED_SCALE_LENGTH = 4;
 const RC_FILE = '.rhythmguardrc.json';
 
+const { cachedByFiles } = require('./fs-cache');
+
 const sourceCache = new Map();
 const TOKEN_PACKAGES = require('./token-packages.json').packages;
 
@@ -53,35 +55,6 @@ function readDirectDependencies(dir) {
  * installs are found by walking up; a stray global node_modules is never
  * consulted because the walk stops at the repository.
  */
-/**
- * Editors and pre-commit hooks lint one file at a time, and each lint asked
- * the filesystem the same questions: which package.json files sit between
- * cwd and the repository, what they declare, and whether a token package is
- * installed. The answers change only when one of those files changes, so
- * the result is cached per cwd and revalidated by mtime, which costs a stat
- * per file instead of a read, a JSON parse and a directory walk.
- */
-const discoveryCache = new Map();
-
-function fileStamp(file) {
-  try {
-    return fs.statSync(file).mtimeMs;
-  } catch {
-    return null;
-  }
-}
-
-function cachedByFiles(cacheKey, compute) {
-  const cached = discoveryCache.get(cacheKey);
-  if (cached && cached.stamps.every(([file, stamp]) => fileStamp(file) === stamp)) {
-    return cached.value;
-  }
-  const consulted = [];
-  const value = compute((file) => consulted.push([file, fileStamp(file)]));
-  discoveryCache.set(cacheKey, { stamps: consulted, value });
-  return value;
-}
-
 function projectRoots(cwd, consult = () => {}) {
   const roots = [];
   let current = path.resolve(cwd);

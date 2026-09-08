@@ -30,7 +30,8 @@ const {
   withResolvedScale,
 } = require('../../core/scale-inference');
 
-const { createTokenRegex, reportInvalidPreset, reportValueNode } = require('../report');
+const { createTokenRegex, reportInvalidPreset, reportProblem, reportValueNode } = require('../report');
+const { decisionFor, loadRcDecisions } = require('../../core/decisions');
 const { validatePrimary, validateUseScaleSecondaryOptions } = require('../validate');
 
 const ruleName = 'rhythmguard/use-scale';
@@ -41,6 +42,19 @@ const messages = stylelint.utils.ruleMessages(ruleName, {
   rejected: (value, lower, upper, note = '') =>
     `Unexpected off-scale value "${value}". Use scale values (nearest: ${lower} or ${upper}).${note ? ` ${note}` : ''}`,
 });
+
+/** Decisions from .rhythmguardrc.json; an invalid section is reported once and ignored. */
+function readDecisions(options, { result, root }) {
+  if (!options.readDecisions) {
+    return [];
+  }
+  try {
+    return loadRcDecisions(process.cwd(), { baseFontSize: options.baseFontSize });
+  } catch (error) {
+    reportProblem(error.message, { result, root, ruleName });
+    return [];
+  }
+}
 
 function checkLengthValue({
   decl,
@@ -87,6 +101,12 @@ function checkLengthValue({
     parsedLength.unit !== '%' &&
     !options.units.includes(parsedLength.unit)
   ) {
+    return false;
+  }
+
+  const decidedPx = toPx(Math.abs(parsedLength.number), parsedLength.unit, options.baseFontSize);
+  const decision = decidedPx === null ? null : decisionFor(decidedPx, decl.prop, options.decisions);
+  if (decision && (decision.decision === 'adopt' || decision.decision === 'allow')) {
     return false;
   }
 
@@ -160,6 +180,7 @@ const ruleFunction = (primary, secondaryOptions) => {
 
     const options = buildScaleOptions(secondaryOptions);
     reportInvalidPreset(options, { message: messages.invalidPreset, result, root, ruleName });
+    options.decisions = readDecisions(options, { result, root });
 
     withResolvedScale(options, root);
 

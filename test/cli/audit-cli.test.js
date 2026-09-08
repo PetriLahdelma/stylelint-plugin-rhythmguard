@@ -964,3 +964,61 @@ test('outputs lead with what changed since the baseline', () => {
   const github = runAudit(fixtureDir, '--since-baseline', baselinePath, '--format', 'github').stdout;
   assert.match(github.split('\n')[0], /^::notice title=Rhythmguard audit::Since baseline: 2 resolved, 0 new/);
 });
+
+test('audit --plan proposes one decision per off-scale value, keeping decisions already made', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-plan-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'a.css'), '.a { margin: 10px; padding: 10px 15px; } .b { margin-bottom: 0.625rem; outline-offset: 2px; }\n');
+  fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), JSON.stringify({ decisions: [{ value: '2px', decision: 'allow', reason: 'focus rings', properties: ['outline-offset'] }] }));
+
+  const result = runAuditCommand(fixtureDir, 'src', '--plan');
+  assert.equal(result.status, 0, result.stderr);
+  const plan = JSON.parse(result.stdout);
+  assert.deepEqual(Object.keys(plan), ['decisions']);
+  const byValue = Object.fromEntries(plan.decisions.map((entry) => [entry.value, entry]));
+  assert.equal(byValue['10px'].decision, 'undecided');
+  assert.equal(byValue['10px'].count, 3, '10px and 0.625rem are one decision');
+  assert.deepEqual(byValue['10px'].nearest, ['8px', '12px']);
+  assert.deepEqual(byValue['10px'].properties, ['margin', 'padding', 'margin-bottom']);
+  assert.equal(byValue['15px'].count, 1);
+  assert.equal(byValue['2px'].decision, 'allow', 'an existing decision is kept as written');
+  assert.equal(byValue['2px'].reason, 'focus rings');
+  assert.equal(plan.decisions.length, 3);
+});
+
+test('audit applies decisions: adopted and allowed values stop being findings, undecided ones are counted', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-decisions-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'a.css'), '.a { margin: 10px; padding: 15px; gap: 2px; padding-top: 2px; inset: 22px; }\n');
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'B.tsx'), 'export const B = <div className="p-[10px] m-[22px]" />;\n');
+  fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), JSON.stringify({
+    decisions: [
+      { value: '10px', decision: 'adopt' },
+      { value: '2px', decision: 'allow', properties: ['gap'] },
+      { value: '15px', decision: 'snap' },
+      { value: '22px', decision: 'undecided' },
+    ],
+  }));
+
+  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json');
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  const offScale = report.findings.css.filter((finding) => finding.type === 'off-scale').map((finding) => `${finding.property}:${finding.value}`).sort();
+  assert.deepEqual(offScale, ['inset:22px', 'padding-top:2px', 'padding:15px'], 'adopted 10px and the gap-scoped 2px are gone; padding-top: 2px stays');
+  assert.deepEqual(report.findings.tailwind.map((finding) => finding.token), ['m-[22px]'], 'the adopted value is gone from class strings too');
+  assert.deepEqual(report.contracts.decisions, { adopt: 1, allow: 1, snap: 1, undecided: 1, suppressed: 3 });
+
+  const markdown = runAuditCommand(fixtureDir, 'src', '--format', 'markdown').stdout;
+  assert.match(markdown, /\| Decisions \| 4 \(1 adopt, 1 allow, 1 snap, 1 undecided\); 3 findings suppressed \|/);
+});
+
+test('audit refuses an invalid decisions section with a precise message', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-decisions-bad-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'a.css'), '.a { margin: 10px; }\n');
+  fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), JSON.stringify({ decisions: [{ value: '10px', decision: 'maybe' }] }));
+
+  const result = runAuditCommand(fixtureDir, 'src', '--format', 'json');
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /decisions\[0\]\.decision must be one of adopt, allow, snap, undecided/);
+});

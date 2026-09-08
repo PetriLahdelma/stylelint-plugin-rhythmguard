@@ -70,6 +70,8 @@ function createDefaultAuditOptions() {
     dir: null,
     failOnNewDrift: false,
     badgeMetric: 'drift',
+    decisions: [],
+    plan: false,
     format: 'text',
     ignorePath: DEFAULT_IGNORE_PATH,
     ignorePatterns: [],

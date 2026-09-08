@@ -46,6 +46,8 @@ The graph has no cycles. `src/index.js` is the only module that imports from eve
 | `core/options.js` | option schemas, defaults, normalisation, per-property scale resolution | a built options object; validation against Stylelint happens in `rules/validate.js` |
 | `core/token-sources.js` | reading tokens from CSS custom properties, Sass variables and maps, flat JSON, Style Dictionary and DTCG files; value normalisation keys | `{ token, value }` entries; definitions keyed by token name |
 | `core/token-map.js` | the effective value-to-token map a rule uses to suggest a token | value key to token name |
+| `core/decisions.js` | the `decisions` section of `.rhythmguardrc.json`: normalisation, matching by px and property scope, cached loading | normalised decisions with a px value |
+| `core/fs-cache.js` | results cached per key and revalidated by the mtime of every file consulted | |
 | `core/scale-inference.js` | `scale: "auto"`: the source order, the plausibility check, package discovery, caches | an inference `{ scale, source, files, rejected? }` |
 | `core/tailwind-class-analysis.js`, `core/tailwind-motion-analysis.js` | reading spacing and motion out of Tailwind class strings | analyses per class segment |
 

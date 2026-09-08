@@ -45,6 +45,7 @@ async function runStylelintAudit(cssFiles, options) {
     'rhythmguard/use-scale': [
       true,
       {
+        decisions: false,
         baseFontSize: options.baseFontSize,
         scale: options.scale,
         severity: 'warning',

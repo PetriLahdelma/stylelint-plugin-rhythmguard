@@ -68,8 +68,14 @@ function reportInvalidPreset(options, { message, result, root, ruleName }) {
   });
 }
 
+/** A configuration problem that is not about one node: reported once, on the root. */
+function reportProblem(message, { result, root, ruleName }) {
+  stylelint.utils.report({ message, node: root, result, ruleName });
+}
+
 module.exports = {
   createTokenRegex,
   reportInvalidPreset,
+  reportProblem,
   reportValueNode,
 };

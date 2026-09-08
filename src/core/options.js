@@ -359,6 +359,9 @@ function resolveUnits(options) {
 }
 
 const SCALE_VALIDATION_SCHEMA = Object.freeze({
+  decisions: Object.freeze({
+    entryValidator: isBoolean,
+  }),
   allowHairlines: Object.freeze({
     entryValidator: isBoolean,
   }),
@@ -545,6 +548,7 @@ function buildScaleOptions(rawOptions) {
 
   return {
     allowHairlines: options.allowHairlines !== false,
+    readDecisions: options.decisions !== false,
     allowNegative: options.allowNegative !== false,
     allowPercentages: options.allowPercentages !== false,
     baseFontSize:

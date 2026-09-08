@@ -98,6 +98,33 @@ export interface AuditBaselineComparison {
 
 export type AuditScaleSource = "default" | "explicit" | "fallback" | "scanned-css" | "token-package" | "token-sources";
 
+export type AuditDecisionKind = "adopt" | "allow" | "snap" | "undecided";
+
+/** One entry of the `decisions` section of `.rhythmguardrc.json`. */
+export interface AuditDecision {
+  value: string;
+  decision: AuditDecisionKind;
+  /** For `adopt`: the token the value should become. */
+  as?: string;
+  /** For `allow`: property names or `prefix-*` patterns the allowance is limited to. */
+  properties?: string[];
+  reason?: string;
+}
+
+export interface AuditDecisionSummary {
+  adopt: number;
+  allow: number;
+  snap: number;
+  undecided: number;
+  suppressed: number;
+}
+
+/** One line of `rhythmguard audit --plan`: a decision entry with what the audit saw. */
+export interface AuditDecisionPlanEntry extends AuditDecision {
+  count: number;
+  nearest: string[];
+}
+
 export interface AuditScaleRejected {
   files?: string[];
   /** Why the inferred set was not accepted as a scale, for example "no common step". */
@@ -117,6 +144,8 @@ export interface AuditScale {
 }
 
 export interface AuditReport {
+  decisions?: AuditDecisionSummary | null;
+  decisionPlan?: AuditDecisionPlanEntry[];
   baseline?: AuditBaselineComparison | null;
   scale?: AuditScale | null;
   config?: string | null;
@@ -143,6 +172,8 @@ export interface AuditContractReport {
     scanScope: string;
   };
   contracts: {
+    /** Counts per decision kind and how many findings the decisions suppressed; null when the config has no decisions. */
+    decisions: AuditDecisionSummary | null;
     motion?: unknown;
     scale: {
       cleanliness?: unknown;

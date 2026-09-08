@@ -426,3 +426,32 @@ test('scale "auto" uses component-level tokens when the root does not define a s
   assert.match(texts[0], /"13px".*nearest: 12px or 16px/);
   assert.doesNotMatch(texts[0], /using preset/);
 });
+
+test('rules honour decisions from .rhythmguardrc.json: adopt joins the scale, allow is scoped by property, snap still reports', async () => {
+  const dir = tempDir('decisions');
+  fs.writeFileSync(path.join(dir, '.rhythmguardrc.json'), JSON.stringify({
+    decisions: [
+      { value: '10px', decision: 'adopt', as: '--space-2xs' },
+      { value: '2px', decision: 'allow', reason: 'borders', properties: ['outline-offset', 'border-*'] },
+      { value: '15px', decision: 'snap' },
+    ],
+  }));
+
+  const previousCwd = process.cwd();
+  process.chdir(dir);
+  let result;
+  try {
+    result = await lintCss({
+      code: '.a { margin: 10px; padding: 0.625rem; outline-offset: 2px; gap: 2px; inset: 15px; }',
+      rules: { 'rhythmguard/use-scale': [true, { scale: [0, 4, 8, 12, 16, 24], properties: ['margin', 'padding', 'gap', 'inset', 'outline-offset'] }] },
+    });
+  } finally {
+    process.chdir(previousCwd);
+  }
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 2, texts.join('\n'));
+  assert.match(texts[0], /"2px"/, 'gap: 2px is outside the allow scope');
+  assert.match(texts[1], /"15px"/, 'a snap decision is still reported');
+});

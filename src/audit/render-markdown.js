@@ -37,6 +37,10 @@ function renderMarkdown(report) {
     lines.push(`| Scale source | ${describeScaleSource(report.scale)} |`);
   }
 
+  if (report.decisions) {
+    lines.push(`| Decisions | ${report.decisions.adopt + report.decisions.allow + report.decisions.snap + report.decisions.undecided} (${report.decisions.adopt} adopt, ${report.decisions.allow} allow, ${report.decisions.snap} snap, ${report.decisions.undecided} undecided); ${report.decisions.suppressed} findings suppressed |`);
+  }
+
   if (report.baseline) {
     lines.push(`| New findings | ${report.baseline.newFindingsCount} |`);
     lines.push(`| Resolved findings | ${report.baseline.resolvedFindingsCount} |`);

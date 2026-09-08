@@ -48,6 +48,11 @@ async function run() {
     process.exit(1);
   }
 
+  if (parsed.plan) {
+    writeOutput(`${JSON.stringify({ decisions: report.decisionPlan }, null, 2)}\n`, parsed.outputPath);
+    return;
+  }
+
   const auditFailures = getAuditFailures(report, parsed);
 
   if (parsed.format === 'json') {

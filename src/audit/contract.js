@@ -365,6 +365,7 @@ function toAuditContractReport(report) {
       scanScope: report.scanScope.mode,
     },
     contracts: {
+      decisions: report.decisions || null,
       motion: report.motion,
       scale: {
         cleanliness: report.scaleCleanliness,

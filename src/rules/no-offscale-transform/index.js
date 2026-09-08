@@ -28,7 +28,8 @@ const {
 
 const { validatePrimary, validateNoOffscaleTransformSecondaryOptions } = require('../validate');
 
-const { reportInvalidPreset, reportValueNode } = require('../report');
+const { reportInvalidPreset, reportProblem, reportValueNode } = require('../report');
+const { decisionFor, loadRcDecisions } = require('../../core/decisions');
 
 const ruleName = 'rhythmguard/no-offscale-transform';
 const messages = stylelint.utils.ruleMessages(ruleName, {
@@ -57,6 +58,12 @@ const ruleFunction = (primary, secondaryOptions) => {
 
     const options = buildScaleOptions(secondaryOptions);
     reportInvalidPreset(options, { message: messages.invalidPreset, result, root, ruleName });
+    try {
+      options.decisions = options.readDecisions ? loadRcDecisions(process.cwd(), { baseFontSize: options.baseFontSize }) : [];
+    } catch (error) {
+      reportProblem(error.message, { result, root, ruleName });
+      options.decisions = [];
+    }
 
     withResolvedScale(options, root);
 
@@ -114,6 +121,12 @@ const ruleFunction = (primary, secondaryOptions) => {
           parsedLength.unit !== '%' &&
           !options.units.includes(parsedLength.unit)
         ) {
+          return;
+        }
+
+        const decidedPx = toPx(Math.abs(parsedLength.number), parsedLength.unit, options.baseFontSize);
+        const decision = decidedPx === null ? null : decisionFor(decidedPx, prop, options.decisions);
+        if (decision && (decision.decision === 'adopt' || decision.decision === 'allow')) {
           return;
         }
 

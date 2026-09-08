@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- **Decisions.** A `decisions` section in `.rhythmguardrc.json` records what a team decided about each off-scale value: `adopt` (part of the scale, optionally naming the token it should become), `allow` (intentional, optionally on some properties only), `snap` (a slip to fix) or `undecided`. Adopted and allowed values stop being findings in the Stylelint rules and the audit alike; values match by px so `10px` and `0.625rem` are one decision. `rhythmguard audit --plan` proposes the section from the current findings and keeps decisions already made. The audit reports counts in `contracts.decisions`. Rules accept `decisions: false` to ignore the section. Docs: `docs/AUDIT.md#decisions`.
+
 ### Changed
 
 - Baselines key findings by content (rule, file, property, value, occurrence) instead of line and column, so moving or reformatting code no longer produces matching "new" and "resolved" pairs while a second identical off-scale declaration is still new. Baseline files are `formatVersion: 2`; version 1 files still compare and upgrade on the next `--write-baseline`. Text, Markdown and GitHub output lead with `Since baseline: N resolved, M new`.
