@@ -4,8 +4,9 @@
 
 | Version | Supported |
 | --- | --- |
-| 2.x | Yes |
-| < 2.0 | No, upgrade to 2.x |
+| 3.x | Yes |
+| 2.x | Security fixes only until 2027-03-01 |
+| < 2.0 | No, upgrade to 3.x |
 
 ## Reporting a Vulnerability
 

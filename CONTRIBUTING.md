@@ -27,7 +27,7 @@ npm ci
 npm test
 ```
 
-Node 20.19 or newer. No build step; the source runs as is. Tests use `node --test` and take about ten seconds. They are grouped by what they prove:
+Node 20.19 or newer. No build step; the source runs as is. Tests use `node --test` through `scripts/test.mjs` and take about ten seconds. They are grouped by what they prove:
 
 | Folder | Proves | Run one |
 | --- | --- | --- |
@@ -58,7 +58,10 @@ npm run test:compat-floor      # Stylelint 16.0.0, the oldest supported
 npm run test:pack-smoke        # pack the tarball and install it in a temp project
 npm run scales:validate        # community scale JSON
 npm run bench:quiet -- --check # findings on the benchmark repos must match snapshots
+npm run build:agents           # after editing the block in docs/FOR_AGENTS.md
 ```
+
+The local gate runs on whatever Node you have installed; CI runs Node 20 and 22. Node 20.19 is the floor, so avoid features that arrived in Node 21 or later. Glob patterns for `node --test` were one such feature, and they took a release run down.
 
 If your shell's npm registry is overridden by a corporate `.npmrc`, add `--registry https://registry.npmjs.org` to `npm ci` and prefix `test:pack-smoke` with `npm_config_registry=https://registry.npmjs.org`.
 
@@ -88,14 +91,14 @@ CI for this repository runs on self-hosted runners for pushes and same-repo bran
 - Minor: new options, presets, sources, or behaviour that does not change existing reports.
 - Major: any change to default reports for existing configs, to autofix behaviour, or to exported entry points.
 
-`configs/recommended`, `configs/strict`, `configs/tailwind` and `configs/embed` stay stable within a major. The `embed` config's shape is frozen for 2.x because shared configs depend on it.
+`configs/recommended`, `configs/strict`, `configs/tailwind`, `configs/motion` and `configs/embed` stay stable within a major. The `embed` config's shape is frozen within a major because shared configs depend on it.
 
 ## Compatibility
 
 - Stylelint `^16.0.0 || ^17.0.0`. The 16.0.0 floor has known autofix differences; CI runs the floor suite against it.
 - Node `>=20.19.0`.
 - CommonJS and ESM entry points; every export has a declaration under `types/`.
-- One runtime dependency, `known-css-properties`. `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers and dev dependencies here.
+- Two runtime dependencies, `known-css-properties` and `postcss-value-parser`. `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers and dev dependencies here. `test/contracts/architecture.test.js` fails if a runtime import is not declared.
 
 ## Review
 

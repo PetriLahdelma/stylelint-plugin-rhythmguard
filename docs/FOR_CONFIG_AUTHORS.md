@@ -98,7 +98,7 @@ Zero, percentages, and hairlines (non-zero lengths of one CSS pixel or less such
 - Stylelint 16 and 17. Node 20.19 or newer.
 - Runtime dependency: `known-css-properties`, nothing else. Optional peers: `postcss-scss` to audit SCSS, `stylelint-config-tailwindcss` for the `tailwind` config, `stylelint-plugin-logical-css` if you compose with it. `embed` needs none of them.
 - CommonJS and ESM entry points, TypeScript declarations for every export.
-- The `embed` config's shape and defaults will not change within 2.x. Changes to inference sources are additive.
+- The `embed` config's shape and defaults will not change within a major version. Changes to inference sources are additive.
 - Bugs and false positives: [open an issue](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/issues). A finding your consumers consider wrong is exactly what the quiet benchmark exists to catch; a reproduction in an issue is enough.
 
 ## Going further
