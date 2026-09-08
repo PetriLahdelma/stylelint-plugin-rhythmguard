@@ -1,33 +1,62 @@
-# Release Checklist
+# Release checklist
 
-## Pre-release
+Releases are maintainer-run and take about twenty minutes of attention. The publish itself is automated: a GitHub release triggers `release.yml`, which verifies on the self-hosted matrix (Node 20 and 22 against Stylelint 16.0.0, 16 and 17) and publishes from a GitHub-hosted job through npm trusted publishing (OIDC). No npm token exists anywhere. Provenance is attached automatically.
 
-1. Run `npm ci`.
-2. Run `npm run lint`.
-3. Run `npm test`.
-4. Confirm README links and examples still match exported rule names.
-5. Confirm `package.json` version and changelog notes.
+## 1. Decide the version
 
-## GitHub Release
+- Patch: fixes, docs, internal changes.
+- Minor: new options, sources, packages, formats, or behaviour that does not change existing reports.
+- Major: a change to default reports, to autofix output, or to exported entry points. Write `docs/MIGRATING_TO_<n>.md` first.
 
-1. Create/update tag (example: `v0.1.0`).
-2. Push `main` and tag.
-3. Create a GitHub Release from the tag with:
-   - summary of changes
-   - upgrade notes
-   - migration notes if rule defaults changed
+## 2. Cut it on a branch
 
-## npm Publish
+```bash
+git checkout -b release/vX.Y.Z origin/main
+npm version X.Y.Z --no-git-tag-version
+```
 
-1. Publishing is done by `release.yml` through npm trusted publishing (OIDC). The trusted publisher on npmjs.com is bound to `PetriLahdelma/stylelint-plugin-rhythmguard` and the workflow file `release.yml`; no npm token is stored anywhere.
-2. The publish job must run on a GitHub-hosted runner (npm does not support trusted publishing from self-hosted runners). Provenance is attached automatically.
-3. Verify package metadata, provenance badge and README on npm.
+Rename the `## [Unreleased]` section of `CHANGELOG.md` to `## [X.Y.Z] - YYYY-MM-DD`, leaving an empty `## [Unreleased]` above it.
 
-## Post-release
+## 3. Run the local gate
 
-1. Smoke-test install in clean project:
-   - `npm i -D stylelint stylelint-plugin-rhythmguard`
-2. Validate both configs:
-   - `stylelint-plugin-rhythmguard/configs/recommended`
-   - `stylelint-plugin-rhythmguard/configs/strict`
-3. Open tracking issue for next version scope.
+```bash
+npm run lint
+npm run typecheck
+npm test
+npm run test:compat-floor
+npm_config_registry=https://registry.npmjs.org npm run test:pack-smoke
+```
+
+All five must exit 0. If your change could move benchmark findings, `npm run bench:quiet -- --check` too.
+
+## 4. Merge and release
+
+Open the PR, merge it, then create the release against the merge commit:
+
+```bash
+gh release create vX.Y.Z --target <merge-sha> --title vX.Y.Z --notes-file notes.md
+```
+
+The notes are the changelog section rewritten for a reader who has not followed the repository, with an upgrade line at the end.
+
+## 5. Verify
+
+- `gh run list --workflow release.yml --limit 1`: all verify jobs and `publish` green.
+- `npm view stylelint-plugin-rhythmguard@X.Y.Z version dist-tags.latest dist.attestations`: the version is `latest` and carries SLSA provenance.
+- The `Post Publish Smoke` workflow, which installs the published package into a clean project, is green.
+
+## 6. If the run fails before publish
+
+Nothing was published, so keep the version number. Fix on `main`, then move the release to the fixed commit:
+
+```bash
+gh release delete vX.Y.Z --yes --cleanup-tag
+gh release create vX.Y.Z --target <new-sha> --title vX.Y.Z --notes-file notes.md
+```
+
+Release-event workflows run the workflow file at the tag, so the tag must point at the fixed commit.
+
+## 7. Afterwards
+
+- Refresh the README banner if the version is drawn on it (`assets/rhythmguard-banner.svg`), bumping the `?v=` cache key on its URL in `README.md` and `docs/index.html`.
+- Add a wiki capture or changelog note for anything a future maintainer would need to know.
