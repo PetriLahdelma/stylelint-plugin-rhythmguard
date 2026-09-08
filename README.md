@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-banner.svg?v=9" width="100%" alt="Rhythmguard: stable local evidence for design system drift" />
+  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-banner.svg?v=10" width="100%" alt="Rhythmguard: stable local evidence for design system drift" />
 </p>
 
 # stylelint-plugin-rhythmguard
