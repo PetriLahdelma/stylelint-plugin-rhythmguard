@@ -60,6 +60,7 @@ export function buildEdition(results, { id, previous = null, generatedAt = new D
       driftPer100Files: cssFiles > 0 ? Math.round((driftCount / cssFiles) * 100) : 0,
       driftDelta: before ? driftCount - before.drift : null,
       scaleIntent: result.scaleIntent || null,
+      scalePackage: result.scalePackage || null,
       scaleReliable: assessment.plausible,
       scaleReasons: assessment.reasons,
       scaleRejected: result.scale && result.scale.rejected ? { reasons: result.scale.rejected.reasons, source: result.scale.rejected.source } : null,
@@ -70,7 +71,7 @@ export function buildEdition(results, { id, previous = null, generatedAt = new D
     };
   });
 
-  rows.sort((a, b) => (a.scaleIntent === 'none') - (b.scaleIntent === 'none') || b.driftPer100Files - a.driftPer100Files || b.drift - a.drift || a.name.localeCompare(b.name));
+  rows.sort((a, b) => Boolean(a.scaleIntent) - Boolean(b.scaleIntent) || b.driftPer100Files - a.driftPer100Files || b.drift - a.drift || a.name.localeCompare(b.name));
 
   return {
     generatedAt,
@@ -81,7 +82,8 @@ export function buildEdition(results, { id, previous = null, generatedAt = new D
       cssFiles: rows.reduce((sum, row) => sum + row.cssFiles, 0),
       drift: rows.reduce((sum, row) => sum + row.drift, 0),
       repos: rows.length,
-      fallbackScales: rows.filter((row) => row.scaleSource === 'fallback' && row.scaleIntent !== 'none').length,
+      fallbackScales: rows.filter((row) => row.scaleSource === 'fallback' && !row.scaleIntent).length,
+      inPackage: rows.filter((row) => row.scaleIntent === 'package').length,
       noScaleByDesign: rows.filter((row) => row.scaleIntent === 'none').length,
       unreliableScales: rows.filter((row) => (row.scaleSource !== 'fallback' && !row.scaleReliable) || row.scaleRejected).length,
     },
@@ -111,7 +113,7 @@ export function renderEdition(edition) {
     'npx rhythmguard audit . --scale auto --format markdown',
     '```',
     '',
-    `Across the set: ${edition.totals.drift} off-scale values in ${edition.totals.cssFiles} CSS files; ${edition.totals.fallbackScales} of ${edition.totals.repos} repositories had no discoverable spacing tokens and were measured against the \`rhythmic-4\` fallback, which says more about token discovery than about their CSS${edition.totals.noScaleByDesign > 0 ? `; ${edition.totals.noScaleByDesign} told us they have no spacing scale by design and are listed without a count` : ''}${edition.totals.unreliableScales > 0 ? `, and ${edition.totals.unreliableScales} more had an inference the plausibility check rejected (marked \`rejected\`, or \`unreliable\` when the bench alone rejects it; usually component-local variables, see issues #54 and #88)` : ''}.${withDelta ? ` Changes are since ${edition.previousId}.` : ''}`,
+    `Across the set: ${edition.totals.drift} off-scale values in ${edition.totals.cssFiles} CSS files; ${edition.totals.fallbackScales} of ${edition.totals.repos} repositories had no discoverable spacing tokens and were measured against the \`rhythmic-4\` fallback, which says more about token discovery than about their CSS${edition.totals.inPackage > 0 ? `; ${edition.totals.inPackage} told us the scale lives in a dependency package a source scan cannot see and are listed without a count until the benchmark can install it` : ''}${edition.totals.noScaleByDesign > 0 ? `; ${edition.totals.noScaleByDesign} told us they have no spacing scale by design and are listed without a count` : ''}${edition.totals.unreliableScales > 0 ? `, and ${edition.totals.unreliableScales} more had an inference the plausibility check rejected (marked \`rejected\`, or \`unreliable\` when the bench alone rejects it; usually component-local variables, see issues #54 and #88)` : ''}.${withDelta ? ` Changes are since ${edition.previousId}.` : ''}`,
     '',
     '## Repositories',
     '',
@@ -120,6 +122,10 @@ export function renderEdition(edition) {
   ];
 
   for (const row of edition.rows) {
+    if (row.scaleIntent === 'package') {
+      lines.push(`| [${row.name}](${row.url}) | \`${row.sha}\` | in \`${row.scalePackage}\` (dependency) | n/a | n/a | ${row.cleanliness}% | not measured | not measured |${withDelta ? ' n/a |' : ''}`);
+      continue;
+    }
     if (row.scaleIntent === 'none') {
       lines.push(`| [${row.name}](${row.url}) | \`${row.sha}\` | none, by design (maintainer) | n/a | n/a | ${row.cleanliness}% | not measured | not measured |${withDelta ? ' n/a |' : ''}`);
       continue;
@@ -135,6 +141,7 @@ export function renderEdition(edition) {
     '- **Top values** are the numbers that drifted. Three values usually explain most of a repository\'s drift, and each one is a single decision: a missing step, a mistake, or a token that was never defined.',
     '- **Top properties** are where the layout decision lives. A table led by sibling margins usually means the parent should own the spacing with `gap`; a table led by `padding` is component-internal and is fixed per component.',
     '- **Top properties** may include `class-string`, which is a Tailwind arbitrary value in a template rather than a CSS declaration.',
+    '- **Scale source** `in <package> (dependency)` means the maintainers told us where the scale lives: an npm package the sparse checkout does not install. `scale: "auto"` reads it in a real project through the token-package allowlist; the benchmark row carries no count until the harness can install dependencies.',
     '- **Scale source** `none, by design` means the maintainers told us the project has no spacing scale. The row stays for completeness and nothing is counted against it.',
     '- **Scale source** `fallback (scanned-css rejected)` means tokens were found but the rule itself rejected them as a scale and measured against the preset instead. `unreliable` marks a scanned scale that failed a plausibility check (fractional steps, no four-based ladder, or sources that are component files rather than token files). Its row is measured against a scale the repository probably did not design; treat it like a fallback.',
     '- **Scale source** `fallback` means the audit found fewer than three spacing tokens and used a default scale. Treat those rows as a to-do for token discovery, not as a verdict on the CSS.',

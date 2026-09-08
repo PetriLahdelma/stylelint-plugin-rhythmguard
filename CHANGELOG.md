@@ -6,6 +6,11 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- Token-package discovery reads five more packages, each named by its maintainers in the audit issues: `bootstrap` (`$spacer`, `$spacers`; Bootstrap-derived systems such as AdminLTE inherit it), `@patternfly/patternfly`, `@mittwald/flow-design-tokens` (`--size-px--*` and `--size-rem--*`, one ladder in two units), `govuk-frontend` and `nhsuk-frontend`. A contract test checks every allowlist entry.
+- The State of Spacing edition marks rows whose scale lives in a dependency package the benchmark's sparse checkout cannot see, and rows whose maintainers said there is no spacing scale by design; neither is counted.
+
 ## [3.4.0] - 2026-09-06
 
 ### Fixed

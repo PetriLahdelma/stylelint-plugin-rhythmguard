@@ -134,3 +134,16 @@ test('a repository whose maintainers said there is no spacing scale is listed wi
   assert.match(markdown, /\| \[vitepress\]\([^)]*\) \| `abc1234` \| none, by design \(maintainer\) \| n\/a \| n\/a \|/);
   assert.match(markdown, /1 told us they have no spacing scale by design/);
 });
+
+test('a repository whose scale lives in a dependency package is listed without a count and named after the package', async () => {
+  const { buildEdition, renderEdition } = await load();
+  const edition = buildEdition([
+    result({ name: 'adminlte', scaleIntent: 'package', scalePackage: 'bootstrap', scale: { source: 'fallback', values: [0, 4, 8], tokenCount: 0, files: [] } }),
+    result(),
+  ], { id: '2026-09' });
+
+  assert.deepEqual(edition.rows.map((row) => row.name), ['acme', 'adminlte']);
+  assert.equal(edition.totals.inPackage, 1);
+  assert.equal(edition.totals.fallbackScales, 0);
+  assert.match(renderEdition(edition), /\| \[adminlte\]\([^)]*\) \| `abc1234` \| in `bootstrap` \(dependency\) \| n\/a \|/);
+});

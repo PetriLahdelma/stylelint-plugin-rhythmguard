@@ -50,6 +50,42 @@
         "scss/generated/_spacing.scss"
       ],
       "note": "$spacing-01..13 in rem, Sass variables; Carbon's styles package forwards them from here"
+    },
+    {
+      "name": "bootstrap",
+      "files": [
+        "scss/_variables.scss"
+      ],
+      "note": "$spacer and the $spacers map; Bootstrap-derived systems (AdminLTE, CoreUI, Tabler) inherit it from here"
+    },
+    {
+      "name": "@patternfly/patternfly",
+      "files": [
+        "base/patternfly-variables.css"
+      ],
+      "note": "--pf-t--global--spacer--100..800 in rem"
+    },
+    {
+      "name": "@mittwald/flow-design-tokens",
+      "files": [
+        "dist/css/base.css"
+      ],
+      "tokenPattern": "^--size-(?:px|rem)--",
+      "note": "one size scale in two units, --size-px--* and --size-rem--*, same steps"
+    },
+    {
+      "name": "govuk-frontend",
+      "files": [
+        "dist/govuk/settings/_spacing.scss"
+      ],
+      "note": "$govuk-spacing-points map, 5px steps"
+    },
+    {
+      "name": "nhsuk-frontend",
+      "files": [
+        "dist/nhsuk/core/settings/_spacing.scss"
+      ],
+      "note": "$nhsuk-spacing-points map"
     }
   ]
 }

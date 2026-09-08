@@ -32,7 +32,9 @@
         "**/*.test.tsx",
         "**/__tests__/**"
       ],
-      "notes": "CSS Modules using --base-size-N tokens. Same token-discovery caveat as Mantine."
+      "notes": "Primer React: same tokens as Primer CSS, from @primer/primitives (maintainer, primer/react#8387).",
+      "scaleIntent": "package",
+      "scalePackage": "@primer/primitives"
     },
     {
       "name": "liveblocks-react-ui",
@@ -66,7 +68,9 @@
       "paths": [
         "packages/components/src"
       ],
-      "notes": "SCSS-first design system that already runs stylelint-plugin-logical-css."
+      "notes": "mittwald Flow: one size scale in px and rem (--size-px--*, --size-rem--*) from @mittwald/flow-design-tokens; components reach it through a component-token layer, so literal scans measure the wrong layer (maintainer, mittwald/flow#3129, see issue #110).",
+      "scaleIntent": "package",
+      "scalePackage": "@mittwald/flow-design-tokens"
     },
     {
       "name": "bootstrap",
@@ -82,7 +86,9 @@
       "paths": [
         "src"
       ],
-      "notes": "SCSS. Spacing tokens arrive from @primer/primitives at build time."
+      "notes": "Primer CSS: spacing ladder is --base-size-* from @primer/primitives (maintainer, primer/css#3166 points at src/tokens/functional/spacing/space.json5).",
+      "scaleIntent": "package",
+      "scalePackage": "@primer/primitives"
     },
     {
       "name": "penpot",
@@ -437,7 +443,9 @@
       "paths": [
         "src/scss"
       ],
-      "notes": "AdminLTE: Bootstrap-derived SCSS."
+      "notes": "AdminLTE: inherits Bootstrap's $spacer/$spacers unchanged (maintainer, ColorlibHQ/AdminLTE#6124); layout dimensions in _variables.scss are deliberately not scale steps.",
+      "scaleIntent": "package",
+      "scalePackage": "bootstrap"
     },
     {
       "name": "vscode-base-ui",
@@ -470,7 +478,9 @@
       "paths": [
         "packages/styles/src"
       ],
-      "notes": "SAP Fundamental Styles (Fiori): SCSS with --sapContent_* and --fdSpacing tokens."
+      "notes": "SAP Fundamental Styles: spacing comes from SAP theming tokens in @sap-theming/theming-base-content and varies by theme (maintainer, SAP/fundamental-styles#6390); that package has no spacing ladder, values like --sapContent_Margin_M are shorthands.",
+      "scaleIntent": "package",
+      "scalePackage": "@sap-theming/theming-base-content"
     },
     {
       "name": "ui5-webcomponents",
@@ -478,7 +488,9 @@
       "paths": [
         "packages/main/src/themes"
       ],
-      "notes": "UI5 Web Components: CSS per component with --sapUiSpacing tokens; base theme parameters in a separate package."
+      "notes": "UI5 Web Components: spacing derives from SAP Fiori theming tokens (--sap*) in @sap-theming/theming-base-content plus per-component --_ui5_* tokens; no repo-local scale by design (maintainer, UI5/webcomponents#14027).",
+      "scaleIntent": "package",
+      "scalePackage": "@sap-theming/theming-base-content"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-06",
+  "generatedAt": "2026-09-08",
   "id": "2026-09",
   "previousId": null,
   "rows": [
@@ -13,6 +13,7 @@
       "driftPer100Files": 2913,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -72,6 +73,7 @@
       "driftPer100Files": 1567,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -129,6 +131,7 @@
       "driftPer100Files": 1027,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -183,6 +186,7 @@
       "driftPer100Files": 1000,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -237,6 +241,7 @@
       "driftPer100Files": 950,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -289,6 +294,7 @@
       "driftPer100Files": 626,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -343,6 +349,7 @@
       "driftPer100Files": 469,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -405,6 +412,7 @@
       "driftPer100Files": 415,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -450,60 +458,6 @@
       ]
     },
     {
-      "name": "adminlte",
-      "url": "https://github.com/ColorlibHQ/AdminLTE",
-      "sha": "12b4b06",
-      "cssFiles": 46,
-      "cleanliness": 63,
-      "drift": 126,
-      "driftPer100Files": 274,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding",
-          50
-        ],
-        [
-          "margin-top",
-          17
-        ],
-        [
-          "margin",
-          15
-        ]
-      ],
-      "topValues": [
-        [
-          "10px",
-          20
-        ],
-        [
-          "1.25rem",
-          9
-        ],
-        [
-          "2px",
-          9
-        ]
-      ]
-    },
-    {
       "name": "discourse",
       "url": "https://github.com/discourse/discourse",
       "sha": "c7b7a0b",
@@ -513,6 +467,7 @@
       "driftPer100Files": 259,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -573,6 +528,7 @@
       "driftPer100Files": 217,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -627,6 +583,7 @@
       "driftPer100Files": 195,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -681,6 +638,7 @@
       "driftPer100Files": 188,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -735,6 +693,7 @@
       "driftPer100Files": 186,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -794,6 +753,7 @@
       "driftPer100Files": 170,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -848,6 +808,7 @@
       "driftPer100Files": 157,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -902,6 +863,7 @@
       "driftPer100Files": 152,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -956,6 +918,7 @@
       "driftPer100Files": 150,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1010,6 +973,7 @@
       "driftPer100Files": 120,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1064,6 +1028,7 @@
       "driftPer100Files": 96,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1109,64 +1074,6 @@
       ]
     },
     {
-      "name": "primer-css",
-      "url": "https://github.com/primer/css",
-      "sha": "72564a3",
-      "cssFiles": 113,
-      "cleanliness": 75,
-      "drift": 103,
-      "driftPer100Files": 91,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scaleReliable": true,
-      "scaleReasons": [],
-      "scaleRejected": null,
-      "scaleSource": "scanned-css",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        16,
-        24,
-        32,
-        40,
-        48,
-        64,
-        80,
-        96,
-        112,
-        128
-      ],
-      "topProperties": [
-        [
-          "padding",
-          45
-        ],
-        [
-          "margin",
-          22
-        ],
-        [
-          "margin-left",
-          8
-        ]
-      ],
-      "topValues": [
-        [
-          "5px",
-          17
-        ],
-        [
-          "6px",
-          11
-        ],
-        [
-          "7px",
-          9
-        ]
-      ]
-    },
-    {
       "name": "materialize",
       "url": "https://github.com/materializecss/materialize",
       "sha": "c9d6914",
@@ -1176,6 +1083,7 @@
       "driftPer100Files": 60,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -1228,6 +1136,7 @@
       "driftPer100Files": 56,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1282,6 +1191,7 @@
       "driftPer100Files": 50,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1336,6 +1246,7 @@
       "driftPer100Files": 49,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -1388,6 +1299,7 @@
       "driftPer100Files": 44,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1442,6 +1354,7 @@
       "driftPer100Files": 43,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -1493,6 +1406,7 @@
       "driftPer100Files": 43,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1538,60 +1452,6 @@
       ]
     },
     {
-      "name": "fundamental-styles",
-      "url": "https://github.com/SAP/fundamental-styles",
-      "sha": "e31a128",
-      "cssFiles": 343,
-      "cleanliness": 70,
-      "drift": 137,
-      "driftPer100Files": 40,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding-inline",
-          40
-        ],
-        [
-          "padding-block",
-          33
-        ],
-        [
-          "gap",
-          12
-        ]
-      ],
-      "topValues": [
-        [
-          "0.125rem",
-          32
-        ],
-        [
-          "0.375rem",
-          22
-        ],
-        [
-          "0.625rem",
-          17
-        ]
-      ]
-    },
-    {
       "name": "mantine",
       "url": "https://github.com/mantinedev/mantine",
       "sha": "3862b09",
@@ -1601,6 +1461,7 @@
       "driftPer100Files": 35,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -1652,6 +1513,7 @@
       "driftPer100Files": 34,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1706,6 +1568,7 @@
       "driftPer100Files": 29,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1760,6 +1623,7 @@
       "driftPer100Files": 29,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1814,6 +1678,7 @@
       "driftPer100Files": 19,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -1869,6 +1734,7 @@
       "driftPer100Files": 17,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -1914,60 +1780,6 @@
       ]
     },
     {
-      "name": "ui5-webcomponents",
-      "url": "https://github.com/SAP/ui5-webcomponents",
-      "sha": "9856f4f",
-      "cssFiles": 522,
-      "cleanliness": 85,
-      "drift": 75,
-      "driftPer100Files": 14,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding",
-          21
-        ],
-        [
-          "inset",
-          7
-        ],
-        [
-          "margin-inline-start",
-          6
-        ]
-      ],
-      "topValues": [
-        [
-          "0.125rem",
-          18
-        ],
-        [
-          "0.375rem",
-          7
-        ],
-        [
-          "0.1875rem",
-          6
-        ]
-      ]
-    },
-    {
       "name": "salesforce-lightning",
       "url": "https://github.com/salesforce-ux/design-system",
       "sha": "9bc6a40",
@@ -1977,6 +1789,7 @@
       "driftPer100Files": 13,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2031,6 +1844,7 @@
       "driftPer100Files": 13,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2085,6 +1899,7 @@
       "driftPer100Files": 11,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2130,60 +1945,6 @@
       ]
     },
     {
-      "name": "primer-react",
-      "url": "https://github.com/primer/react",
-      "sha": "dc8387f",
-      "cssFiles": 204,
-      "cleanliness": 97,
-      "drift": 22,
-      "driftPer100Files": 11,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding-bottom",
-          4
-        ],
-        [
-          "padding-top",
-          4
-        ],
-        [
-          "margin-left",
-          3
-        ]
-      ],
-      "topValues": [
-        [
-          "6px",
-          6
-        ],
-        [
-          "10px",
-          4
-        ],
-        [
-          "3px",
-          4
-        ]
-      ]
-    },
-    {
       "name": "cloudscape-components",
       "url": "https://github.com/cloudscape-design/components",
       "sha": "0c1c9fd",
@@ -2193,6 +1954,7 @@
       "driftPer100Files": 8,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2247,6 +2009,7 @@
       "driftPer100Files": 8,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2300,6 +2063,7 @@
       "driftPer100Files": 7,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2355,6 +2119,7 @@
       "driftPer100Files": 7,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2409,6 +2174,7 @@
       "driftPer100Files": 6,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2463,6 +2229,7 @@
       "driftPer100Files": 6,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2522,6 +2289,7 @@
       "driftPer100Files": 5,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2577,6 +2345,7 @@
       "driftPer100Files": 4,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2629,6 +2398,7 @@
       "driftPer100Files": 4,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2688,6 +2458,7 @@
       "driftPer100Files": 3,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -2739,6 +2510,7 @@
       "driftPer100Files": 3,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2789,6 +2561,7 @@
       "driftPer100Files": 2,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2843,6 +2616,7 @@
       "driftPer100Files": 2,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2888,48 +2662,6 @@
       ]
     },
     {
-      "name": "mittwald-flow",
-      "url": "https://github.com/mittwald/flow",
-      "sha": "17efdf9",
-      "cssFiles": 130,
-      "cleanliness": 100,
-      "drift": 2,
-      "driftPer100Files": 2,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding-inline-end",
-          1
-        ],
-        [
-          "padding-inline-start",
-          1
-        ]
-      ],
-      "topValues": [
-        [
-          "2px",
-          2
-        ]
-      ]
-    },
-    {
       "name": "open-props",
       "url": "https://github.com/argyleink/open-props",
       "sha": "530682d",
@@ -2939,6 +2671,7 @@
       "driftPer100Files": 0,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -2967,6 +2700,7 @@
       "driftPer100Files": 0,
       "driftDelta": null,
       "scaleIntent": null,
+      "scalePackage": null,
       "scaleReliable": true,
       "scaleReasons": [],
       "scaleRejected": null,
@@ -3011,6 +2745,61 @@
       "topValues": []
     },
     {
+      "name": "adminlte",
+      "url": "https://github.com/ColorlibHQ/AdminLTE",
+      "sha": "12b4b06",
+      "cssFiles": 46,
+      "cleanliness": 63,
+      "drift": 126,
+      "driftPer100Files": 274,
+      "driftDelta": null,
+      "scaleIntent": "package",
+      "scalePackage": "bootstrap",
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
+      "scaleRejected": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          50
+        ],
+        [
+          "margin-top",
+          17
+        ],
+        [
+          "margin",
+          15
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          20
+        ],
+        [
+          "1.25rem",
+          9
+        ],
+        [
+          "2px",
+          9
+        ]
+      ]
+    },
+    {
       "name": "vitepress-theme",
       "url": "https://github.com/vuejs/vitepress",
       "sha": "3e681e2",
@@ -3020,6 +2809,7 @@
       "driftPer100Files": 209,
       "driftDelta": null,
       "scaleIntent": "none",
+      "scalePackage": null,
       "scaleReliable": false,
       "scaleReasons": [
         "fallback"
@@ -3063,13 +2853,281 @@
           2
         ]
       ]
+    },
+    {
+      "name": "primer-css",
+      "url": "https://github.com/primer/css",
+      "sha": "72564a3",
+      "cssFiles": 113,
+      "cleanliness": 75,
+      "drift": 103,
+      "driftPer100Files": 91,
+      "driftDelta": null,
+      "scaleIntent": "package",
+      "scalePackage": "@primer/primitives",
+      "scaleReliable": true,
+      "scaleReasons": [],
+      "scaleRejected": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        16,
+        24,
+        32,
+        40,
+        48,
+        64,
+        80,
+        96,
+        112,
+        128
+      ],
+      "topProperties": [
+        [
+          "padding",
+          45
+        ],
+        [
+          "margin",
+          22
+        ],
+        [
+          "margin-left",
+          8
+        ]
+      ],
+      "topValues": [
+        [
+          "5px",
+          17
+        ],
+        [
+          "6px",
+          11
+        ],
+        [
+          "7px",
+          9
+        ]
+      ]
+    },
+    {
+      "name": "fundamental-styles",
+      "url": "https://github.com/SAP/fundamental-styles",
+      "sha": "e31a128",
+      "cssFiles": 343,
+      "cleanliness": 70,
+      "drift": 137,
+      "driftPer100Files": 40,
+      "driftDelta": null,
+      "scaleIntent": "package",
+      "scalePackage": "@sap-theming/theming-base-content",
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
+      "scaleRejected": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding-inline",
+          40
+        ],
+        [
+          "padding-block",
+          33
+        ],
+        [
+          "gap",
+          12
+        ]
+      ],
+      "topValues": [
+        [
+          "0.125rem",
+          32
+        ],
+        [
+          "0.375rem",
+          22
+        ],
+        [
+          "0.625rem",
+          17
+        ]
+      ]
+    },
+    {
+      "name": "ui5-webcomponents",
+      "url": "https://github.com/SAP/ui5-webcomponents",
+      "sha": "9856f4f",
+      "cssFiles": 522,
+      "cleanliness": 85,
+      "drift": 75,
+      "driftPer100Files": 14,
+      "driftDelta": null,
+      "scaleIntent": "package",
+      "scalePackage": "@sap-theming/theming-base-content",
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
+      "scaleRejected": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          21
+        ],
+        [
+          "inset",
+          7
+        ],
+        [
+          "margin-inline-start",
+          6
+        ]
+      ],
+      "topValues": [
+        [
+          "0.125rem",
+          18
+        ],
+        [
+          "0.375rem",
+          7
+        ],
+        [
+          "0.1875rem",
+          6
+        ]
+      ]
+    },
+    {
+      "name": "primer-react",
+      "url": "https://github.com/primer/react",
+      "sha": "dc8387f",
+      "cssFiles": 204,
+      "cleanliness": 97,
+      "drift": 22,
+      "driftPer100Files": 11,
+      "driftDelta": null,
+      "scaleIntent": "package",
+      "scalePackage": "@primer/primitives",
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
+      "scaleRejected": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding-bottom",
+          4
+        ],
+        [
+          "padding-top",
+          4
+        ],
+        [
+          "margin-left",
+          3
+        ]
+      ],
+      "topValues": [
+        [
+          "6px",
+          6
+        ],
+        [
+          "10px",
+          4
+        ],
+        [
+          "3px",
+          4
+        ]
+      ]
+    },
+    {
+      "name": "mittwald-flow",
+      "url": "https://github.com/mittwald/flow",
+      "sha": "17efdf9",
+      "cssFiles": 130,
+      "cleanliness": 100,
+      "drift": 2,
+      "driftPer100Files": 2,
+      "driftDelta": null,
+      "scaleIntent": "package",
+      "scalePackage": "@mittwald/flow-design-tokens",
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
+      "scaleRejected": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding-inline-end",
+          1
+        ],
+        [
+          "padding-inline-start",
+          1
+        ]
+      ],
+      "topValues": [
+        [
+          "2px",
+          2
+        ]
+      ]
     }
   ],
   "totals": {
     "cssFiles": 8585,
     "drift": 8334,
     "repos": 57,
-    "fallbackScales": 39,
+    "fallbackScales": 34,
+    "inPackage": 6,
     "noScaleByDesign": 1,
     "unreliableScales": 4
   }

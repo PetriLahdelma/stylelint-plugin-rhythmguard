@@ -40,3 +40,45 @@ test('token-package discovery reads the filesystem once per cwd until a consulte
   fs.utimesSync(path.join(dir, 'package.json'), later, later);
   assert.ok(countReads(() => assert.equal(discoverTokenPackages(dir).length, 0)) > 0, 'a changed package.json invalidates the entry');
 });
+
+test('every token-package allowlist entry names files and compiles its pattern', () => {
+  const { packages } = require('../../src/core/token-packages.json');
+  const names = new Set();
+  for (const entry of packages) {
+    assert.ok(!names.has(entry.name), `${entry.name} listed once`);
+    names.add(entry.name);
+    assert.ok(Array.isArray(entry.files) && entry.files.length > 0, `${entry.name} lists files`);
+    for (const file of entry.files) assert.match(file, /\.(?:css|scss)$/, `${entry.name}: ${file} is a stylesheet`);
+    if (entry.tokenPattern) assert.doesNotThrow(() => new RegExp(entry.tokenPattern), `${entry.name} pattern compiles`);
+    assert.ok(entry.note, `${entry.name} says what it carries`);
+  }
+});
+
+test('a project that depends on bootstrap inherits its $spacers map as the scale', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-discovery-bootstrap-'));
+  fs.mkdirSync(path.join(dir, '.git'));
+  fs.mkdirSync(path.join(dir, 'node_modules', 'bootstrap', 'scss'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'package.json'), '{"name":"fixture","dependencies":{"bootstrap":"^5.3.0"}}');
+  fs.writeFileSync(path.join(dir, 'node_modules', 'bootstrap', 'package.json'), '{"name":"bootstrap"}');
+  fs.writeFileSync(path.join(dir, 'node_modules', 'bootstrap', 'scss', '_variables.scss'), [
+    '$spacer: 1rem !default;',
+    '$spacers: (',
+    '  0: 0,',
+    '  1: $spacer * .25,',
+    '  2: $spacer * .5,',
+    '  3: $spacer,',
+    '  4: $spacer * 1.5,',
+    '  5: $spacer * 3,',
+    ') !default;',
+    '$dropdown-spacer: .125rem !default;',
+    '',
+  ].join('\n'));
+
+  const sources = discoverTokenPackages(dir);
+  assert.equal(sources.length, 1);
+  assert.equal(sources[0].package, 'bootstrap');
+  const { parseTokenSources } = require('../../src/core/token-sources');
+  const { scaleFromDefinitions } = require('../../src/core/scale-inference');
+  const parsed = parseTokenSources({ baseFontSize: 16, sources, tokenKind: 'spacing' });
+  assert.deepEqual(scaleFromDefinitions(parsed.definitions, 16), [0, 4, 8, 16, 24, 48]);
+});

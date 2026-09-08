@@ -164,6 +164,7 @@ async function auditRepo(repo, checkout, rules) {
     scale: report.scale,
     scaleCleanliness: report.scaleCleanliness,
     scaleIntent: repo.scaleIntent || null,
+    scalePackage: repo.scalePackage || null,
     sha: checkout.sha,
     summary,
     tailwindFindings: report.findings.tailwind.length,
