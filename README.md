@@ -83,7 +83,7 @@ npx rhythmguard audit ./src --format github
 
 The audit scans CSS declarations, Tailwind class strings and your token contract, prints a scale-cleanliness score, and supports baselines so legacy codebases can gate only new drift. Formats: text, Markdown, JSON 2.0, HTML, GitHub Actions annotations, and a shields.io badge document for your README. Full reference in [docs/AUDIT.md](docs/AUDIT.md), rollout recipe and the badge workflow in [docs/CI_ADOPTION.md](docs/CI_ADOPTION.md).
 
-`npx rhythmguard init` writes a starter config for your stack, and `init --agents all` installs the coding-agent instructions. `npx rhythmguard doctor` checks the setup.
+`npx rhythmguard audit ./src --plan` turns the report into a proposed `decisions` section (adopt a value, allow it, or snap it), and `npx rhythmguard fix ./src --value 10px --to "var(--space-sm)" --write` executes one decision as one reviewable change; see [decisions](docs/AUDIT.md#decisions). `npx rhythmguard init` writes a starter config for your stack, and `init --agents all` installs the coding-agent instructions. `npx rhythmguard doctor` checks the setup.
 
 ## Guides
 

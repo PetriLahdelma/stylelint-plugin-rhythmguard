@@ -11,6 +11,7 @@ the spacing scale, audits the current directory and prints a config to paste.
 Commands:
   quickstart    Same as running with no command
   audit <dir>   Report design-system drift across CSS and Tailwind class strings
+  fix <dir>     Replace one off-scale value everywhere, or execute snap decisions
   init          Scaffold a Rhythmguard config for your project
                 --agents <claude|cursor|copilot|all> installs the agent instruction packs instead
   doctor        Validate your Rhythmguard setup
@@ -22,6 +23,7 @@ Examples:
   npx rhythmguard
   npx rhythmguard audit ./src
   npx rhythmguard audit ./src --format markdown
+  npx rhythmguard fix ./src --value 10px --to "var(--space-sm)" --write
   npx rhythmguard init
   npx rhythmguard init --agents all
   npx rhythmguard doctor
@@ -36,6 +38,8 @@ if (!command || command === 'quickstart') {
   require('./quickstart').run();
 } else if (command === 'audit') {
   require('./audit').run();
+} else if (command === 'fix') {
+  require('./fix').run();
 } else if (command === 'init') {
   require('./init').run();
 } else if (command === 'doctor') {

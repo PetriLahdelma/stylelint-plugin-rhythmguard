@@ -147,6 +147,7 @@
   },
   "dependencies": {
     "known-css-properties": "^0.37.0",
+    "postcss": "^8.4.0",
     "postcss-value-parser": "^4.2.0"
   },
   "devDependencies": {

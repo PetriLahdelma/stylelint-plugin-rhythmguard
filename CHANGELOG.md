@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- `rhythmguard fix <dir> --value <length> --to <replacement>` replaces one spacing literal everywhere it appears, matching by px, keeping the sign, never touching token definitions, token functions or non-spacing properties; dry run until `--write`, idempotent, SCSS through `postcss-scss`. `--decided` executes every `snap` decision whose `to` names the replacement. `postcss` is now a declared runtime dependency (the rules always received its AST; the codemod parses files itself).
+
 ### Fixed
 
 - `prefer-token` autofix writes a negative token as `calc(-1 * var(--token))`. It wrote `-var(--token)`, which is not valid CSS.
