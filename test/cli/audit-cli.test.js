@@ -879,3 +879,19 @@ test('audit CLI --scale auto infers from root-level tokens and reports only thei
   assert.deepEqual(scale.values, [0, 10, 12, 16, 20, 32]);
   assert.deepEqual(scale.files.map((file) => path.basename(file)), ['theme.css']);
 });
+
+test('audit CLI honours a per-source tokenPattern from the config file for scale inference', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-pattern-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'tokens.css'), ':root { --size-px--xs: 4px; --size-px--s: 8px; --size-px--m: 16px; --size-px--l: 24px; --button--spacing: var(--size-px--m); }\n');
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'a.css'), '.a { padding: 13px; }\n');
+  fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), JSON.stringify({
+    audit: { tokenSources: [{ path: './tokens.css', tokenPattern: '^--size-px--' }] },
+  }));
+
+  const result = runAuditCommand(fixtureDir, path.join(fixtureDir, 'src'), '--scale', 'auto', '--format', 'json');
+  assert.equal(result.status, 0, result.stderr);
+  const scale = JSON.parse(result.stdout).contracts.scale;
+  assert.equal(scale.source, 'token-sources');
+  assert.deepEqual(scale.values, [0, 4, 8, 16, 24]);
+});
