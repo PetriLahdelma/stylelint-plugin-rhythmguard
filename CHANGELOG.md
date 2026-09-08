@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.5.0] - 2026-09-08
+
 ### Fixed
 
 - `audit.tokenSources` entries in `.rhythmguardrc.json` and typed sources passed to the API keep their `tokenPattern`. Both normalisers dropped it, so a per-source pattern was silently ignored by the audit while the same key worked for the package allowlist.
