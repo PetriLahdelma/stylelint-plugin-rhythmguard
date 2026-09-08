@@ -84,3 +84,4 @@ Every audit issue opened from the benchmark, and every response, so the pattern 
 | nhsuk-frontend | 2026-09-08 | replied (confirmed by Petri): map read since 3.3.0, package allowlisted; 28 findings against their own scale, 10 in button | https://github.com/nhsuk/nhsuk-frontend/issues/2085#issuecomment-5590547417 |
 | fundamental-styles | 2026-09-08 | replied (confirmed by Petri): theming package has no ladder, row marked in dependency, literals not findings | https://github.com/SAP/fundamental-styles/issues/6390#issuecomment-5590584281 |
 | ui5-webcomponents | 2026-09-08 | replied (confirmed by Petri): agree the 75 literals are not findings; row marked in dependency | https://github.com/UI5/webcomponents/issues/14027#issuecomment-5590584586 |
+| bootstrap | 2026-09-08 | replied (confirmed by Petri) to the community reviewer: agree with the split, PR and rule are the maintainers' call | https://github.com/twbs/bootstrap/issues/42907#issuecomment-5590610458 |
