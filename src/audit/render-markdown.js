@@ -16,6 +16,7 @@ function renderMarkdown(report) {
   const lines = [
     '# Rhythmguard Design-System Audit',
     '',
+    ...(report.baseline ? [`**Since baseline:** ${report.baseline.resolvedFindingsCount} resolved, ${report.baseline.newFindingsCount} new.`, ''] : []),
     `Directory: \`${report.directory}\``,
     '',
     '## Summary',

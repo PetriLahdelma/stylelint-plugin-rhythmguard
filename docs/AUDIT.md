@@ -122,6 +122,9 @@ A token source object may also carry `tokenPattern`, a regular expression applie
 
 The step-by-step rollout, including a GitHub Actions job and a PR comment, is in [`CI_ADOPTION.md`](./CI_ADOPTION.md).
 
+
+A baseline names each finding by what it is, not where it sits: rule, file, property, value, and its occurrence index among identical findings in that file. Moving code, adding a comment above a declaration or reformatting a file does not turn old findings into "new" and "resolved" pairs; a second identical off-scale declaration is still new. Baseline files carry `formatVersion: 2`; files written by earlier versions (`formatVersion: 1`, keyed by line and column) still compare, with the key they were written with, and are upgraded the next time you run `--write-baseline`. Every output leads with the change since the baseline (`Since baseline: 12 resolved, 0 new`), so a pull request shows what it improved before what it left.
+
 ## JSON 2.0 contract and API
 
 `--format json` emits the stable contract (`schemaVersion: "2.0"`). `--format json-v1` keeps the pre-2.0 shape during migration, see [`MIGRATING_TO_2.md`](./MIGRATING_TO_2.md). `--schema` prints the JSON schema.

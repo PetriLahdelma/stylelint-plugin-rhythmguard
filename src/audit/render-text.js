@@ -31,6 +31,9 @@ function renderText(report) {
     const rejected = report.scale.rejected ? ` (${report.scale.rejected.source} rejected: ${report.scale.rejected.reasons.join(', ')})` : '';
     lines.push(`  Scale source             ${report.scale.source}${files}${rejected}`);
   }
+  if (report.baseline) {
+    lines.push(`  Since baseline           ${report.baseline.resolvedFindingsCount} resolved, ${report.baseline.newFindingsCount} new`);
+  }
   lines.push('');
 
   appendHistogram(lines, 'CSS OFF-SCALE VALUES', report.offScaleValues);
