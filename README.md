@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-banner.svg?v=7" width="100%" alt="Rhythmguard banner showing spacing scale ruler and lint output" />
+  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/rhythmguard-banner.svg?v=8" width="100%" alt="Rhythmguard banner showing spacing scale ruler and lint output" />
 </p>
 
 # stylelint-plugin-rhythmguard
@@ -7,7 +7,7 @@
 Nobody chose 13px. Rhythmguard catches off-scale spacing in CSS and Tailwind class strings, tells you the nearest steps on your scale, and snaps to them or to your tokens when you ask.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/petrilahdelma/stylelint-plugin-rhythmguard/ci.yml?branch=main&label=ci)](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/stylelint-plugin-rhythmguard?label=npm&color=1f6feb)](https://www.npmjs.com/package/stylelint-plugin-rhythmguard)
+[![npm version](https://img.shields.io/npm/v/stylelint-plugin-rhythmguard?label=npm&color=1f6feb&r=350)](https://www.npmjs.com/package/stylelint-plugin-rhythmguard)
 [![npm downloads](https://img.shields.io/npm/dm/stylelint-plugin-rhythmguard.svg)](https://www.npmjs.com/package/stylelint-plugin-rhythmguard)
 [![License: MIT](https://img.shields.io/badge/license-MIT-white.svg)](./LICENSE)
 
