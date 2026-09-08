@@ -97,6 +97,7 @@ Token values in `rem` and `em` are converted through `baseFontSize`; values in u
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `preset` | `string` | `rhythmic-4` | Selects a built-in scale. See [scale presets](../SCALE_PRESETS.md). |
+| `fixWith` | `"value" \| "token"` | `"value"` | What autofix writes. `"token"` writes `var(--name)` when exactly one custom property holds the snapped value in the literal's own unit, read from this stylesheet, `scaleSources`, `.rhythmguardrc.json` token sources and installed token packages; otherwise the literal. Negative values become `calc(-1 * var(--name))`. |
 | `decisions` | `boolean` | `true` | Read the `decisions` section of `.rhythmguardrc.json`: adopted values count as on scale, allowed values are not findings (optionally on some properties only). See [decisions](../AUDIT.md#decisions). |
 | `customScale` | `Array<number\|string>` | `undefined` | Highest-priority custom scale override |
 | `scale` | `Array<number\|string> \| "auto"` | `[0,4,8,12,16,24,32,40,48,64]` | Allowed values, or `"auto"` to infer them from tokens (see above) |

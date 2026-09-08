@@ -165,21 +165,27 @@ function cacheKey(sources) {
     .join('\n');
 }
 
-function scaleFromSources(sources, baseFontSize) {
+/** Parse token sources once per (sources, base font size, file mtimes). */
+function parseSourcesCached(sources, baseFontSize) {
   const normalized = sources.map((source) => normalizeSource(source, process.cwd())).filter(Boolean);
   if (normalized.length === 0) {
     return null;
   }
-
   const key = `${baseFontSize}\n${cacheKey(normalized)}`;
-  if (sourceCache.has(key)) {
-    return sourceCache.get(key);
+  if (!sourceCache.has(key)) {
+    sourceCache.set(key, parseTokenSources({ baseFontSize, sources: normalized, tokenKind: 'spacing' }));
   }
+  return sourceCache.get(key);
+}
 
-  const parsed = parseTokenSources({ baseFontSize, sources: normalized, tokenKind: 'spacing' });
+function scaleFromSources(sources, baseFontSize) {
+  const parsed = parseSourcesCached(sources, baseFontSize);
+  if (!parsed) {
+    return null;
+  }
   // scaleFromDefinitions also expands a bare Tailwind --spacing base into its multiples.
   const scale = scaleFromDefinitions(parsed.definitions, baseFontSize);
-  const outcome = scale
+  return scale
     ? {
       files: parsed.sources.map((source) => source.file),
       scale,
@@ -187,9 +193,26 @@ function scaleFromSources(sources, baseFontSize) {
       warnings: parsed.warnings,
     }
     : null;
+}
 
-  sourceCache.set(key, outcome);
-  return outcome;
+/**
+ * Every spacing token definition visible from a stylesheet, for fixes that
+ * write tokens: the stylesheet's own declarations, then `scaleSources`,
+ * `.rhythmguardrc.json` token sources and installed token packages. The same
+ * places scale inference reads, in the same order.
+ */
+function collectTokenDefinitions({ baseFontSize = 16, root, scaleSources = [], tokenRegex }) {
+  const definitions = root ? stylesheetDefinitions(root, tokenRegex, baseFontSize) : new Map();
+  const sources = [...scaleSources, ...rcTokenSources(process.cwd()), ...discoverTokenPackages(process.cwd())];
+  const parsed = parseSourcesCached(sources, baseFontSize);
+  if (parsed) {
+    for (const [token, definition] of parsed.definitions) {
+      if (!definitions.has(token)) {
+        definitions.set(token, definition);
+      }
+    }
+  }
+  return definitions;
 }
 
 /**
@@ -525,6 +548,7 @@ module.exports = {
   DEFAULT_AUTO_TOKEN_PATTERN,
   assessScale,
   autoScaleFallbackNote,
+  collectTokenDefinitions,
   discoverTokenPackages,
   inferScaleFromDefinitions,
   resolveAutoScale,

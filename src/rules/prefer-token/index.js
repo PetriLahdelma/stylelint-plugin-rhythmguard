@@ -31,6 +31,8 @@ const {
 const { createTokenRegex, reportInvalidPreset, reportValueNode } = require('../report');
 const { validatePrimary, validatePreferTokenSecondaryOptions } = require('../validate');
 
+const { negateReplacement } = require('../../core/token-index');
+
 const ruleName = 'rhythmguard/prefer-token';
 
 const messages = stylelint.utils.ruleMessages(ruleName, {
@@ -41,25 +43,7 @@ const messages = stylelint.utils.ruleMessages(ruleName, {
 });
 
 function applyNegativeToken(replacement, parsedLength) {
-  if (!replacement || parsedLength.number >= 0) {
-    return replacement;
-  }
-
-  if (replacement.startsWith('-')) {
-    return replacement;
-  }
-
-  if (
-    replacement.startsWith('var(') ||
-    replacement.startsWith('theme(') ||
-    replacement.startsWith('token(') ||
-    replacement.startsWith('$') ||
-    replacement.startsWith('@')
-  ) {
-    return `-${replacement}`;
-  }
-
-  return `calc(${replacement} * -1)`;
+  return !replacement || parsedLength.number >= 0 ? replacement : negateReplacement(replacement);
 }
 
 function resolveTokenReplacement(tokenMap, raw, parsedLength, options) {

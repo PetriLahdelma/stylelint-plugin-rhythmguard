@@ -62,6 +62,10 @@ function isSupportedUnit(value) {
   return SUPPORTED_SCALE_UNITS.has(value.trim().toLowerCase());
 }
 
+function isFixWith(value) {
+  return value === 'value' || value === 'token';
+}
+
 function isUnitStrategy(value) {
   return value === 'convert' || value === 'exact';
 }
@@ -381,6 +385,9 @@ const SCALE_VALIDATION_SCHEMA = Object.freeze({
   enforceInsideMathFunctions: Object.freeze({
     entryValidator: isBoolean,
   }),
+  fixWith: Object.freeze({
+    entryValidator: isFixWith,
+  }),
   fixToScale: Object.freeze({
     entryValidator: isBoolean,
   }),
@@ -559,6 +566,7 @@ function buildScaleOptions(rawOptions) {
         : 16,
     enforceInsideMathFunctions: options.enforceInsideMathFunctions === true,
     fixToScale: options.fixToScale !== false,
+    fixWith: options.fixWith === 'token' ? 'token' : 'value',
     ignoreMathFunctionArguments: normalizeMathFunctionArgumentMap(options.ignoreMathFunctionArguments),
     ignoreValues: Array.isArray(options.ignoreValues)
       ? options.ignoreValues.map((value) => String(value).toLowerCase())
