@@ -141,6 +141,7 @@ function normalizeCliTokenSources(sources, format) {
         baseDir: source.baseDir || process.cwd(),
         format: source.format || format,
         path: source.path || source.file,
+        ...(typeof source.tokenPattern === 'string' && source.tokenPattern ? { tokenPattern: source.tokenPattern } : {}),
       };
     }
     return {
@@ -177,10 +178,15 @@ function normalizeConfigTokenSources(sources, baseDir) {
       throw new Error('Invalid Rhythmguard config: token source objects must include a path.');
     }
 
+    if (source.tokenPattern !== undefined && (typeof source.tokenPattern !== 'string' || source.tokenPattern.trim().length === 0)) {
+      throw new Error('Invalid Rhythmguard config: token source tokenPattern must be a non-empty string.');
+    }
+
     return {
       baseDir,
       format: normalizeTokenSourceFormat(source.format || 'auto'),
       path: source.path,
+      ...(source.tokenPattern ? { tokenPattern: source.tokenPattern } : {}),
     };
   });
 }

@@ -111,7 +111,7 @@ Shared settings go in `.rhythmguardrc.json`, loaded automatically when present. 
 }
 ```
 
-Token source paths in the config resolve from the config file's directory. CLI `--token-source` paths resolve from the current working directory. Supported source formats: CSS custom properties and Tailwind v4 `@theme`, flat JSON, Style Dictionary JSON, and DTCG JSON. CLI scalar flags override config values.
+A token source object may also carry `tokenPattern`, a regular expression applied to token names instead of the built-in spacing name matcher, for systems whose scale is not called space or spacing (`{ "path": "./node_modules/@mittwald/flow-design-tokens/dist/css/base.css", "tokenPattern": "^--size-(?:px|rem)--" }`). Token source paths in the config resolve from the config file's directory. CLI `--token-source` paths resolve from the current working directory. Supported source formats: CSS custom properties and Tailwind v4 `@theme`, flat JSON, Style Dictionary JSON, and DTCG JSON. CLI scalar flags override config values.
 
 ## Baselines and gates
 
