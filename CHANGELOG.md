@@ -6,24 +6,23 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.6.0] - 2026-09-09
+
 ### Added
 
 - **Token chains.** The audit follows every spacing-named custom property through `var()` references to its terminal values and reports, in `contracts.tokens.chains` and a Markdown section, whether each resolves on the scale, off it, to an undeclared token or a cycle, to several lengths at once (themes), to a computed expression, or to a non-length. Fallbacks are honoured; declarations from token sources and installed packages count. This is the measurement token-layered systems need, where a literal scan finds almost nothing. ([#110](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/110))
 - `rhythmguard fix <dir> --value <length> --to <replacement>` replaces one spacing literal everywhere it appears, matching by px, keeping the sign, never touching token definitions, token functions or non-spacing properties; dry run until `--write`, idempotent, SCSS through `postcss-scss`. `--decided` executes every `snap` decision whose `to` names the replacement. `postcss` is now a declared runtime dependency (the rules always received its AST; the codemod parses files itself).
-
-### Fixed
-
-- Token values of the form `calc(var(--x) * 2)` are no longer read as a 2px token; the calc forms require a unit on the factor, as in Radix's `calc(4px * var(--scaling))`.
-- `prefer-token` autofix writes a negative token as `calc(-1 * var(--token))`. It wrote `-var(--token)`, which is not valid CSS.
-
-### Added
-
 - `use-scale` and `no-offscale-transform` accept `fixWith: "token"`: autofix writes `var(--name)` when exactly one custom property holds the snapped value in the literal's own unit, read from the stylesheet, `scaleSources`, the config file's token sources and installed token packages, and the literal otherwise. A rem literal never becomes a px token, and two tokens with the same value never become a guess. Default stays `"value"`; the default flips in 4.0.
 - **Decisions.** A `decisions` section in `.rhythmguardrc.json` records what a team decided about each off-scale value: `adopt` (part of the scale, optionally naming the token it should become), `allow` (intentional, optionally on some properties only), `snap` (a slip to fix) or `undecided`. Adopted and allowed values stop being findings in the Stylelint rules and the audit alike; values match by px so `10px` and `0.625rem` are one decision. `rhythmguard audit --plan` proposes the section from the current findings and keeps decisions already made. The audit reports counts in `contracts.decisions`. Rules accept `decisions: false` to ignore the section. Docs: `docs/AUDIT.md#decisions`.
 
 ### Changed
 
 - Baselines key findings by content (rule, file, property, value, occurrence) instead of line and column, so moving or reformatting code no longer produces matching "new" and "resolved" pairs while a second identical off-scale declaration is still new. Baseline files are `formatVersion: 2`; version 1 files still compare and upgrade on the next `--write-baseline`. Text, Markdown and GitHub output lead with `Since baseline: N resolved, M new`.
+
+### Fixed
+
+- Token values of the form `calc(var(--x) * 2)` are no longer read as a 2px token; the calc forms require a unit on the factor, as in Radix's `calc(4px * var(--scaling))`.
+- `prefer-token` autofix writes a negative token as `calc(-1 * var(--token))`. It wrote `-var(--token)`, which is not valid CSS.
 
 ## [3.5.0] - 2026-09-08
 
