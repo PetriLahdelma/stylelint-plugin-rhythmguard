@@ -458,67 +458,6 @@
       ]
     },
     {
-      "name": "discourse",
-      "url": "https://github.com/discourse/discourse",
-      "sha": "c7b7a0b",
-      "cssFiles": 374,
-      "cleanliness": 34,
-      "drift": 970,
-      "driftPer100Files": 259,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scalePackage": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": {
-        "reasons": [
-          "too many steps",
-          "sources are component files"
-        ],
-        "source": "scanned-css"
-      },
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding",
-          313
-        ],
-        [
-          "margin",
-          126
-        ],
-        [
-          "margin-right",
-          90
-        ]
-      ],
-      "topValues": [
-        [
-          "10px",
-          171
-        ],
-        [
-          "5px",
-          147
-        ],
-        [
-          "20px",
-          55
-        ]
-      ]
-    },
-    {
       "name": "directus-app",
       "url": "https://github.com/directus/directus",
       "sha": "3df2ba9",
@@ -850,6 +789,86 @@
         [
           "5px",
           8
+        ]
+      ]
+    },
+    {
+      "name": "discourse",
+      "url": "https://github.com/discourse/discourse",
+      "sha": "c7b7a0b",
+      "cssFiles": 374,
+      "cleanliness": 34,
+      "drift": 569,
+      "driftPer100Files": 152,
+      "driftDelta": null,
+      "scaleIntent": null,
+      "scalePackage": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
+      "scaleRejected": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        10,
+        12,
+        14,
+        16,
+        20,
+        24,
+        28,
+        32,
+        36,
+        40,
+        44,
+        48,
+        56,
+        64,
+        80,
+        96,
+        112,
+        128,
+        144,
+        160,
+        176,
+        192,
+        208,
+        224,
+        240,
+        256,
+        288,
+        320,
+        384
+      ],
+      "topProperties": [
+        [
+          "padding",
+          193
+        ],
+        [
+          "margin",
+          60
+        ],
+        [
+          "margin-right",
+          60
+        ]
+      ],
+      "topValues": [
+        [
+          "5px",
+          147
+        ],
+        [
+          "0.15em",
+          38
+        ],
+        [
+          "3px",
+          36
         ]
       ]
     },
@@ -3124,11 +3143,11 @@
   ],
   "totals": {
     "cssFiles": 8585,
-    "drift": 8334,
+    "drift": 7933,
     "repos": 57,
-    "fallbackScales": 34,
+    "fallbackScales": 33,
     "inPackage": 6,
     "noScaleByDesign": 1,
-    "unreliableScales": 4
+    "unreliableScales": 3
   }
 }

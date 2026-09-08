@@ -1022,3 +1022,25 @@ test('audit refuses an invalid decisions section with a precise message', () => 
   assert.equal(result.status, 1);
   assert.match(result.stderr, /decisions\[0\]\.decision must be one of adopt, allow, snap, undecided/);
 });
+
+test('audit reports token chains: spacing tokens followed through var() to their terminal values (issue #110)', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-chains-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'tokens.css'), ':root { --size-s: 8px; --size-m: 16px; --size-l: 24px; --size-xl: 32px; }\n');
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'button.css'), '.button { --button-padding: var(--size-m); --button-gap: var(--size-s); padding: var(--button-padding); }\n');
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'card.css'), '.card { --card-gap: 13px; --card-inset: var(--size-missing); gap: var(--card-gap); }\n');
+
+  const result = runAudit(fixtureDir, '--scale', '0,4,8,16,24,32', '--format', 'json');
+  assert.equal(result.status, 0, result.stderr);
+  const chains = JSON.parse(result.stdout).contracts.tokens.chains;
+  assert.deepEqual(chains.summary, { total: 8, 'on-scale': 6, 'off-scale': 1, unresolved: 1, ambiguous: 0, computed: 0, 'non-length': 0 });
+  const listed = Object.fromEntries(chains.entries.map((entry) => [entry.token, entry.outcome]));
+  assert.equal(listed['--card-gap'], 'off-scale');
+  assert.equal(listed['--card-inset'], 'unresolved');
+  assert.equal(listed['--button-padding'], undefined, 'entries list only what needs attention; resolved chains are counted');
+
+  const markdown = runAudit(fixtureDir, '--scale', '0,4,8,16,24,32', '--format', 'markdown').stdout;
+  assert.match(markdown, /## Token Chains\n\n6 of 8 spacing tokens resolve to the scale/);
+  assert.match(markdown, /\| `--card-gap` \| off-scale \| `13px` \|/);
+  assert.match(markdown, /\| `--card-inset` \| unresolved \| `--size-missing` is not declared \|/);
+});

@@ -91,6 +91,21 @@ The value histogram tells you which numbers drifted; the property table tells yo
 
 `drift` (the default) is 100 minus scale cleanliness, the share of scanned files with at least one finding. `--badge-metric findings` reports the number of off-scale CSS values plus Tailwind class-string findings instead, labelled `off-scale values`. Colours: drift 0 to 2% brightgreen, to 5% green, to 15% yellow, above orange; findings 0 brightgreen, to 10 green, to 50 yellow, above orange. Publish the file somewhere public and embed `https://img.shields.io/endpoint?url=<file url>` in the README; the workflow is in [`CI_ADOPTION.md`](./CI_ADOPTION.md#5-show-a-badge).
 
+## Token chains
+
+In a token-layered system the stylesheet says `padding: var(--button--padding-x)` and the discipline lives one level up: does every spacing token resolve to the scale? A literal scan finds almost nothing there. The audit therefore follows every spacing-named custom property (`size`, `space`, `spacing`, `spacer`, `padding`, `margin`, `gap`, `inset` in the name; `font-size`, `letter-spacing` and `word-spacing` excluded) through `var()` references to its terminal values and reports the result as `contracts.tokens.chains`:
+
+| Outcome | Meaning |
+| --- | --- |
+| `on-scale` | every terminal is a length on the scale |
+| `off-scale` | a terminal is a length off the scale: drift at the token layer |
+| `unresolved` | the chain reaches a token nobody declares, or a cycle |
+| `ambiguous` | definitions disagree on the length (themes, media queries); the set is reported, never a guess |
+| `computed` | `calc()` or another expression the audit does not evaluate |
+| `non-length` | a shorthand or keyword |
+
+`var(--x, 8px)` uses the fallback when `--x` is not declared. Declarations come from the scanned stylesheets and from token sources and installed token packages, so a scale that lives in a dependency still resolves. The Markdown report prints "6 of 8 spacing tokens resolve to the scale" and lists the tokens that need attention with their chain; the JSON contract carries the counts for every outcome and entries for the attention outcomes only.
+
 ## Decisions
 
 Real drift is a handful of decisions, not hundreds of mistakes: Mastodon's `10px` appears 165 times and is one missing step or one unnamed token, not 165 slips. The `decisions` section of `.rhythmguardrc.json` records those decisions once, and both the Stylelint rules and the audit honour them.

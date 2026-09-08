@@ -45,6 +45,11 @@ function renderText(report) {
   appendHistogram(lines, 'TAILWIND CLASS-STRING DRIFT', report.tailwindArbitraryValues);
   appendHistogram(lines, 'MOTION RHYTHM DRIFT', report.motion.values);
   appendTokenContractText(lines, report.tokenContract);
+  if (report.tokenContract.chains && report.tokenContract.chains.summary.total > 0) {
+    const { summary } = report.tokenContract.chains;
+    lines.push(`  Token chains             ${summary['on-scale']} of ${summary.total} resolve to the scale (${summary['off-scale']} off-scale, ${summary.unresolved} unresolved, ${summary.ambiguous} ambiguous)`);
+    lines.push('');
+  }
   appendBaselineText(lines, report);
 
   if (report.topAffectedFiles.length > 0) {

@@ -144,3 +144,14 @@ test('collectScssTokens fails predictably on adversarial nesting instead of over
   assert.equal(shallow['$spacing-1'], '4px', 'ordinary nesting still evaluates');
   assert.equal(shallow['$spacing-map.a.b.c'], '8px');
 });
+
+test('parseTokenValueLength accepts calc(<length> * var()) but not a unitless factor times var()', () => {
+  const { parseTokenValueLength } = require('../../src/core/token-sources');
+  const radix = parseTokenValueLength('calc(4px * var(--scaling))');
+  assert.equal(radix.number, 4);
+  assert.equal(radix.unit, 'px');
+  const reversed = parseTokenValueLength('calc(var(--scaling) * 0.25rem)');
+  assert.equal(reversed.number, 0.25);
+  assert.equal(reversed.unit, 'rem');
+  assert.equal(parseTokenValueLength('calc(var(--size-m) * 2)'), null, 'a multiplier is not a length');
+});

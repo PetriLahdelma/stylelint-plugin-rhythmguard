@@ -25,6 +25,7 @@ const {
   scaleFromDefinitions,
 } = require('../core/scale-inference');
 const { applyDecisions, buildDecisionPlan } = require('./decisions');
+const { collectDeclarations, resolveTokenChains, toChainsContract } = require('./token-chains');
 const { assertDirectory, getScanFiles } = require('./scan/files');
 const { collectCssFindings, runStylelintAudit } = require('./scan/stylesheets');
 const { collectTailwindFindings, collectTailwindMotionFindings } = require('./scan/templates');
@@ -96,6 +97,15 @@ async function createAuditReport(options) {
     tokenSourceWarnings: tokenSourceResult.warnings,
   });
 
+  report.tokenContract.chains = toChainsContract(resolveTokenChains({
+    baseFontSize: parsed.baseFontSize,
+    declarations: collectDeclarations({
+      cssFiles,
+      externalDefinitions: tokenSourceResult.definitions,
+      skipFile: (file) => NON_AUTHORED_SEGMENT.test(file),
+    }),
+    scale: scale.values,
+  }));
   report.decisions = decided.summary;
   report.decisionPlan = buildDecisionPlan({
     baseFontSize: parsed.baseFontSize,
