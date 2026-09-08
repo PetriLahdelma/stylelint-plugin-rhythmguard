@@ -3,7 +3,6 @@
 const stylelint = require('stylelint');
 const valueParser = require('postcss-value-parser');
 const {
-  fixedLengthValue,
   formatLength,
   isHairlineLength,
   nearestScaleValues,
@@ -23,6 +22,7 @@ const {
 } = require('../../core/value-nodes');
 
 const {
+  collectTokenDefinitions,
   withResolvedScale,
 } = require('../../core/scale-inference');
 
@@ -30,6 +30,7 @@ const { validatePrimary, validateNoOffscaleTransformSecondaryOptions } = require
 
 const { reportInvalidPreset, reportProblem, reportValueNode } = require('../report');
 const { decisionFor, loadRcDecisions } = require('../../core/decisions');
+const { replacementFor, tokenIndexFromDefinitions } = require('../../core/token-index');
 
 const ruleName = 'rhythmguard/no-offscale-transform';
 const messages = stylelint.utils.ruleMessages(ruleName, {
@@ -66,6 +67,12 @@ const ruleFunction = (primary, secondaryOptions) => {
     }
 
     withResolvedScale(options, root);
+    if (options.fixWith === 'token') {
+      options.tokenIndex = tokenIndexFromDefinitions(
+        collectTokenDefinitions({ baseFontSize: options.baseFontSize, root, scaleSources: options.scaleSources, tokenRegex: new RegExp(options.tokenPattern) }),
+        options.baseFontSize,
+      );
+    }
 
     const getScaleStateForProperty = createPropertyScaleResolver(options);
 
@@ -149,7 +156,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           }
 
           const fixedValue = options.fixToScale
-            ? fixedLengthValue(parsedLength, nearest.nearest, options)
+            ? replacementFor(parsedLength, nearest.nearest, options)
             : null;
 
           report(node, nearest, unit, fixedValue);
@@ -173,7 +180,7 @@ const ruleFunction = (primary, secondaryOptions) => {
         }
 
         const fixedValue = options.fixToScale
-          ? fixedLengthValue(parsedLength, nearest.nearest, options)
+          ? replacementFor(parsedLength, nearest.nearest, options)
           : null;
 
         report(node, nearest, 'px', fixedValue);

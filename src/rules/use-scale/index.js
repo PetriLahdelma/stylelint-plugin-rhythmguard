@@ -3,7 +3,6 @@
 const stylelint = require('stylelint');
 const valueParser = require('postcss-value-parser');
 const {
-  fixedLengthValue,
   formatLength,
   isHairlineLength,
   nearestScaleValues,
@@ -27,11 +26,13 @@ const {
 
 const {
   autoScaleFallbackNote,
+  collectTokenDefinitions,
   withResolvedScale,
 } = require('../../core/scale-inference');
 
 const { createTokenRegex, reportInvalidPreset, reportProblem, reportValueNode } = require('../report');
 const { decisionFor, loadRcDecisions } = require('../../core/decisions');
+const { replacementFor, tokenIndexFromDefinitions } = require('../../core/token-index');
 const { validatePrimary, validateUseScaleSecondaryOptions } = require('../validate');
 
 const ruleName = 'rhythmguard/use-scale';
@@ -130,7 +131,7 @@ function checkLengthValue({
     }
 
     const fixedValue = options.fixToScale
-      ? fixedLengthValue(parsedLength, nearest.nearest, options)
+      ? replacementFor(parsedLength, nearest.nearest, options)
       : null;
 
     report(node.value, decl, node, nearest, fixedValue, unit);
@@ -154,7 +155,7 @@ function checkLengthValue({
   }
 
   const fixedValue = options.fixToScale
-    ? fixedLengthValue(parsedLength, nearest.nearest, options)
+    ? replacementFor(parsedLength, nearest.nearest, options)
     : null;
 
   report(node.value, decl, node, nearest, fixedValue, 'px');
@@ -181,10 +182,16 @@ const ruleFunction = (primary, secondaryOptions) => {
     const options = buildScaleOptions(secondaryOptions);
     reportInvalidPreset(options, { message: messages.invalidPreset, result, root, ruleName });
     options.decisions = readDecisions(options, { result, root });
-
     withResolvedScale(options, root);
 
     const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);
+    if (options.fixWith === 'token') {
+      options.tokenIndex = tokenIndexFromDefinitions(
+        collectTokenDefinitions({ baseFontSize: options.baseFontSize, root, scaleSources: options.scaleSources, tokenRegex }),
+        options.baseFontSize,
+      );
+    }
+
     let fallbackNote = autoScaleFallbackNote(options.scaleInference);
     const getScaleStateForProperty = createPropertyScaleResolver(options);
 

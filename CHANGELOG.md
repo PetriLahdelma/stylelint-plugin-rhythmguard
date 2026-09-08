@@ -6,8 +6,13 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- `prefer-token` autofix writes a negative token as `calc(-1 * var(--token))`. It wrote `-var(--token)`, which is not valid CSS.
+
 ### Added
 
+- `use-scale` and `no-offscale-transform` accept `fixWith: "token"`: autofix writes `var(--name)` when exactly one custom property holds the snapped value in the literal's own unit, read from the stylesheet, `scaleSources`, the config file's token sources and installed token packages, and the literal otherwise. A rem literal never becomes a px token, and two tokens with the same value never become a guess. Default stays `"value"`; the default flips in 4.0.
 - **Decisions.** A `decisions` section in `.rhythmguardrc.json` records what a team decided about each off-scale value: `adopt` (part of the scale, optionally naming the token it should become), `allow` (intentional, optionally on some properties only), `snap` (a slip to fix) or `undecided`. Adopted and allowed values stop being findings in the Stylelint rules and the audit alike; values match by px so `10px` and `0.625rem` are one decision. `rhythmguard audit --plan` proposes the section from the current findings and keeps decisions already made. The audit reports counts in `contracts.decisions`. Rules accept `decisions: false` to ignore the section. Docs: `docs/AUDIT.md#decisions`.
 
 ### Changed

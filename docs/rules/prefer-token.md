@@ -79,6 +79,8 @@ W3C DTCG:
 
 Nested DTCG groups are walked recursively and the key path becomes the variable name, so `spacing.4` maps to `var(--spacing-4)`. Non-length values such as colors and fonts are ignored.
 
+Negative literals are replaced with `calc(-1 * var(--token))`, which is valid CSS; `-var()` is not.
+
 ## Options
 
 | Option | Type | Default | Description |
