@@ -13,8 +13,8 @@ const { numbersEqual, parseLengthToken, toPx } = require('./length');
  *              should become); it stops being a finding everywhere
  *   allow      the value is intentional and not rhythm (borders, focus rings);
  *              not a finding, optionally only on some properties
- *   snap       the value is a slip; still a finding, and `rhythmguard fix`
- *              can execute it
+ *   snap       the value is a slip; still a finding, and `rhythmguard fix
+ *              --decided` executes it when `to` names the replacement
  *   undecided  recorded, still a finding, counted so the team sees it
  *
  * Decisions are matched by px value, so `10px` and `0.625rem` are one
@@ -53,6 +53,9 @@ function normalizeDecision(entry, index, baseFontSize) {
   if (entry.as !== undefined && (typeof entry.as !== 'string' || !/^(?:--|\$)[\w-]+$/.test(entry.as))) {
     throw new Error(`Invalid Rhythmguard config: ${where}.as must be a custom property or Sass variable name such as "--space-2".`);
   }
+  if (entry.to !== undefined && (typeof entry.to !== 'string' || !entry.to.trim())) {
+    throw new Error(`Invalid Rhythmguard config: ${where}.to must be the replacement text a snap writes, such as "8px" or "var(--space-2)".`);
+  }
   if (entry.reason !== undefined && typeof entry.reason !== 'string') {
     throw new Error(`Invalid Rhythmguard config: ${where}.reason must be a string.`);
   }
@@ -62,6 +65,7 @@ function normalizeDecision(entry, index, baseFontSize) {
     properties: entry.properties ? entry.properties.map((p) => p.trim().toLowerCase()) : null,
     px,
     reason: entry.reason || null,
+    to: entry.to ? entry.to.trim() : null,
     value: entry.value.trim(),
   };
 }

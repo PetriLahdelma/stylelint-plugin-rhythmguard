@@ -116,10 +116,20 @@ prints a proposed section with one entry per off-scale value: how often it occur
 | --- | --- | --- |
 | `adopt` | The value is part of the scale; `as` names the token it should become | Stops being a finding in the rules and the audit |
 | `allow` | Intentional and not rhythm | Stops being a finding, on every property or only those in `properties` (`border-*` matches a prefix) |
-| `snap` | A slip to fix | Still a finding; `rhythmguard fix` executes it |
+| `snap` | A slip to fix; `to` names the replacement | Still a finding; `rhythmguard fix <dir> --decided` writes `to` wherever the value appears |
 | `undecided` | Nobody has looked yet | Still a finding; counted so the team sees it |
 
-Values match by px, so `10px` and `0.625rem` are one decision. The audit reports the counts in `contracts.decisions` (`adopt`, `allow`, `snap`, `undecided`, and `suppressed` findings) and in the summary table; `--plan` keeps decisions already made, with their current counts, and adds `undecided` entries for new values. A rule with `decisions: false` ignores the section; the audit sets that on its own Stylelint run so decisions are applied once, in the audit.
+Values match by px, so `10px` and `0.625rem` are one decision.
+
+### Executing a decision
+
+```bash
+npx rhythmguard fix ./src --value 10px --to "var(--space-sm)"          # list every change
+npx rhythmguard fix ./src --value 10px --to "var(--space-sm)" --write  # apply it
+npx rhythmguard fix ./src --decided --write                            # every snap decision with a "to"
+```
+
+`rhythmguard fix` replaces one value with one replacement on spacing properties (or the ones you pass with `--properties`), matching by px so `0.625rem` is rewritten when you ask for `10px`, keeping the sign (`-10px` becomes `calc(-1 * var(--space-sm))`), and never touching token definitions, values inside `var()`, `theme()` or `token()`, or other properties. It is a dry run until `--write`, it rewrites only files it changed, and running it twice changes nothing. One value per run is deliberate: each run is one reviewable pull request. SCSS files need `postcss-scss`. The audit reports the counts in `contracts.decisions` (`adopt`, `allow`, `snap`, `undecided`, and `suppressed` findings) and in the summary table; `--plan` keeps decisions already made, with their current counts, and adds `undecided` entries for new values. A rule with `decisions: false` ignores the section; the audit sets that on its own Stylelint run so decisions are applied once, in the audit.
 
 ## Config file
 
