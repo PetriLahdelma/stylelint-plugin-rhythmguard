@@ -81,7 +81,7 @@ CI for this repository runs on self-hosted runners for pushes and same-repo bran
 
 **The benchmark is the regression suite for real code.** If your change alters findings on any benchmark repository, `npm run bench:quiet -- --check` fails and prints the diff. Review it. If the new findings are right, run `npm run bench:quiet -- --update-snapshots`, commit `benchmarks/quiet/snapshots/`, and say in the PR why they are right.
 
-**Fixes are deterministic.** Autofix snaps to the nearest scale step or to an explicit token map. It never guesses a token. Keep that property.
+**Fixes are deterministic.** Autofix snaps to the nearest scale step, or with `fixWith: "token"` writes the one custom property that holds that value in the same unit. It never guesses a token: two candidates, a unit mismatch or a Sass variable all mean the literal is written instead. `rhythmguard fix` follows the same rule. Keep that property.
 
 **Prose without em dashes.** House style, applied to docs and messages alike.
 
@@ -98,7 +98,7 @@ CI for this repository runs on self-hosted runners for pushes and same-repo bran
 - Stylelint `^16.0.0 || ^17.0.0`. The 16.0.0 floor has known autofix differences; CI runs the floor suite against it.
 - Node `>=20.19.0`.
 - CommonJS and ESM entry points; every export has a declaration under `types/`.
-- Two runtime dependencies, `known-css-properties` and `postcss-value-parser`. `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers and dev dependencies here. `test/contracts/architecture.test.js` fails if a runtime import is not declared.
+- Three runtime dependencies: `known-css-properties`, `postcss` and `postcss-value-parser`. `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers and dev dependencies here. `test/contracts/architecture.test.js` fails if a runtime import is not declared.
 
 ## Review
 

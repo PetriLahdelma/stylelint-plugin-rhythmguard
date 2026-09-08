@@ -101,7 +101,7 @@ The audit scans CSS declarations, Tailwind class strings and your token contract
 
 ## Compatibility
 
-Stylelint 16 and 17. Node 20.19 or newer. Two runtime dependencies (`known-css-properties`, `postcss-value-parser`); `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers. CommonJS and ESM entry points, TypeScript declarations for every export. The CI matrix runs Node 20 and 22 against Stylelint 16.0.0, 16.x and 17.x. Upgrading from 2.x: [docs/MIGRATING_TO_3.md](docs/MIGRATING_TO_3.md).
+Stylelint 16 and 17. Node 20.19 or newer. Three runtime dependencies (`known-css-properties`, `postcss`, `postcss-value-parser`); `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers. CommonJS and ESM entry points, TypeScript declarations for every export. The CI matrix runs Node 20 and 22 against Stylelint 16.0.0, 16.x and 17.x. Upgrading from 2.x: [docs/MIGRATING_TO_3.md](docs/MIGRATING_TO_3.md).
 
 ## Contributing and support
 
