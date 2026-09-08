@@ -79,3 +79,4 @@ Every audit issue opened from the benchmark, and every response, so the pattern 
 | primer-css | 2026-09-08 | replied (confirmed by Petri): ladder is --base-size-* from @primer/primitives, already read; stack tokens are consumers | https://github.com/primer/css/issues/3166#issuecomment-5590360951 |
 | primer-react | 2026-09-08 | replied (confirmed by Petri): pointer to the primer/css answer | https://github.com/primer/react/issues/8387#issuecomment-5590361297 |
 | adminlte | 2026-09-08 | replied (confirmed by Petri): bootstrap now read through the dependency; borders stay counted but reported by property; 126 were spacing properties only | https://github.com/ColorlibHQ/AdminLTE/issues/6124#issuecomment-5590393976 |
+| mittwald-flow | 2026-09-08 | replied (confirmed by Petri): 0 off-scale against their real scale, package allowlisted, tokenPattern bug fixed, var-chain audit filed as #110 | https://github.com/mittwald/flow/issues/3129#issuecomment-5590491747 |
