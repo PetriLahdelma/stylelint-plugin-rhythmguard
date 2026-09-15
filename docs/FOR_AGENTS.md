@@ -59,6 +59,7 @@ Unexpected off-scale value "13px". Use scale values (nearest: 12px or 16px). (rh
 - Otherwise, if the project has a token for the value you choose (the `prefer-token` rule or the audit's token contract will say so), use the token: `var(--space-3)`, `theme(spacing.3)`, or the Tailwind utility.
 - `Unexpected raw scale value "12px". Use var(--space-3) (src/tokens.css).` is a different message: the value is on scale, but a token exists for it. Write the token it names; the path is where the token is declared. `No known token holds this value` means none of the mapped tokens matches; pick the nearest token or ask before adding one.
 - A message ending in `No spacing tokens were found for scale "auto"; using preset "rhythmic-4"` means the scale was not the project's own. Treat it as informational, not as a reason to add tokens.
+- A sentence after the built-in text, such as `See docs/spacing.md for approved exceptions.`, is the project's own `note`. Read the file it names before changing a value; it is where approved exceptions are recorded.
 
 ## What Rhythmguard does not do
 

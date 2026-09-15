@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- Every rule accepts `note`, a sentence of up to 200 characters appended to each finding after the built-in text: `... (nearest: 12px or 16px). See docs/spacing.md for approved exceptions.` The built-in text is unchanged, so tooling that matches on it keeps working. Stylelint and ESLint rules alike. ([#134](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/134))
+
 ### Changed
 
 - `prefer-token` names the token it would write and where it was read from: `Unexpected raw scale value "12px". Use var(--space-3) (src/tokens.css).` The origin is the linted stylesheet, the `tokenMapFile` or the Tailwind config; an inline `tokenMap` entry is named without one, and a negative literal as `calc(-1 * var(--space-3))`. When no mapping holds the value the message says `No known token holds this value; use the nearest token or add one.` It said `Use design tokens for scale decisions.` in every case. ([#133](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/133))

@@ -38,10 +38,10 @@ const ruleName = 'rhythmguard/prefer-token';
 const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
-  rejected: (value, replacement = null, origin = null) =>
+  rejected: (value, replacement = null, origin = null, note = '') =>
     `Unexpected raw scale value "${value}". ${replacement
       ? `Use ${replacement}${origin ? ` (${origin})` : ''}.`
-      : 'No known token holds this value; use the nearest token or add one.'}`,
+      : 'No known token holds this value; use the nearest token or add one.'}${note ? ` ${note}` : ''}`,
 });
 
 function applyNegativeToken(replacement, parsedLength) {
@@ -124,7 +124,7 @@ const ruleFunction = (primary, secondaryOptions) => {
       const reportNode = (node, resolved = null) => {
         const replacement = resolved ? resolved.replacement : null;
         const origin = resolved ? origins[resolved.token] || null : null;
-        reportValueNode({ decl, message: messages.rejected(node.value, replacement, origin), node, replacement, result, ruleName });
+        reportValueNode({ decl, message: messages.rejected(node.value, replacement, origin, options.note), node, replacement, result, ruleName });
       };
 
       const checkWordNode = (node, context) => {

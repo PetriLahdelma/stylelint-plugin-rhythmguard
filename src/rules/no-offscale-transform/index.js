@@ -93,7 +93,7 @@ const ruleFunction = (primary, secondaryOptions) => {
             node.value,
             formatLength(nearest.lower, nearestUnit),
             formatLength(nearest.upper, nearestUnit),
-            tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit)),
+            [tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit)), options.note].filter(Boolean).join(' '),
           ),
           node,
           replacement: fixedValue,

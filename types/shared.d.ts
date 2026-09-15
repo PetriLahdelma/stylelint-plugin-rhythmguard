@@ -21,6 +21,8 @@ export interface RhythmguardRuleOptions {
   fixWith?: "value" | "token";
   /** Read the `decisions` section of `.rhythmguardrc.json` (default true). The audit sets false and applies decisions itself. */
   decisions?: boolean;
+  /** A sentence of up to 200 characters appended to every finding, after the built-in text. */
+  note?: string;
   baseFontSize?: number;
   customScale?: ScaleValue[];
   includeMathFunctions?: boolean;

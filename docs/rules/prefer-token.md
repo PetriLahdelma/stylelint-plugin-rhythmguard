@@ -108,6 +108,7 @@ Negative literals are replaced with `calc(-1 * var(--token))`, which is valid CS
 | `tokenMapFile` | `string` | `null` | JSON file merged into the map (flat, Style Dictionary, or DTCG) |
 | `tokenMapFromCssCustomProperties` | `boolean` | `false` | Build the map from matching custom properties in the same stylesheet |
 | `tokenMapFromTailwindSpacing` | `boolean` | `false` | Build the map from `theme.spacing` in a Tailwind config |
+| `note` | `string` | `undefined` | Appended to every finding, after the built-in text. Up to 200 characters. Point agents and reviewers at your own rules: `"See docs/spacing.md for approved exceptions."` |
 | `tailwindConfigPath` | `string` | `null` | Tailwind config path for `tokenMapFromTailwindSpacing` (`.js`, `.cjs`, `.mjs`) |
 | `ignoreValues` | `string[]` | CSS global keywords + `auto` | Keyword literals to skip |
 | `allowHairlines` | `boolean` | `true` | Never asks for a token for non-zero lengths of one CSS pixel or less. See [Hairlines](./use-scale.md#hairlines) |

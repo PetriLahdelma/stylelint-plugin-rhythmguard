@@ -42,6 +42,7 @@ Durations and delays snap to the nearest scale value when `fixToScale` is on. Ea
 | `durationScale` | `number[]` | `[0,75,100,150,200,300,500,700,1000]` | Allowed duration and delay values in milliseconds |
 | `durationUnits` | `Array<'ms' \| 's'>` | `['ms','s']` | Time units considered by the rule |
 | `fixToScale` | `boolean` | `true` | Autofix simple duration and delay values to the nearest scale value |
+| `note` | `string` | `undefined` | Appended to every finding, after the built-in text. Up to 200 characters. Point agents and reviewers at your own rules: `"See docs/spacing.md for approved exceptions."` |
 | `easingTokenMap` | `Record<string,string>` | `{}` | Exact replacements for raw easing functions |
 
 ## Related

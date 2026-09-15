@@ -1,5 +1,6 @@
 'use strict';
 
+const { MAX_NOTE_LENGTH, normalizeNote, withNote } = require('../../core/options');
 const { createTailwindClassAnalyzer, offScaleClassMessage } = require('../../core/tailwind-class-analysis');
 
 const RULE_NAME = 'tailwind-class-use-scale';
@@ -44,7 +45,7 @@ function maybeCheckNodeText(node, sourceCode, context, analyzer, allowFix) {
 
   for (const { analysis, segment } of findings) {
     context.report({
-      message: offScaleClassMessage(segment.token, analysis),
+      message: withNote(offScaleClassMessage(segment.token, analysis), analyzer.note),
       node,
       fix:
         fixedText && analysis.reason !== 'negative'
@@ -67,6 +68,7 @@ module.exports = {
         properties: {
           allowNegative: { type: 'boolean' },
           baseFontSize: { type: 'number' },
+          note: { maxLength: MAX_NOTE_LENGTH, minLength: 1, type: 'string' },
           scale: {
             items: {
               anyOf: [
@@ -92,7 +94,9 @@ module.exports = {
     ],
   },
   create(context) {
-    const analyzer = createTailwindClassAnalyzer(context.options && context.options[0]);
+    const option = (context.options && context.options[0]) || {};
+    const analyzer = createTailwindClassAnalyzer(option);
+    analyzer.note = normalizeNote(option.note);
     const sourceCode = context.sourceCode || context.getSourceCode();
 
     return {

@@ -1,5 +1,6 @@
 'use strict';
 
+const { MAX_NOTE_LENGTH, normalizeNote, withNote } = require('../../core/options');
 const { formatTime } = require('../../core/time');
 const { createTailwindMotionAnalyzer } = require('../../core/tailwind-motion-analysis');
 
@@ -51,7 +52,7 @@ function maybeCheckNodeText(node, sourceCode, context, analyzer, allowFix) {
       ? formatTime(analysis.nearest.upper, 'ms')
       : 'n/a';
     context.report({
-      message: buildMessage(analysis, segment, lower, upper),
+      message: withNote(buildMessage(analysis, segment, lower, upper), analyzer.note),
       node,
       fix:
         fixedText && analysis.reason === 'duration'
@@ -95,13 +96,16 @@ module.exports = {
             },
             type: 'array',
           },
+          note: { maxLength: MAX_NOTE_LENGTH, minLength: 1, type: 'string' },
         },
         type: 'object',
       },
     ],
   },
   create(context) {
-    const analyzer = createTailwindMotionAnalyzer(context.options && context.options[0]);
+    const option = (context.options && context.options[0]) || {};
+    const analyzer = createTailwindMotionAnalyzer(option);
+    analyzer.note = normalizeNote(option.note);
     const sourceCode = context.sourceCode || context.getSourceCode();
 
     return {
