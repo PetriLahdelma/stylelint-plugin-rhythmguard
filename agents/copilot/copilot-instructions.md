@@ -6,7 +6,7 @@ This project enforces its spacing scale with stylelint-plugin-rhythmguard.
 - A finding names the value and the two nearest on-scale values. Prefer the design token for that value when one exists; otherwise use the nearest on-scale value. Never invent a new spacing value.
 - Do not use `--fix` on spacing findings unless the task says so. Snapping a value can change layout; choose the value deliberately.
 - Values of one pixel or less (hairlines) and percentages are allowed and are not findings.
-- Tailwind arbitrary spacing values such as `p-[13px]` are findings too; use the scale utility (`p-3`) or an on-scale arbitrary value.
+- Tailwind arbitrary spacing values such as `p-[13px]` are findings too. The finding names the two utility classes to choose from (`p-3` or `p-4`); write one of those, not another arbitrary value.
 - When the audit's `contracts.scale.offScaleProperties` table is dominated by margins on sibling elements, put a `gap` on the parent instead of fixing each margin. The parent owns the spacing between its children.
 - If the audit reports the scale source as `fallback`, the project has no discoverable spacing tokens. Ask before adding any; do not guess a scale.
 

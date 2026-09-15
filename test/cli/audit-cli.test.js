@@ -134,7 +134,7 @@ test('audit CLI markdown emits a PR-ready design-system report', () => {
   assert.match(result.stdout, /## Tailwind Class-String Drift/);
   assert.match(result.stdout, /## CSS Off-Scale Properties\n\n\| Property \| Count \|\n\| --- \| ---: \|\n\| `padding` \| 1 \|/);
   assert.match(result.stdout, /`md:p-\[13px\]`/);
-  assert.match(result.stdout, /`md:p-\[12px\]`/);
+  assert.match(result.stdout, /`md:p-3`/);
 });
 
 test('audit CLI --format badge writes a shields.io endpoint document', () => {
