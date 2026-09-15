@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- `tailwind-class-use-scale` names the utility classes for the two nearest steps, with their px values, and its fix writes the utility class instead of an on-scale arbitrary value: `p-[13px]` reads `Use "p-3" (12px) or "p-4" (16px)` and becomes `p-3`; `md:-m-[13px]!` becomes `md:-m-3!`; `p-[0.8125rem]` becomes `p-3`. The class number is the snapped value divided by the new `spacingUnit` option (4px, Tailwind's `--spacing`); when it is not a quarter step the fix keeps the arbitrary form, and `spacingUnit: false` keeps it always. The audit's Tailwind findings carry the same text and `fixedToken`. ([#132](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/132))
+
 ## [3.6.0] - 2026-09-09
 
 ### Added

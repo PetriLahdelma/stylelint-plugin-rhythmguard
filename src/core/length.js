@@ -205,6 +205,7 @@ function fixedLengthValue(parsedLength, nearestPx, { baseFontSize, unitStrategy,
 module.exports = {
   fixedLengthValue,
   formatLength,
+  formatNumber,
   fromPx,
   isHairlineLength,
   nearestScaleValues,

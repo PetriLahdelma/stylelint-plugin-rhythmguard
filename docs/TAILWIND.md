@@ -5,7 +5,7 @@ This guide describes the production setup for Rhythmguard in Tailwind-based code
 ## Scope Model
 
 - Rhythmguard Stylelint rules enforce CSS declaration values that Stylelint can parse.
-- Rhythmguard ESLint companion rules enforce Tailwind class-string arbitrary values in templates.
+- Rhythmguard ESLint companion rules enforce Tailwind class-string arbitrary values in templates, and fix `p-[13px]` to the utility class `p-3`.
 
 ## Tailwind v4 (@theme support)
 

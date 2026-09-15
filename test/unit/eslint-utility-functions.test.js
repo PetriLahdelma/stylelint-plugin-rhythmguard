@@ -18,7 +18,7 @@ test('eslint rule detects arbitrary spacing in cn() calls', () => {
     invalid: [
       {
         code: 'const cls = cn("p-[13px] flex");',
-        output: 'const cls = cn("p-[12px] flex");',
+        output: 'const cls = cn("p-3 flex");',
         errors: [{ message: /Unexpected Tailwind arbitrary spacing/ }],
       },
     ],
@@ -31,7 +31,7 @@ test('eslint rule detects arbitrary spacing in clsx() calls', () => {
     invalid: [
       {
         code: 'const cls = clsx("p-[13px]", "m-[7px]");',
-        output: 'const cls = clsx("p-[12px]", "m-[8px]");',
+        output: 'const cls = clsx("p-3", "m-2");',
         errors: [
           { message: /Unexpected Tailwind arbitrary spacing/ },
           { message: /Unexpected Tailwind arbitrary spacing/ },
@@ -47,7 +47,7 @@ test('eslint rule detects arbitrary spacing in twMerge() calls', () => {
     invalid: [
       {
         code: 'const cls = twMerge("p-[13px]", active && "m-[7px]");',
-        output: 'const cls = twMerge("p-[12px]", active && "m-[8px]");',
+        output: 'const cls = twMerge("p-3", active && "m-2");',
         errors: [
           { message: /Unexpected Tailwind arbitrary spacing/ },
           { message: /Unexpected Tailwind arbitrary spacing/ },
@@ -63,7 +63,7 @@ test('eslint rule detects arbitrary spacing in cva() variant objects', () => {
     invalid: [
       {
         code: 'const button = cva("base", { variants: { size: { sm: "p-[5px]" } } });',
-        output: 'const button = cva("base", { variants: { size: { sm: "p-[4px]" } } });',
+        output: 'const button = cva("base", { variants: { size: { sm: "p-1" } } });',
         errors: [{ message: /Unexpected Tailwind arbitrary spacing/ }],
       },
     ],
@@ -76,7 +76,7 @@ test('eslint rule detects arbitrary spacing in JSX className with cn()', () => {
     invalid: [
       {
         code: '<div className={cn("p-[13px]")} />',
-        output: '<div className={cn("p-[12px]")} />',
+        output: '<div className={cn("p-3")} />',
         errors: [{ message: /Unexpected Tailwind arbitrary spacing/ }],
       },
     ],
@@ -89,7 +89,7 @@ test('eslint rule detects arbitrary spacing after Tailwind variants and importan
     invalid: [
       {
         code: 'const cls = "md:p-[13px] hover:!gap-[18px] lg:p-[13px]!";',
-        output: 'const cls = "md:p-[12px] hover:!gap-[16px] lg:p-[12px]!";',
+        output: 'const cls = "md:p-3 hover:!gap-4 lg:p-3!";',
         errors: [
           { message: /Unexpected Tailwind arbitrary spacing/ },
           { message: /Unexpected Tailwind arbitrary spacing/ },
@@ -109,7 +109,7 @@ test('eslint rule ignores arbitrary variants while checking their spacing utilit
     invalid: [
       {
         code: 'const cls = "has-[>button]:ml-[-0.3rem] data-[state=open]:pb-8 [&:nth-child(3)]:mt-[13px]";',
-        output: 'const cls = "has-[>button]:ml-[-0.25rem] data-[state=open]:pb-8 [&:nth-child(3)]:mt-[12px]";',
+        output: 'const cls = "has-[>button]:-ml-1 data-[state=open]:pb-8 [&:nth-child(3)]:mt-3";',
         errors: [
           { message: /Unexpected Tailwind arbitrary spacing/ },
           { message: /Unexpected Tailwind arbitrary spacing/ },

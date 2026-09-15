@@ -1,7 +1,6 @@
 'use strict';
 
-const { formatLength } = require('../../core/length');
-const { createTailwindClassAnalyzer } = require('../../core/tailwind-class-analysis');
+const { createTailwindClassAnalyzer, offScaleClassMessage } = require('../../core/tailwind-class-analysis');
 
 const RULE_NAME = 'tailwind-class-use-scale';
 
@@ -44,17 +43,8 @@ function maybeCheckNodeText(node, sourceCode, context, analyzer, allowFix) {
     : null;
 
   for (const { analysis, segment } of findings) {
-    const lower = analysis.nearest
-      ? formatLength(analysis.nearest.lower, 'px')
-      : 'n/a';
-    const upper = analysis.nearest
-      ? formatLength(analysis.nearest.upper, 'px')
-      : 'n/a';
     context.report({
-      message:
-        analysis.reason === 'negative'
-          ? `Unexpected Tailwind arbitrary spacing value "${segment.token}". Negative values are disabled for this rule.`
-          : `Unexpected Tailwind arbitrary spacing value "${segment.token}". Use scale values (nearest: ${lower} or ${upper}).`,
+      message: offScaleClassMessage(segment.token, analysis),
       node,
       fix:
         fixedText && analysis.reason !== 'negative'
@@ -85,6 +75,12 @@ module.exports = {
               ],
             },
             type: 'array',
+          },
+          spacingUnit: {
+            anyOf: [
+              { exclusiveMinimum: true, minimum: 0, type: 'number' },
+              { enum: [false] },
+            ],
           },
           units: {
             items: { type: 'string' },

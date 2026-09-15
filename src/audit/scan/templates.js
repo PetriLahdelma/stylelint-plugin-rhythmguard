@@ -6,7 +6,7 @@
  */
 const fs = require('node:fs');
 const { formatLength } = require('../../core/length');
-const { createTailwindClassAnalyzer } = require('../../core/tailwind-class-analysis');
+const { createTailwindClassAnalyzer, offScaleClassMessage } = require('../../core/tailwind-class-analysis');
 const { createTailwindMotionAnalyzer } = require('../../core/tailwind-motion-analysis');
 const { formatTime } = require('../../core/time');
 const {
@@ -43,9 +43,7 @@ function collectTailwindFindings(templateFiles, options) {
             : null,
           rawValue: analysis.rawValue,
           rule: 'rhythmguard-tailwind/tailwind-class-use-scale',
-          text: analysis.reason === 'negative'
-            ? `Unexpected Tailwind arbitrary spacing value "${segment.token}". Negative values are disabled for this rule.`
-            : `Unexpected Tailwind arbitrary spacing value "${segment.token}". Use scale values.`,
+          text: offScaleClassMessage(segment.token, analysis),
           token: segment.token,
           type: 'tailwind-arbitrary-spacing',
           utility: analysis.utility,
