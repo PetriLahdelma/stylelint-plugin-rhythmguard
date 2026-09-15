@@ -38,22 +38,27 @@ const ruleName = 'rhythmguard/prefer-token';
 const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
-  rejected: (value) =>
-    `Unexpected raw scale value "${value}". Use design tokens for scale decisions.`,
+  rejected: (value, replacement = null, origin = null) =>
+    `Unexpected raw scale value "${value}". ${replacement
+      ? `Use ${replacement}${origin ? ` (${origin})` : ''}.`
+      : 'No known token holds this value; use the nearest token or add one.'}`,
 });
 
 function applyNegativeToken(replacement, parsedLength) {
   return !replacement || parsedLength.number >= 0 ? replacement : negateReplacement(replacement);
 }
 
+/** The token for a raw length, and the text the fix writes (negated when the literal is). */
 function resolveTokenReplacement(tokenMap, raw, parsedLength, options) {
+  const found = (token) => ({ replacement: applyNegativeToken(token, parsedLength), token });
+
   if (Object.prototype.hasOwnProperty.call(tokenMap, raw)) {
-    return applyNegativeToken(tokenMap[raw], parsedLength);
+    return found(tokenMap[raw]);
   }
 
   const absoluteRaw = formatLength(Math.abs(parsedLength.number), parsedLength.unit || 'px');
   if (Object.prototype.hasOwnProperty.call(tokenMap, absoluteRaw)) {
-    return applyNegativeToken(tokenMap[absoluteRaw], parsedLength);
+    return found(tokenMap[absoluteRaw]);
   }
 
   if (options.unitStrategy === 'convert') {
@@ -61,7 +66,7 @@ function resolveTokenReplacement(tokenMap, raw, parsedLength, options) {
     if (absPx !== null) {
       const pxKey = `${absPx}px`;
       if (Object.prototype.hasOwnProperty.call(tokenMap, pxKey)) {
-        return applyNegativeToken(tokenMap[pxKey], parsedLength);
+        return found(tokenMap[pxKey]);
       }
     }
   }
@@ -92,8 +97,10 @@ const ruleFunction = (primary, secondaryOptions) => {
     withResolvedScale(options, root);
 
     const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);
+    const origins = {};
     const tokenMap = buildEffectiveTokenMap({
       options,
+      origins,
       root,
       tokenRegex,
     });
@@ -114,8 +121,10 @@ const ruleFunction = (primary, secondaryOptions) => {
       const { scaleByUnit, scalePx } = getScaleStateForProperty(prop);
       let changed = false;
 
-      const reportNode = (node, replacement = null) => {
-        reportValueNode({ decl, message: messages.rejected(node.value), node, replacement, result, ruleName });
+      const reportNode = (node, resolved = null) => {
+        const replacement = resolved ? resolved.replacement : null;
+        const origin = resolved ? origins[resolved.token] || null : null;
+        reportValueNode({ decl, message: messages.rejected(node.value, replacement, origin), node, replacement, result, ruleName });
       };
 
       const checkWordNode = (node, context) => {
@@ -181,9 +190,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           }
         }
 
-        const replacement = resolveTokenReplacement(tokenMap, node.value, parsedLength, options);
-
-        reportNode(node, replacement);
+        reportNode(node, resolveTokenReplacement(tokenMap, node.value, parsedLength, options));
         return true;
       };
 

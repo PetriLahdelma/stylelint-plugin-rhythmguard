@@ -8,6 +8,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Changed
 
+- `prefer-token` names the token it would write and where it was read from: `Unexpected raw scale value "12px". Use var(--space-3) (src/tokens.css).` The origin is the linted stylesheet, the `tokenMapFile` or the Tailwind config; an inline `tokenMap` entry is named without one, and a negative literal as `calc(-1 * var(--space-3))`. When no mapping holds the value the message says `No known token holds this value; use the nearest token or add one.` It said `Use design tokens for scale decisions.` in every case. ([#133](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/133))
+- `use-scale` and `no-offscale-transform` with `fixWith: "token"` append `var(--space-3) holds 12px.` when exactly one token qualifies, so the message names what the fix writes. ([#133](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/133))
 - `tailwind-class-use-scale` names the utility classes for the two nearest steps, with their px values, and its fix writes the utility class instead of an on-scale arbitrary value: `p-[13px]` reads `Use "p-3" (12px) or "p-4" (16px)` and becomes `p-3`; `md:-m-[13px]!` becomes `md:-m-3!`; `p-[0.8125rem]` becomes `p-3`. The class number is the snapped value divided by the new `spacingUnit` option (4px, Tailwind's `--spacing`); when it is not a quarter step the fix keeps the arbitrary form, and `spacingUnit: false` keeps it always. The audit's Tailwind findings carry the same text and `fixedToken`. ([#132](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/132))
 
 ## [3.6.0] - 2026-09-09
