@@ -97,6 +97,24 @@ Rhythmguard validates every rule's secondary options before linting. Unknown opt
 
 Every scale rule skips three kinds of value without configuration: zero, percentages (`allowPercentages`), and hairlines, meaning non-zero lengths of one CSS pixel or less (`allowHairlines`). Hairlines compensate for borders and rendering, not spacing; the reasoning and the opt-out are in the [`use-scale` docs](./rules/use-scale.md#hairlines).
 
+## A note on every finding
+
+Every rule, Stylelint and ESLint alike, accepts `note`: a sentence of up to 200 characters appended to each finding after the built-in text.
+
+```json
+{
+  "rules": {
+    "rhythmguard/use-scale": [true, { "scale": "auto", "note": "See docs/spacing.md for approved exceptions." }]
+  }
+}
+```
+
+```
+Unexpected off-scale value "13px". Use scale values (nearest: 12px or 16px). See docs/spacing.md for approved exceptions. (rhythmguard/use-scale)
+```
+
+The built-in text stays, so tooling that matches on it keeps working; the note is where a team tells a reviewer or a coding agent where its own rules live. It pairs with the [`decisions`](./AUDIT.md#decisions) section: decisions record what was decided, the note says where to read why.
+
 ## Autofix policy
 
 Only deterministic fixes are applied: nearest scale value for off-scale literals, and explicit token-map replacements. The rules never guess a token. Teams whose visuals have not been reviewed against the scale usually run at warning level with `fixToScale: false` and ratchet with [`rhythmguard audit`](./AUDIT.md).

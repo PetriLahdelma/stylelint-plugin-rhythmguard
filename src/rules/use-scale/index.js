@@ -201,7 +201,7 @@ const ruleFunction = (primary, secondaryOptions) => {
       const tokenNote = nearest ? tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit)) : '';
       reportValueNode({
         decl,
-        message: messages.rejected(value, lower, upper, [fallbackNote, tokenNote].filter(Boolean).join(' ')),
+        message: messages.rejected(value, lower, upper, [fallbackNote, tokenNote, options.note].filter(Boolean).join(' ')),
         node,
         replacement: fixedValue,
         result,

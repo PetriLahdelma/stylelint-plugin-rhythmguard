@@ -44,6 +44,7 @@ Duration and delay values snap to the nearest scale step inside string literals.
 | --- | --- | --- | --- |
 | `durationScale` | `number[]` | `[0,75,100,150,200,300,500,700,1000]` | Allowed duration and delay values in milliseconds |
 | `durationUnits` | `Array<'ms' \| 's'>` | `['ms','s']` | Time units considered |
+| `note` | `string` | `undefined` | Appended to every finding, after the built-in text. Up to 200 characters. Point agents and reviewers at your own rules: `"See docs/spacing.md for approved exceptions."` |
 
 ## Related
 

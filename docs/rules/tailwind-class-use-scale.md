@@ -68,6 +68,7 @@ Template literal chunks are reported but not fixed. Negative values are reported
 | `baseFontSize` | `number` | `16` | `rem` and `em` conversion base |
 | `allowNegative` | `boolean` | `true` | Whether negative arbitrary values are allowed |
 | `spacingUnit` | `number \| false` | `4` | Px per Tailwind spacing step (`--spacing`), used to name and write utility classes. `false` keeps the arbitrary-value fix |
+| `note` | `string` | `undefined` | Appended to every finding, after the built-in text. Up to 200 characters. Point agents and reviewers at your own rules: `"See docs/spacing.md for approved exceptions."` |
 
 ## Related
 

@@ -54,6 +54,22 @@ function isNonEmptyString(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
+const MAX_NOTE_LENGTH = 200;
+
+/** A `note` is appended to every finding, so it stays a sentence: non-empty, at most 200 characters. */
+function isNote(value) {
+  return isNonEmptyString(value) && value.trim().length <= MAX_NOTE_LENGTH;
+}
+
+function normalizeNote(value) {
+  return isNote(value) ? value.trim() : '';
+}
+
+/** The message with the configured note after it, or the message alone. */
+function withNote(message, note) {
+  return note ? `${message} ${note}` : message;
+}
+
 function isSupportedUnit(value) {
   if (!isNonEmptyString(value)) {
     return false;
@@ -399,6 +415,9 @@ const SCALE_VALIDATION_SCHEMA = Object.freeze({
     entryValidator: isMathFunctionArgumentMap,
     expectsObject: true,
   }),
+  note: Object.freeze({
+    entryValidator: isNote,
+  }),
   preset: Object.freeze({
     entryValidator: isNonEmptyString,
   }),
@@ -482,6 +501,9 @@ const PREFER_TOKEN_VALIDATION_SCHEMA = Object.freeze({
   mathFunctionArguments: Object.freeze({
     entryValidator: isMathFunctionArgumentMap,
     expectsObject: true,
+  }),
+  note: Object.freeze({
+    entryValidator: isNote,
   }),
   preset: Object.freeze({
     entryValidator: isNonEmptyString,
@@ -573,6 +595,7 @@ function buildScaleOptions(rawOptions) {
       : DEFAULT_IGNORE_KEYWORDS,
     invalidPreset: scaleSelection.invalidPreset,
     mathFunctionArguments: normalizeMathFunctionArgumentMap(options.mathFunctionArguments),
+    note: normalizeNote(options.note),
     preset: scaleSelection.selectedPreset,
     presetNames: listScalePresetNames(),
     properties: resolvePropertyPatterns(options),
@@ -618,6 +641,7 @@ function buildTokenOptions(rawOptions) {
       : DEFAULT_IGNORE_KEYWORDS,
     invalidPreset: scaleSelection.invalidPreset,
     mathFunctionArguments: normalizeMathFunctionArgumentMap(options.mathFunctionArguments),
+    note: normalizeNote(options.note),
     preset: scaleSelection.selectedPreset,
     presetNames: listScalePresetNames(),
     properties: resolvePropertyPatterns(options),
@@ -701,6 +725,10 @@ function resolvePropertyScale(prop, options) {
 }
 
 module.exports = {
+  MAX_NOTE_LENGTH,
+  isNote,
+  normalizeNote,
+  withNote,
   NO_OFFSCALE_TRANSFORM_POSSIBLE_OPTIONS,
   NO_OFFSCALE_TRANSFORM_VALIDATION_SCHEMA,
   PREFER_TOKEN_POSSIBLE_OPTIONS,

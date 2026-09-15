@@ -20,6 +20,7 @@ const {
 
 const { reportValueNode } = require('../report');
 const { validatePrimary } = require('../validate');
+const { isNote, normalizeNote, withNote } = require('../../core/options');
 
 const ruleName = 'rhythmguard/use-motion-scale';
 const DURATION_PROPERTIES = new Set([
@@ -39,12 +40,12 @@ const EASING_PROPERTIES = new Set([
 const EASING_FUNCTIONS = new Set(['cubic-bezier', 'linear', 'steps']);
 
 const messages = stylelint.utils.ruleMessages(ruleName, {
-  invalidDuration: (value) =>
-    `Unexpected negative motion duration "${value}". Use non-negative duration values.`,
-  rejectedDuration: (value, lower, upper) =>
-    `Unexpected motion duration "${value}". Use duration scale values (nearest: ${lower} or ${upper}).`,
-  rejectedEasing: (value) =>
-    `Unexpected raw motion easing "${value}". Use motion tokens for easing decisions.`,
+  invalidDuration: (value, note = '') =>
+    withNote(`Unexpected negative motion duration "${value}". Use non-negative duration values.`, note),
+  rejectedDuration: (value, lower, upper, note = '') =>
+    withNote(`Unexpected motion duration "${value}". Use duration scale values (nearest: ${lower} or ${upper}).`, note),
+  rejectedEasing: (value, note = '') =>
+    withNote(`Unexpected raw motion easing "${value}". Use motion tokens for easing decisions.`, note),
 });
 
 function isPlainObject(value) {
@@ -59,6 +60,7 @@ function buildOptions(rawOptions) {
     durationUnits: normalizeDurationUnits(options.durationUnits),
     easingTokenMap: isPlainObject(options.easingTokenMap) ? options.easingTokenMap : {},
     fixToScale: options.fixToScale !== false,
+    note: normalizeNote(options.note),
   };
 }
 
@@ -78,6 +80,7 @@ function validateSecondaryOptions(result, secondaryOptions) {
           typeof entry === 'string' && entry.trim().length > 0,
         )],
       fixToScale: [true, false],
+      note: [isNote],
     },
   });
 }
@@ -124,8 +127,9 @@ const ruleFunction = (primary, secondaryOptions) => {
               node.value,
               formatTime(nearest.lower, 'ms'),
               formatTime(nearest.upper, 'ms'),
+              options.note,
             )
-            : messages.invalidDuration(node.value),
+            : messages.invalidDuration(node.value, options.note),
           node,
           replacement: fixedValue,
           result,
@@ -146,7 +150,7 @@ const ruleFunction = (primary, secondaryOptions) => {
             }
             : null,
           length: source.length,
-          message: messages.rejectedEasing(source),
+          message: messages.rejectedEasing(source, options.note),
           node,
           result,
           ruleName,
