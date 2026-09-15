@@ -30,14 +30,14 @@ const { validatePrimary, validateNoOffscaleTransformSecondaryOptions } = require
 
 const { reportInvalidPreset, reportProblem, reportValueNode } = require('../report');
 const { decisionFor, loadRcDecisions } = require('../../core/decisions');
-const { replacementFor, tokenIndexFromDefinitions } = require('../../core/token-index');
+const { replacementFor, tokenHoldsNote, tokenIndexFromDefinitions } = require('../../core/token-index');
 
 const ruleName = 'rhythmguard/no-offscale-transform';
 const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
-  rejected: (value, lower, upper) =>
-    `Unexpected transform translation value "${value}". Use scale values (nearest: ${lower} or ${upper}).`,
+  rejected: (value, lower, upper, note = '') =>
+    `Unexpected transform translation value "${value}". Use scale values (nearest: ${lower} or ${upper}).${note ? ` ${note}` : ''}`,
 });
 
 const ruleFunction = (primary, secondaryOptions) => {
@@ -93,6 +93,7 @@ const ruleFunction = (primary, secondaryOptions) => {
             node.value,
             formatLength(nearest.lower, nearestUnit),
             formatLength(nearest.upper, nearestUnit),
+            tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit)),
           ),
           node,
           replacement: fixedValue,

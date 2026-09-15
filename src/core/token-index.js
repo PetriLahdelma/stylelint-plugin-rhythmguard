@@ -64,9 +64,19 @@ function replacementFor(parsedLength, nearestPx, options) {
   return fixedLengthValue(parsedLength, nearestPx, options);
 }
 
+/**
+ * The sentence a length rule appends when its fix writes a token: which token
+ * holds the snapped value. Empty when the replacement is a literal.
+ */
+function tokenHoldsNote(replacement, formattedNearest) {
+  const match = typeof replacement === 'string' ? replacement.match(/var\(--[^)]+\)/) : null;
+  return match ? `${match[0]} holds ${formattedNearest}.` : '';
+}
+
 module.exports = {
   negateReplacement,
   replacementFor,
+  tokenHoldsNote,
   tokenForLength,
   tokenIndexFromDefinitions,
 };

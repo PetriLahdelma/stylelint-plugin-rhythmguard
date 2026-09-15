@@ -4,10 +4,11 @@ const path = require('node:path');
 
 const pluginPath = path.join(__dirname, '..', '..', 'src', 'index.js');
 
-async function lintCss({ code, customSyntax, fix = false, rules }) {
+async function lintCss({ code, codeFilename, customSyntax, fix = false, rules }) {
   const { default: stylelint } = await import('stylelint');
   const lintResult = await stylelint.lint({
     code,
+    ...(codeFilename ? { codeFilename } : {}),
     config: {
       ...(customSyntax ? { customSyntax } : {}),
       plugins: [pluginPath],

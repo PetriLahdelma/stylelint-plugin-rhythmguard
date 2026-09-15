@@ -40,7 +40,19 @@ function normalizeTokenReference(tokenReference) {
   return `var(--${trimmed})`;
 }
 
-function addLengthValueMapping(map, rawLength, tokenReference, baseFontSize) {
+/**
+ * Where a token came from, for messages: the path relative to the working
+ * directory when it is inside it, the absolute path otherwise.
+ */
+function displayOrigin(file) {
+  if (!file) {
+    return null;
+  }
+  const relative = path.relative(process.cwd(), file);
+  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? relative : file;
+}
+
+function addLengthValueMapping(map, rawLength, tokenReference, baseFontSize, origins = null, origin = null) {
   if (typeof rawLength !== 'string') {
     return;
   }
@@ -53,6 +65,10 @@ function addLengthValueMapping(map, rawLength, tokenReference, baseFontSize) {
   const token = normalizeTokenReference(tokenReference);
   if (!token) {
     return;
+  }
+
+  if (origins && origin && !origins[token]) {
+    origins[token] = origin;
   }
 
   const absolute = Math.abs(parsed.number);
@@ -81,7 +97,7 @@ function mergeExplicitTokenMap(target, source) {
   return target;
 }
 
-function walkTokenGroup(map, group, prefix, baseFontSize) {
+function walkTokenGroup(map, group, prefix, baseFontSize, origins, origin) {
   for (const [key, value] of Object.entries(group)) {
     const tokenName = `${prefix}-${key}`;
 
@@ -91,24 +107,25 @@ function walkTokenGroup(map, group, prefix, baseFontSize) {
 
     // Leaf node with $value (DTCG)
     if (typeof value.$value === 'string') {
-      addLengthValueMapping(map, value.$value, tokenName, baseFontSize);
+      addLengthValueMapping(map, value.$value, tokenName, baseFontSize, origins, origin);
       continue;
     }
 
     // Leaf node with value (Style Dictionary)
     if (typeof value.value === 'string') {
-      addLengthValueMapping(map, value.value, tokenName, baseFontSize);
+      addLengthValueMapping(map, value.value, tokenName, baseFontSize, origins, origin);
       continue;
     }
 
-    // Nested group — recurse deeper
-    walkTokenGroup(map, value, tokenName, baseFontSize);
+    // Nested group: recurse deeper
+    walkTokenGroup(map, value, tokenName, baseFontSize, origins, origin);
   }
 }
 
 function mergeTokenMapFromFile({
   baseFontSize,
   currentMap,
+  origins = null,
   tokenMapFile,
 }) {
   if (!tokenMapFile) {
@@ -134,6 +151,7 @@ function mergeTokenMapFromFile({
   const nextMap = {
     ...currentMap,
   };
+  const origin = displayOrigin(resolvedPath);
 
   for (const [entryKey, entryValue] of Object.entries(parsed)) {
     if (typeof entryValue === 'string') {
@@ -142,36 +160,39 @@ function mergeTokenMapFromFile({
 
       if (keyAsLength) {
         nextMap[entryKey] = entryValue;
+        if (origins && !origins[entryValue]) {
+          origins[entryValue] = origin;
+        }
         continue;
       }
 
       if (valueAsLength) {
-        addLengthValueMapping(nextMap, entryValue, entryKey, baseFontSize);
+        addLengthValueMapping(nextMap, entryValue, entryKey, baseFontSize, origins, origin);
       }
 
       continue;
     }
 
     if (typeof entryValue === 'number') {
-      addLengthValueMapping(nextMap, `${entryValue}px`, entryKey, baseFontSize);
+      addLengthValueMapping(nextMap, `${entryValue}px`, entryKey, baseFontSize, origins, origin);
       continue;
     }
 
     if (isPlainObject(entryValue)) {
       // Style Dictionary format: { value: "16px" }
       if (typeof entryValue.value === 'string') {
-        addLengthValueMapping(nextMap, entryValue.value, entryKey, baseFontSize);
+        addLengthValueMapping(nextMap, entryValue.value, entryKey, baseFontSize, origins, origin);
         continue;
       }
 
       // W3C DTCG format: { $value: "16px", $type: "dimension" }
       if (typeof entryValue.$value === 'string') {
-        addLengthValueMapping(nextMap, entryValue.$value, entryKey, baseFontSize);
+        addLengthValueMapping(nextMap, entryValue.$value, entryKey, baseFontSize, origins, origin);
         continue;
       }
 
-      // Nested group — recurse (e.g. { spacing: { 4: { $value: "16px" } } })
-      walkTokenGroup(nextMap, entryValue, entryKey, baseFontSize);
+      // Nested group: recurse (e.g. { spacing: { 4: { $value: "16px" } } })
+      walkTokenGroup(nextMap, entryValue, entryKey, baseFontSize, origins, origin);
     }
   }
 
@@ -181,12 +202,14 @@ function mergeTokenMapFromFile({
 function mergeTokenMapFromCssCustomProperties({
   baseFontSize,
   currentMap,
+  origins = null,
   root,
   tokenRegex,
 }) {
   const nextMap = {
     ...currentMap,
   };
+  const origin = displayOrigin(root && root.source && root.source.input ? root.source.input.file : null);
 
   root.walkDecls((decl) => {
     const prop = decl.prop.toLowerCase();
@@ -203,7 +226,7 @@ function mergeTokenMapFromCssCustomProperties({
       return;
     }
 
-    addLengthValueMapping(nextMap, decl.value, `var(${decl.prop})`, baseFontSize);
+    addLengthValueMapping(nextMap, decl.value, `var(${decl.prop})`, baseFontSize, origins, origin);
   });
 
   return nextMap;
@@ -321,6 +344,7 @@ function loadTailwindSpacing(resolvedPath) {
 
 function mergeTokenMapFromTailwindSpacing({
   currentMap,
+  origins = null,
   tailwindConfigPath,
 }) {
   if (!tailwindConfigPath) {
@@ -354,13 +378,23 @@ function mergeTokenMapFromTailwindSpacing({
     const absolute = Math.abs(parsed.number);
     const normalizedRaw = formatLength(absolute, parsed.unit || 'px');
     nextMap[normalizedRaw] = `theme(spacing.${key})`;
+    if (origins && !origins[nextMap[normalizedRaw]]) {
+      origins[nextMap[normalizedRaw]] = displayOrigin(resolvedPath);
+    }
   }
 
   return nextMap;
 }
 
+/**
+ * The raw-length to token-reference map a rule fixes with. Pass `origins` to
+ * also learn where each token reference came from (the token map file, the
+ * stylesheet, the Tailwind config), keyed by the reference; an explicit
+ * `tokenMap` entry has no origin.
+ */
 function buildEffectiveTokenMap({
   options,
+  origins = null,
   root,
   tokenRegex,
 }) {
@@ -370,6 +404,7 @@ function buildEffectiveTokenMap({
     tokenMap = mergeTokenMapFromFile({
       baseFontSize: options.baseFontSize,
       currentMap: tokenMap,
+      origins,
       tokenMapFile: options.tokenMapFile,
     });
   }
@@ -378,6 +413,7 @@ function buildEffectiveTokenMap({
     tokenMap = mergeTokenMapFromCssCustomProperties({
       baseFontSize: options.baseFontSize,
       currentMap: tokenMap,
+      origins,
       root,
       tokenRegex,
     });
@@ -386,6 +422,7 @@ function buildEffectiveTokenMap({
   if (options.tokenMapFromTailwindSpacing && options.tailwindConfigPath) {
     tokenMap = mergeTokenMapFromTailwindSpacing({
       currentMap: tokenMap,
+      origins,
       tailwindConfigPath: options.tailwindConfigPath,
     });
   }

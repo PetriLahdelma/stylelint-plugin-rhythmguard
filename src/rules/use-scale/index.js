@@ -32,7 +32,7 @@ const {
 
 const { createTokenRegex, reportInvalidPreset, reportProblem, reportValueNode } = require('../report');
 const { decisionFor, loadRcDecisions } = require('../../core/decisions');
-const { replacementFor, tokenIndexFromDefinitions } = require('../../core/token-index');
+const { replacementFor, tokenHoldsNote, tokenIndexFromDefinitions } = require('../../core/token-index');
 const { validatePrimary, validateUseScaleSecondaryOptions } = require('../validate');
 
 const ruleName = 'rhythmguard/use-scale';
@@ -198,9 +198,10 @@ const ruleFunction = (primary, secondaryOptions) => {
     const report = (value, decl, node, nearest, fixedValue = null, nearestUnit = 'px') => {
       const lower = nearest ? formatLength(nearest.lower, nearestUnit) : 'n/a';
       const upper = nearest ? formatLength(nearest.upper, nearestUnit) : 'n/a';
+      const tokenNote = nearest ? tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit)) : '';
       reportValueNode({
         decl,
-        message: messages.rejected(value, lower, upper, fallbackNote),
+        message: messages.rejected(value, lower, upper, [fallbackNote, tokenNote].filter(Boolean).join(' ')),
         node,
         replacement: fixedValue,
         result,

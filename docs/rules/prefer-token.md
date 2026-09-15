@@ -33,10 +33,16 @@ Use it once your token system is stable. Until then, the `migration` config runs
 
 Percentages are never reported: `translate(-50%, -50%)` and `inset: 100%` are relative to a box, not spacing decisions.
 
-Message for the failing case:
+Message for the failing case, when a mapping holds the value:
 
 ```
-Unexpected raw scale value "12px". Use design tokens for scale decisions. (rhythmguard/prefer-token)
+Unexpected raw scale value "12px". Use var(--space-3) (src/tokens.css). (rhythmguard/prefer-token)
+```
+
+The message names the token the fix would write and where that token was read from: the linted stylesheet, the `tokenMapFile`, or the Tailwind config. An inline `tokenMap` entry has no file and is named on its own. A negative literal is named the way it is written: `Use calc(-1 * var(--space-3)).` When no mapping holds the value:
+
+```
+Unexpected raw scale value "13px". No known token holds this value; use the nearest token or add one. (rhythmguard/prefer-token)
 ```
 
 ## Autofix
