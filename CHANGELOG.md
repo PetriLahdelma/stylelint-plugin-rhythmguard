@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.7.0] - 2026-09-15
+
 ### Added
 
 - Every rule accepts `note`, a sentence of up to 200 characters appended to each finding after the built-in text: `... (nearest: 12px or 16px). See docs/spacing.md for approved exceptions.` The built-in text is unchanged, so tooling that matches on it keeps working. Stylelint and ESLint rules alike. ([#134](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/134))
