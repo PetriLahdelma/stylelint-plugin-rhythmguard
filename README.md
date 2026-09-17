@@ -21,7 +21,13 @@ What it is not: it does not check colors or hex values, and the Stylelint rules 
 npx stylelint-plugin-rhythmguard
 ```
 
-No install, no config. It detects your stack and token files, infers your spacing scale from your own tokens, audits the current directory, and prints the exact `.stylelintrc.json` (and ESLint snippet for Tailwind) to paste. Then:
+No install, no config. It detects your stack and token files, infers your spacing scale from your own tokens, audits the current directory, and prints the exact `.stylelintrc.json` (and ESLint snippet for Tailwind) to paste. This is the whole run on Bootstrap's `v6-dev` branch, unedited:
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/quickstart.gif?v=1" width="100%" alt="Terminal recording: npx stylelint-plugin-rhythmguard on Bootstrap v6-dev detects the stack, infers the 13-step spacing scale from scss/_config.scss, reports 20 off-scale values in CSS and prints a .stylelintrc.json to paste" />
+</p>
+
+Then:
 
 ```bash
 npm install --save-dev stylelint stylelint-plugin-rhythmguard

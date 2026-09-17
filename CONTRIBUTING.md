@@ -116,3 +116,7 @@ npm run bench:perf:fix
 ```
 
 Compares runtime against `stylelint-scales` on a deterministic corpus. Method in [`docs/BENCHMARKING.md`](./docs/BENCHMARKING.md).
+
+## The README recording
+
+`assets/quickstart.gif` is recorded with [vhs](https://github.com/charmbracelet/vhs) from `assets/quickstart.tape` on a shallow clone of Bootstrap `v6-dev` at `/tmp/bootstrap`. Re-record when the quickstart output changes: `git clone --depth 1 --branch v6-dev https://github.com/twbs/bootstrap.git /tmp/bootstrap && vhs assets/quickstart.tape`, then bump the `?v=` cache key on the image in `README.md`.
