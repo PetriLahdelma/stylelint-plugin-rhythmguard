@@ -8,6 +8,7 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Added
 
+- [`PetriLahdelma/rhythmguard-action`](https://github.com/PetriLahdelma/rhythmguard-action), a GitHub Action that runs the audit, annotates the diff, posts the report as one pull-request comment updated in place, and fails on new drift against a committed baseline. Linked from the README and the CI adoption recipe.
 - `rhythmguard`, the command as its own package: `npx rhythmguard` resolves a package of that name, and none existed, so the first command in the README failed in a project that had installed nothing (`npx stylelint-plugin-rhythmguard` worked, and the README says that until the package is published). `packages/rhythmguard` is one dependency and one line that runs the CLI, now exported as `stylelint-plugin-rhythmguard/cli` with a `main()`.
 - `eslint-plugin-rhythmguard`, the ESLint companion under its own package name, from `packages/eslint-plugin-rhythmguard`. It re-exports `stylelint-plugin-rhythmguard/eslint`, so the rules, options and messages are one implementation; it exists so a search for an ESLint Tailwind plugin finds it. Published by the release run once the package has a trusted publisher.
 
