@@ -14,8 +14,8 @@
     ]
   },
   "summary": {
-    "total": 37,
-    "drift": 34,
+    "total": 55,
+    "drift": 52,
     "falsePositives": 3
   },
   "findings": [
@@ -50,9 +50,27 @@
     "docs/assets/scss/examples/_grid.scss:29:10px:drift",
     "docs/assets/scss/examples/_grid.scss:7:10px:drift",
     "docs/assets/scss/examples/_orbit.scss:4:4rem:drift",
+    "scss/components/_accordion-menu.scss:135:$accordionmenu-submenu-toggle-width:drift",
+    "scss/components/_accordion-menu.scss:61:-1 * ($accordionmenu-arrow-size * 0.5):drift",
+    "scss/components/_badge.scss:41:$badge-padding:drift",
+    "scss/components/_drilldown.scss:53:-1 * $drilldown-arrow-size:drift",
+    "scss/components/_dropdown-menu.scss:110:-1 * ($dropdownmenu-arrow-size * 0.5):drift",
+    "scss/components/_dropdown-menu.scss:216:-1 * $dropdownmenu-arrow-size:drift",
+    "scss/components/_orbit.scss:132:$orbit-bullet-margin-top:drift",
+    "scss/components/_orbit.scss:133:$orbit-bullet-margin-bottom:drift",
+    "scss/components/_orbit.scss:140:$orbit-bullet-margin:drift",
     "scss/components/_slider.scss:24:1.25rem:drift",
     "scss/components/_slider.scss:25:2.25rem:drift",
     "scss/components/_slider.scss:88:1.25rem:drift",
+    "scss/forms/_range.scss:48:$margin:drift",
+    "scss/forms/_range.scss:49:$margin:drift",
+    "scss/forms/_range.scss:79:-$margin:drift",
+    "scss/forms/_range.scss:99:-$margin:drift",
+    "scss/typography/_base.scss:393:$list-side-margin:drift",
+    "scss/typography/_base.scss:399:$list-side-margin:drift",
+    "scss/typography/_base.scss:405:$list-nested-side-margin:drift",
+    "scss/typography/_base.scss:415:$defnlist-term-margin-bottom:drift",
+    "scss/typography/_helpers.scss:135:$subheader-margin-top:drift",
     "scss/vendor/normalize.scss:186:0.35em:noise:non-authored",
     "scss/vendor/normalize.scss:186:0.625em:noise:non-authored",
     "scss/vendor/normalize.scss:31:0.67em:noise:non-authored"

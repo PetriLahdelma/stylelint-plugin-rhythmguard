@@ -14,8 +14,8 @@
     ]
   },
   "summary": {
-    "total": 222,
-    "drift": 222,
+    "total": 224,
+    "drift": 224,
     "falsePositives": 0
   },
   "findings": [
@@ -153,6 +153,8 @@
     "packages/theme-chalk/src/message-box.scss:175:6px:drift",
     "packages/theme-chalk/src/message-box.scss:212:-20px:drift",
     "packages/theme-chalk/src/notification.scss:56:6px:drift",
+    "packages/theme-chalk/src/option-group.scss:21:$gap:drift",
+    "packages/theme-chalk/src/option-group.scss:31:$gap:drift",
     "packages/theme-chalk/src/option.scss:31:20px:drift",
     "packages/theme-chalk/src/page-header.scss:21:40px:drift",
     "packages/theme-chalk/src/page-header.scss:36:10px:drift",

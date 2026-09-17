@@ -14,8 +14,8 @@
     ]
   },
   "summary": {
-    "total": 126,
-    "drift": 126,
+    "total": 129,
+    "drift": 129,
     "falsePositives": 0
   },
   "findings": [
@@ -89,6 +89,7 @@
     "packages/excalidraw/components/SearchMenu.scss:73:2px:drift",
     "packages/excalidraw/components/ShareableLinkDialog.scss:41:0.125rem:drift",
     "packages/excalidraw/components/ShareableLinkDialog.scss:42:0.125rem:drift",
+    "packages/excalidraw/components/Sidebar/Sidebar.scss:158:$padding:drift",
     "packages/excalidraw/components/Stats/Stats.scss:16:0.83em:drift",
     "packages/excalidraw/components/Stats/Stats.scss:17:0.83em:drift",
     "packages/excalidraw/components/Stats/Stats.scss:30:0.3125rem:drift",
@@ -115,7 +116,9 @@
     "packages/excalidraw/components/TTDDialog/TTDDialog.scss:95:2.5rem:drift",
     "packages/excalidraw/components/TTDDialog/TTDDialog.scss:9:1.25rem:drift",
     "packages/excalidraw/components/TextField.scss:124:2.5rem:drift",
+    "packages/excalidraw/components/Toast.scss:24:$closeButtonSize + ($closeButtonPadding):drift",
     "packages/excalidraw/components/Toast.scss:29:0.35rem:drift",
+    "packages/excalidraw/components/Toast.scss:47:$closeButtonPadding:drift",
     "packages/excalidraw/components/ToolIcon.scss:75:0.8em:drift",
     "packages/excalidraw/components/ToolIcon.scss:79:0.6em:drift",
     "packages/excalidraw/components/Toolbar.scss:50:0.375rem:drift",

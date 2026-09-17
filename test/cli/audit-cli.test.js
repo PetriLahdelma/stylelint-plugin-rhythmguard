@@ -772,7 +772,8 @@ test('audit CLI scans SCSS files through postcss-scss and reports them separatel
   assert.equal(report.scanned.scssFiles, 2);
   assert.equal(report.contracts.scale.source, 'scanned-css', 'tokens declared in scss feed the scale');
   const offScale = report.findings.css.filter((finding) => finding.type === 'off-scale');
-  assert.deepEqual(offScale.map((finding) => finding.value).sort(), ['13px', '7px']);
+  // `padding: $gap` is 13px behind a variable and is reported as the expression it was written as.
+  assert.deepEqual(offScale.map((finding) => finding.value).sort(), ['$gap', '13px', '7px']);
   assert.ok(offScale.every((finding) => finding.file.endsWith('card.scss')));
   assert.equal(report.scanned.scssSkipped, 0);
 

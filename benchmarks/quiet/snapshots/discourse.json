@@ -41,8 +41,8 @@
     ]
   },
   "summary": {
-    "total": 574,
-    "drift": 569,
+    "total": 575,
+    "drift": 570,
     "falsePositives": 5
   },
   "findings": [
@@ -530,6 +530,7 @@
     "app/assets/stylesheets/common/float-kit/d-default-toast.scss:88:15px:drift",
     "app/assets/stylesheets/common/float-kit/d-toasts.scss:15:5px:drift",
     "app/assets/stylesheets/common/form-kit/_char-counter.scss:3:0.15em:drift",
+    "app/assets/stylesheets/common/foundation/mixins.scss:123:$hpad:drift",
     "app/assets/stylesheets/common/foundation/mixins.scss:249:0.2em:drift",
     "app/assets/stylesheets/common/foundation/mixins.scss:249:0.34em:drift",
     "app/assets/stylesheets/common/foundation/mixins.scss:306:0.21em:drift",

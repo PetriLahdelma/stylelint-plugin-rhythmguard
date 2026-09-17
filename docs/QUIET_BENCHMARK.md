@@ -18,40 +18,40 @@ Findings classified as `drift` are, by construction, the values the tool would a
 
 | Repo | Commit | CSS files | Template files | Scored findings | Drift | Noise | Allowance | FP rate | Token opportunities | Scale source |
 | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
-| [adminlte](https://github.com/ColorlibHQ/AdminLTE.git) | `12b4b06` | 46 | 0 | 126 | 126 | 0 | 0 | 0% | 191 | fallback (no spacing tokens found) |
-| [angular-material](https://github.com/angular/components.git) | `3d30bf1` | 280 | 681 | 30 | 30 | 0 | 0 | 0% | 146 | fallback (no spacing tokens found) |
+| [adminlte](https://github.com/ColorlibHQ/AdminLTE.git) | `12b4b06` | 46 | 0 | 128 | 128 | 0 | 0 | 0% | 191 | fallback (no spacing tokens found) |
+| [angular-material](https://github.com/angular/components.git) | `3d30bf1` | 280 | 681 | 43 | 43 | 0 | 0 | 0% | 146 | fallback (no spacing tokens found) |
 | [bootstrap](https://github.com/twbs/bootstrap.git) | `12cb8b9` | 122 | 3 | 59 | 53 | 6 | 0 | 10% | 126 | scanned-css (7 tokens) |
 | [bootstrap-v6](https://github.com/twbs/bootstrap.git) | `5726523` | 144 | 3 | 19 | 19 | 0 | 0 | 0% | 175 | scanned-css (15 tokens) |
 | [bulma](https://github.com/jgthms/bulma.git) | `741da22` | 75 | 0 | 37 | 37 | 0 | 0 | 0% | 110 | scanned-css (7 tokens) |
 | [calcom](https://github.com/calcom/cal.com.git) | `e91bb0c` | 4 | 203 | 40 | 40 | 0 | 0 | 0% | 61 | fallback (no spacing tokens found) |
 | [carbon-styles](https://github.com/carbon-design-system/carbon.git) | `4cc7900` | 284 | 73 | 272 | 272 | 0 | 0 | 0% | 411 | fallback (no spacing tokens found) |
-| [cloudscape-components](https://github.com/cloudscape-design/components.git) | `0c1c9fd` | 320 | 2090 | 27 | 27 | 0 | 0 | 0% | 33 | fallback (no spacing tokens found) |
+| [cloudscape-components](https://github.com/cloudscape-design/components.git) | `0c1c9fd` | 320 | 2090 | 46 | 46 | 0 | 0 | 0% | 33 | fallback (no spacing tokens found) |
 | [coreui](https://github.com/coreui/coreui.git) | `be40d3f` | 193 | 3 | 11 | 5 | 6 | 0 | 55% | 40 | scanned-css (7 tokens) |
 | [daisyui](https://github.com/saadeghi/daisyui.git) | `1435c65` | 110 | 220 | 37 | 37 | 0 | 0 | 0% | 124 | fallback (no spacing tokens found) |
 | [directus-app](https://github.com/directus/directus.git) | `3df2ba9` | 29 | 0 | 63 | 63 | 0 | 0 | 0% | 80 | fallback (no spacing tokens found) |
-| [discourse](https://github.com/discourse/discourse.git) | `c7b7a0b` | 374 | 0 | 574 | 569 | 5 | 0 | 1% | 2702 | scanned-css (16 tokens) |
+| [discourse](https://github.com/discourse/discourse.git) | `c7b7a0b` | 374 | 0 | 575 | 570 | 5 | 0 | 1% | 2702 | scanned-css (16 tokens) |
 | [docusaurus-theme-classic](https://github.com/facebook/docusaurus.git) | `a3e5eba` | 76 | 224 | 33 | 33 | 0 | 0 | 0% | 56 | fallback (no spacing tokens found) |
-| [element-plus](https://github.com/element-plus/element-plus.git) | `122a05f` | 146 | 0 | 222 | 222 | 0 | 0 | 0% | 318 | fallback (no spacing tokens found) |
-| [excalidraw](https://github.com/excalidraw/excalidraw.git) | `214cd6e` | 74 | 219 | 126 | 126 | 0 | 0 | 0% | 424 | fallback (no spacing tokens found) |
+| [element-plus](https://github.com/element-plus/element-plus.git) | `122a05f` | 146 | 0 | 224 | 224 | 0 | 0 | 0% | 318 | fallback (no spacing tokens found) |
+| [excalidraw](https://github.com/excalidraw/excalidraw.git) | `214cd6e` | 74 | 219 | 129 | 129 | 0 | 0 | 0% | 424 | fallback (no spacing tokens found) |
 | [forem](https://github.com/forem/forem.git) | `e8a0729` | 142 | 0 | 590 | 590 | 0 | 0 | 0% | 981 | fallback (no spacing tokens found) |
-| [foundation-sites](https://github.com/foundation/foundation-sites.git) | `337be7a` | 119 | 0 | 37 | 34 | 3 | 0 | 8% | 93 | fallback (no spacing tokens found) |
-| [fundamental-styles](https://github.com/SAP/fundamental-styles.git) | `e31a128` | 343 | 0 | 137 | 137 | 0 | 0 | 0% | 602 | fallback (no spacing tokens found) |
+| [foundation-sites](https://github.com/foundation/foundation-sites.git) | `337be7a` | 119 | 0 | 55 | 52 | 3 | 0 | 5% | 93 | fallback (no spacing tokens found) |
+| [fundamental-styles](https://github.com/SAP/fundamental-styles.git) | `e31a128` | 343 | 0 | 176 | 176 | 0 | 0 | 0% | 602 | fallback (no spacing tokens found) |
 | [ghost-admin](https://github.com/TryGhost/Ghost.git) | `26746d3` | 119 | 202 | 745 | 745 | 0 | 0 | 0% | 1280 | fallback (no spacing tokens found) |
 | [gitlab-ui](https://gitlab.com/gitlab-org/gitlab-ui.git) | `8660f9f` | 93 | 373 | 3 | 3 | 0 | 0 | 0% | 4 | fallback (no spacing tokens found) |
-| [govuk-frontend](https://github.com/alphagov/govuk-frontend.git) | `356d461` | 311 | 167 | 21 | 21 | 0 | 0 | 0% | 23 | scanned-css (26 tokens) |
-| [grafana](https://github.com/grafana/grafana.git) | `c6fad86` | 6 | 0 | 57 | 57 | 0 | 0 | 0% | 77 | scanned-css (13 tokens) |
+| [govuk-frontend](https://github.com/alphagov/govuk-frontend.git) | `356d461` | 311 | 167 | 24 | 24 | 0 | 0 | 0% | 23 | scanned-css (26 tokens) |
+| [grafana](https://github.com/grafana/grafana.git) | `c6fad86` | 6 | 0 | 77 | 77 | 0 | 0 | 0% | 77 | scanned-css (13 tokens) |
 | [gutenberg-components](https://github.com/WordPress/gutenberg.git) | `ec62b33` | 79 | 845 | 35 | 35 | 0 | 0 | 0% | 51 | fallback (no spacing tokens found) |
-| [hashicorp-design-system](https://github.com/hashicorp/design-system.git) | `83cac84` | 91 | 0 | 109 | 109 | 0 | 0 | 0% | 319 | fallback (no spacing tokens found) |
+| [hashicorp-design-system](https://github.com/hashicorp/design-system.git) | `83cac84` | 91 | 0 | 114 | 114 | 0 | 0 | 0% | 319 | fallback (no spacing tokens found) |
 | [ionic-core](https://github.com/ionic-team/ionic-framework.git) | `5874331` | 367 | 667 | 8 | 8 | 0 | 0 | 0% | 18 | fallback (no spacing tokens found) |
 | [liveblocks-react-ui](https://github.com/liveblocks/liveblocks.git) | `98332db` | 6 | 184 | 9 | 9 | 0 | 0 | 0% | 29 | fallback (no spacing tokens found) |
 | [mantine](https://github.com/mantinedev/mantine.git) | `3862b09` | 102 | 849 | 36 | 36 | 0 | 0 | 0% | 36 | scanned-css (5 tokens) |
-| [mastodon](https://github.com/mastodon/mastodon.git) | `0a32b4a` | 36 | 0 | 564 | 564 | 0 | 0 | 0% | 1255 | scanned-css (13 tokens) |
+| [mastodon](https://github.com/mastodon/mastodon.git) | `0a32b4a` | 36 | 0 | 568 | 568 | 0 | 0 | 0% | 1255 | scanned-css (13 tokens) |
 | [materialize](https://github.com/materializecss/materialize.git) | `c9d6914` | 15 | 0 | 9 | 9 | 0 | 0 | 0% | 14 | scanned-css (7 tokens) |
 | [mattermost-webapp](https://github.com/mattermost/mattermost.git) | `502cf7e` | 103 | 0 | 1058 | 1058 | 0 | 0 | 0% | 1658 | fallback (no spacing tokens found) |
 | [metabase](https://github.com/metabase/metabase.git) | `e621647` | 98 | 379 | 55 | 55 | 0 | 0 | 0% | 128 | fallback (no spacing tokens found) |
 | [mittwald-flow](https://github.com/mittwald/flow.git) | `17efdf9` | 130 | 1423 | 2 | 2 | 0 | 0 | 0% | 2 | fallback (no spacing tokens found) |
 | [mozilla-protocol](https://github.com/mozilla/protocol.git) | `6bcf867` | 106 | 0 | 18 | 18 | 0 | 0 | 0% | 34 | fallback (no spacing tokens found) |
-| [n8n-design-system](https://github.com/n8n-io/n8n.git) | `7cb77fb` | 77 | 654 | 143 | 143 | 0 | 0 | 0% | 216 | scanned-css (14 tokens) |
+| [n8n-design-system](https://github.com/n8n-io/n8n.git) | `7cb77fb` | 77 | 654 | 147 | 147 | 0 | 0 | 0% | 216 | scanned-css (14 tokens) |
 | [nhsuk-frontend](https://github.com/nhsuk/nhsuk-frontend.git) | `10caad9` | 146 | 235 | 28 | 28 | 0 | 0 | 0% | 38 | scanned-css (30 tokens) |
 | [open-props](https://github.com/argyleink/open-props.git) | `530682d` | 79 | 23 | 0 | 0 | 0 | 0 | 0% | 0 | fallback (no spacing tokens found) |
 | [patternfly](https://github.com/patternfly/patternfly.git) | `b62f051` | 213 | 0 | 14 | 14 | 0 | 0 | 0% | 23 | scanned-css (51 tokens) |
@@ -70,11 +70,11 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [tabler](https://github.com/tabler/tabler.git) | `ac001f8` | 203 | 3 | 19 | 12 | 7 | 0 | 37% | 82 | scanned-css (29 tokens) |
 | [tachyons](https://github.com/tachyons-css/tachyons.git) | `2cb90e9` | 60 | 0 | 5 | 5 | 0 | 0 | 0% | 5 | scanned-css (8 tokens) |
 | [ui5-webcomponents](https://github.com/SAP/ui5-webcomponents.git) | `9856f4f` | 522 | 0 | 75 | 75 | 0 | 0 | 0% | 239 | fallback (no spacing tokens found) |
-| [uswds](https://github.com/uswds/uswds.git) | `eed8a5e` | 682 | 205 | 35 | 26 | 9 | 0 | 26% | 46 | scanned-css (9 tokens) |
+| [uswds](https://github.com/uswds/uswds.git) | `eed8a5e` | 682 | 205 | 39 | 30 | 9 | 0 | 23% | 46 | scanned-css (9 tokens) |
 | [utrecht](https://github.com/nl-design-system/utrecht.git) | `ecedc4b` | 162 | 1578 | 47 | 47 | 0 | 0 | 0% | 109 | fallback (no spacing tokens found) |
 | [vitepress-theme](https://github.com/vuejs/vitepress.git) | `3e681e2` | 11 | 0 | 23 | 23 | 0 | 0 | 0% | 74 | fallback (no spacing tokens found) |
 | [vscode-base-ui](https://github.com/microsoft/vscode.git) | `1512d0c` | 38 | 77 | 74 | 74 | 0 | 0 | 0% | 130 | fallback (no spacing tokens found) |
-| [wp-calypso-components](https://github.com/Automattic/wp-calypso.git) | `7cc9ee9` | 51 | 204 | 80 | 80 | 0 | 0 | 0% | 173 | fallback (no spacing tokens found) |
+| [wp-calypso-components](https://github.com/Automattic/wp-calypso.git) | `7cc9ee9` | 51 | 204 | 82 | 82 | 0 | 0 | 0% | 173 | fallback (no spacing tokens found) |
 | [zulip](https://github.com/zulip/zulip.git) | `9b991a8` | 67 | 0 | 1952 | 1952 | 0 | 0 | 0% | 2376 | fallback (no spacing tokens found) |
 
 ## Per-repo detail
@@ -117,21 +117,21 @@ Top drift values:
 | Value | Count |
 | --- | ---: |
 | `20px` | 4 |
+| `$_graphic-padding` | 4 |
 | `64px` | 3 |
 | `6px` | 3 |
+| `$checkmark-spacing` | 2 |
 | `-2px` | 2 |
-| `-20px` | 2 |
-| `28px` | 2 |
-| `72px` | 2 |
-| `14px` | 2 |
+| `$calendar-arrow-size` | 2 |
+| `$inset-margin` | 2 |
 
 Drift examples for maintainer review:
 
 - `src/material/button/fab.scss:182` `20px`
 - `src/material/button/fab.scss:183` `20px`
-- `src/material/core/typography/_typography.scss:246` `56px`
-- `src/material/core/typography/_typography.scss:253` `64px`
-- `src/material/core/typography/_typography.scss:260` `64px`
+- `src/material/button-toggle/button-toggle.scss:342` `$checkmark-spacing`
+- `src/material/button-toggle/button-toggle.scss:347` `$checkmark-spacing`
+- `src/material/chips/chip.scss:293` `$_graphic-padding`
 
 ### bootstrap
 
@@ -287,22 +287,22 @@ Top drift values:
 
 | Value | Count |
 | --- | ---: |
+| `-$arrow-width * 0.5` | 6 |
 | `-5px` | 5 |
+| `$guide-line-offset` | 4 |
 | `2px` | 4 |
 | `-9999px` | 4 |
+| `-$arrow-height` | 4 |
+| `$anchor-nav-inset-inline` | 2 |
 | `5px` | 2 |
-| `40px` | 1 |
-| `-9000px` | 1 |
-| `-21px` | 1 |
-| `-3px` | 1 |
 
 Drift examples for maintainer review:
 
-- `src/annotation-context/annotation/styles.scss:49` `40px`
-- `src/app-layout/visual-refresh-toolbar/drawer/styles.scss:361` `-5px`
-- `src/app-layout/visual-refresh-toolbar/toolbar/styles.scss:105` `-5px`
-- `src/breadcrumb-group/styles.scss:32` `-9000px`
-- `src/code-editor/ace-editor.scss:69` `-21px`
+- `src/anchor-navigation/styles.scss:34` `$guide-line-offset`
+- `src/anchor-navigation/styles.scss:37` `$guide-line-offset`
+- `src/anchor-navigation/styles.scss:39` `$anchor-nav-inset-inline`
+- `src/anchor-navigation/styles.scss:66` `$guide-line-offset`
+- `src/anchor-navigation/styles.scss:69` `$guide-line-offset`
 
 ### coreui
 
@@ -582,10 +582,10 @@ Top drift values:
 | `0.375rem` | 22 |
 | `0.625rem` | 17 |
 | `3rem` | 9 |
+| `$fd-margin-large` | 8 |
 | `0.188rem` | 7 |
 | `0.1875rem` | 7 |
 | `2.5rem` | 6 |
-| `0.875rem` | 6 |
 
 Drift examples for maintainer review:
 
@@ -658,8 +658,8 @@ Top drift values:
 | `8px` | 2 |
 | `9px` | 1 |
 | `13px` | 1 |
+| `($govuk-small-checkboxes-size + $input-offset)` | 1 |
 | `0.125em` | 1 |
-| `7px` | 1 |
 
 Drift examples for maintainer review:
 
@@ -679,14 +679,14 @@ Top drift values:
 
 | Value | Count |
 | --- | ---: |
+| `$popover-arrow-size` | 16 |
 | `10px` | 9 |
 | `15px` | 9 |
 | `5px` | 7 |
 | `6px` | 6 |
 | `0.45em` | 4 |
+| `-$popover-arrow-size` | 4 |
 | `20px` | 4 |
-| `3px` | 3 |
-| `1.1em` | 3 |
 
 Drift examples for maintainer review:
 
@@ -1460,9 +1460,9 @@ Top drift values:
 | `5px` | 4 |
 | `0.25em` | 4 |
 | `12px` | 3 |
+| `-$triangle-size` | 3 |
 | `6px` | 1 |
 | `4px` | 1 |
-| `40px` | 1 |
 
 False-positive examples by category:
 
@@ -1583,11 +1583,11 @@ Top drift values:
 
 Drift examples for maintainer review:
 
+- `packages/components/src/badge/style.scss:10` `$badge-padding-x`
+- `packages/components/src/badge/style.scss:10` `$badge-padding-y`
 - `packages/components/src/button/style.scss:24` `14px`
 - `packages/components/src/button/style.scss:39` `-2px`
 - `packages/components/src/button/style.scss:86` `7px`
-- `packages/components/src/card/style.scss:8` `10px`
-- `packages/components/src/card/style.scss:41` `48px`
 
 ### zulip
 

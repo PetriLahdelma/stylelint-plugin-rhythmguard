@@ -14,11 +14,13 @@
     ]
   },
   "summary": {
-    "total": 80,
-    "drift": 80,
+    "total": 82,
+    "drift": 82,
     "falsePositives": 0
   },
   "findings": [
+    "packages/components/src/badge/style.scss:10:$badge-padding-x:drift",
+    "packages/components/src/badge/style.scss:10:$badge-padding-y:drift",
     "packages/components/src/button/style.scss:24:14px:drift",
     "packages/components/src/button/style.scss:39:-2px:drift",
     "packages/components/src/button/style.scss:86:7px:drift",

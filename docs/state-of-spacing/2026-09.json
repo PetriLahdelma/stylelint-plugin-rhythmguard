@@ -69,8 +69,8 @@
       "sha": "0a32b4a",
       "cssFiles": 36,
       "cleanliness": 53,
-      "drift": 564,
-      "driftPer100Files": 1567,
+      "drift": 568,
+      "driftPer100Files": 1578,
       "driftDelta": null,
       "scaleIntent": null,
       "scalePackage": null,
@@ -95,7 +95,7 @@
       "topProperties": [
         [
           "padding",
-          206
+          207
         ],
         [
           "margin-bottom",
@@ -118,6 +118,59 @@
         [
           "5px",
           70
+        ]
+      ]
+    },
+    {
+      "name": "grafana",
+      "url": "https://github.com/grafana/grafana",
+      "sha": "c6fad86",
+      "cssFiles": 6,
+      "cleanliness": 83,
+      "drift": 77,
+      "driftPer100Files": 1283,
+      "driftDelta": null,
+      "scaleIntent": null,
+      "scalePackage": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
+      "scaleRejected": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        2,
+        4,
+        8,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          34
+        ],
+        [
+          "margin-top",
+          11
+        ],
+        [
+          "padding-left",
+          8
+        ]
+      ],
+      "topValues": [
+        [
+          "$popover-arrow-size",
+          16
+        ],
+        [
+          "10px",
+          9
+        ],
+        [
+          "15px",
+          9
         ]
       ]
     },
@@ -228,59 +281,6 @@
         [
           "6px",
           3
-        ]
-      ]
-    },
-    {
-      "name": "grafana",
-      "url": "https://github.com/grafana/grafana",
-      "sha": "c6fad86",
-      "cssFiles": 6,
-      "cleanliness": 83,
-      "drift": 57,
-      "driftPer100Files": 950,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scalePackage": null,
-      "scaleReliable": true,
-      "scaleReasons": [],
-      "scaleRejected": null,
-      "scaleSource": "scanned-css",
-      "scaleValues": [
-        0,
-        2,
-        4,
-        8,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding",
-          34
-        ],
-        [
-          "padding-left",
-          8
-        ],
-        [
-          "margin-top",
-          4
-        ]
-      ],
-      "topValues": [
-        [
-          "10px",
-          9
-        ],
-        [
-          "15px",
-          9
-        ],
-        [
-          "5px",
-          7
         ]
       ]
     },
@@ -568,6 +568,66 @@
       ]
     },
     {
+      "name": "n8n-design-system",
+      "url": "https://github.com/n8n-io/n8n",
+      "sha": "7cb77fb",
+      "cssFiles": 77,
+      "cleanliness": 95,
+      "drift": 147,
+      "driftPer100Files": 191,
+      "driftDelta": null,
+      "scaleIntent": null,
+      "scalePackage": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
+      "scaleRejected": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        12,
+        16,
+        20,
+        24,
+        32,
+        48,
+        64,
+        128,
+        256
+      ],
+      "topProperties": [
+        [
+          "padding",
+          40
+        ],
+        [
+          "margin-left",
+          23
+        ],
+        [
+          "margin-right",
+          17
+        ]
+      ],
+      "topValues": [
+        [
+          "5px",
+          44
+        ],
+        [
+          "10px",
+          29
+        ],
+        [
+          "0.6em",
+          10
+        ]
+      ]
+    },
+    {
       "name": "pure",
       "url": "https://github.com/pure-css/pure",
       "sha": "d35fb6f",
@@ -623,73 +683,13 @@
       ]
     },
     {
-      "name": "n8n-design-system",
-      "url": "https://github.com/n8n-io/n8n",
-      "sha": "7cb77fb",
-      "cssFiles": 77,
-      "cleanliness": 95,
-      "drift": 143,
-      "driftPer100Files": 186,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scalePackage": null,
-      "scaleReliable": true,
-      "scaleReasons": [],
-      "scaleRejected": null,
-      "scaleSource": "scanned-css",
-      "scaleValues": [
-        0,
-        2,
-        4,
-        6,
-        8,
-        12,
-        16,
-        20,
-        24,
-        32,
-        48,
-        64,
-        128,
-        256
-      ],
-      "topProperties": [
-        [
-          "padding",
-          40
-        ],
-        [
-          "margin-left",
-          23
-        ],
-        [
-          "margin-right",
-          17
-        ]
-      ],
-      "topValues": [
-        [
-          "5px",
-          44
-        ],
-        [
-          "10px",
-          29
-        ],
-        [
-          "0.6em",
-          10
-        ]
-      ]
-    },
-    {
       "name": "excalidraw",
       "url": "https://github.com/excalidraw/excalidraw",
       "sha": "214cd6e",
       "cssFiles": 74,
       "cleanliness": 79,
-      "drift": 126,
-      "driftPer100Files": 170,
+      "drift": 129,
+      "driftPer100Files": 174,
       "driftDelta": null,
       "scaleIntent": null,
       "scalePackage": null,
@@ -711,7 +711,7 @@
       "topProperties": [
         [
           "padding",
-          49
+          52
         ],
         [
           "gap",
@@ -743,8 +743,8 @@
       "sha": "7cc9ee9",
       "cssFiles": 51,
       "cleanliness": 86,
-      "drift": 80,
-      "driftPer100Files": 157,
+      "drift": 82,
+      "driftPer100Files": 161,
       "driftDelta": null,
       "scaleIntent": null,
       "scalePackage": null,
@@ -766,7 +766,7 @@
       "topProperties": [
         [
           "padding",
-          32
+          34
         ],
         [
           "margin-right",
@@ -793,12 +793,67 @@
       ]
     },
     {
+      "name": "element-plus",
+      "url": "https://github.com/element-plus/element-plus",
+      "sha": "122a05f",
+      "cssFiles": 146,
+      "cleanliness": 47,
+      "drift": 224,
+      "driftPer100Files": 153,
+      "driftDelta": null,
+      "scaleIntent": null,
+      "scalePackage": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
+      "scaleRejected": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "padding",
+          81
+        ],
+        [
+          "margin-right",
+          31
+        ],
+        [
+          "margin",
+          24
+        ]
+      ],
+      "topValues": [
+        [
+          "5px",
+          46
+        ],
+        [
+          "10px",
+          33
+        ],
+        [
+          "6px",
+          27
+        ]
+      ]
+    },
+    {
       "name": "discourse",
       "url": "https://github.com/discourse/discourse",
       "sha": "c7b7a0b",
       "cssFiles": 374,
       "cleanliness": 34,
-      "drift": 569,
+      "drift": 570,
       "driftPer100Files": 152,
       "driftDelta": null,
       "scaleIntent": null,
@@ -846,7 +901,7 @@
       "topProperties": [
         [
           "padding",
-          193
+          194
         ],
         [
           "margin",
@@ -869,61 +924,6 @@
         [
           "3px",
           36
-        ]
-      ]
-    },
-    {
-      "name": "element-plus",
-      "url": "https://github.com/element-plus/element-plus",
-      "sha": "122a05f",
-      "cssFiles": 146,
-      "cleanliness": 48,
-      "drift": 222,
-      "driftPer100Files": 152,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scalePackage": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding",
-          80
-        ],
-        [
-          "margin-right",
-          31
-        ],
-        [
-          "margin",
-          24
-        ]
-      ],
-      "topValues": [
-        [
-          "5px",
-          46
-        ],
-        [
-          "10px",
-          33
-        ],
-        [
-          "6px",
-          27
         ]
       ]
     },
@@ -988,8 +988,8 @@
       "sha": "83cac84",
       "cssFiles": 91,
       "cleanliness": 53,
-      "drift": 109,
-      "driftPer100Files": 120,
+      "drift": 114,
+      "driftPer100Files": 125,
       "driftDelta": null,
       "scaleIntent": null,
       "scalePackage": null,
@@ -1304,6 +1304,61 @@
         ],
         [
           "0.375em",
+          4
+        ]
+      ]
+    },
+    {
+      "name": "foundation-sites",
+      "url": "https://github.com/foundation/foundation-sites",
+      "sha": "337be7a",
+      "cssFiles": 119,
+      "cleanliness": 81,
+      "drift": 52,
+      "driftPer100Files": 44,
+      "driftDelta": null,
+      "scaleIntent": null,
+      "scalePackage": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
+      "scaleRejected": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "margin-top",
+          12
+        ],
+        [
+          "padding",
+          12
+        ],
+        [
+          "margin-bottom",
+          11
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          5
+        ],
+        [
+          "2.5rem",
+          4
+        ],
+        [
+          "30px",
           4
         ]
       ]
@@ -1633,61 +1688,6 @@
       ]
     },
     {
-      "name": "foundation-sites",
-      "url": "https://github.com/foundation/foundation-sites",
-      "sha": "337be7a",
-      "cssFiles": 119,
-      "cleanliness": 85,
-      "drift": 34,
-      "driftPer100Files": 29,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scalePackage": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding",
-          11
-        ],
-        [
-          "margin-bottom",
-          8
-        ],
-        [
-          "transform",
-          4
-        ]
-      ],
-      "topValues": [
-        [
-          "10px",
-          5
-        ],
-        [
-          "2.5rem",
-          4
-        ],
-        [
-          "30px",
-          4
-        ]
-      ]
-    },
-    {
       "name": "nhsuk-frontend",
       "url": "https://github.com/nhsuk/nhsuk-frontend",
       "sha": "10caad9",
@@ -1795,6 +1795,116 @@
         [
           "1.25em",
           2
+        ]
+      ]
+    },
+    {
+      "name": "angular-material",
+      "url": "https://github.com/angular/components",
+      "sha": "3d30bf1",
+      "cssFiles": 280,
+      "cleanliness": 96,
+      "drift": 43,
+      "driftPer100Files": 15,
+      "driftDelta": null,
+      "scaleIntent": null,
+      "scalePackage": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
+      "scaleRejected": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "margin",
+          11
+        ],
+        [
+          "padding",
+          7
+        ],
+        [
+          "padding-left",
+          5
+        ]
+      ],
+      "topValues": [
+        [
+          "$_graphic-padding",
+          4
+        ],
+        [
+          "20px",
+          4
+        ],
+        [
+          "64px",
+          3
+        ]
+      ]
+    },
+    {
+      "name": "cloudscape-components",
+      "url": "https://github.com/cloudscape-design/components",
+      "sha": "0c1c9fd",
+      "cssFiles": 320,
+      "cleanliness": 99,
+      "drift": 46,
+      "driftPer100Files": 14,
+      "driftDelta": null,
+      "scaleIntent": null,
+      "scalePackage": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
+      "scaleRejected": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "topProperties": [
+        [
+          "inset-block-start",
+          12
+        ],
+        [
+          "inset-inline-start",
+          8
+        ],
+        [
+          "inset-block-end",
+          6
+        ]
+      ],
+      "topValues": [
+        [
+          "-$arrow-width * 0.5",
+          6
+        ],
+        [
+          "-5px",
+          5
+        ],
+        [
+          "-$arrow-height",
+          4
         ]
       ]
     },
@@ -1968,112 +2078,58 @@
       ]
     },
     {
-      "name": "angular-material",
-      "url": "https://github.com/angular/components",
-      "sha": "3d30bf1",
-      "cssFiles": 280,
-      "cleanliness": 96,
-      "drift": 30,
-      "driftPer100Files": 11,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scalePackage": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "margin",
-          9
-        ],
-        [
-          "padding",
-          7
-        ],
-        [
-          "transform",
-          4
-        ]
-      ],
-      "topValues": [
-        [
-          "20px",
-          4
-        ],
-        [
-          "64px",
-          3
-        ],
-        [
-          "6px",
-          3
-        ]
-      ]
-    },
-    {
-      "name": "cloudscape-components",
-      "url": "https://github.com/cloudscape-design/components",
-      "sha": "0c1c9fd",
-      "cssFiles": 320,
-      "cleanliness": 99,
-      "drift": 27,
+      "name": "govuk-frontend",
+      "url": "https://github.com/alphagov/govuk-frontend",
+      "sha": "356d461",
+      "cssFiles": 311,
+      "cleanliness": 98,
+      "drift": 24,
       "driftPer100Files": 8,
       "driftDelta": null,
       "scaleIntent": null,
       "scalePackage": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleRejected": null,
-      "scaleSource": "fallback",
+      "scaleSource": "scanned-css",
       "scaleValues": [
         0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
+        5,
+        10,
+        15,
+        20,
+        25,
+        30,
+        40,
+        50,
+        60
       ],
       "topProperties": [
         [
-          "transform",
-          6
-        ],
-        [
-          "inset-block-start",
+          "margin-bottom",
           5
         ],
         [
-          "inset-inline-start",
+          "padding-left",
           5
+        ],
+        [
+          "margin-top",
+          4
         ]
       ],
       "topValues": [
         [
-          "-5px",
-          5
-        ],
-        [
-          "-9999px",
-          4
-        ],
-        [
           "2px",
-          4
+          6
+        ],
+        [
+          "14px",
+          2
+        ],
+        [
+          "3px",
+          2
         ]
       ]
     },
@@ -2128,62 +2184,6 @@
         [
           "0.67em",
           1
-        ]
-      ]
-    },
-    {
-      "name": "govuk-frontend",
-      "url": "https://github.com/alphagov/govuk-frontend",
-      "sha": "356d461",
-      "cssFiles": 311,
-      "cleanliness": 98,
-      "drift": 21,
-      "driftPer100Files": 7,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scalePackage": null,
-      "scaleReliable": true,
-      "scaleReasons": [],
-      "scaleRejected": null,
-      "scaleSource": "scanned-css",
-      "scaleValues": [
-        0,
-        5,
-        10,
-        15,
-        20,
-        25,
-        30,
-        40,
-        50,
-        60
-      ],
-      "topProperties": [
-        [
-          "margin-bottom",
-          4
-        ],
-        [
-          "margin-top",
-          4
-        ],
-        [
-          "padding",
-          3
-        ]
-      ],
-      "topValues": [
-        [
-          "2px",
-          6
-        ],
-        [
-          "14px",
-          2
-        ],
-        [
-          "3px",
-          2
         ]
       ]
     },
@@ -2418,8 +2418,8 @@
       "url": "https://github.com/uswds/uswds",
       "sha": "eed8a5e",
       "cssFiles": 682,
-      "cleanliness": 99,
-      "drift": 26,
+      "cleanliness": 98,
+      "drift": 30,
       "driftPer100Files": 4,
       "driftDelta": null,
       "scaleIntent": null,
@@ -2444,7 +2444,7 @@
         ],
         [
           "margin-top",
-          4
+          5
         ],
         [
           "padding-top",
@@ -2827,9 +2827,9 @@
       "url": "https://github.com/ColorlibHQ/AdminLTE",
       "sha": "12b4b06",
       "cssFiles": 46,
-      "cleanliness": 63,
-      "drift": 126,
-      "driftPer100Files": 274,
+      "cleanliness": 61,
+      "drift": 128,
+      "driftPer100Files": 278,
       "driftDelta": null,
       "scaleIntent": "package",
       "scalePackage": "bootstrap",
@@ -2851,7 +2851,7 @@
       "topProperties": [
         [
           "padding",
-          50
+          52
         ],
         [
           "margin-top",
@@ -2996,9 +2996,9 @@
       "url": "https://github.com/SAP/fundamental-styles",
       "sha": "e31a128",
       "cssFiles": 343,
-      "cleanliness": 70,
-      "drift": 137,
-      "driftPer100Files": 40,
+      "cleanliness": 69,
+      "drift": 176,
+      "driftPer100Files": 51,
       "driftDelta": null,
       "scaleIntent": "package",
       "scalePackage": "@sap-theming/theming-base-content",
@@ -3020,15 +3020,15 @@
       "topProperties": [
         [
           "padding-inline",
-          40
+          43
         ],
         [
           "padding-block",
-          33
+          36
         ],
         [
-          "gap",
-          12
+          "margin-block",
+          15
         ]
       ],
       "topValues": [
@@ -3202,7 +3202,7 @@
   ],
   "totals": {
     "cssFiles": 8729,
-    "drift": 7952,
+    "drift": 8091,
     "repos": 58,
     "fallbackScales": 33,
     "inPackage": 6,

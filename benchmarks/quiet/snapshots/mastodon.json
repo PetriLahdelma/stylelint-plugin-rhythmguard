@@ -19,8 +19,8 @@
     ]
   },
   "summary": {
-    "total": 564,
-    "drift": 564,
+    "total": 568,
+    "drift": 568,
     "falsePositives": 0
   },
   "findings": [
@@ -193,6 +193,8 @@
     "app/javascript/styles/mastodon/components.scss:102:17px:drift",
     "app/javascript/styles/mastodon/components.scss:102:6px:drift",
     "app/javascript/styles/mastodon/components.scss:1031:10px:drift",
+    "app/javascript/styles/mastodon/components.scss:10321:$padding:drift",
+    "app/javascript/styles/mastodon/components.scss:10328:$padding:drift",
     "app/javascript/styles/mastodon/components.scss:10365:6px:drift",
     "app/javascript/styles/mastodon/components.scss:10382:6px:drift",
     "app/javascript/styles/mastodon/components.scss:10394:5px:drift",
@@ -233,6 +235,8 @@
     "app/javascript/styles/mastodon/components.scss:2282:10px:drift",
     "app/javascript/styles/mastodon/components.scss:2318:5px:drift",
     "app/javascript/styles/mastodon/components.scss:2357:-3px:drift",
+    "app/javascript/styles/mastodon/components.scss:2358:$h-padding:drift",
+    "app/javascript/styles/mastodon/components.scss:2359:$h-padding:drift",
     "app/javascript/styles/mastodon/components.scss:2434:5px:drift",
     "app/javascript/styles/mastodon/components.scss:2444:10px:drift",
     "app/javascript/styles/mastodon/components.scss:2444:14px:drift",

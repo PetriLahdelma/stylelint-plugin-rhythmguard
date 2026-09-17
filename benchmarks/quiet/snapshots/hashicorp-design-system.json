@@ -14,8 +14,8 @@
     ]
   },
   "summary": {
-    "total": 109,
-    "drift": 109,
+    "total": 114,
+    "drift": 114,
     "falsePositives": 0
   },
   "findings": [
@@ -40,6 +40,8 @@
     "packages/components/src/styles/components/alert.scss:112:48px:drift",
     "packages/components/src/styles/components/alert.scss:124:2px:drift",
     "packages/components/src/styles/components/alert.scss:56:5px:drift",
+    "packages/components/src/styles/components/app-footer.scss:114:$hds-app-footer-icon-text-gap:drift",
+    "packages/components/src/styles/components/app-footer.scss:48:$hds-app-footer-icon-text-gap:drift",
     "packages/components/src/styles/components/app-header.scss:155:3px:drift",
     "packages/components/src/styles/components/app-header.scss:21:11px:drift",
     "packages/components/src/styles/components/app-header.scss:33:10px:drift",
@@ -47,9 +49,12 @@
     "packages/components/src/styles/components/app-side-nav/content.scss:51:9px:drift",
     "packages/components/src/styles/components/breadcrumb.scss:125:6px:drift",
     "packages/components/src/styles/components/breadcrumb.scss:191:6px:drift",
+    "packages/components/src/styles/components/code-block/index.scss:235:$hds-code-block-line-numbers-width:drift",
     "packages/components/src/styles/components/code-block/index.scss:309:10px:drift",
     "packages/components/src/styles/components/code-block/index.scss:309:10px:drift",
     "packages/components/src/styles/components/code-block/index.scss:329:-1000px:drift",
+    "packages/components/src/styles/components/code-block/index.scss:336:$hds-code-block-code-footer-height:drift",
+    "packages/components/src/styles/components/code-block/index.scss:349:$hds-code-block-code-footer-height:drift",
     "packages/components/src/styles/components/copy/snippet.scss:36:6px:drift",
     "packages/components/src/styles/components/dropdown.scss:148:0.375rem:drift",
     "packages/components/src/styles/components/dropdown.scss:158:0.5625rem:drift",

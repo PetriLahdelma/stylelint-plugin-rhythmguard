@@ -21,8 +21,8 @@
     ]
   },
   "summary": {
-    "total": 143,
-    "drift": 143,
+    "total": 147,
+    "drift": 147,
     "falsePositives": 0
   },
   "findings": [
@@ -72,10 +72,14 @@
     "packages/frontend/@n8n/design-system/src/css/dialog.scss:38:50px:drift",
     "packages/frontend/@n8n/design-system/src/css/drawer.scss:48:10px:drift",
     "packages/frontend/@n8n/design-system/src/css/dropdown.scss:113:5px:drift",
+    "packages/frontend/@n8n/design-system/src/css/dropdown.scss:120:$divided-offset:drift",
     "packages/frontend/@n8n/design-system/src/css/dropdown.scss:143:17px:drift",
+    "packages/frontend/@n8n/design-system/src/css/dropdown.scss:148:$divided-offset:drift",
     "packages/frontend/@n8n/design-system/src/css/dropdown.scss:162:15px:drift",
+    "packages/frontend/@n8n/design-system/src/css/dropdown.scss:167:$divided-offset:drift",
     "packages/frontend/@n8n/design-system/src/css/dropdown.scss:177:3px:drift",
     "packages/frontend/@n8n/design-system/src/css/dropdown.scss:181:10px:drift",
+    "packages/frontend/@n8n/design-system/src/css/dropdown.scss:186:$divided-offset:drift",
     "packages/frontend/@n8n/design-system/src/css/dropdown.scss:31:5px:drift",
     "packages/frontend/@n8n/design-system/src/css/dropdown.scss:32:5px:drift",
     "packages/frontend/@n8n/design-system/src/css/dropdown.scss:71:3px:drift",
