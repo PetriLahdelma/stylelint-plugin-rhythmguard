@@ -1,6 +1,6 @@
 # Release checklist
 
-Releases are maintainer-run and take about twenty minutes of attention. The publish itself is automated: a GitHub release triggers `release.yml`, which verifies the matrix (Node 20 and 22 against Stylelint 16.0.0, 16 and 17) and publishes through npm trusted publishing (OIDC), all on GitHub-hosted runners so a release never waits on the self-hosted farm. No npm token exists anywhere. Provenance is attached automatically.
+Releases are maintainer-run and take about twenty minutes of attention. The publish itself is automated: a GitHub release triggers `release.yml`, which verifies on the self-hosted matrix (Node 20 and 22 against Stylelint 16.0.0, 16 and 17) and publishes from a GitHub-hosted job through npm trusted publishing (OIDC). No npm token exists anywhere. Provenance is attached automatically.
 
 ## 1. Decide the version
 
@@ -45,7 +45,18 @@ The notes are the changelog section rewritten for a reader who has not followed 
 - `npm view stylelint-plugin-rhythmguard@X.Y.Z version dist-tags.latest dist.attestations`: the version is `latest` and carries SLSA provenance.
 - The `Post Publish Smoke` workflow, which installs the published package into a clean project, is green.
 
-## 6. If the run fails before publish
+## 6. If the farm is down
+
+Check the runners before cutting: `gh api repos/PetriLahdelma/stylelint-plugin-rhythmguard/actions/runners --jq '.runners[] | "\(.name) \(.status)"'`. No runner listed, or all offline, means the verify jobs will queue for 24 hours and be cancelled. Flip the release onto GitHub-hosted runners for the cut, and back afterwards:
+
+```bash
+gh variable set RELEASE_ON_HOSTED --body true
+gh variable delete RELEASE_ON_HOSTED
+```
+
+The variable is read when the run starts, so set it before creating the release. The publish job is always GitHub-hosted (OIDC requires it).
+
+## 7. If the run fails before publish
 
 Nothing was published, so keep the version number. Fix on `main`, then move the release to the fixed commit:
 
@@ -56,7 +67,7 @@ gh release create vX.Y.Z --target <new-sha> --title vX.Y.Z --notes-file notes.md
 
 Release-event workflows run the workflow file at the tag, so the tag must point at the fixed commit.
 
-## 7. Afterwards
+## 8. Afterwards
 
 - Refresh the README banner if the version is drawn on it (`assets/rhythmguard-banner.svg`), bumping the `?v=` cache key on its URL in `README.md` and `docs/index.html`.
 - Add a wiki capture or changelog note for anything a future maintainer would need to know.

@@ -7,11 +7,11 @@ on:
 jobs:
   verify:
     name: verify node-${{ matrix.node-version }} stylelint-${{ matrix.stylelint-version }}
-    # A release must not depend on the self-hosted farm being awake: v3.7.0 sat
-    # queued for 24 hours and was cancelled when no runner was registered. The
-    # verify matrix runs on GitHub-hosted runners next to the publish job, which
-    # has always run there. Pushes and pull requests still use the farm (ci.yml).
-    runs-on: ubuntu-latest
+    # The verify matrix runs on the self-hosted farm. When the farm is down (both
+    # hosts offline, as before the 3.7.0 cut, which then waited 24 hours and was
+    # cancelled), set the repository variable RELEASE_ON_HOSTED to "true" and the
+    # release runs on GitHub-hosted runners instead; no workflow edit or re-cut.
+    runs-on: ${{ vars.RELEASE_ON_HOSTED == 'true' && 'ubuntu-latest' || fromJSON('["self-hosted", "stylelint-plugin-rhythmguard"]') }}
     strategy:
       fail-fast: false
       matrix:
