@@ -41,7 +41,7 @@ That enables `rhythmguard/use-scale` on spacing properties with the default 4px 
 }
 ```
 
-For class strings in JSX, TSX, Vue, Svelte or Astro, add the ESLint companion:
+For class strings in JSX, TSX, Vue, Svelte or Astro, add the ESLint companion. It is the same rules under two names: `stylelint-plugin-rhythmguard/eslint` if you already have this package, or [`eslint-plugin-rhythmguard`](packages/eslint-plugin-rhythmguard#readme) on its own.
 
 ```js
 // eslint.config.js

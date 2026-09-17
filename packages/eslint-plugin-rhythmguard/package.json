@@ -1,0 +1,57 @@
+{
+  "name": "eslint-plugin-rhythmguard",
+  "version": "3.7.1",
+  "description": "ESLint rules that keep Tailwind arbitrary spacing and motion values in class strings on your design scale. The ESLint companion of stylelint-plugin-rhythmguard, as its own package.",
+  "license": "MIT",
+  "author": "Petri Lahdelma",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "require": "./index.js",
+      "import": "./index.mjs"
+    }
+  },
+  "files": [
+    "index.js",
+    "index.mjs",
+    "index.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "eslint",
+    "eslint-plugin",
+    "eslintplugin",
+    "tailwindcss",
+    "tailwind",
+    "design-system",
+    "design-tokens",
+    "spacing-scale",
+    "spacing",
+    "linting"
+  ],
+  "peerDependencies": {
+    "eslint": ">=8.0.0"
+  },
+  "dependencies": {
+    "stylelint-plugin-rhythmguard": "^3.7.1"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard.git",
+    "directory": "packages/eslint-plugin-rhythmguard"
+  },
+  "homepage": "https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/tree/main/packages/eslint-plugin-rhythmguard#readme",
+  "bugs": {
+    "url": "https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/issues"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  }
+}
