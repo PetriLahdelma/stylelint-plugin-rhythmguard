@@ -10,6 +10,7 @@ This guide helps teams choose the right Stylelint plugin for each problem, then 
 | `stylelint-plugin-logical-css` | Direction-agnostic and writing-mode-safe CSS | Internationalization, RTL/LTR parity, logical properties and keywords |
 | `stylelint-plugin-rhythmguard` | Off-scale spacing and missing tokens | Spacing (and optionally radius, size, typography) kept on one scale, with deterministic nearest-value autofix |
 | `stylelint-scales` | Property-specific numeric scale enforcement | Teams that want granular scale rules per property category |
+| `@shadcn/lint` | Component contracts in Tailwind class strings | Tailwind v4 projects, with or without shadcn/ui, where the rule is "Button owns its padding" and agents write the JSX |
 
 ## When to use each
 
@@ -33,6 +34,16 @@ This guide helps teams choose the right Stylelint plugin for each problem, then 
 
 - You want a broad rule-pack where each property family has its own numeric rule.
 - Your team prefers direct per-rule tuning by property type over one shared scale.
+
+### Use `@shadcn/lint` when:
+
+- Your design system is Tailwind v4 components and the drift you fight is pages restyling them: a `p-4` or `bg-pink-500` on a `<Button>` that should have used a size or a variant.
+- You want per-component contracts (`^CardTitle$` may change typography but not font weight) and messages that name the component's own variants.
+- Your CSS is small and the class strings are where the decisions live. It reads JSX, TSX, Vue, Svelte and Astro class sites; it does not read stylesheets.
+
+### Rhythmguard and `@shadcn/lint` together
+
+They overlap on one thing: an arbitrary spacing value in a class string. `@shadcn/lint`'s `no-arbitrary-values` reports `p-[13px]` and suggests the equivalent step; Rhythmguard's `tailwind-class-use-scale` reports it against your scale and fixes it to `p-3`. Everything else is disjoint. `@shadcn/lint` decides what a component allows and reads the theme only for colors, radii and text sizes. Rhythmguard decides whether a spacing value is on the project's scale in CSS, SCSS, CSS Modules and class strings, infers that scale from tokens, audits and baselines a codebase, and follows token chains to their values. A Tailwind team can run both: `@shadcn/lint` on the components, Rhythmguard on the stylesheets and the audit, and pick one of the two for arbitrary spacing classes so a finding is reported once.
 
 ## Recommended rollout order in real teams
 
