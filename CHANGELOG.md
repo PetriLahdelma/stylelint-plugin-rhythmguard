@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.8.0] - 2026-09-18
+
 ### Added
 
 - `npm run bench:agents`, the agent eval harness: sixteen tasks over three fixture projects, each run as before (no linter), with findings (up to three correction rounds) and rules only (the control), through Sonnet 5, Haiku 4.5 and Opus 5; outcomes, rounds to zero and cost per condition in a dated edition under `docs/agent-evals/`. `--dry-run` exercises the whole pipeline against a scripted model. Method in `docs/AGENT_EVALS.md`. ([#135](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/135))

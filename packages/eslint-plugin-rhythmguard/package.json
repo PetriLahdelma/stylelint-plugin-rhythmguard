@@ -1,6 +1,6 @@
 {
   "name": "eslint-plugin-rhythmguard",
-  "version": "3.7.1",
+  "version": "3.8.0",
   "description": "ESLint rules that keep Tailwind arbitrary spacing and motion values in class strings on your design scale. The ESLint companion of stylelint-plugin-rhythmguard, as its own package.",
   "license": "MIT",
   "author": "Petri Lahdelma",
@@ -36,7 +36,7 @@
     "eslint": ">=8.0.0"
   },
   "dependencies": {
-    "stylelint-plugin-rhythmguard": "^3.7.1"
+    "stylelint-plugin-rhythmguard": "^3.8.0"
   },
   "engines": {
     "node": ">=20.19.0"
