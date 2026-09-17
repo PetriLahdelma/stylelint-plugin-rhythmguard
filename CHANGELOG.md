@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- `eslint-plugin-rhythmguard`, the ESLint companion under its own package name, from `packages/eslint-plugin-rhythmguard`. It re-exports `stylelint-plugin-rhythmguard/eslint`, so the rules, options and messages are one implementation; it exists so a search for an ESLint Tailwind plugin finds it. Published by the release run once the package has a trusted publisher.
+
 ### Changed
 
 - The post-publish smoke waits up to ten minutes for the registry to list the new version before deciding it is unpublished. It checked once, and the registry took three minutes to list 3.7.1, so the smoke skipped itself and had to be dispatched by hand.

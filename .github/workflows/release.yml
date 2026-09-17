@@ -85,3 +85,28 @@ jobs:
 
       - name: Publish to npm via OIDC
         run: npm publish --access public --registry https://registry.npmjs.org
+
+      # eslint-plugin-rhythmguard is the ESLint companion under its own name. It
+      # depends on the version published above, so the registry must list that
+      # version first (propagation takes a few minutes). Gated on a repository
+      # variable until the package exists on npm with a trusted publisher bound
+      # to this workflow; the first publish is a manual `npm publish` by the
+      # maintainer (docs/RELEASE_CHECKLIST.md).
+      - name: Wait for the registry to list the version
+        if: vars.PUBLISH_ESLINT_PLUGIN == 'true'
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          for attempt in $(seq 1 40); do
+            if curl -fsS "https://registry.npmjs.org/stylelint-plugin-rhythmguard?t=$(date +%s)" \
+                | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>process.exit(JSON.parse(d).versions[process.argv[1]]?0:1))' "$version"; then
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "::error::stylelint-plugin-rhythmguard@$version not on the registry after ten minutes"
+          exit 1
+
+      - name: Publish eslint-plugin-rhythmguard to npm via OIDC
+        if: vars.PUBLISH_ESLINT_PLUGIN == 'true'
+        working-directory: packages/eslint-plugin-rhythmguard
+        run: npm publish --access public --registry https://registry.npmjs.org
