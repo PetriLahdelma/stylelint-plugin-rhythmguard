@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- The release verify matrix and the post-publish smoke are back on the self-hosted farm. The repository variable `RELEASE_ON_HOSTED=true` moves a release onto GitHub-hosted runners while the farm is down, without a workflow edit or a re-cut; the release checklist explains when to use it.
+
 ## [3.7.0] - 2026-09-17
 
 ### Added
