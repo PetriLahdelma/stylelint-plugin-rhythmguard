@@ -18,7 +18,7 @@ What it is not: it does not check colors or hex values, and the Stylelint rules 
 ## Start here
 
 ```bash
-npx rhythmguard
+npx stylelint-plugin-rhythmguard
 ```
 
 No install, no config. It detects your stack and token files, infers your spacing scale from your own tokens, audits the current directory, and prints the exact `.stylelintrc.json` (and ESLint snippet for Tailwind) to paste. Then:

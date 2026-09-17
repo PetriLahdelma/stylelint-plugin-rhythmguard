@@ -8,6 +8,7 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Added
 
+- `rhythmguard`, the command as its own package: `npx rhythmguard` resolves a package of that name, and none existed, so the first command in the README failed in a project that had installed nothing (`npx stylelint-plugin-rhythmguard` worked, and the README says that until the package is published). `packages/rhythmguard` is one dependency and one line that runs the CLI, now exported as `stylelint-plugin-rhythmguard/cli` with a `main()`.
 - `eslint-plugin-rhythmguard`, the ESLint companion under its own package name, from `packages/eslint-plugin-rhythmguard`. It re-exports `stylelint-plugin-rhythmguard/eslint`, so the rules, options and messages are one implementation; it exists so a search for an ESLint Tailwind plugin finds it. Published by the release run once the package has a trusted publisher.
 
 ### Changed

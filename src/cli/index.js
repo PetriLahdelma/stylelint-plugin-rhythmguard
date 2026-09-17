@@ -1,8 +1,6 @@
 #!/usr/bin/env node
 'use strict';
 
-const command = process.argv[2];
-
 const HELP = `Usage: rhythmguard [command]
 
 With no command: zero-config quickstart. Detects your stack and tokens, infers
@@ -29,23 +27,34 @@ Examples:
   npx rhythmguard doctor
 `;
 
-if (command === '--help' || command === '-h') {
-  process.stdout.write(HELP);
-  process.exit(0);
+/** Dispatch on process.argv. The `rhythmguard` bin and the `rhythmguard` alias package both call this. */
+function main() {
+  const command = process.argv[2];
+
+  if (command === '--help' || command === '-h') {
+    process.stdout.write(HELP);
+    process.exit(0);
+  }
+
+  if (!command || command === 'quickstart') {
+    require('./quickstart').run();
+  } else if (command === 'audit') {
+    require('./audit').run();
+  } else if (command === 'fix') {
+    require('./fix').run();
+  } else if (command === 'init') {
+    require('./init').run();
+  } else if (command === 'doctor') {
+    require('./doctor');
+  } else {
+    process.stderr.write(`Unknown command: ${command}\n\n`);
+    process.stdout.write(HELP);
+    process.exit(1);
+  }
 }
 
-if (!command || command === 'quickstart') {
-  require('./quickstart').run();
-} else if (command === 'audit') {
-  require('./audit').run();
-} else if (command === 'fix') {
-  require('./fix').run();
-} else if (command === 'init') {
-  require('./init').run();
-} else if (command === 'doctor') {
-  require('./doctor');
-} else {
-  process.stderr.write(`Unknown command: ${command}\n\n`);
-  process.stdout.write(HELP);
-  process.exit(1);
+module.exports = { HELP, main };
+
+if (require.main === module) {
+  main();
 }
