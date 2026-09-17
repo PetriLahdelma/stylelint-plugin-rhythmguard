@@ -106,7 +106,7 @@ The maintainer aims to respond to issues and PRs within a week. Small PRs merge 
 
 ## Releases
 
-Maintainer-run. Bump `package.json` and `CHANGELOG.md`, create a GitHub release, and `release.yml` verifies on the self-hosted matrix and publishes through npm trusted publishing (OIDC) from a GitHub-hosted job. Provenance is automatic. The checklist is in [`docs/RELEASE_CHECKLIST.md`](./docs/RELEASE_CHECKLIST.md).
+Maintainer-run. Bump `package.json` and `CHANGELOG.md`, create a GitHub release, and `release.yml` verifies the matrix and publishes through npm trusted publishing (OIDC), on GitHub-hosted runners so a release does not depend on the self-hosted farm. Provenance is automatic. The checklist is in [`docs/RELEASE_CHECKLIST.md`](./docs/RELEASE_CHECKLIST.md).
 
 ## Benchmarking performance
 

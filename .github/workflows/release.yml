@@ -7,7 +7,11 @@ on:
 jobs:
   verify:
     name: verify node-${{ matrix.node-version }} stylelint-${{ matrix.stylelint-version }}
-    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
+    # A release must not depend on the self-hosted farm being awake: v3.7.0 sat
+    # queued for 24 hours and was cancelled when no runner was registered. The
+    # verify matrix runs on GitHub-hosted runners next to the publish job, which
+    # has always run there. Pushes and pull requests still use the farm (ci.yml).
+    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -53,8 +57,7 @@ jobs:
 
   publish:
     needs: verify
-    # npm trusted publishing (OIDC) is only supported from GitHub-hosted runners, so this
-    # one small job runs on ubuntu-latest while the verify matrix stays on the farm.
+    # npm trusted publishing (OIDC) is only supported from GitHub-hosted runners.
     # No npm token: the trusted publisher on npmjs.com is bound to this repo and this
     # workflow file. Provenance is generated automatically; --provenance is not needed.
     runs-on: ubuntu-latest
