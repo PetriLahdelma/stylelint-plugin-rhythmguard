@@ -1,0 +1,6 @@
+@use "variables" as *;
+
+.card {
+  padding: map-get($spacers, 3);
+  margin-bottom: map-get($spacers, 4);
+}

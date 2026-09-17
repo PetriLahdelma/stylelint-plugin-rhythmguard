@@ -1,0 +1,10 @@
+@import "./tokens.css";
+
+.stack > * + * {
+  margin-top: var(--space-3);
+}
+
+.card {
+  padding: var(--space-4);
+  border-radius: 8px;
+}

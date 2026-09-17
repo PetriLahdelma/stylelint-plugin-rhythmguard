@@ -6,3 +6,5 @@ coverage/
 .DS_Store
 .superpowers/
 .claude/
+# dry-run editions of the agent eval harness
+docs/agent-evals/*-dry-run.*
