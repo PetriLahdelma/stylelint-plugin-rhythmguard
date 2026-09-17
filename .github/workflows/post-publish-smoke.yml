@@ -18,7 +18,8 @@ on:
 jobs:
   npm-smoke:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
+    # Part of the release proof, so it runs where the release runs: GitHub-hosted.
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout published commit
         uses: actions/checkout@v7
