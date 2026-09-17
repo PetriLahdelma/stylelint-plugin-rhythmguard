@@ -53,16 +53,26 @@ jobs:
 
           echo "version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: Check package visibility on npm registry
+      # The registry can take a few minutes to list a version after `npm publish`
+      # returns (3.7.1 took three), and the release run that triggers this
+      # workflow completes before that. Poll the packument directly, with a
+      # cache-busting query, for up to ten minutes before calling it unpublished.
+      - name: Wait for the version on the npm registry
         id: registry
         env:
           VERSION: ${{ steps.pkg.outputs.version }}
         run: |
-          if npm view "stylelint-plugin-rhythmguard@$VERSION" version --registry https://registry.npmjs.org >/dev/null 2>&1; then
-            echo "available=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "available=false" >> "$GITHUB_OUTPUT"
-          fi
+          for attempt in $(seq 1 40); do
+            if curl -fsS "https://registry.npmjs.org/stylelint-plugin-rhythmguard?t=$(date +%s)" \
+                | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>process.exit(JSON.parse(d).versions[process.argv[1]]?0:1))' "$VERSION"; then
+              echo "available=true" >> "$GITHUB_OUTPUT"
+              echo "stylelint-plugin-rhythmguard@$VERSION is on the registry (attempt $attempt)."
+              exit 0
+            fi
+            echo "stylelint-plugin-rhythmguard@$VERSION not listed yet (attempt $attempt of 40); waiting 15s."
+            sleep 15
+          done
+          echo "available=false" >> "$GITHUB_OUTPUT"
 
       - name: Skip smoke because package is not published
         if: steps.registry.outputs.available != 'true'
