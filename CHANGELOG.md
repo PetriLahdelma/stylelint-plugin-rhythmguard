@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- The post-publish smoke waits for the version through `npm view --prefer-online`, the client that will install it, instead of the raw packument; for 3.8.0 the packument listed the version a minute before `npm install` could resolve it and the smoke failed.
+
 ## [3.8.0] - 2026-09-18
 
 ### Added
