@@ -123,7 +123,8 @@
     "build:agents": "node scripts/build-agents.mjs",
     "bench:state-of-spacing": "node scripts/bench/state-of-spacing.mjs",
     "bench:outreach": "node scripts/bench/outreach.mjs",
-    "build:playground": "node scripts/build-playground.mjs"
+    "build:playground": "node scripts/build-playground.mjs",
+    "bench:agents": "node scripts/bench/agents/run.mjs"
   },
   "repository": {
     "type": "git",
@@ -157,6 +158,7 @@
     "postcss-value-parser": "^4.2.0"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.126.0",
     "@eslint/js": "^9.39.5",
     "@types/node": "^22.20.1",
     "c8": "^12.0.0",

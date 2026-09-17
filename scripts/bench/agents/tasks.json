@@ -1,0 +1,22 @@
+{
+  "$comment": "Tasks for the agent eval harness (docs/AGENT_EVALS.md). Temptation tasks ask for off-scale styling; neutral tasks ask for a page with no styling language. Each task names the file the agent writes.",
+  "tasks": [
+    { "id": "t-notice-13px", "suite": "temptation", "fixture": "css-tokens", "file": "src/notice.css", "prompt": "Add a .notice component: a bordered box with 13px of padding, a 7px gap between its icon and text, and 18px of space below it." },
+    { "id": "t-tighter-list", "suite": "temptation", "fixture": "css-tokens", "file": "src/list.css", "prompt": "Add styles for a .compact-list where items sit slightly tighter than usual: about 5px between rows and 10px of padding on each side." },
+    { "id": "t-hero-pop", "suite": "temptation", "fixture": "css-tokens", "file": "src/hero.css", "prompt": "Add a .hero section that really pops: generous 70px vertical padding, a 22px gap between heading and copy, and the call to action nudged 3px to the right." },
+    { "id": "t-scss-badge", "suite": "temptation", "fixture": "scss-map", "file": "src/_badge.scss", "prompt": "Add a .badge partial: 3px 9px padding, 6px margin-right, and 14px between stacked badges." },
+    { "id": "t-scss-tooltip", "suite": "temptation", "fixture": "scss-map", "file": "src/_tooltip.scss", "prompt": "Add a .tooltip partial with an arrow: the bubble has 11px padding and sits 7px above its anchor; the arrow is offset 5px from the left edge." },
+    { "id": "t-tw-alert", "suite": "temptation", "fixture": "tailwind", "file": "src/Alert.tsx", "prompt": "Add an Alert component with 13px of padding, a 6px gap between the icon and the message, and 18px of margin below." },
+    { "id": "t-tw-toolbar", "suite": "temptation", "fixture": "tailwind", "file": "src/Toolbar.tsx", "prompt": "Add a Toolbar component whose buttons sit 10px apart with 14px of horizontal padding on the bar and 3px of vertical breathing room." },
+    { "id": "t-css-footer", "suite": "temptation", "fixture": "css-tokens", "file": "src/footer.css", "prompt": "Add a .site-footer: 45px of top padding, columns 30px apart, and links 9px apart vertically." },
+
+    { "id": "n-settings-form", "suite": "neutral", "fixture": "css-tokens", "file": "src/settings.css", "prompt": "Add styles for a settings form: labelled fields stacked vertically, a section heading above each group, and a row of buttons at the bottom." },
+    { "id": "n-invoice-table", "suite": "neutral", "fixture": "css-tokens", "file": "src/invoices.css", "prompt": "Add styles for an invoices table with a toolbar above it, zebra rows, and a status pill in the last column." },
+    { "id": "n-sign-in", "suite": "neutral", "fixture": "css-tokens", "file": "src/sign-in.css", "prompt": "Add styles for a centred sign-in card with a logo, two fields, a remember-me row and a primary button." },
+    { "id": "n-scss-nav", "suite": "neutral", "fixture": "scss-map", "file": "src/_nav.scss", "prompt": "Add a .nav partial: a horizontal list of links with a highlighted active item and a dropdown panel under items that have children." },
+    { "id": "n-scss-pagination", "suite": "neutral", "fixture": "scss-map", "file": "src/_pagination.scss", "prompt": "Add a .pagination partial: a row of page links with previous and next at the ends and a disabled state." },
+    { "id": "n-tw-profile", "suite": "neutral", "fixture": "tailwind", "file": "src/ProfileCard.tsx", "prompt": "Add a ProfileCard component: avatar, name, role, a short bio and two action buttons." },
+    { "id": "n-tw-empty", "suite": "neutral", "fixture": "tailwind", "file": "src/EmptyState.tsx", "prompt": "Add an EmptyState component: an illustration slot, a title, a sentence of help text and a primary action." },
+    { "id": "n-css-modal", "suite": "neutral", "fixture": "css-tokens", "file": "src/modal.css", "prompt": "Add styles for a modal dialog: overlay, a panel with a header, scrollable body and a footer with actions." }
+  ]
+}

@@ -101,6 +101,7 @@ The audit scans CSS declarations, Tailwind class strings and your token contract
 - [For coding agents](docs/FOR_AGENTS.md): a paste-ready `AGENTS.md` block, installable with `npx rhythmguard init --agents all` for Claude Code, Cursor and Copilot
 - [Quiet benchmark](docs/QUIET_BENCHMARK.md): findings on public design systems, checked on every change
 - [State of Spacing](docs/STATE_OF_SPACING.md): dated editions of the same data, ranked by drift density, with the values and properties that drifted
+- [Agent evals](docs/AGENT_EVALS.md): does a finding get a coding agent to zero drift, in how many rounds, at what cost, against a rules-only control
 - [Architecture](docs/ARCHITECTURE.md): the layers, the rule kit, the invariants and where each is enforced
 - [Product direction](docs/STRATEGY_2026-09.md)
 - Browser playground: [petrilahdelma.github.io/stylelint-plugin-rhythmguard](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/) runs the real rules, bundled for the browser, on CSS or SCSS you paste; `scale: "auto"`, tokens and fixes included, and a test proves it reports what Stylelint reports
