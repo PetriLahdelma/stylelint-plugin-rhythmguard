@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- The post-publish smoke waits up to ten minutes for the registry to list the new version before deciding it is unpublished. It checked once, and the registry took three minutes to list 3.7.1, so the smoke skipped itself and had to be dispatched by hand.
+
 ## [3.7.1] - 2026-09-17
 
 ### Fixed

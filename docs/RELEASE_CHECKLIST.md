@@ -43,7 +43,7 @@ The notes are the changelog section rewritten for a reader who has not followed 
 
 - `gh run list --workflow release.yml --limit 1`: all verify jobs and `publish` green.
 - `npm view stylelint-plugin-rhythmguard@X.Y.Z version dist-tags.latest dist.attestations`: the version is `latest` and carries SLSA provenance.
-- The `Post Publish Smoke` workflow, which installs the published package into a clean project, is green.
+- The `Post Publish Smoke` workflow, which waits for the registry to list the version and installs it into a clean project, is green. Check its log says the smoke ran, not that it skipped.
 
 ## 6. If the farm is down
 
