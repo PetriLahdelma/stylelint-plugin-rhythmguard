@@ -78,7 +78,16 @@
       "paths": [
         "scss"
       ],
-      "notes": "SCSS. Spacing comes from the $spacer map, not custom properties, so inference is expected to fall back."
+      "notes": "SCSS, v5 (main). Spacing is the $spacer and $spacers map in scss/_variables.scss, read as Sass tokens. Maintainers will not change v5 Sass (twbs/bootstrap#42907)."
+    },
+    {
+      "name": "bootstrap-v6",
+      "url": "https://github.com/twbs/bootstrap.git",
+      "ref": "v6-dev",
+      "paths": [
+        "scss"
+      ],
+      "notes": "SCSS, the v6 branch the maintainers asked to see (twbs/bootstrap#42907). $spacers is declared as defaults((...), $spacers) in scss/_config.scss, a thirteen-step ladder from 0 to 48px, read since #143."
     },
     {
       "name": "primer-css",

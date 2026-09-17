@@ -456,13 +456,65 @@ function parseScssDeclarations(source) {
     }
 
     startPattern.lastIndex = index;
+    const isDefault = /!default\b/.test(value);
     const cleaned = value.replace(/!(default|global)\b/g, '').trim();
-    if (cleaned && !declarations.has(name)) {
+    // Sass semantics at the top level: `!default` assigns only when the variable is
+    // still unset, a plain assignment always wins. Bootstrap v6 declares
+    // `$spacers: () !default;` and then `$spacers: defaults((...), $spacers);`.
+    if (cleaned && (!declarations.has(name) || !isDefault)) {
       declarations.set(name, cleaned);
     }
   }
 
+  for (const [name, raw] of declarations) {
+    const unwrapped = unwrapScssMapCall(raw, declarations);
+    if (unwrapped) {
+      declarations.set(name, unwrapped);
+    }
+  }
+
   return declarations;
+}
+
+/**
+ * A map declared through a merge helper, read as the map it produces:
+ * `defaults((...), $spacers)` (Bootstrap v6), `map.merge($a, (...))`,
+ * `map-merge((...), (...))`. Map-literal arguments and variables that hold a
+ * map are merged left to right with later keys winning, as Sass does; anything
+ * else (an unset `!default` placeholder, an expression) contributes nothing.
+ */
+const SCSS_MAP_MERGE_CALL = /^(?:defaults|map\.merge|map-merge)\s*\(([\s\S]*)\)$/;
+
+function unwrapScssMapCall(raw, declarations) {
+  const match = raw.match(SCSS_MAP_MERGE_CALL);
+  if (!match) {
+    return null;
+  }
+  const entries = new Map();
+  for (const argument of splitTopLevel(match[1], ',')) {
+    const text = argument.trim();
+    let mapLiteral = null;
+    if (isScssMap(text)) {
+      mapLiteral = text;
+    } else if (/^\$[\w-]+$/.test(text)) {
+      const referenced = declarations.get(text.slice(1));
+      if (referenced && isScssMap(referenced)) {
+        mapLiteral = referenced;
+      }
+    }
+    if (!mapLiteral) {
+      continue;
+    }
+    for (const entry of splitTopLevel(mapLiteral.slice(1, -1), ',')) {
+      const pair = splitTopLevel(entry, ':');
+      if (pair.length < 2) continue;
+      entries.set(pair[0].trim(), pair.slice(1).join(':').trim());
+    }
+  }
+  if (entries.size === 0) {
+    return null;
+  }
+  return `(${[...entries].map(([key, expression]) => `${key}: ${expression}`).join(', ')})`;
 }
 
 function isScssMap(raw) {

@@ -46,7 +46,7 @@ npm install --save-dev postcss-scss
 
 Without it, SCSS files are counted under `scanned.scssSkipped` and the text and Markdown output say so, rather than failing.
 
-Literal lengths in SCSS are checked. Declarations whose value is a Sass variable or function call are ignored, since Sass is not compiled. For `--scale auto`, however, the audit does read Sass variables and maps as token sources: `$spacer: 1rem`, `$spacing-01: 0.125rem`, and maps such as Bootstrap's `$spacers: (1: $spacer * .25, ...)` including nested maps, variable references, `* / + -` arithmetic and `math.div()`. Function calls it cannot evaluate, strings, keywords and interpolated keys are skipped. Token names appear as `$spacer` or `$spacers.3` in the scale provenance.
+Literal lengths in SCSS are checked. Declarations whose value is a Sass variable or function call are ignored, since Sass is not compiled. For `--scale auto`, however, the audit does read Sass variables and maps as token sources: `$spacer: 1rem`, `$spacing-01: 0.125rem`, and maps such as Bootstrap's `$spacers: (1: $spacer * .25, ...)` including nested maps, variable references, `* / + -` arithmetic and `math.div()`. A map declared through `defaults(...)`, `map.merge(...)` or `map-merge(...)` is read as the merged map, later keys winning, which is how Bootstrap v6 declares `$spacers`. Assignments follow Sass: a later plain assignment replaces an earlier `!default`, a later `!default` does not. Other function calls, strings, keywords and interpolated keys are skipped. Token names appear as `$spacer` or `$spacers.3` in the scale provenance.
 
 ## Markdown output
 
