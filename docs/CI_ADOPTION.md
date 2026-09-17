@@ -15,6 +15,27 @@ The baseline records known findings. Future checks can compare against it withou
 
 ## 2. Add the GitHub Actions job
 
+The shortest form is the [Rhythmguard Audit action](https://github.com/PetriLahdelma/rhythmguard-action), which does sections 2, 2b, 3 and 5 of this page in one step: annotations on the diff, a pull-request comment updated in place, the job summary, a failing gate on new drift against the baseline, and an optional badge document.
+
+```yaml
+name: Spacing
+on: [pull_request]
+permissions:
+  contents: read
+  pull-requests: write
+jobs:
+  spacing:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: PetriLahdelma/rhythmguard-action@v1
+        with:
+          directory: src
+```
+
+The rest of this page is the same workflow written by hand, for teams that want to see and own each step.
+
+
 ```yaml
 name: Rhythmguard
 
