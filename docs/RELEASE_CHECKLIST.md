@@ -13,10 +13,11 @@ Releases are maintainer-run and take about twenty minutes of attention. The publ
 ```bash
 git checkout -b release/vX.Y.Z origin/main
 npm version X.Y.Z --no-git-tag-version
+npm version X.Y.Z --no-git-tag-version --prefix packages/rhythmguard
 npm version X.Y.Z --no-git-tag-version --prefix packages/eslint-plugin-rhythmguard
 ```
 
-Then set `dependencies["stylelint-plugin-rhythmguard"]` in `packages/eslint-plugin-rhythmguard/package.json` to `^X.Y.Z`. A contract test fails if the two versions or that range disagree.
+Then set `dependencies["stylelint-plugin-rhythmguard"]` to `^X.Y.Z` in both `packages/*/package.json`. A contract test fails if any version or that range disagrees.
 
 Rename the `## [Unreleased]` section of `CHANGELOG.md` to `## [X.Y.Z] - YYYY-MM-DD`, leaving an empty `## [Unreleased]` above it.
 
@@ -48,12 +49,19 @@ The notes are the changelog section rewritten for a reader who has not followed 
 - `npm view stylelint-plugin-rhythmguard@X.Y.Z version dist-tags.latest dist.attestations`: the version is `latest` and carries SLSA provenance.
 - The `Post Publish Smoke` workflow, which waits for the registry to list the version and installs it into a clean project, is green. Check its log says the smoke ran, not that it skipped.
 
-## 6. eslint-plugin-rhythmguard
+## 6. Companion packages
 
-The ESLint companion is also published under its own name from `packages/eslint-plugin-rhythmguard`, by the same release run, after the registry lists the main version. The step is gated on the repository variable `PUBLISH_ESLINT_PLUGIN`. Two one-time steps before setting it:
+Two more packages publish from this repository, by the same release run, after the registry lists the main version:
 
-1. First publish by hand, since npm trusted publishing can only be configured on a package that exists: `cd packages/eslint-plugin-rhythmguard && npm publish --access public --registry https://registry.npmjs.org` with your npm login and OTP.
-2. On npmjs.com, package settings, add a trusted publisher: repository `PetriLahdelma/stylelint-plugin-rhythmguard`, workflow `release.yml`. Then `gh variable set PUBLISH_ESLINT_PLUGIN --body true`.
+- `rhythmguard` (`packages/rhythmguard`): the command name, so `npx rhythmguard` works in a project that has installed nothing. One dependency, one line.
+- `eslint-plugin-rhythmguard` (`packages/eslint-plugin-rhythmguard`): the ESLint companion under its own name.
+
+The steps are gated on the repository variable `PUBLISH_COMPANIONS`. Two one-time steps before setting it, for each package:
+
+1. First publish by hand, since npm trusted publishing can only be configured on a package that exists: `cd packages/<name> && npm publish --access public --registry https://registry.npmjs.org` with your npm login and OTP.
+2. On npmjs.com, package settings, add a trusted publisher: repository `PetriLahdelma/stylelint-plugin-rhythmguard`, workflow `release.yml`.
+
+Then `gh variable set PUBLISH_COMPANIONS --body true`. Until then the steps are skipped and the release is unaffected.
 
 ## 7. If the farm is down
 

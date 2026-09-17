@@ -62,6 +62,11 @@
       "require": "./src/audit/index.js",
       "import": "./src/audit/index.mjs"
     },
+    "./cli": {
+      "types": "./types/cli.d.ts",
+      "require": "./src/cli/index.js",
+      "import": "./src/cli/index.mjs"
+    },
     "./rules/use-scale": {
       "types": "./types/rule.d.ts",
       "require": "./src/rules/use-scale/index.js",

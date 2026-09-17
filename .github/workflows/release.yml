@@ -86,14 +86,14 @@ jobs:
       - name: Publish to npm via OIDC
         run: npm publish --access public --registry https://registry.npmjs.org
 
-      # eslint-plugin-rhythmguard is the ESLint companion under its own name. It
-      # depends on the version published above, so the registry must list that
-      # version first (propagation takes a few minutes). Gated on a repository
-      # variable until the package exists on npm with a trusted publisher bound
-      # to this workflow; the first publish is a manual `npm publish` by the
-      # maintainer (docs/RELEASE_CHECKLIST.md).
+      # The companion packages (rhythmguard, the command name; eslint-plugin-rhythmguard,
+      # the ESLint companion under its own name) depend on the version published above,
+      # so the registry must list it first (propagation takes a few minutes). Gated on
+      # a repository variable until both packages exist on npm with a trusted publisher
+      # bound to this workflow; the first publish of each is a manual `npm publish` by
+      # the maintainer (docs/RELEASE_CHECKLIST.md).
       - name: Wait for the registry to list the version
-        if: vars.PUBLISH_ESLINT_PLUGIN == 'true'
+        if: vars.PUBLISH_COMPANIONS == 'true'
         run: |
           version="$(node -p "require('./package.json').version")"
           for attempt in $(seq 1 40); do
@@ -106,7 +106,12 @@ jobs:
           echo "::error::stylelint-plugin-rhythmguard@$version not on the registry after ten minutes"
           exit 1
 
+      - name: Publish rhythmguard to npm via OIDC
+        if: vars.PUBLISH_COMPANIONS == 'true'
+        working-directory: packages/rhythmguard
+        run: npm publish --access public --registry https://registry.npmjs.org
+
       - name: Publish eslint-plugin-rhythmguard to npm via OIDC
-        if: vars.PUBLISH_ESLINT_PLUGIN == 'true'
+        if: vars.PUBLISH_COMPANIONS == 'true'
         working-directory: packages/eslint-plugin-rhythmguard
         run: npm publish --access public --registry https://registry.npmjs.org
