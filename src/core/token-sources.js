@@ -413,6 +413,36 @@ function collectScssTokens(source, matchesKind) {
   return tokens;
 }
 
+/**
+ * A variable resolver over a Sass source text, for evaluating declaration
+ * values: same-file declarations first, then `fallback(name)` for a length
+ * declared elsewhere (a scaleSources file, an installed package).
+ */
+function createScssVariableResolver(source, fallback = () => null) {
+  const declarations = parseScssDeclarations(source || '');
+  const cache = new Map();
+  const resolveVariable = (name, stack) => {
+    if (cache.has(name)) {
+      return cache.get(name);
+    }
+    if (stack.has(name)) {
+      return null;
+    }
+    let value = null;
+    if (declarations.has(name)) {
+      stack.add(name);
+      const raw = declarations.get(name);
+      value = isScssMap(raw) ? null : evaluateScssExpression(raw, resolveVariable, stack);
+      stack.delete(name);
+    } else {
+      value = fallback(name);
+    }
+    cache.set(name, value);
+    return value;
+  };
+  return resolveVariable;
+}
+
 /** `$<namespace>-spacing-points`, `$<ns>-space-scale`: one namespace segment before the anchor. */
 const NAMESPACED_SPACING_MAP = /^\$[a-z0-9]+-(?:space|spacing|spacer)s?(?:-|$)/i;
 const MIN_NAMESPACED_MAP_LENGTHS = 4;
@@ -587,20 +617,19 @@ function tokenizeScssExpression(expression) {
       }
       return null;
     }
+    const start = index + (match[0].length - match[0].trimStart().length);
     index = SCSS_TOKEN_PATTERN.lastIndex;
-    if (match[1] !== undefined) tokens.push({ type: 'number', raw: match[1] });
-    else if (match[2] !== undefined) tokens.push({ type: 'var', name: match[2].slice(1) });
-    else if (match[3] !== undefined) tokens.push({ type: 'call', name: match[3] });
-    else tokens.push({ type: 'op', value: match[4] });
+    const span = { end: index, start };
+    if (match[1] !== undefined) tokens.push({ type: 'number', raw: match[1], ...span });
+    else if (match[2] !== undefined) tokens.push({ type: 'var', name: match[2].slice(1), ...span });
+    else if (match[3] !== undefined) tokens.push({ type: 'call', name: match[3], ...span });
+    else tokens.push({ type: 'op', value: match[4], ...span });
   }
   return tokens;
 }
 
-function evaluateScssExpression(expression, resolveVariable, stack) {
-  const tokens = tokenizeScssExpression(expression.trim());
-  if (!tokens || tokens.length === 0) {
-    return null;
-  }
+/** A recursive-descent parser over Sass expression tokens; `parseExpression` consumes one arithmetic expression. */
+function createScssParser(tokens, resolveVariable, stack) {
   let position = 0;
   const peek = () => tokens[position];
   const next = () => tokens[position++];
@@ -687,8 +716,46 @@ function evaluateScssExpression(expression, resolveVariable, stack) {
     return value;
   };
 
-  const result = parseExpression();
-  return position === tokens.length ? result : null;
+  return {
+    get position() { return position; },
+    parseExpression,
+  };
+}
+
+function evaluateScssExpression(expression, resolveVariable, stack) {
+  const tokens = tokenizeScssExpression(expression.trim());
+  if (!tokens || tokens.length === 0) {
+    return null;
+  }
+  const parser = createScssParser(tokens, resolveVariable, stack);
+  const result = parser.parseExpression();
+  return parser.position === tokens.length ? result : null;
+}
+
+/**
+ * A space-separated Sass value (`$spacer * .3 $spacer`) as its evaluated terms,
+ * each with the source text it came from, or null when any term cannot be
+ * evaluated (an unknown variable, a keyword, a function the evaluator does not
+ * know). A `-` between terms is read as subtraction, as Sass does.
+ */
+function evaluateScssValueList(value, resolveVariable, stack) {
+  const tokens = tokenizeScssExpression(value);
+  if (!tokens || tokens.length === 0) {
+    return null;
+  }
+  const parser = createScssParser(tokens, resolveVariable, stack);
+  const terms = [];
+  while (parser.position < tokens.length) {
+    const startToken = tokens[parser.position];
+    const before = parser.position;
+    const result = parser.parseExpression();
+    if (!result || parser.position === before) {
+      return null;
+    }
+    const endToken = tokens[parser.position - 1];
+    terms.push({ ...result, end: endToken.end, start: startToken.start, text: value.slice(startToken.start, endToken.end) });
+  }
+  return terms;
 }
 
 function formatScssValue(value) {
@@ -905,6 +972,8 @@ function formatPath(filePath) {
 }
 
 module.exports = {
+  createScssVariableResolver,
+  evaluateScssValueList,
   VALID_TOKEN_KINDS,
   VALID_TOKEN_SOURCE_FORMATS,
   addDefinition,

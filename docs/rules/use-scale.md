@@ -92,6 +92,21 @@ Declarations in `:root`, `html`, `:host` and `@theme` blocks (through `@media`, 
 
 Token values in `rem` and `em` are converted through `baseFontSize`; values in units that cannot convert to `px` are ignored. Sass variables and maps (`$spacer`, `$spacers: (1: $spacer * .25, ...)`) count too, both in `scaleSources` files and in the linted `.scss` file itself when Stylelint runs with `postcss-scss`; names must start with the scale word, so `$dropdown-spacer` is not a token; maps wrapped in `defaults()` or `map.merge()` are read as the merged map. Values written as `calc(<length> * var(--factor))`, the Radix Themes scaling idiom, contribute the length. A bare Tailwind v4 base (`--spacing: 0.25rem`) expands into Tailwind's default multiplier scale. Prefixed names such as `--lb-spacing-md` or `--mantine-spacing-xs` match; `letter-spacing` and `word-spacing` tokens never do. `customScale` still overrides everything.
 
+## Sass expressions
+
+In `.scss` files (Stylelint with `postcss-scss`), a value written as a Sass expression is evaluated and each term checked like a literal:
+
+```scss
+$spacer: 1rem;
+.card { padding: $spacer * .3 $spacer; }
+```
+
+```
+Unexpected off-scale value "$spacer * .3". Use scale values (nearest: 4px or 8px). Evaluates to 4.8px. (rhythmguard/use-scale)
+```
+
+Variables resolve from the linted file first, then from `scaleSources`, the config file's token sources and installed token packages. `* / + -`, parentheses, negation and `math.div()` are understood; a term that does not resolve (an unknown variable, another function, a keyword) is left alone, as it always was. The hairline allowance and decisions apply to the evaluated value. Expressions are reported, never rewritten: `--fix` does not know whether `$spacer * .3` should become a literal or a different multiplier.
+
 ## Options
 
 | Option | Type | Default | Description |

@@ -14,8 +14,8 @@
     ]
   },
   "summary": {
-    "total": 35,
-    "drift": 26,
+    "total": 39,
+    "drift": 30,
     "falsePositives": 9
   },
   "findings": [
@@ -46,9 +46,13 @@
     "packages/usa-file-input/src/styles/_usa-file-input.scss:7:0.2rem:drift",
     "packages/usa-language-selector/src/styles/_usa-language-selector.scss:15:0.3rem:drift",
     "packages/usa-process-list/src/styles/_usa-process-list.scss:19:20px:drift",
+    "packages/usa-process-list/src/styles/_usa-process-list.scss:68:$half-of-font-size:drift",
     "packages/usa-range/src/styles/_usa-range.scss:45:5px:drift",
     "packages/usa-range/src/styles/_usa-range.scss:46:5px:drift",
     "packages/usa-range/src/styles/_usa-range.scss:98:-4px:drift",
+    "packages/usa-tooltip/src/styles/_usa-tooltip.scss:135:-$triangle-size:drift",
+    "packages/usa-tooltip/src/styles/_usa-tooltip.scss:151:-$triangle-size:drift",
+    "packages/usa-tooltip/src/styles/_usa-tooltip.scss:78:-$triangle-size:drift",
     "packages/uswds-core/src/styles/mixins/typography/usa-list.scss:16:0.25em:drift",
     "packages/uswds-core/src/styles/mixins/typography/usa-list.scss:21:0.25em:drift",
     "packages/uswds-core/src/styles/placeholders/_list.scss:16:0.25em:drift",

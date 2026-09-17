@@ -14,8 +14,8 @@
     ]
   },
   "summary": {
-    "total": 126,
-    "drift": 126,
+    "total": 128,
+    "drift": 128,
     "falsePositives": 0
   },
   "findings": [
@@ -123,6 +123,8 @@
     "src/scss/_widgets.scss:102:.625rem:drift",
     "src/scss/_widgets.scss:133:.3125rem:drift",
     "src/scss/_widgets.scss:183:.3125rem:drift",
+    "src/scss/compat/_select2.scss:140:$lte-select2-choice-padding-x:drift",
+    "src/scss/compat/_select2.scss:152:$lte-select2-choice-padding-x:drift",
     "src/scss/mixins/_animations.scss:54:2px:drift",
     "src/scss/mixins/_animations.scss:57:-2px:drift",
     "src/scss/mixins/_animations.scss:60:-3px:drift",

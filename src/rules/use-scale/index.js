@@ -29,6 +29,7 @@ const {
   collectTokenDefinitions,
   withResolvedScale,
 } = require('../../core/scale-inference');
+const { createScssVariableResolver, evaluateScssValueList } = require('../../core/token-sources');
 
 const { createTokenRegex, reportInvalidPreset, reportProblem, reportValueNode } = require('../report');
 const { decisionFor, loadRcDecisions } = require('../../core/decisions');
@@ -59,13 +60,17 @@ function readDecisions(options, { result, root }) {
 
 function checkLengthValue({
   decl,
+  evaluated = null,
+  fixable = true,
   node,
   options,
   report,
   scaleByUnit,
   scalePx,
 }) {
-  const parsedLength = parseLengthToken(node.value);
+  // `evaluated` is a length that came from a Sass expression; the node's text is
+  // the expression, which is reported but never rewritten.
+  const parsedLength = evaluated || parseLengthToken(node.value);
 
   if (!parsedLength) {
     return false;
@@ -130,11 +135,11 @@ function checkLengthValue({
       return false;
     }
 
-    const fixedValue = options.fixToScale
+    const fixedValue = options.fixToScale && fixable
       ? replacementFor(parsedLength, nearest.nearest, options)
       : null;
 
-    report(node.value, decl, node, nearest, fixedValue, unit);
+    report(node.value, decl, node, nearest, fixedValue, unit, evaluated ? evaluatedNote(evaluated, options) : '');
     return true;
   }
 
@@ -154,11 +159,58 @@ function checkLengthValue({
     return false;
   }
 
-  const fixedValue = options.fixToScale
+  const fixedValue = options.fixToScale && fixable
     ? replacementFor(parsedLength, nearest.nearest, options)
     : null;
 
-  report(node.value, decl, node, nearest, fixedValue, 'px');
+  report(node.value, decl, node, nearest, fixedValue, 'px', evaluated ? evaluatedNote(evaluated, options) : '');
+  return true;
+}
+
+/** What a Sass expression came to, so the reader sees the number the scale was checked against. */
+function evaluatedNote(evaluated, options) {
+  const px = toPx(evaluated.number, evaluated.unit, options.baseFontSize);
+  return px === null ? '' : `Evaluates to ${formatLength(px, 'px')}.`;
+}
+
+/**
+ * Sass values (`$spacer * .3`, `math.div($spacer, 2)`, `$y $x`) are evaluated
+ * with the file's own variables first and the project's spacing tokens second,
+ * and each term is checked like a literal. Terms that do not resolve are left
+ * alone, as they always were.
+ */
+function checkSassValue({ decl, options, report, resolveVariable, scaleByUnit, scalePx }) {
+  const terms = evaluateScssValueList(decl.value, resolveVariable, new Set());
+  if (!terms) {
+    // Not fully evaluable (an unknown variable, interpolation, a keyword): the
+    // literal walk below still checks the plain lengths in the value.
+    return false;
+  }
+  // Right to left, so a fix spliced into an earlier term never shifts the spans
+  // of the terms still to be checked. Stylelint orders the warnings by position.
+  for (const term of [...terms].reverse()) {
+    if (!term.unit || term.number === 0) {
+      continue;
+    }
+    const node = {
+      sourceIndex: term.start,
+      type: 'word',
+      get value() { return term.text; },
+      // The fix writes into the declaration at the term's span.
+      set value(replacement) { decl.value = `${decl.value.slice(0, term.start)}${replacement}${decl.value.slice(term.end)}`; },
+    };
+    checkLengthValue({
+      decl,
+      evaluated: { number: term.number, unit: term.unit },
+      // A term that is a plain literal keeps its autofix; an expression is only reported.
+      fixable: parseLengthToken(term.text) !== null,
+      node,
+      options,
+      report,
+      scaleByUnit,
+      scalePx,
+    });
+  }
   return true;
 }
 
@@ -195,13 +247,13 @@ const ruleFunction = (primary, secondaryOptions) => {
     let fallbackNote = autoScaleFallbackNote(options.scaleInference);
     const getScaleStateForProperty = createPropertyScaleResolver(options);
 
-    const report = (value, decl, node, nearest, fixedValue = null, nearestUnit = 'px') => {
+    const report = (value, decl, node, nearest, fixedValue = null, nearestUnit = 'px', extraNote = '') => {
       const lower = nearest ? formatLength(nearest.lower, nearestUnit) : 'n/a';
       const upper = nearest ? formatLength(nearest.upper, nearestUnit) : 'n/a';
       const tokenNote = nearest ? tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit)) : '';
       reportValueNode({
         decl,
-        message: messages.rejected(value, lower, upper, [fallbackNote, tokenNote, options.note].filter(Boolean).join(' ')),
+        message: messages.rejected(value, lower, upper, [fallbackNote, tokenNote, extraNote, options.note].filter(Boolean).join(' ')),
         node,
         replacement: fixedValue,
         result,
@@ -210,9 +262,24 @@ const ruleFunction = (primary, secondaryOptions) => {
       fallbackNote = '';
     };
 
+    // Built on the first Sass value seen, so plain CSS pays nothing.
+    let resolveSassVariable = null;
+    const sassResolver = () => {
+      if (!resolveSassVariable) {
+        const definitions = collectTokenDefinitions({ baseFontSize: options.baseFontSize, root, scaleSources: options.scaleSources, tokenRegex });
+        resolveSassVariable = createScssVariableResolver(root.source && root.source.input ? root.source.input.css : '', (name) => {
+          const definition = definitions.get(`$${name}`);
+          const first = definition ? [...definition.values][0] : null;
+          const parsed = first ? parseLengthToken(String(first).trim()) : null;
+          return parsed && parsed.unit ? { number: parsed.number, unit: parsed.unit } : null;
+        });
+      }
+      return resolveSassVariable;
+    };
+
     root.walkDecls((decl) => {
       const prop = decl.prop.toLowerCase();
-      if (prop.startsWith('--')) {
+      if (prop.startsWith('--') || prop.startsWith('$')) {
         return;
       }
 
@@ -221,6 +288,11 @@ const ruleFunction = (primary, secondaryOptions) => {
       }
 
       const { scaleByUnit, scalePx } = getScaleStateForProperty(prop);
+
+      if (decl.value.includes('$') && checkSassValue({ decl, options, report, resolveVariable: sassResolver(), scaleByUnit, scalePx })) {
+        return;
+      }
+
       const parsed = valueParser(decl.value);
       let changed = false;
 
