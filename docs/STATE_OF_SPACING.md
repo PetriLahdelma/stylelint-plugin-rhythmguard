@@ -1,6 +1,6 @@
 # State of Spacing, 2026-09
 
-How consistently 57 public design systems keep their spacing on their own scale, measured by `rhythmguard audit --scale auto` on pinned commits and generated on 2026-09-08. Off-scale means a literal length that is not on the scale the repository itself defines; hairlines, percentages and generated or test paths are excluded. The full method and the false-positive accounting are in [`QUIET_BENCHMARK.md`](./QUIET_BENCHMARK.md).
+How consistently 58 public design systems keep their spacing on their own scale, measured by `rhythmguard audit --scale auto` on pinned commits and generated on 2026-09-17. Off-scale means a literal length that is not on the scale the repository itself defines; hairlines, percentages and generated or test paths are excluded. The full method and the false-positive accounting are in [`QUIET_BENCHMARK.md`](./QUIET_BENCHMARK.md).
 
 This is not a ranking of teams. It is a reading of one signal on a fixed commit, and the row order is drift per 100 CSS files so that large codebases are not penalised for size. Every row reproduces with one command in a checkout of that commit:
 
@@ -8,7 +8,7 @@ This is not a ranking of teams. It is a reading of one signal on a fixed commit,
 npx rhythmguard audit . --scale auto --format markdown
 ```
 
-Across the set: 7933 off-scale values in 8585 CSS files; 33 of 57 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS; 6 told us the scale lives in a dependency package a source scan cannot see and are listed without a count until the benchmark can install it; 1 told us they have no spacing scale by design and are listed without a count, and 3 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
+Across the set: 7952 off-scale values in 8729 CSS files; 33 of 58 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS; 6 told us the scale lives in a dependency package a source scan cannot see and are listed without a count until the benchmark can install it; 1 told us they have no spacing scale by design and are listed without a count, and 3 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
 
 ## Repositories
 
@@ -47,6 +47,7 @@ Across the set: 7933 off-scale values in 8585 CSS files; 33 of 57 repositories h
 | [nhsuk-frontend](https://github.com/nhsuk/nhsuk-frontend) | `10caad9` | scanned-css | 28 | 19 | 97% | `-6px` ×7, `2px` ×5, `6px` ×5 | `margin-left` ×8, `margin-right` ×8, `padding-top` ×5 |
 | [mozilla-protocol](https://github.com/mozilla/protocol) | `6bcf867` | fallback | 18 | 17 | 83% | `-60px` ×2, `0.35em` ×2, `1.25em` ×2 | `padding` ×5, `transform` ×4, `margin` ×3 |
 | [salesforce-lightning](https://github.com/salesforce-ux/design-system) | `9bc6a40` | fallback | 58 | 13 | 98% | `2.5rem` ×3, `-0.35rem` ×2, `-2.25rem` ×2 | `padding-left` ×21, `padding-right` ×21, `transform` ×5 |
+| [bootstrap-v6](https://github.com/twbs/bootstrap) | `5726523` | scanned-css | 19 | 13 | 76% | `.125rem` ×9, `-.125rem` ×1, `-100px` ×1 | `padding` ×4, `margin-top` ×3, `margin-block-start` ×2 |
 | [pico](https://github.com/picocss/pico) | `1039a47` | fallback | 7 | 13 | 91% | `-0.3rem` ×2, `-0.125em` ×1, `0.125rem` ×1 | `transform` ×4, `padding` ×2, `margin-top` ×1 |
 | [angular-material](https://github.com/angular/components) | `3d30bf1` | fallback | 30 | 11 | 96% | `20px` ×4, `64px` ×3, `6px` ×3 | `margin` ×9, `padding` ×7, `transform` ×4 |
 | [cloudscape-components](https://github.com/cloudscape-design/components) | `0c1c9fd` | fallback | 27 | 8 | 99% | `-5px` ×5, `-9999px` ×4, `2px` ×4 | `transform` ×6, `inset-block-start` ×5, `inset-inline-start` ×5 |

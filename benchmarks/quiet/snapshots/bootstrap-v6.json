@@ -1,0 +1,49 @@
+{
+  "name": "bootstrap-v6",
+  "sha": "5726523",
+  "scale": {
+    "source": "scanned-css",
+    "values": [
+      0,
+      4,
+      6,
+      8,
+      12,
+      16,
+      20,
+      24,
+      28,
+      32,
+      36,
+      40,
+      48
+    ]
+  },
+  "summary": {
+    "total": 19,
+    "drift": 19,
+    "falsePositives": 0
+  },
+  "findings": [
+    "scss/_avatar.scss:140:-2px:drift",
+    "scss/_calendar.scss:153:-.125rem:drift",
+    "scss/_calendar.scss:293:.125rem:drift",
+    "scss/_calendar.scss:294:.125rem:drift",
+    "scss/_menu.scss:206:.125rem:drift",
+    "scss/_menu.scss:225:.125rem:drift",
+    "scss/forms/_form-range.scss:215:.125rem:drift",
+    "scss/forms/_validation.scss:43:.1rem:drift",
+    "scss/utilities/_api.scss:38:2px:drift",
+    "site/src/scss/_anchor.scss:5:.175rem:drift",
+    "site/src/scss/_brand.scss:14:-5px:drift",
+    "site/src/scss/_component-examples.scss:395:.125rem:drift",
+    "site/src/scss/_scrolling.scss:15:100px:drift",
+    "site/src/scss/_search.scss:21:-100px:drift",
+    "site/src/scss/_search.scss:258:.15rem:drift",
+    "site/src/scss/_search.scss:26:-140px:drift",
+    "site/src/scss/_search.scss:318:.125rem:drift",
+    "site/src/scss/_search.scss:93:.125rem:drift",
+    "site/src/scss/_sidebar.scss:74:.125rem:drift"
+  ],
+  "commit": "5726523804eb48e2536cbf7e5c8121e54423a491"
+}

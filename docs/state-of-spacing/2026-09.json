@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-08",
+  "generatedAt": "2026-09-17",
   "id": "2026-09",
   "previousId": null,
   "rows": [
@@ -1854,6 +1854,65 @@
       ]
     },
     {
+      "name": "bootstrap-v6",
+      "url": "https://github.com/twbs/bootstrap",
+      "sha": "5726523",
+      "cssFiles": 144,
+      "cleanliness": 76,
+      "drift": 19,
+      "driftPer100Files": 13,
+      "driftDelta": null,
+      "scaleIntent": null,
+      "scalePackage": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
+      "scaleRejected": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        4,
+        6,
+        8,
+        12,
+        16,
+        20,
+        24,
+        28,
+        32,
+        36,
+        40,
+        48
+      ],
+      "topProperties": [
+        [
+          "padding",
+          4
+        ],
+        [
+          "margin-top",
+          3
+        ],
+        [
+          "margin-block-start",
+          2
+        ]
+      ],
+      "topValues": [
+        [
+          ".125rem",
+          9
+        ],
+        [
+          "-.125rem",
+          1
+        ],
+        [
+          "-100px",
+          1
+        ]
+      ]
+    },
+    {
       "name": "pico",
       "url": "https://github.com/picocss/pico",
       "sha": "1039a47",
@@ -3142,9 +3201,9 @@
     }
   ],
   "totals": {
-    "cssFiles": 8585,
-    "drift": 7933,
-    "repos": 57,
+    "cssFiles": 8729,
+    "drift": 7952,
+    "repos": 58,
     "fallbackScales": 33,
     "inPackage": 6,
     "noScaleByDesign": 1,

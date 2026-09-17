@@ -57,7 +57,8 @@ function run(cmd, cmdArgs, options = {}) {
 
 /**
  * Checkout pinned to the commit recorded in the snapshot, so upstream churn
- * cannot fail our CI. `--latest` fetches the default branch head instead.
+ * cannot fail our CI. `--latest` fetches the head of the manifest's `ref`
+ * (a branch such as Bootstrap's `v6-dev`) or of the default branch instead.
  */
 function ensureCheckout(repo, pinnedCommit) {
   const dir = path.join(reposDir, repo.name);
@@ -65,7 +66,7 @@ function ensureCheckout(repo, pinnedCommit) {
     fs.mkdirSync(reposDir, { recursive: true });
     run('git', ['clone', '--depth', '1', '--filter=blob:none', '--sparse', '--quiet', repo.url, dir]);
   }
-  const target = pinnedCommit || 'HEAD';
+  const target = pinnedCommit || repo.ref || 'HEAD';
   run('git', ['-C', dir, 'fetch', '--depth', '1', '--quiet', 'origin', target]);
   run('git', ['-C', dir, 'checkout', '--detach', '--quiet', 'FETCH_HEAD']);
   run('git', ['-C', dir, 'sparse-checkout', 'set', '--no-cone', ...repo.paths]);
@@ -189,7 +190,7 @@ function renderDoc(results, rules) {
     '',
     '## Method',
     '',
-    '1. Sparse, shallow clone of each repository, pinned to the commit recorded in `benchmarks/quiet/snapshots/<repo>.json` so upstream churn cannot move the numbers; `--latest` audits the default branch head instead. Paths are limited to those listed in the manifest.',
+    '1. Sparse, shallow clone of each repository, pinned to the commit recorded in `benchmarks/quiet/snapshots/<repo>.json` so upstream churn cannot move the numbers; `--latest` audits the head of the manifest\'s `ref` (a branch, Bootstrap `v6-dev`) or of the default branch instead. Paths are limited to those listed in the manifest.',
     '2. `rhythmguard audit --scale auto` over the checkout. The scale is inferred from the repository\'s own spacing tokens when it has at least three distinct values (`--space-*`, `--spacing-*`, prefixed variants, calc-wrapped values, or a Tailwind v4 `--spacing` base); otherwise the audit falls back to `rhythmic-4` and the row says so.',
     '3. Only the `recommended` profile is scored: `use-scale` findings on CSS plus the Tailwind class-string rule. `prefer-token` findings (a raw value that could be a token) are reported as token opportunities in their own column and never count as drift.',
     '4. Every scored finding is classified. Path heuristics mark generated, vendored and test CSS as `noise:*`. Value heuristics, when any are configured, mark accepted exceptions as `allowance:*`; hairlines of one pixel or less are exempted by the rules themselves (`allowHairlines`, default on) since 2.2 and no longer appear as findings. Per-repo labels written after manual review override the heuristics. Everything else is `drift`.',

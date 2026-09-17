@@ -6,7 +6,13 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- Sass maps declared through a merge helper are read: `$spacers: defaults((...), $spacers)` (Bootstrap v6), `map.merge($base, (...))` and `map-merge((...), (...))` contribute the merged map, later keys winning. The reader also follows Sass assignment rules now: a later plain assignment replaces an earlier `!default`, a later `!default` does not. Before, the first assignment always won, so Bootstrap v6's `$spacers: () !default;` hid the map that followed it and `scale: "auto"` fell back. ([#143](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/143))
+
 ### Changed
+
+- The quiet benchmark has a `bootstrap-v6` row, the branch its maintainers asked to see (twbs/bootstrap#42907); the manifest accepts a `ref` so a row can pin a branch other than the default.
 
 - The release verify matrix and the post-publish smoke are back on the self-hosted farm. The repository variable `RELEASE_ON_HOSTED=true` moves a release onto GitHub-hosted runners while the farm is down, without a workflow edit or a re-cut; the release checklist explains when to use it.
 

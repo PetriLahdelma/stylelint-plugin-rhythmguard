@@ -31,6 +31,62 @@ test('collectScssTokens evaluates Bootstrap-style $spacer and a $spacers map wit
   });
 });
 
+test('collectScssTokens reads a map wrapped in defaults() after an empty !default, as Bootstrap v6 declares $spacers (issue #143)', () => {
+  const tokens = collectScssTokens([
+    '$spacer: 1rem !default;',
+    '$spacers: () !default;',
+    '// stylelint-disable-next-line scss/dollar-variable-default',
+    '$spacers: defaults(',
+    '  (',
+    '    0: 0,',
+    '    1: $spacer * .25,',
+    '    2: $spacer * .375,',
+    '    3: $spacer * .5,',
+    '  ),',
+    '  $spacers',
+    ');',
+  ].join('\n'), spacing);
+
+  assert.deepEqual(byName(tokens), {
+    '$spacer': '1rem',
+    '$spacers.0': '0',
+    '$spacers.1': '0.25rem',
+    '$spacers.2': '0.375rem',
+    '$spacers.3': '0.5rem',
+  });
+});
+
+test('collectScssTokens merges map.merge() and map-merge() arguments with the later map winning (issue #143)', () => {
+  const tokens = collectScssTokens([
+    '$spacing-base: (1: 4px, 2: 8px);',
+    '$spacing: map.merge($spacing-base, (2: 6px, 3: 12px));',
+    '$spacing-alt: map-merge((1: 4px), (1: 5px));',
+  ].join('\n'), spacing);
+
+  assert.deepEqual(byName(tokens), {
+    '$spacing-base.1': '4px',
+    '$spacing-base.2': '8px',
+    '$spacing.1': '4px',
+    '$spacing.2': '6px',
+    '$spacing.3': '12px',
+    '$spacing-alt.1': '5px',
+  });
+});
+
+test('a later plain assignment overrides an earlier !default, and a later !default does not (Sass semantics)', () => {
+  const tokens = collectScssTokens([
+    '$spacing-unit: 4px !default;',
+    '$spacing-unit: 8px;',
+    '$spacing-base: 16px;',
+    '$spacing-base: 20px !default;',
+  ].join('\n'), spacing);
+
+  assert.deepEqual(byName(tokens), {
+    '$spacing-unit': '8px',
+    '$spacing-base': '16px',
+  });
+});
+
 test('collectScssTokens reads Carbon-style flat variables and skips non-spacing names', () => {
   const tokens = collectScssTokens([
     '$spacing-01: 0.125rem !default;',

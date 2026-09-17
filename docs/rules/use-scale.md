@@ -90,7 +90,7 @@ Declarations in `:root`, `html`, `:host` and `@theme` blocks (through `@media`, 
 }
 ```
 
-Token values in `rem` and `em` are converted through `baseFontSize`; values in units that cannot convert to `px` are ignored. Sass variables and maps (`$spacer`, `$spacers: (1: $spacer * .25, ...)`) count too, both in `scaleSources` files and in the linted `.scss` file itself when Stylelint runs with `postcss-scss`; names must start with the scale word, so `$dropdown-spacer` is not a token. Values written as `calc(<length> * var(--factor))`, the Radix Themes scaling idiom, contribute the length. A bare Tailwind v4 base (`--spacing: 0.25rem`) expands into Tailwind's default multiplier scale. Prefixed names such as `--lb-spacing-md` or `--mantine-spacing-xs` match; `letter-spacing` and `word-spacing` tokens never do. `customScale` still overrides everything.
+Token values in `rem` and `em` are converted through `baseFontSize`; values in units that cannot convert to `px` are ignored. Sass variables and maps (`$spacer`, `$spacers: (1: $spacer * .25, ...)`) count too, both in `scaleSources` files and in the linted `.scss` file itself when Stylelint runs with `postcss-scss`; names must start with the scale word, so `$dropdown-spacer` is not a token; maps wrapped in `defaults()` or `map.merge()` are read as the merged map. Values written as `calc(<length> * var(--factor))`, the Radix Themes scaling idiom, contribute the length. A bare Tailwind v4 base (`--spacing: 0.25rem`) expands into Tailwind's default multiplier scale. Prefixed names such as `--lb-spacing-md` or `--mantine-spacing-xs` match; `letter-spacing` and `word-spacing` tokens never do. `customScale` still overrides everything.
 
 ## Options
 
