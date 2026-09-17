@@ -103,7 +103,7 @@ The audit scans CSS declarations, Tailwind class strings and your token contract
 - [State of Spacing](docs/STATE_OF_SPACING.md): dated editions of the same data, ranked by drift density, with the values and properties that drifted
 - [Architecture](docs/ARCHITECTURE.md): the layers, the rule kit, the invariants and where each is enforced
 - [Product direction](docs/STRATEGY_2026-09.md)
-- Browser playground: [petrilahdelma.github.io/stylelint-plugin-rhythmguard](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/), a simplified re-implementation for trying values in the browser; the real rules run under Node ([#57](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/57) tracks bundling them)
+- Browser playground: [petrilahdelma.github.io/stylelint-plugin-rhythmguard](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/) runs the real rules, bundled for the browser, on CSS or SCSS you paste; `scale: "auto"`, tokens and fixes included, and a test proves it reports what Stylelint reports
 
 ## Compatibility
 

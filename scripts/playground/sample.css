@@ -1,0 +1,24 @@
+/* Paste your CSS here, or try the sample below */
+
+@theme {
+  --spacing-1: 4px;
+  --spacing-2: 8px;
+  --spacing-3: 12px;
+  --spacing-4: 16px;
+}
+
+.card {
+  padding: 13px;          /* off-scale: nearest are 12px or 16px */
+  margin-bottom: 7px;     /* off-scale: nearest are 4px or 8px */
+  gap: 16px;              /* on-scale, but should be var(--spacing-4) */
+  border-radius: 0.5rem;  /* = 8px, on-scale */
+}
+
+.button {
+  padding: 8px 12px;      /* on-scale, could use tokens */
+  margin-top: 15px;       /* off-scale */
+}
+
+.stack > * + * {
+  margin-top: var(--spacing-3); /* on-scale, tokenized ✓ */
+}

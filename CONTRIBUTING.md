@@ -120,3 +120,7 @@ Compares runtime against `stylelint-scales` on a deterministic corpus. Method in
 ## The README recording
 
 `assets/quickstart.gif` is recorded with [vhs](https://github.com/charmbracelet/vhs) from `assets/quickstart.tape` on a shallow clone of Bootstrap `v6-dev` at `/tmp/bootstrap`. Re-record when the quickstart output changes: `git clone --depth 1 --branch v6-dev https://github.com/twbs/bootstrap.git /tmp/bootstrap && vhs assets/quickstart.tape`, then bump the `?v=` cache key on the image in `README.md`.
+
+## The browser playground
+
+`docs/index.html` runs the real rules through `docs/playground/rhythmguard.js`, an esbuild bundle of `src/` with a Stylelint shim and no-op Node shims (`scripts/playground/`). Rebuild it after any change under `src/` that the rules use: `npm run build:playground`, and commit the file. `test/contracts/playground.test.js` rebuilds the bundle and fails when the committed one is stale, and checks that the page's sample gets the same warnings from the bundle and from Stylelint.

@@ -414,6 +414,7 @@
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
   ::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
+.fixed-output { margin: 0; padding: 12px 14px; font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace; white-space: pre-wrap; color: inherit; }
 </style>
 </head>
 <body>
@@ -431,15 +432,15 @@
     </nav>
   </header>
 
-  <section class="release-strip" aria-label="Rhythmguard 2.2">
+  <section class="release-strip" aria-label="Rhythmguard playground">
     <div class="release-copy">
-      <span class="release-eyebrow">2.2</span>
-      <strong>One command audits a whole repository.</strong>
-      <span>This playground checks pasted CSS. In a project, <code>npx rhythmguard</code> infers your scale from your own tokens, lists the drift, and prints the config to paste. The audit adds JSON, HTML, SCSS, baselines and CI gates.</span>
+      <span class="release-eyebrow">3.x</span>
+      <strong>The real rules, in your browser.</strong>
+      <span>This page runs the same <code>use-scale</code> and <code>prefer-token</code> code the npm package ships, bundled for the browser; a test proves it reports what Stylelint reports. In a project, <code>npx stylelint-plugin-rhythmguard</code> infers your scale from your own tokens, lists the drift, and prints the config to paste.</span>
     </div>
     <div class="release-actions">
-      <a href="https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/AUDIT.md" target="_blank" rel="noopener">Audit guide</a>
-      <a href="https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/QUIET_BENCHMARK.md" target="_blank" rel="noopener">Quiet benchmark</a>
+      <a href="https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard#readme" target="_blank" rel="noopener">README</a>
+      <a href="https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/STATE_OF_SPACING.md" target="_blank" rel="noopener">State of Spacing</a>
     </div>
   </section>
 
@@ -456,11 +457,8 @@
         <div class="control">
           <label for="preset">Scale</label>
           <select id="preset">
+            <option value="auto">auto (from the tokens in the CSS)</option>
             <option value="rhythmic-4">rhythmic-4 (default)</option>
-            <option value="rhythmic-8">rhythmic-8</option>
-            <option value="compact">compact</option>
-            <option value="fibonacci">fibonacci</option>
-            <option value="tailwind-v4">tailwind v4 @theme</option>
             <option value="custom">custom</option>
           </select>
         </div>
@@ -471,6 +469,12 @@
         <div class="control">
           <label for="token-pattern">Token pattern</label>
           <input type="text" id="token-pattern" value="^--spac(e|ing)-" style="width: 180px" />
+        </div>
+        <div class="control">
+          <label class="control" style="cursor:pointer">
+            <input type="checkbox" id="scss" style="margin:0" />
+            <span>SCSS</span>
+          </label>
         </div>
       </div>
       <div class="pane-body">
@@ -486,6 +490,10 @@
             <input type="checkbox" id="show-passes" style="margin:0" />
             <span>show passes</span>
           </label>
+          <label class="control" style="cursor:pointer">
+            <input type="checkbox" id="show-fixed" style="margin:0" />
+            <span>fixed CSS</span>
+          </label>
         </div>
       </div>
       <div class="summary" id="summary">
@@ -496,6 +504,7 @@
       </div>
       <div class="pane-body">
         <div class="results" id="results"></div>
+        <pre class="fixed-output" id="fixed-output" hidden></pre>
       </div>
     </section>
   </main>
@@ -503,7 +512,7 @@
   <footer class="bottom">
     <div class="cli-stack">
       <span>Using this locally?</span>
-      <span class="cli-hint">npx rhythmguard audit ./src</span>
+      <span class="cli-hint">npx stylelint-plugin-rhythmguard</span>
       <span class="cli-hint">npx rhythmguard audit ./src --format html --output rhythmguard-report.html</span>
       <span class="cli-hint">npx rhythmguard audit --schema</span>
     </div>
@@ -515,337 +524,111 @@
   </footer>
 </div>
 
+<script src="playground/rhythmguard.js"></script>
 <script>
-// =============================================================================
-// Scale presets — must match src/presets/scales.js in the plugin
-// =============================================================================
-const SCALE_PRESETS = {
-  "rhythmic-4": [0, 4, 8, 12, 16, 24, 32, 40, 48, 64],
-  "rhythmic-8": [0, 8, 16, 24, 32, 40, 48, 64, 80, 96],
-  "compact": [0, 2, 4, 6, 8, 12, 16, 20, 24, 32],
-  "fibonacci": [0, 2, 3, 5, 8, 13, 21, 34, 55, 89],
-  "tailwind-v4": [0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 56, 64, 80, 96, 112, 128, 144, 160, 176, 192, 208, 224, 240, 256, 288, 320, 384],
-};
+// The rules run in playground/rhythmguard.js, the browser bundle of the npm
+// package (scripts/build-playground.mjs). This script is only the page: it
+// turns the controls into rule options and the warnings into the list.
 
-// Spacing-affecting properties (matches src/configs/strict.js property globs)
-const SPACING_PROPERTIES = [
-  /^margin(?:-.+)?$/,
-  /^padding(?:-.+)?$/,
-  /^gap$/,
-  /^row-gap$/,
-  /^column-gap$/,
-  /^inset(?:-.+)?$/,
-  /^top$/, /^right$/, /^bottom$/, /^left$/,
-  /^scroll-margin(?:-.+)?$/,
-  /^scroll-padding(?:-.+)?$/,
-];
+const SAMPLE = Rhythmguard.sample;
 
-const BASE_FONT_SIZE = 16;
-
-// =============================================================================
-// State
-// =============================================================================
 const state = {
-  preset: "rhythmic-4",
   customScale: [0, 4, 8, 12, 16, 24, 32],
-  tokenPattern: "^--spac(e|ing)-",
+  preset: "auto",
+  scss: false,
+  showFixed: false,
   showPasses: false,
-  tokensFromTheme: new Map(), // Map<px_value, token_name>
+  tokenPattern: "^--spac(e|ing)-",
 };
 
-const DEFAULT_SNIPPET = `/* Paste your CSS here, or try the sample below */
-
-@theme {
-  --spacing-1: 4px;
-  --spacing-2: 8px;
-  --spacing-3: 12px;
-  --spacing-4: 16px;
+function scaleOption() {
+  if (state.preset === "auto") return { scale: "auto" };
+  if (state.preset === "custom") return { scale: state.customScale };
+  return { preset: state.preset };
 }
 
-.card {
-  padding: 13px;          /* off-scale: nearest are 12px or 16px */
-  margin-bottom: 7px;     /* off-scale: nearest are 4px or 8px */
-  gap: 16px;              /* on-scale, but should be var(--spacing-4) */
-  border-radius: 0.5rem;  /* = 8px, on-scale */
+function rules() {
+  const shared = { ...scaleOption(), tokenPattern: state.tokenPattern };
+  return {
+    "rhythmguard/use-scale": [true, shared],
+    "rhythmguard/prefer-token": [true, { ...shared, tokenMapFromCssCustomProperties: true }],
+    "rhythmguard/no-offscale-transform": [true, scaleOption()],
+  };
 }
 
-.button {
-  padding: 8px 12px;      /* on-scale, could use tokens */
-  margin-top: 15px;       /* off-scale */
-}
-
-.stack > * + * {
-  margin-top: var(--spacing-3); /* on-scale, tokenized ✓ */
-}
-`;
-
-// =============================================================================
-// Helpers
-// =============================================================================
-function parseLength(value) {
-  const m = /^(-?\d*\.?\d+)(px|rem|em|%|vw|vh|vmin|vmax|ch|ex|pt|pc|cm|mm|in)?$/i.exec(value.trim());
-  if (!m) return null;
-  const num = parseFloat(m[1]);
-  const unit = (m[2] || "").toLowerCase();
-  return { number: num, unit, raw: value.trim() };
-}
-
-function toPx(parsed) {
-  if (!parsed) return null;
-  const { number, unit } = parsed;
-  if (unit === "" && number === 0) return 0;
-  if (unit === "px") return number;
-  if (unit === "rem") return number * BASE_FONT_SIZE;
-  if (unit === "em") return number * BASE_FONT_SIZE;
-  return null; // percentages, viewport units etc. not convertible
-}
-
-function getActiveScale() {
-  if (state.preset === "custom") {
-    return state.customScale;
+function analyze(source) {
+  const syntax = state.scss ? "scss" : "css";
+  let report;
+  let fixed;
+  let declarations;
+  try {
+    report = Rhythmguard.lint(source, { rules: rules(), syntax });
+    fixed = Rhythmguard.lint(source, { fix: true, rules: rules(), syntax });
+    declarations = Rhythmguard.declarations(source, syntax);
+  } catch (error) {
+    return { error: error.message, fixedOutput: "", results: [], summary: { offScale: 0, pass: 0, tokenOps: 0, total: 0 } };
   }
-  return SCALE_PRESETS[state.preset] || SCALE_PRESETS["rhythmic-4"];
-}
 
-function nearestScaleValues(px, scale) {
-  const abs = Math.abs(px);
-  let lower = scale[0];
-  let upper = scale[scale.length - 1];
-  for (let i = 0; i < scale.length; i++) {
-    if (scale[i] <= abs) lower = scale[i];
-    if (scale[i] >= abs) { upper = scale[i]; break; }
-  }
-  const nearest = (abs - lower) <= (upper - abs) ? lower : upper;
-  return { nearest, lower, upper };
-}
-
-function isSpacingProperty(prop) {
-  const p = prop.toLowerCase();
-  return SPACING_PROPERTIES.some((re) => re.test(p));
-}
-
-// =============================================================================
-// Simple CSS tokenizer — enough for property: value pairs and @theme blocks.
-// We're not parsing full CSS grammar (no @media nesting, no complex selectors
-// needed for validation); we scan declarations line-by-line.
-// =============================================================================
-function scanCss(source) {
-  const lines = source.split("\n");
-  const themeBlocks = []; // { start, end }
-  const declarations = []; // { line, prop, value, start, end, inTheme }
-
-  // Phase 1: detect @theme blocks (track brace depth inside)
-  let inTheme = false;
-  let themeStart = -1;
-  let braceDepth = 0;
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    if (!inTheme && /@theme\s*\{/.test(line)) {
-      inTheme = true;
-      themeStart = i;
-      braceDepth = (line.match(/\{/g) || []).length - (line.match(/\}/g) || []).length;
-      continue;
+  const byLine = new Map();
+  for (const d of declarations) byLine.set(`${d.line}:${d.column}`, d);
+  const declFor = (w) => {
+    let best = null;
+    for (const d of declarations) {
+      if (d.line === w.line && d.column <= w.column && (!best || d.column > best.column)) best = d;
     }
-    if (inTheme) {
-      braceDepth += (line.match(/\{/g) || []).length;
-      braceDepth -= (line.match(/\}/g) || []).length;
-      if (braceDepth <= 0) {
-        themeBlocks.push({ start: themeStart, end: i });
-        inTheme = false;
-        themeStart = -1;
-      }
+    return best || { prop: "", value: "" };
+  };
+
+  const fixesByLine = new Map();
+  if (fixed.output) {
+    const fixedLines = fixed.output.split("\n");
+    const sourceLines = source.split("\n");
+    for (let i = 0; i < Math.min(fixedLines.length, sourceLines.length); i += 1) {
+      if (fixedLines[i] !== sourceLines[i]) fixesByLine.set(i + 1, fixedLines[i].replace(/\/\*.*?\*\//g, "").trim().replace(/;$/, ""));
     }
   }
 
-  // Phase 2: find declarations. For each line, match `prop: value;` pattern.
-  // Also capture custom properties (for @theme token extraction).
-  const declRe = /^\s*(-{0,2}[A-Za-z_][\w-]*)\s*:\s*([^;]+?)\s*;?\s*(\/\*.*\*\/)?\s*$/;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const m = declRe.exec(line);
-    if (!m) continue;
-    const prop = m[1];
-    const value = m[2];
-    // Skip selectors (heuristic: lines with `{` are not declarations)
-    if (line.includes("{")) continue;
-    const themeIdx = themeBlocks.findIndex(b => i > b.start && i < b.end);
-    declarations.push({
-      line: i + 1,
-      prop,
-      value,
-      raw: line,
-      inTheme: themeIdx >= 0,
+  const results = [];
+  let offScale = 0;
+  let tokenOps = 0;
+  const flaggedDecls = new Set();
+  for (const w of report.warnings) {
+    const decl = declFor(w);
+    flaggedDecls.add(`${decl.line}:${decl.column}`);
+    const isToken = w.rule === "rhythmguard/prefer-token";
+    if (isToken) tokenOps += 1; else offScale += 1;
+    results.push({
+      fix: fixesByLine.get(w.line) || null,
+      line: w.line,
+      message: w.text.replace(/ \(rhythmguard\/[a-z-]+\)$/, ""),
+      prop: decl.prop,
+      rule: w.rule,
+      severity: isToken ? "warn" : "err",
+      value: decl.value,
     });
   }
 
-  return { declarations, themeBlocks };
-}
-
-// =============================================================================
-// Build token map from @theme custom properties matching the token pattern
-// =============================================================================
-function buildTokenMap(declarations, tokenPatternStr) {
-  const map = new Map();
-  let re;
-  try { re = new RegExp(tokenPatternStr); } catch { return map; }
-  for (const d of declarations) {
-    if (!d.inTheme) continue;
-    if (!d.prop.startsWith("--")) continue;
-    if (!re.test(d.prop)) continue;
-    const parsed = parseLength(d.value);
-    if (!parsed) continue;
-    const px = toPx(parsed);
-    if (px === null) continue;
-    map.set(Math.abs(px), d.prop);
-    // Also map by raw form (e.g. "16px" exactly as written)
-    map.set(parsed.raw.toLowerCase(), d.prop);
-  }
-  return map;
-}
-
-// =============================================================================
-// Main analysis
-// =============================================================================
-function analyze(source) {
-  const { declarations } = scanCss(source);
-  const tokenMap = buildTokenMap(declarations, state.tokenPattern);
-  const scale = getActiveScale();
-  const results = [];
-  let total = 0, offScale = 0, tokenOps = 0, pass = 0;
-
-  for (const d of declarations) {
-    // Skip @theme custom property declarations in the report
-    if (d.inTheme) continue;
-    if (!isSpacingProperty(d.prop)) continue;
-
-    total++;
-
-    // Split value on whitespace to handle `padding: 8px 12px`
-    const parts = d.value.split(/\s+/).filter(Boolean);
-    const analyses = [];
-    let hasOffScale = false;
-    let hasTokenOpportunity = false;
-    let allOnScale = true;
-
-    for (const part of parts) {
-      // Skip tokenized values
-      if (/^(var|theme|token)\(/i.test(part)) {
-        analyses.push({ part, status: "token" });
-        continue;
-      }
-      const parsed = parseLength(part);
-      if (!parsed) {
-        analyses.push({ part, status: "skip" });
-        continue;
-      }
-      const px = toPx(parsed);
-      if (px === null) {
-        // e.g. %, vw — considered "skip"
-        analyses.push({ part, status: "skip" });
-        continue;
-      }
-      const abs = Math.abs(px);
-      const onScale = scale.includes(abs);
-      if (onScale) {
-        // Check for token opportunity
-        const tokenName = tokenMap.get(abs) || tokenMap.get(parsed.raw.toLowerCase());
-        if (tokenName) {
-          analyses.push({ part, status: "token-opp", px, tokenName });
-          hasTokenOpportunity = true;
-        } else {
-          analyses.push({ part, status: "ok", px });
-        }
-      } else {
-        const { nearest, lower, upper } = nearestScaleValues(px, scale);
-        const sign = px < 0 ? -1 : 1;
-        const fixedPx = sign * nearest;
-        analyses.push({
-          part, status: "off-scale",
-          px, nearest: fixedPx, lower, upper,
-          unit: parsed.unit || "px",
-        });
-        allOnScale = false;
-        hasOffScale = true;
-      }
+  const spacingDecls = declarations.filter((d) => !d.prop.startsWith("--") && !d.prop.startsWith("$"));
+  const pass = spacingDecls.filter((d) => !flaggedDecls.has(`${d.line}:${d.column}`)).length;
+  if (state.showPasses) {
+    for (const d of spacingDecls) {
+      if (flaggedDecls.has(`${d.line}:${d.column}`)) continue;
+      results.push({ fix: null, line: d.line, message: "Not reported by any rule.", prop: d.prop, rule: "pass", severity: "ok", value: d.value });
     }
-
-    if (hasOffScale) {
-      offScale++;
-      results.push({
-        severity: "err",
-        rule: "rhythmguard/use-scale",
-        line: d.line,
-        prop: d.prop,
-        value: d.value,
-        message: formatOffScaleMessage(analyses, d.value),
-        fix: formatOffScaleFix(analyses, d.value),
-      });
-    } else if (hasTokenOpportunity) {
-      tokenOps++;
-      results.push({
-        severity: "warn",
-        rule: "rhythmguard/prefer-token",
-        line: d.line,
-        prop: d.prop,
-        value: d.value,
-        message: `Use token instead of raw value.`,
-        fix: formatTokenFix(analyses, d.value),
-      });
-    } else if (allOnScale && analyses.some(a => a.status === "ok" || a.status === "token")) {
-      pass++;
-      if (state.showPasses) {
-        results.push({
-          severity: "pass",
-          rule: "rhythmguard/use-scale",
-          line: d.line,
-          prop: d.prop,
-          value: d.value,
-          message: `On-scale.`,
-        });
-      }
-    }
+    results.sort((a, b) => a.line - b.line);
   }
 
-  return { results, summary: { total, offScale, tokenOps, pass } };
+  return {
+    error: report.invalidOptionWarnings.length ? report.invalidOptionWarnings.map((w) => w.text).join(" ") : null,
+    fixedOutput: fixed.output || "",
+    results,
+    summary: { offScale, pass, tokenOps, total: spacingDecls.length },
+  };
 }
 
-function formatOffScaleMessage(analyses, original) {
-  const bad = analyses.filter(a => a.status === "off-scale");
-  if (bad.length === 0) return "Off-scale value.";
-  const b = bad[0];
-  const lowerStr = b.lower + b.unit;
-  const upperStr = b.upper + b.unit;
-  return `"${b.part}" is off-scale. Nearest: ${lowerStr} or ${upperStr}.`;
-}
-
-function formatOffScaleFix(analyses, original) {
-  const parts = analyses.map((a) => {
-    if (a.status === "off-scale") {
-      const unit = a.unit || "px";
-      return a.nearest + unit;
-    }
-    return a.part;
-  });
-  return parts.join(" ");
-}
-
-function formatTokenFix(analyses, original) {
-  const parts = analyses.map((a) => {
-    if (a.status === "token-opp") {
-      return `var(${a.tokenName})`;
-    }
-    return a.part;
-  });
-  return parts.join(" ");
-}
-
-// =============================================================================
-// Render
-// =============================================================================
 function render() {
   const source = document.getElementById("css-input").value;
-  const { results, summary } = analyze(source);
+  const { error, fixedOutput, results, summary } = analyze(source);
 
   document.getElementById("stat-total").textContent = summary.total;
   document.getElementById("stat-offscale").textContent = summary.offScale;
@@ -853,6 +636,16 @@ function render() {
   document.getElementById("stat-pass").textContent = summary.pass;
 
   const resultsEl = document.getElementById("results");
+  const fixedEl = document.getElementById("fixed-output");
+  fixedEl.hidden = !state.showFixed;
+  resultsEl.hidden = state.showFixed;
+  fixedEl.textContent = fixedOutput;
+
+  if (error) {
+    resultsEl.innerHTML = `<div class="empty"><div class="icon">!</div><div><strong>Could not lint.</strong> ${escapeHtml(error)}</div></div>`;
+    return;
+  }
+
   if (results.length === 0) {
     resultsEl.innerHTML = `
       <div class="empty">
@@ -864,14 +657,11 @@ function render() {
     return;
   }
 
-  resultsEl.innerHTML = results.map(r => {
-    const badge = r.severity === "err" ? "Off-scale"
-              : r.severity === "warn" ? "Token"
-              : "Pass";
-    const cls = r.severity;
-    const fixHtml = r.fix ? `<div class="fix">→ <code>${escapeHtml(r.prop)}: ${escapeHtml(r.fix)}</code></div>` : "";
+  resultsEl.innerHTML = results.map((r) => {
+    const badge = r.severity === "err" ? "Off-scale" : r.severity === "warn" ? "Token" : "Pass";
+    const fixHtml = r.fix ? `<div class="fix">→ <code>${escapeHtml(r.fix)}</code></div>` : "";
     return `
-      <div class="result ${cls}">
+      <div class="result ${r.severity}">
         <div class="badge">${badge}</div>
         <div class="body">
           <div class="rule">${escapeHtml(r.rule)}</div>
@@ -892,15 +682,23 @@ function escapeHtml(s) {
     .replaceAll('"', "&quot;");
 }
 
-// =============================================================================
-// Event wiring
-// =============================================================================
-const input = document.getElementById("css-input");
+// Presets from the package, so the list can never be stale.
 const presetSelect = document.getElementById("preset");
+for (const name of Rhythmguard.presets) {
+  if (name === "rhythmic-4") continue;
+  const option = document.createElement("option");
+  option.value = name;
+  option.textContent = name;
+  presetSelect.insertBefore(option, presetSelect.lastElementChild);
+}
+
+const input = document.getElementById("css-input");
 const customWrap = document.getElementById("custom-scale-wrap");
 const customInput = document.getElementById("custom-scale");
 const tokenPatternInput = document.getElementById("token-pattern");
 const showPassesInput = document.getElementById("show-passes");
+const showFixedInput = document.getElementById("show-fixed");
+const scssInput = document.getElementById("scss");
 
 let debounce;
 function scheduleRender() {
@@ -935,8 +733,18 @@ showPassesInput.addEventListener("change", () => {
   render();
 });
 
+showFixedInput.addEventListener("change", () => {
+  state.showFixed = showFixedInput.checked;
+  render();
+});
+
+scssInput.addEventListener("change", () => {
+  state.scss = scssInput.checked;
+  render();
+});
+
 document.getElementById("reset-btn").addEventListener("click", () => {
-  input.value = DEFAULT_SNIPPET;
+  input.value = SAMPLE;
   render();
 });
 
@@ -945,6 +753,7 @@ document.getElementById("share-btn").addEventListener("click", async () => {
   params.set("preset", state.preset);
   if (state.preset === "custom") params.set("scale", state.customScale.join(","));
   params.set("tokenPattern", state.tokenPattern);
+  if (state.scss) params.set("syntax", "scss");
   params.set("css", input.value);
   const url = `${location.origin}${location.pathname}#${params.toString()}`;
   try {
@@ -958,25 +767,22 @@ document.getElementById("share-btn").addEventListener("click", async () => {
   }
 });
 
-// =============================================================================
-// Load from hash if present
-// =============================================================================
 function loadFromHash() {
   if (!location.hash || location.hash.length < 2) {
-    input.value = DEFAULT_SNIPPET;
+    input.value = SAMPLE;
     return;
   }
   try {
     const params = new URLSearchParams(location.hash.slice(1));
     const preset = params.get("preset");
-    if (preset && (SCALE_PRESETS[preset] || preset === "custom")) {
+    if (preset && (preset === "auto" || preset === "custom" || Rhythmguard.presets.includes(preset))) {
       state.preset = preset;
       presetSelect.value = preset;
       if (preset === "custom") customWrap.style.display = "flex";
     }
     const scale = params.get("scale");
     if (scale) {
-      state.customScale = scale.split(",").map(Number).filter(n => !isNaN(n));
+      state.customScale = scale.split(",").map(Number).filter((n) => !isNaN(n));
       customInput.value = state.customScale.join(", ");
     }
     const tp = params.get("tokenPattern");
@@ -984,10 +790,14 @@ function loadFromHash() {
       state.tokenPattern = tp;
       tokenPatternInput.value = tp;
     }
+    if (params.get("syntax") === "scss") {
+      state.scss = true;
+      scssInput.checked = true;
+    }
     const css = params.get("css");
-    input.value = css ?? DEFAULT_SNIPPET;
+    input.value = css ?? SAMPLE;
   } catch {
-    input.value = DEFAULT_SNIPPET;
+    input.value = SAMPLE;
   }
 }
 

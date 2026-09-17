@@ -4,7 +4,7 @@ const js = require('@eslint/js');
 
 module.exports = [
   {
-    ignores: ['benchmarks/**', 'coverage/**', 'node_modules/**'],
+    ignores: ['benchmarks/**', 'coverage/**', 'docs/playground/rhythmguard.js', 'node_modules/**'],
   },
   js.configs.recommended,
   {
@@ -13,10 +13,13 @@ module.exports = [
       ecmaVersion: 'latest',
       globals: {
         __dirname: 'readonly',
+        Buffer: 'readonly',
+        clearTimeout: 'readonly',
         console: 'readonly',
         module: 'readonly',
         process: 'readonly',
         require: 'readonly',
+        setTimeout: 'readonly',
       },
       sourceType: 'commonjs',
     },

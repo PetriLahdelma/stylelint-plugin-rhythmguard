@@ -122,7 +122,8 @@
     "typecheck": "tsc -p tsconfig.typecheck.json",
     "build:agents": "node scripts/build-agents.mjs",
     "bench:state-of-spacing": "node scripts/bench/state-of-spacing.mjs",
-    "bench:outreach": "node scripts/bench/outreach.mjs"
+    "bench:outreach": "node scripts/bench/outreach.mjs",
+    "build:playground": "node scripts/build-playground.mjs"
   },
   "repository": {
     "type": "git",
@@ -159,6 +160,7 @@
     "@eslint/js": "^9.39.5",
     "@types/node": "^22.20.1",
     "c8": "^12.0.0",
+    "esbuild": "^0.25.10",
     "eslint": "^9.39.5",
     "postcss-scss": "^4.0.9",
     "stylelint": "^16.15.0",
