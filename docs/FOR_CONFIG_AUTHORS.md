@@ -21,7 +21,7 @@ Or, if your config lists rules directly:
 }
 ```
 
-That is the whole `embed` config. One rule, warning level, scale inferred from the consumer's own tokens. It has no `extends`, so it pulls nothing but this plugin into your dependency tree, and its shape is frozen for the 2.x line: a minor bump will not change what your consumers see.
+That is the whole `embed` config. One rule, warning level, scale inferred from the consumer's own tokens. It has no `extends`, so it pulls nothing but this plugin into your dependency tree, and its shape is frozen for the life of a major version: a minor bump will not change what your consumers see.
 
 ## What your consumers get
 
@@ -57,7 +57,7 @@ Inference needs at least three distinct token values before it trusts a source; 
 
 ### When tokens live in a package, not in CSS
 
-Design systems often ship tokens from a Style Dictionary build or an npm package. For the packages on the allowlist (Tailwind v4, Radix Themes, Mantine, Primer primitives, Polaris, Spectrum) inference reads the installed files on its own. For any other package, or your own token build, point `scaleSources` at the built token file so every consumer of your config gets the same scale:
+Design systems often ship tokens from a Style Dictionary build or an npm package. For the packages on the allowlist (Tailwind v4, Radix Themes, Mantine, Primer primitives, Polaris, Spectrum, Carbon layout, Bootstrap, PatternFly, mittwald Flow tokens, GOV.UK and NHS.UK frontend; the list is `src/core/token-packages.json`) inference reads the installed files on its own when the project depends on the package directly. For any other package, or your own token build, point `scaleSources` at the built token file so every consumer of your config gets the same scale:
 
 ```json
 {
@@ -96,7 +96,7 @@ Zero, percentages, and hairlines (non-zero lengths of one CSS pixel or less such
 ## Footprint and support
 
 - Stylelint 16 and 17. Node 20.19 or newer.
-- Runtime dependency: `known-css-properties`, nothing else. Optional peers: `postcss-scss` to audit SCSS, `stylelint-config-tailwindcss` for the `tailwind` config, `stylelint-plugin-logical-css` if you compose with it. `embed` needs none of them.
+- Runtime dependencies: `known-css-properties`, `postcss` and `postcss-value-parser`, nothing else. Optional peers: `postcss-scss` to audit SCSS, `stylelint-config-tailwindcss` for the `tailwind` config, `stylelint-plugin-logical-css` if you compose with it. `embed` needs none of them.
 - CommonJS and ESM entry points, TypeScript declarations for every export.
 - The `embed` config's shape and defaults will not change within a major version. Changes to inference sources are additive.
 - Bugs and false positives: [open an issue](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/issues). A finding your consumers consider wrong is exactly what the quiet benchmark exists to catch; a reproduction in an issue is enough.

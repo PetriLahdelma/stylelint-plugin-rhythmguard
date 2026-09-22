@@ -1,0 +1,54 @@
+{
+  "src/patternfly/assets/fontawesome/_bordered-pulled.scss:19": {
+    "category": "noise:vendored",
+    "reason": "vendored Font Awesome partial, not PatternFly authored CSS (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  },
+  "src/patternfly/assets/fontawesome/_bordered-pulled.scss:20": {
+    "category": "noise:vendored",
+    "reason": "vendored Font Awesome partial, not PatternFly authored CSS (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  },
+  "src/patternfly/assets/fontawesome/_bordered-pulled.scss:8": {
+    "category": "noise:vendored",
+    "reason": "vendored Font Awesome partial, not PatternFly authored CSS (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  },
+  "src/patternfly/components/Button/examples/Button.css:2": {
+    "category": "noise:example",
+    "reason": "documentation example CSS, not the design system (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  },
+  "src/patternfly/components/Button/examples/Button.css:3": {
+    "category": "noise:example",
+    "reason": "documentation example CSS, not the design system (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  },
+  "src/patternfly/components/Nav/examples/Navigation.css:12": {
+    "category": "noise:example",
+    "reason": "documentation example CSS, not the design system (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  },
+  "src/patternfly/components/Nav/examples/Navigation.css:13": {
+    "category": "noise:example",
+    "reason": "documentation example CSS, not the design system (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  },
+  "src/patternfly/components/Skeleton/examples/Skeleton.css:12": {
+    "category": "noise:example",
+    "reason": "documentation example CSS, not the design system (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  },
+  "src/patternfly/components/Table/examples/Table.css:8": {
+    "category": "noise:example",
+    "reason": "documentation example CSS, not the design system (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  },
+  "src/patternfly/components/Table/examples/Table.css:9": {
+    "category": "noise:example",
+    "reason": "documentation example CSS, not the design system (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  },
+  "src/patternfly/components/TextInputGroup/examples/TextInputGroup.css:8": {
+    "category": "noise:example",
+    "reason": "documentation example CSS, not the design system (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  },
+  "src/patternfly/demos/Card/examples/Card.css:12": {
+    "category": "noise:example",
+    "reason": "documentation example CSS, not the design system (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  },
+  "src/patternfly/demos/Card/examples/Card.css:2": {
+    "category": "noise:example",
+    "reason": "documentation example CSS, not the design system (patternfly/patternfly#8579: 0 off-scale in component SCSS, 14 in examples and vendored fontawesome)"
+  }
+}

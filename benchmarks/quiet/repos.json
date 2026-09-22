@@ -34,7 +34,13 @@
       ],
       "notes": "Primer React: same tokens as Primer CSS, from @primer/primitives (maintainer, primer/react#8387).",
       "scaleIntent": "package",
-      "scalePackage": "@primer/primitives"
+      "scalePackage": "@primer/primitives",
+      "tokenPackages": [
+        {
+          "name": "@primer/primitives",
+          "version": "11.10.0"
+        }
+      ]
     },
     {
       "name": "liveblocks-react-ui",
@@ -70,7 +76,13 @@
       ],
       "notes": "mittwald Flow: one size scale in px and rem (--size-px--*, --size-rem--*) from @mittwald/flow-design-tokens; components reach it through a component-token layer, so literal scans measure the wrong layer (maintainer, mittwald/flow#3129, see issue #110).",
       "scaleIntent": "package",
-      "scalePackage": "@mittwald/flow-design-tokens"
+      "scalePackage": "@mittwald/flow-design-tokens",
+      "tokenPackages": [
+        {
+          "name": "@mittwald/flow-design-tokens",
+          "version": "1.2.8"
+        }
+      ]
     },
     {
       "name": "bootstrap",
@@ -97,7 +109,13 @@
       ],
       "notes": "Primer CSS: spacing ladder is --base-size-* from @primer/primitives (maintainer, primer/css#3166 points at src/tokens/functional/spacing/space.json5).",
       "scaleIntent": "package",
-      "scalePackage": "@primer/primitives"
+      "scalePackage": "@primer/primitives",
+      "tokenPackages": [
+        {
+          "name": "@primer/primitives",
+          "version": "11.10.0"
+        }
+      ]
     },
     {
       "name": "penpot",
@@ -170,7 +188,13 @@
       "paths": [
         "packages/styles/scss"
       ],
-      "notes": "SCSS. Spacing through $spacing-NN tokens and the spacing() function."
+      "notes": "SCSS. Spacing through $spacing-NN tokens and the spacing() function, which @carbon/styles forwards from @carbon/layout; the bench installs that package and measures against its $spacing-01..13 ladder (allowlisted since 3.3.0, issue #87).",
+      "tokenPackages": [
+        {
+          "name": "@carbon/layout",
+          "version": "11.59.0"
+        }
+      ]
     },
     {
       "name": "salesforce-lightning",
@@ -454,7 +478,13 @@
       ],
       "notes": "AdminLTE: inherits Bootstrap's $spacer/$spacers unchanged (maintainer, ColorlibHQ/AdminLTE#6124); layout dimensions in _variables.scss are deliberately not scale steps.",
       "scaleIntent": "package",
-      "scalePackage": "bootstrap"
+      "scalePackage": "bootstrap",
+      "tokenPackages": [
+        {
+          "name": "bootstrap",
+          "version": "5.3.8"
+        }
+      ]
     },
     {
       "name": "vscode-base-ui",

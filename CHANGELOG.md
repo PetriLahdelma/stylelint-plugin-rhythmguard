@@ -9,6 +9,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 ### Changed
 
 - The post-publish smoke waits for the version through `npm view --prefer-online`, the client that will install it, instead of the raw packument; for 3.8.0 the packument listed the version a minute before `npm install` could resolve it and the smoke failed.
+- The quiet benchmark installs the token packages maintainers named as the home of their scale. A manifest row lists them under `tokenPackages` with a pinned version; `npm run bench:quiet` installs them once under `benchmarks/quiet/packages/` with install scripts disabled and passes the allowlisted token files to the audit as explicit sources, so the row is measured against the ladder the maintainers pointed at instead of the `rhythmic-4` fallback or a set of consumer tokens. Carbon (`@carbon/layout`), Primer CSS and Primer React (`@primer/primitives`), mittwald Flow (`@mittwald/flow-design-tokens`) and AdminLTE (`bootstrap`) are measured this way; the SAP rows stay unmeasured because their theming package carries no ladder. The State of Spacing edition marks these rows `installed` and counts them.
+- PatternFly's fourteen benchmark findings are labelled by review: four in a vendored Font Awesome partial and ten in documentation example CSS, none in component SCSS, as the reply in patternfly/patternfly#8579 said. Per-repo labels live in `benchmarks/quiet/labels/`.
 
 ## [3.8.0] - 2026-09-18
 
