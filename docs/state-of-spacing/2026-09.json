@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-17",
+  "generatedAt": "2026-09-22",
   "id": "2026-09",
   "previousId": null,
   "rows": [
@@ -12,6 +12,7 @@
       "drift": 1952,
       "driftPer100Files": 2913,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -34,6 +35,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -61,7 +63,8 @@
           "20px",
           206
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "mastodon",
@@ -72,6 +75,7 @@
       "drift": 568,
       "driftPer100Files": 1578,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -92,6 +96,7 @@
         36,
         40
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -119,7 +124,8 @@
           "5px",
           70
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "grafana",
@@ -130,6 +136,7 @@
       "drift": 77,
       "driftPer100Files": 1283,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -145,6 +152,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -172,7 +180,8 @@
           "15px",
           9
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "mattermost-webapp",
@@ -183,6 +192,7 @@
       "drift": 1058,
       "driftPer100Files": 1027,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -200,6 +210,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -227,7 +238,8 @@
           "20px",
           108
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "calcom",
@@ -238,6 +250,7 @@
       "drift": 40,
       "driftPer100Files": 1000,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -255,6 +268,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -282,7 +296,8 @@
           "6px",
           3
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "ghost-admin",
@@ -293,6 +308,7 @@
       "drift": 745,
       "driftPer100Files": 626,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -310,6 +326,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -337,7 +354,8 @@
           "6px",
           62
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "shadcn-ui",
@@ -348,6 +366,7 @@
       "drift": 61,
       "driftPer100Files": 469,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -373,6 +392,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "class-string",
@@ -400,7 +420,8 @@
           "2px",
           5
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "forem",
@@ -411,6 +432,7 @@
       "drift": 590,
       "driftPer100Files": 415,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -428,6 +450,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -455,7 +478,65 @@
           "5px",
           57
         ]
-      ]
+      ],
+      "unmeasured": false
+    },
+    {
+      "name": "adminlte",
+      "url": "https://github.com/ColorlibHQ/AdminLTE",
+      "sha": "12b4b06",
+      "cssFiles": 46,
+      "cleanliness": 61,
+      "drift": 133,
+      "driftPer100Files": 289,
+      "driftDelta": null,
+      "installedPackage": true,
+      "scaleIntent": "package",
+      "scalePackage": "bootstrap",
+      "scaleReliable": true,
+      "scaleReasons": [],
+      "scaleRejected": null,
+      "scaleSource": "token-sources",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        16,
+        24,
+        48
+      ],
+      "tokenPackages": [
+        "bootstrap@5.3.8"
+      ],
+      "topProperties": [
+        [
+          "padding",
+          52
+        ],
+        [
+          "margin-top",
+          19
+        ],
+        [
+          "margin-bottom",
+          16
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          20
+        ],
+        [
+          "1.25rem",
+          9
+        ],
+        [
+          "2px",
+          9
+        ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "directus-app",
@@ -466,6 +547,7 @@
       "drift": 63,
       "driftPer100Files": 217,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -483,6 +565,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -510,7 +593,8 @@
           "-0.1875rem",
           6
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "vscode-base-ui",
@@ -521,6 +605,7 @@
       "drift": 74,
       "driftPer100Files": 195,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -538,6 +623,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -565,7 +651,8 @@
           "6px",
           10
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "n8n-design-system",
@@ -576,6 +663,7 @@
       "drift": 147,
       "driftPer100Files": 191,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -598,6 +686,7 @@
         128,
         256
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -625,7 +714,8 @@
           "0.6em",
           10
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "pure",
@@ -636,6 +726,7 @@
       "drift": 30,
       "driftPer100Files": 188,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -653,6 +744,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -680,7 +772,8 @@
           ".3em",
           2
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "excalidraw",
@@ -691,6 +784,7 @@
       "drift": 129,
       "driftPer100Files": 174,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -708,6 +802,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -735,7 +830,8 @@
           "10px",
           10
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "wp-calypso-components",
@@ -746,6 +842,7 @@
       "drift": 82,
       "driftPer100Files": 161,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -763,6 +860,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -790,7 +888,8 @@
           "5px",
           8
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "element-plus",
@@ -801,6 +900,7 @@
       "drift": 224,
       "driftPer100Files": 153,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -818,6 +918,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -845,7 +946,8 @@
           "6px",
           27
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "discourse",
@@ -856,6 +958,7 @@
       "drift": 570,
       "driftPer100Files": 152,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -898,6 +1001,7 @@
         320,
         384
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -925,7 +1029,8 @@
           "3px",
           36
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "liveblocks-react-ui",
@@ -936,6 +1041,7 @@
       "drift": 9,
       "driftPer100Files": 150,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -953,6 +1059,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -980,7 +1087,8 @@
           "0.2em",
           1
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "hashicorp-design-system",
@@ -991,6 +1099,7 @@
       "drift": 114,
       "driftPer100Files": 125,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -1008,6 +1117,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -1035,7 +1145,8 @@
           "3px",
           12
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "carbon-styles",
@@ -1043,38 +1154,47 @@
       "sha": "4cc7900",
       "cssFiles": 284,
       "cleanliness": 81,
-      "drift": 272,
-      "driftPer100Files": 96,
+      "drift": 212,
+      "driftPer100Files": 75,
       "driftDelta": null,
+      "installedPackage": true,
       "scaleIntent": null,
       "scalePackage": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
+      "scaleReliable": true,
+      "scaleReasons": [],
       "scaleRejected": null,
-      "scaleSource": "fallback",
+      "scaleSource": "token-sources",
       "scaleValues": [
         0,
+        2,
         4,
         8,
         12,
         16,
         24,
-        32
+        32,
+        40,
+        48,
+        64,
+        80,
+        96,
+        160
+      ],
+      "tokenPackages": [
+        "@carbon/layout@11.59.0"
       ],
       "topProperties": [
         [
           "inset-block-start",
-          60
-        ],
-        [
-          "padding",
-          37
+          51
         ],
         [
           "padding-block",
-          36
+          28
+        ],
+        [
+          "padding",
+          25
         ]
       ],
       "topValues": [
@@ -1083,14 +1203,86 @@
           28
         ],
         [
-          "2px",
-          23
+          "7px",
+          19
+        ],
+        [
+          "3px",
+          16
+        ]
+      ],
+      "unmeasured": false
+    },
+    {
+      "name": "primer-css",
+      "url": "https://github.com/primer/css",
+      "sha": "72564a3",
+      "cssFiles": 113,
+      "cleanliness": 75,
+      "drift": 69,
+      "driftPer100Files": 61,
+      "driftDelta": null,
+      "installedPackage": true,
+      "scaleIntent": "package",
+      "scalePackage": "@primer/primitives",
+      "scaleReliable": true,
+      "scaleReasons": [],
+      "scaleRejected": null,
+      "scaleSource": "token-sources",
+      "scaleValues": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        12,
+        16,
+        20,
+        24,
+        28,
+        32,
+        36,
+        40,
+        44,
+        48,
+        64,
+        80,
+        96,
+        112,
+        128
+      ],
+      "tokenPackages": [
+        "@primer/primitives@11.10.0"
+      ],
+      "topProperties": [
+        [
+          "padding",
+          32
+        ],
+        [
+          "margin",
+          16
+        ],
+        [
+          "padding-bottom",
+          5
+        ]
+      ],
+      "topValues": [
+        [
+          "5px",
+          17
         ],
         [
           "7px",
-          19
+          9
+        ],
+        [
+          "10px",
+          8
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "materialize",
@@ -1101,6 +1293,7 @@
       "drift": 9,
       "driftPer100Files": 60,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -1116,6 +1309,7 @@
         24,
         48
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -1143,7 +1337,8 @@
           "14px",
           1
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "metabase",
@@ -1154,6 +1349,7 @@
       "drift": 55,
       "driftPer100Files": 56,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -1171,6 +1367,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -1198,7 +1395,8 @@
           "15px",
           4
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "starlight",
@@ -1209,6 +1407,7 @@
       "drift": 4,
       "driftPer100Files": 50,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -1226,6 +1425,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -1253,7 +1453,8 @@
           "0.375rem",
           1
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "bulma",
@@ -1264,6 +1465,7 @@
       "drift": 37,
       "driftPer100Files": 49,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -1279,6 +1481,7 @@
         24,
         48
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "margin-inline-start",
@@ -1306,7 +1509,8 @@
           "0.375em",
           4
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "foundation-sites",
@@ -1317,6 +1521,7 @@
       "drift": 52,
       "driftPer100Files": 44,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -1334,6 +1539,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "margin-top",
@@ -1361,7 +1567,8 @@
           "30px",
           4
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "gutenberg-components",
@@ -1372,6 +1579,7 @@
       "drift": 35,
       "driftPer100Files": 44,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -1389,6 +1597,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -1416,7 +1625,8 @@
           "-2px",
           4
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "bootstrap",
@@ -1427,6 +1637,7 @@
       "drift": 53,
       "driftPer100Files": 43,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -1441,6 +1652,7 @@
         24,
         48
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -1468,7 +1680,8 @@
           "1.25rem",
           8
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "docusaurus-theme-classic",
@@ -1479,6 +1692,7 @@
       "drift": 33,
       "driftPer100Files": 43,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -1496,6 +1710,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -1523,7 +1738,8 @@
           "0.2rem",
           4
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "mantine",
@@ -1534,6 +1750,7 @@
       "drift": 36,
       "driftPer100Files": 35,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -1548,6 +1765,7 @@
         20,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -1575,7 +1793,8 @@
           "2px",
           4
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "daisyui",
@@ -1586,6 +1805,7 @@
       "drift": 37,
       "driftPer100Files": 34,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -1603,6 +1823,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -1630,7 +1851,8 @@
           "5px",
           3
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "utrecht",
@@ -1641,6 +1863,7 @@
       "drift": 47,
       "driftPer100Files": 29,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -1658,6 +1881,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -1685,7 +1909,8 @@
           "10px",
           5
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "nhsuk-frontend",
@@ -1696,6 +1921,7 @@
       "drift": 28,
       "driftPer100Files": 19,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -1714,6 +1940,7 @@
         56,
         64
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "margin-left",
@@ -1741,7 +1968,8 @@
           "6px",
           5
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "mozilla-protocol",
@@ -1752,6 +1980,7 @@
       "drift": 18,
       "driftPer100Files": 17,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -1769,6 +1998,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -1796,7 +2026,8 @@
           "1.25em",
           2
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "angular-material",
@@ -1807,6 +2038,7 @@
       "drift": 43,
       "driftPer100Files": 15,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -1824,6 +2056,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "margin",
@@ -1851,7 +2084,8 @@
           "64px",
           3
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "cloudscape-components",
@@ -1862,6 +2096,7 @@
       "drift": 46,
       "driftPer100Files": 14,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -1879,6 +2114,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "inset-block-start",
@@ -1906,7 +2142,8 @@
           "-$arrow-height",
           4
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "salesforce-lightning",
@@ -1917,6 +2154,7 @@
       "drift": 58,
       "driftPer100Files": 13,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -1934,6 +2172,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding-left",
@@ -1961,7 +2200,8 @@
           "-2.25rem",
           2
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "bootstrap-v6",
@@ -1972,6 +2212,7 @@
       "drift": 19,
       "driftPer100Files": 13,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -1993,6 +2234,7 @@
         40,
         48
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -2020,7 +2262,8 @@
           "-100px",
           1
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "pico",
@@ -2031,6 +2274,7 @@
       "drift": 7,
       "driftPer100Files": 13,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -2048,6 +2292,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "transform",
@@ -2075,7 +2320,8 @@
           "0.125rem",
           1
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "govuk-frontend",
@@ -2086,6 +2332,7 @@
       "drift": 24,
       "driftPer100Files": 8,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -2104,6 +2351,7 @@
         50,
         60
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "margin-bottom",
@@ -2131,7 +2379,8 @@
           "3px",
           2
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "tachyons",
@@ -2142,6 +2391,7 @@
       "drift": 5,
       "driftPer100Files": 8,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -2158,6 +2408,7 @@
         128,
         256
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -2185,62 +2436,8 @@
           "0.67em",
           1
         ]
-      ]
-    },
-    {
-      "name": "patternfly",
-      "url": "https://github.com/patternfly/patternfly",
-      "sha": "b62f051",
-      "cssFiles": 213,
-      "cleanliness": 94,
-      "drift": 14,
-      "driftPer100Files": 7,
-      "driftDelta": null,
-      "scaleIntent": null,
-      "scalePackage": null,
-      "scaleReliable": true,
-      "scaleReasons": [],
-      "scaleRejected": null,
-      "scaleSource": "scanned-css",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        16,
-        24,
-        32,
-        48,
-        64,
-        80
       ],
-      "topProperties": [
-        [
-          "inset-block-start",
-          3
-        ],
-        [
-          "inset-inline-start",
-          2
-        ],
-        [
-          "padding",
-          2
-        ]
-      ],
-      "topValues": [
-        [
-          ".3em",
-          2
-        ],
-        [
-          "6px",
-          2
-        ],
-        [
-          "-12px",
-          1
-        ]
-      ]
+      "unmeasured": false
     },
     {
       "name": "penpot",
@@ -2251,6 +2448,7 @@
       "drift": 17,
       "driftPer100Files": 6,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -2268,6 +2466,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "transform",
@@ -2295,7 +2494,8 @@
           "-10px",
           2
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "tabler",
@@ -2306,6 +2506,7 @@
       "drift": 12,
       "driftPer100Files": 6,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -2328,6 +2529,7 @@
         112,
         128
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "transform",
@@ -2355,7 +2557,79 @@
           "-2px",
           1
         ]
-      ]
+      ],
+      "unmeasured": false
+    },
+    {
+      "name": "primer-react",
+      "url": "https://github.com/primer/react",
+      "sha": "dc8387f",
+      "cssFiles": 204,
+      "cleanliness": 97,
+      "drift": 11,
+      "driftPer100Files": 5,
+      "driftDelta": null,
+      "installedPackage": true,
+      "scaleIntent": "package",
+      "scalePackage": "@primer/primitives",
+      "scaleReliable": true,
+      "scaleReasons": [],
+      "scaleRejected": null,
+      "scaleSource": "token-sources",
+      "scaleValues": [
+        0,
+        2,
+        4,
+        6,
+        8,
+        12,
+        16,
+        20,
+        24,
+        28,
+        32,
+        36,
+        40,
+        44,
+        48,
+        64,
+        80,
+        96,
+        112,
+        128
+      ],
+      "tokenPackages": [
+        "@primer/primitives@11.10.0"
+      ],
+      "topProperties": [
+        [
+          "padding-bottom",
+          4
+        ],
+        [
+          "padding-top",
+          4
+        ],
+        [
+          "margin-left",
+          2
+        ]
+      ],
+      "topValues": [
+        [
+          "10px",
+          4
+        ],
+        [
+          "3px",
+          4
+        ],
+        [
+          "-15px",
+          1
+        ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "radix-themes",
@@ -2366,6 +2640,7 @@
       "drift": 7,
       "driftPer100Files": 5,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -2384,6 +2659,7 @@
         48,
         64
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding-right",
@@ -2411,7 +2687,8 @@
           "-2px",
           1
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "uswds",
@@ -2422,6 +2699,7 @@
       "drift": 30,
       "driftPer100Files": 4,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -2437,6 +2715,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -2464,7 +2743,8 @@
           "20px",
           4
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "semi-design",
@@ -2475,6 +2755,7 @@
       "drift": 10,
       "driftPer100Files": 4,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -2497,6 +2778,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "transform",
@@ -2524,7 +2806,8 @@
           "0.8em",
           1
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "coreui",
@@ -2535,6 +2818,7 @@
       "drift": 5,
       "driftPer100Files": 3,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -2549,6 +2833,7 @@
         24,
         48
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "margin-inline-start",
@@ -2576,7 +2861,8 @@
           "2px",
           1
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "gitlab-ui",
@@ -2587,6 +2873,7 @@
       "drift": 3,
       "driftPer100Files": 3,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -2604,6 +2891,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -2627,7 +2915,8 @@
           "5px",
           1
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "ionic-core",
@@ -2638,6 +2927,7 @@
       "drift": 8,
       "driftPer100Files": 2,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -2655,6 +2945,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "margin-top",
@@ -2682,7 +2973,8 @@
           "10px",
           1
         ]
-      ]
+      ],
+      "unmeasured": false
     },
     {
       "name": "spectrum-css",
@@ -2693,6 +2985,7 @@
       "drift": 5,
       "driftPer100Files": 2,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -2710,6 +3003,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "inset-block-end",
@@ -2737,7 +3031,42 @@
           "40px",
           1
         ]
-      ]
+      ],
+      "unmeasured": false
+    },
+    {
+      "name": "mittwald-flow",
+      "url": "https://github.com/mittwald/flow",
+      "sha": "17efdf9",
+      "cssFiles": 130,
+      "cleanliness": 100,
+      "drift": 0,
+      "driftPer100Files": 0,
+      "driftDelta": null,
+      "installedPackage": true,
+      "scaleIntent": "package",
+      "scalePackage": "@mittwald/flow-design-tokens",
+      "scaleReliable": true,
+      "scaleReasons": [],
+      "scaleRejected": null,
+      "scaleSource": "token-sources",
+      "scaleValues": [
+        0,
+        1,
+        2,
+        4,
+        8,
+        16,
+        24,
+        32,
+        64
+      ],
+      "tokenPackages": [
+        "@mittwald/flow-design-tokens@1.2.8"
+      ],
+      "topProperties": [],
+      "topValues": [],
+      "unmeasured": false
     },
     {
       "name": "open-props",
@@ -2748,6 +3077,7 @@
       "drift": 0,
       "driftPer100Files": 0,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": false,
@@ -2765,8 +3095,42 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [],
-      "topValues": []
+      "topValues": [],
+      "unmeasured": false
+    },
+    {
+      "name": "patternfly",
+      "url": "https://github.com/patternfly/patternfly",
+      "sha": "b62f051",
+      "cssFiles": 213,
+      "cleanliness": 94,
+      "drift": 0,
+      "driftPer100Files": 0,
+      "driftDelta": null,
+      "installedPackage": false,
+      "scaleIntent": null,
+      "scalePackage": null,
+      "scaleReliable": true,
+      "scaleReasons": [],
+      "scaleRejected": null,
+      "scaleSource": "scanned-css",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        16,
+        24,
+        32,
+        48,
+        64,
+        80
+      ],
+      "tokenPackages": [],
+      "topProperties": [],
+      "topValues": [],
+      "unmeasured": false
     },
     {
       "name": "skeleton",
@@ -2777,6 +3141,7 @@
       "drift": 0,
       "driftPer100Files": 0,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": null,
       "scalePackage": null,
       "scaleReliable": true,
@@ -2819,63 +3184,10 @@
         320,
         384
       ],
+      "tokenPackages": [],
       "topProperties": [],
-      "topValues": []
-    },
-    {
-      "name": "adminlte",
-      "url": "https://github.com/ColorlibHQ/AdminLTE",
-      "sha": "12b4b06",
-      "cssFiles": 46,
-      "cleanliness": 61,
-      "drift": 128,
-      "driftPer100Files": 278,
-      "driftDelta": null,
-      "scaleIntent": "package",
-      "scalePackage": "bootstrap",
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding",
-          52
-        ],
-        [
-          "margin-top",
-          17
-        ],
-        [
-          "margin",
-          15
-        ]
-      ],
-      "topValues": [
-        [
-          "10px",
-          20
-        ],
-        [
-          "1.25rem",
-          9
-        ],
-        [
-          "2px",
-          9
-        ]
-      ]
+      "topValues": [],
+      "unmeasured": false
     },
     {
       "name": "vitepress-theme",
@@ -2886,6 +3198,7 @@
       "drift": 23,
       "driftPer100Files": 209,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": "none",
       "scalePackage": null,
       "scaleReliable": false,
@@ -2903,6 +3216,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -2930,66 +3244,8 @@
           "0.625rem",
           2
         ]
-      ]
-    },
-    {
-      "name": "primer-css",
-      "url": "https://github.com/primer/css",
-      "sha": "72564a3",
-      "cssFiles": 113,
-      "cleanliness": 75,
-      "drift": 103,
-      "driftPer100Files": 91,
-      "driftDelta": null,
-      "scaleIntent": "package",
-      "scalePackage": "@primer/primitives",
-      "scaleReliable": true,
-      "scaleReasons": [],
-      "scaleRejected": null,
-      "scaleSource": "scanned-css",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        16,
-        24,
-        32,
-        40,
-        48,
-        64,
-        80,
-        96,
-        112,
-        128
       ],
-      "topProperties": [
-        [
-          "padding",
-          45
-        ],
-        [
-          "margin",
-          22
-        ],
-        [
-          "margin-left",
-          8
-        ]
-      ],
-      "topValues": [
-        [
-          "5px",
-          17
-        ],
-        [
-          "6px",
-          11
-        ],
-        [
-          "7px",
-          9
-        ]
-      ]
+      "unmeasured": true
     },
     {
       "name": "fundamental-styles",
@@ -3000,6 +3256,7 @@
       "drift": 176,
       "driftPer100Files": 51,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": "package",
       "scalePackage": "@sap-theming/theming-base-content",
       "scaleReliable": false,
@@ -3017,6 +3274,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding-inline",
@@ -3044,7 +3302,8 @@
           "0.625rem",
           17
         ]
-      ]
+      ],
+      "unmeasured": true
     },
     {
       "name": "ui5-webcomponents",
@@ -3055,6 +3314,7 @@
       "drift": 75,
       "driftPer100Files": 14,
       "driftDelta": null,
+      "installedPackage": false,
       "scaleIntent": "package",
       "scalePackage": "@sap-theming/theming-base-content",
       "scaleReliable": false,
@@ -3072,6 +3332,7 @@
         24,
         32
       ],
+      "tokenPackages": [],
       "topProperties": [
         [
           "padding",
@@ -3099,113 +3360,17 @@
           "0.1875rem",
           6
         ]
-      ]
-    },
-    {
-      "name": "primer-react",
-      "url": "https://github.com/primer/react",
-      "sha": "dc8387f",
-      "cssFiles": 204,
-      "cleanliness": 97,
-      "drift": 22,
-      "driftPer100Files": 11,
-      "driftDelta": null,
-      "scaleIntent": "package",
-      "scalePackage": "@primer/primitives",
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
       ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding-bottom",
-          4
-        ],
-        [
-          "padding-top",
-          4
-        ],
-        [
-          "margin-left",
-          3
-        ]
-      ],
-      "topValues": [
-        [
-          "6px",
-          6
-        ],
-        [
-          "10px",
-          4
-        ],
-        [
-          "3px",
-          4
-        ]
-      ]
-    },
-    {
-      "name": "mittwald-flow",
-      "url": "https://github.com/mittwald/flow",
-      "sha": "17efdf9",
-      "cssFiles": 130,
-      "cleanliness": 100,
-      "drift": 2,
-      "driftPer100Files": 2,
-      "driftDelta": null,
-      "scaleIntent": "package",
-      "scalePackage": "@mittwald/flow-design-tokens",
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "topProperties": [
-        [
-          "padding-inline-end",
-          1
-        ],
-        [
-          "padding-inline-start",
-          1
-        ]
-      ],
-      "topValues": [
-        [
-          "2px",
-          2
-        ]
-      ]
+      "unmeasured": true
     }
   ],
   "totals": {
     "cssFiles": 8729,
-    "drift": 8091,
+    "drift": 7975,
     "repos": 58,
-    "fallbackScales": 33,
-    "inPackage": 6,
+    "fallbackScales": 32,
+    "inPackage": 2,
+    "installedPackages": 5,
     "noScaleByDesign": 1,
     "unreliableScales": 3
   }

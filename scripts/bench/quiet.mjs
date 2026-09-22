@@ -19,11 +19,13 @@ import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 import { classifyFinding, compareSnapshot, summarize, toSnapshot } from './quiet-classify.mjs';
+import { describeTokenPackages, installTokenPackages, tokenSourcesFor } from './quiet-packages.mjs';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, '..', '..');
 const benchDir = path.join(repoRoot, 'benchmarks', 'quiet');
 const reposDir = path.join(benchDir, 'repos');
+const packagesDir = path.join(benchDir, 'packages');
 const resultsDir = path.join(benchDir, 'results');
 const labelsDir = path.join(benchDir, 'labels');
 const snapshotsDir = path.join(benchDir, 'snapshots');
@@ -115,6 +117,9 @@ function topValues(findings, limit = 8) {
 
 async function auditRepo(repo, checkout, rules) {
   const labels = loadJson(path.join(labelsDir, `${repo.name}.json`), {});
+  // Packages the maintainers named as the home of their scale, installed by
+  // installTokenPackages; explicit sources win over the scanned stylesheets.
+  const tokenSources = tokenSourcesFor(repo, packagesDir);
   const previousCwd = process.cwd();
   process.chdir(checkout.dir);
   let report;
@@ -124,6 +129,7 @@ async function auditRepo(repo, checkout, rules) {
       ignorePatterns: repo.ignore || [],
       noConfig: true,
       scale: 'auto',
+      ...(tokenSources.length > 0 ? { tokenSources } : {}),
     });
   } finally {
     process.chdir(previousCwd);
@@ -171,6 +177,7 @@ async function auditRepo(repo, checkout, rules) {
     tailwindFindings: report.findings.tailwind.length,
     templateFilesScanned: report.templateFilesScanned,
     tokenOpportunities: tokenOpportunityCount(report),
+    tokenPackages: describeTokenPackages(repo),
     topOffScaleValues: topValues(classified.filter((item) => item.category === 'drift')),
     url: repo.url,
   };
@@ -178,6 +185,16 @@ async function auditRepo(repo, checkout, rules) {
 
 function pct(value) {
   return `${value}%`;
+}
+
+/** Where a row's scale came from, for the tables: the package when one was installed for it. */
+export function scaleSourceLabel(result) {
+  const { scale } = result;
+  if (scale.source === 'fallback') return 'fallback (no spacing tokens found)';
+  if ((result.tokenPackages || []).length > 0 && scale.source === 'token-sources') {
+    return `installed ${result.tokenPackages.join(', ')} (${scale.tokenCount} tokens)`;
+  }
+  return `${scale.source} (${scale.tokenCount} tokens)`;
 }
 
 function renderDoc(results, rules) {
@@ -191,7 +208,7 @@ function renderDoc(results, rules) {
     '## Method',
     '',
     '1. Sparse, shallow clone of each repository, pinned to the commit recorded in `benchmarks/quiet/snapshots/<repo>.json` so upstream churn cannot move the numbers; `--latest` audits the head of the manifest\'s `ref` (a branch, Bootstrap `v6-dev`) or of the default branch instead. Paths are limited to those listed in the manifest.',
-    '2. `rhythmguard audit --scale auto` over the checkout. The scale is inferred from the repository\'s own spacing tokens when it has at least three distinct values (`--space-*`, `--spacing-*`, prefixed variants, calc-wrapped values, or a Tailwind v4 `--spacing` base); otherwise the audit falls back to `rhythmic-4` and the row says so.',
+    '2. `rhythmguard audit --scale auto` over the checkout. The scale is inferred from the repository\'s own spacing tokens when it has at least three distinct values (`--space-*`, `--spacing-*`, prefixed variants, calc-wrapped values, or a Tailwind v4 `--spacing` base); otherwise the audit falls back to `rhythmic-4` and the row says so. When the maintainers said the scale ships in an npm package the checkout cannot see, the manifest names it under `tokenPackages` with a pinned version; the bench installs it once under `benchmarks/quiet/packages/` with install scripts disabled and passes its token files (the ones `src/core/token-packages.json` lists) to the audit as explicit sources, which win over the scanned stylesheets. The row then reads `installed <package@version>`.',
     '3. Only the `recommended` profile is scored: `use-scale` findings on CSS plus the Tailwind class-string rule. `prefer-token` findings (a raw value that could be a token) are reported as token opportunities in their own column and never count as drift.',
     '4. Every scored finding is classified. Path heuristics mark generated, vendored and test CSS as `noise:*`. Value heuristics, when any are configured, mark accepted exceptions as `allowance:*`; hairlines of one pixel or less are exempted by the rules themselves (`allowHairlines`, default on) since 2.2 and no longer appear as findings. Per-repo labels written after manual review override the heuristics. Everything else is `drift`.',
     '5. False-positive rate = (noise + allowance) / total scored findings. The target before outreach is under 5% with heuristics only, then confirmed by maintainer review.',
@@ -207,15 +224,15 @@ function renderDoc(results, rules) {
   for (const r of results) {
     const noise = Object.entries(r.summary.byCategory).filter(([k]) => k.startsWith('noise:')).reduce((a, [, v]) => a + v, 0);
     const allowance = Object.entries(r.summary.byCategory).filter(([k]) => k.startsWith('allowance:')).reduce((a, [, v]) => a + v, 0);
-    const scaleSource = r.scale.source === 'fallback' ? 'fallback (no spacing tokens found)' : `${r.scale.source} (${r.scale.tokenCount} tokens)`;
-    lines.push(`| [${r.name}](${r.url}) | \`${r.sha}\` | ${r.cssFilesScanned} | ${r.templateFilesScanned} | ${r.summary.total} | ${r.summary.drift} | ${noise} | ${allowance} | ${pct(r.summary.falsePositiveRate)} | ${r.tokenOpportunities ?? 0} | ${scaleSource} |`);
+    lines.push(`| [${r.name}](${r.url}) | \`${r.sha}\` | ${r.cssFilesScanned} | ${r.templateFilesScanned} | ${r.summary.total} | ${r.summary.drift} | ${noise} | ${allowance} | ${pct(r.summary.falsePositiveRate)} | ${r.tokenOpportunities ?? 0} | ${scaleSourceLabel(r)} |`);
   }
 
   lines.push('', '## Per-repo detail', '');
   for (const r of results) {
     lines.push(`### ${r.name}`, '');
     lines.push(`Paths: ${r.paths.map((p) => `\`${p}\``).join(', ')}. ${r.notes}`.trim(), '');
-    lines.push(`Inferred scale: \`${r.scale.values.join(', ')}\` from ${r.scale.source}${r.scale.files.length ? ` (${r.scale.files.slice(0, 3).join(', ')}${r.scale.files.length > 3 ? `, +${r.scale.files.length - 3} more` : ''})` : ''}.`, '');
+    const installed = (r.tokenPackages || []).length > 0 && r.scale.source === 'token-sources';
+    lines.push(`Inferred scale: \`${r.scale.values.join(', ')}\` from ${installed ? `installed ${r.tokenPackages.join(', ')}` : r.scale.source}${!installed && r.scale.files.length ? ` (${r.scale.files.slice(0, 3).join(', ')}${r.scale.files.length > 3 ? `, +${r.scale.files.length - 3} more` : ''})` : ''}.`, '');
     if (r.topOffScaleValues.length > 0) {
       lines.push('Top drift values:', '');
       lines.push('| Value | Count |', '| --- | ---: |');
@@ -248,6 +265,7 @@ function renderDoc(results, rules) {
   lines.push('- CI runs `npm run bench:quiet -- --check` on every change. It fails when the finding set or the inferred scale of any pinned repository differs from its committed snapshot, so a rule change that alters behaviour on real design systems has to be reviewed and accepted with `--update-snapshots`.');
   lines.push('- Heuristic classification is a floor, not a verdict. A finding labelled `drift` may still be intentional; only a maintainer can say. Per-repo labels exist for exactly that, and the FP rate should be re-read after review.');
   lines.push('- Repositories whose scale fell back to `rhythmic-4` were measured against a scale they never chose. Their drift counts say more about Rhythmguard\'s token discovery than about their CSS. Each fallback is a to-do for `scale: "auto"` inference.');
+  lines.push('- Rows marked `installed <package@version>` are measured against the scale their maintainers named, read from the pinned package the bench installed. A real project gets the same scale through the token-package allowlist when it depends on that package; the benchmark row proves the ladder is read, not that every consumer declares the dependency.');
   lines.push('- SCSS is audited through postcss-scss. Sass variables and functions are not evaluated, so a system that routes all spacing through `$spacer` or `spacing()` shows few literal findings and a fallback scale; that is a token-discovery gap, not cleanliness.');
   lines.push('');
   return `${lines.join('\n')}\n`;
@@ -262,6 +280,13 @@ const selected = manifest.repos.filter((repo) => !args.only || args.only.has(rep
 const results = [];
 const checkFailures = [];
 fs.mkdirSync(snapshotsDir, { recursive: true });
+
+if (!args.reportOnly) {
+  const packages = installTokenPackages(selected, packagesDir, { run });
+  if (packages.installed.length > 0) {
+    process.stdout.write(`token packages ${packages.skipped ? 'present' : 'installed'}: ${packages.installed.join(', ')}\n`);
+  }
+}
 
 for (const repo of manifest.repos) {
   const resultFile = path.join(resultsDir, `${repo.name}.json`);

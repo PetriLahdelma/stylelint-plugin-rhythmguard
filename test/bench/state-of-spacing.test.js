@@ -47,6 +47,42 @@ test('buildEdition ranks repositories by drift density and keeps top values and 
   assert.equal(acme.scaleSource, 'scanned-css');
 });
 
+test('buildEdition measures a row against an installed token package and leaves a package without a ladder unmeasured', async () => {
+  const { buildEdition, renderEdition } = await load();
+  const edition = buildEdition([
+    result({
+      name: 'carbon',
+      tokenPackages: ['@carbon/layout@11.59.0'],
+      scale: { source: 'token-sources', values: [0, 2, 4, 8, 12, 16, 24, 32, 40, 48, 64, 80, 96, 160], tokenCount: 13, files: ['/bench/packages/node_modules/@carbon/layout/scss/generated/_spacing.scss'] },
+    }),
+    result({
+      name: 'sap',
+      scaleIntent: 'package',
+      scalePackage: '@sap-theming/theming-base-content',
+      scale: { source: 'fallback', values: [0, 4, 8, 12, 16, 24, 32], tokenCount: 0, files: [] },
+    }),
+    result({ name: 'plain' }),
+  ], { id: '2026-09' });
+
+  const carbon = edition.rows.find((row) => row.name === 'carbon');
+  assert.equal(carbon.installedPackage, true);
+  assert.equal(carbon.unmeasured, false);
+  assert.equal(carbon.drift, 20);
+  const sap = edition.rows.find((row) => row.name === 'sap');
+  assert.equal(sap.installedPackage, false);
+  assert.equal(sap.unmeasured, true);
+  assert.equal(edition.rows.at(-1).name, 'sap', 'unmeasured rows sort last');
+  assert.equal(edition.totals.installedPackages, 1);
+  assert.equal(edition.totals.inPackage, 1);
+  assert.equal(edition.totals.fallbackScales, 0, 'a package row on the fallback is not counted as a fallback');
+
+  const markdown = renderEdition(edition);
+  assert.match(markdown, /\| \[carbon\]\(.*\) \| `abc1234` \| in `@carbon\/layout@11\.59\.0` \(installed\) \| 20 \| 40 \|/);
+  assert.match(markdown, /\| \[sap\]\(.*\) \| `abc1234` \| in `@sap-theming\/theming-base-content` \(dependency\) \| n\/a \| n\/a \|/);
+  assert.match(markdown, /1 keep the scale in an npm package their maintainers named/);
+  assert.match(markdown, /1 told us the scale lives in a dependency package that carries no ladder/);
+});
+
 test('buildEdition reports the change since the previous edition per repository', async () => {
   const { buildEdition } = await load();
   const previous = buildEdition([result({ summary: { total: 30, drift: 30, falsePositiveRate: 0 } })], { id: '2026-06' });

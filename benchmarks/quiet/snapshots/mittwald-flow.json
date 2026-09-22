@@ -2,25 +2,24 @@
   "name": "mittwald-flow",
   "sha": "17efdf9",
   "scale": {
-    "source": "fallback",
+    "source": "token-sources",
     "values": [
       0,
+      1,
+      2,
       4,
       8,
-      12,
       16,
       24,
-      32
+      32,
+      64
     ]
   },
   "summary": {
-    "total": 2,
-    "drift": 2,
+    "total": 0,
+    "drift": 0,
     "falsePositives": 0
   },
-  "findings": [
-    "packages/components/src/components/DateRangePicker/components/DateRangeInput/DateRangeInput.module.scss:35:2px:drift",
-    "packages/components/src/components/DateRangePicker/components/DateRangeInput/DateRangeInput.module.scss:39:2px:drift"
-  ],
+  "findings": [],
   "commit": "17efdf9c9a545733dce93ad9b5a0afe82c9a5252"
 }
