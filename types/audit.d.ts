@@ -68,6 +68,8 @@ export interface AuditScanned {
   scssFiles?: number;
   /** .scss files found but not audited because postcss-scss is not installed. */
   scssSkipped?: number;
+  /** Stylesheets Stylelint skipped because the project's own .stylelintignore excludes them. */
+  stylelintIgnored?: number;
   templateFiles: number;
   totalFiles?: number;
   [key: string]: unknown;

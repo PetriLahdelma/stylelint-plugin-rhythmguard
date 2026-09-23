@@ -14,8 +14,8 @@
     ]
   },
   "summary": {
-    "total": 40,
-    "drift": 40,
+    "total": 41,
+    "drift": 41,
     "falsePositives": 0
   },
   "findings": [
@@ -30,6 +30,7 @@
     "apps/web/styles/globals.css:243:60px:drift",
     "apps/web/styles/raqb.css:122:10px:drift",
     "apps/web/styles/raqb.css:37:2px:drift",
+    "packages/ui/components/button/Button.tsx:269:0.5px:drift",
     "packages/ui/components/button/Button.tsx:282:0.5px:drift",
     "packages/ui/components/button/Button.tsx:318:0.5px:drift",
     "packages/ui/components/editor/plugins/AddVariablesDropdown.tsx:105:6px:drift",

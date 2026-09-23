@@ -21,6 +21,7 @@ function renderText(report) {
     `  Template files scanned   ${String(report.templateFilesScanned).padStart(4)}`,
     ...(report.scanned && report.scanned.scssFiles > 0 ? [`  SCSS files scanned       ${String(report.scanned.scssFiles - report.scanned.scssSkipped).padStart(4)}`] : []),
     ...(report.scanned && report.scanned.scssSkipped > 0 ? [`  SCSS files skipped       ${String(report.scanned.scssSkipped).padStart(4)}  (install postcss-scss to audit them)`] : []),
+    ...(report.scanned && report.scanned.stylelintIgnored > 0 ? [`  Ignored by .stylelintignore ${String(report.scanned.stylelintIgnored).padStart(4)}  (not audited)`] : []),
     `  Files with issues        ${String(report.filesWithIssues).padStart(4)}`,
     `  Scale cleanliness        ${scoreBar(report.scaleCleanliness)}  ${report.scaleCleanliness}%`,
   ];
