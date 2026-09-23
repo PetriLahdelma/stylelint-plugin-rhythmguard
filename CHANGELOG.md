@@ -6,6 +6,11 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- The audit no longer hangs on template files that contain an unclosed quote followed by escape-dense source. The Tailwind class-string scanner found string literals with a regex whose alternation was ambiguous on every backslash, so from an apostrophe in a comment or a quote inside a regex literal it backtracked exponentially over the `\{ \[ \(` of the next regex literal; on the Ace editor's `mode-alda.js` (10 KB, vendored by a MediaWiki skin) one `rhythmguard audit` ran for eleven hours before it was killed, and Bootswatch's audit took longer than three minutes. The finder is now a single linear pass: an escape never closes a literal, a `'` or `"` literal that reaches a line break is not a literal, a backtick literal may span lines. Both repositories audit in seconds. The benchmark gained five findings that an unclosed quote had been hiding (four in Ghost's `input-group.tsx`, one in Cal.com's `Button.tsx`).
+- The audit no longer throws `All input files were ignored because of the ignore pattern` when a project's own `.stylelintignore` excludes every stylesheet the walk found. The files are counted as `scanned.stylelintIgnored` in the JSON contract and shown in text and Markdown output, so a clean report cannot hide that nothing was audited.
+
 ### Changed
 
 - The post-publish smoke waits for the version through `npm view --prefer-online`, the client that will install it, instead of the raw packument; for 3.8.0 the packument listed the version a minute before `npm install` could resolve it and the smoke failed.

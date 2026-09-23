@@ -77,7 +77,10 @@ async function runStylelintAudit(cssFiles, options) {
   const results = [];
 
   if (plainFiles.length > 0) {
+    // A project's own .stylelintignore may exclude every file we pass; that is
+    // a count to report, not a reason for the audit to throw.
     const result = await stylelint.lint({
+      allowEmptyInput: true,
       files: plainFiles,
       config: {
         plugins: [pluginPath],
@@ -92,6 +95,7 @@ async function runStylelintAudit(cssFiles, options) {
     const scssSyntax = resolveScssSyntax();
     if (scssSyntax) {
       const result = await stylelint.lint({
+        allowEmptyInput: true,
         files: scssFiles,
         config: {
           customSyntax: scssSyntax,
@@ -107,6 +111,10 @@ async function runStylelintAudit(cssFiles, options) {
 
   results.scssFiles = scssFiles.length;
   results.scssSkipped = scssSkipped;
+  // Stylelint returns no result at all for a file its ignore file excludes, so
+  // the difference between what was passed and what came back is that count.
+  const linted = plainFiles.length + scssFiles.length - scssSkipped;
+  results.stylelintIgnored = Math.max(0, linted - results.length);
   return results;
 }
 

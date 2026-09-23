@@ -14,8 +14,8 @@
     ]
   },
   "summary": {
-    "total": 745,
-    "drift": 745,
+    "total": 749,
+    "drift": 749,
     "falsePositives": 0
   },
   "findings": [
@@ -756,6 +756,10 @@
     "apps/shade/src/components/patterns/color-picker.tsx:142:3px:drift",
     "apps/shade/src/components/ui/banner.tsx:17:-2px:drift",
     "apps/shade/src/components/ui/copy-field.tsx:168:1px:drift",
+    "apps/shade/src/components/ui/input-group.tsx:45:-0.35rem:drift",
+    "apps/shade/src/components/ui/input-group.tsx:45:-0.45rem:drift",
+    "apps/shade/src/components/ui/input-group.tsx:46:-0.35rem:drift",
+    "apps/shade/src/components/ui/input-group.tsx:46:-0.4rem:drift",
     "apps/shade/src/components/ui/loading-indicator.tsx:22:10px:drift",
     "apps/shade/src/components/ui/loading-indicator.tsx:25:13px:drift",
     "apps/shade/src/components/ui/loading-indicator.tsx:29:7px:drift",

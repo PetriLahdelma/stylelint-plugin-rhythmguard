@@ -115,17 +115,51 @@ function buildTailwindMotionFindingText(token, analysis) {
   return `Unexpected Tailwind arbitrary motion duration "${token}". Use duration scale values.`;
 }
 
+/**
+ * Linear scan for string literals. A regex did this before, and from every
+ * quote that never closes (an apostrophe in a comment, a quote inside a regex
+ * literal) it backtracked to the end of the file; on a 3.5 MB minified editor
+ * bundle that took hours. This walks the source once: an escape never closes a
+ * literal, a ' or " literal that reaches a line break is not a literal (the
+ * language agrees), and a backtick literal may span lines.
+ */
 function findStringLiterals(source) {
   const literals = [];
-  const literalPattern = /(["'`])((?:\\[\s\S]|(?!\1)[\s\S])*?)\1/g;
-  let match;
+  const { length } = source;
+  let index = 0;
 
-  while ((match = literalPattern.exec(source)) !== null) {
-    literals.push({
-      quote: match[1],
-      value: match[2],
-      valueStart: match.index + 1,
-    });
+  while (index < length) {
+    const quote = source[index];
+    if (quote !== '"' && quote !== "'" && quote !== '`') {
+      index += 1;
+      continue;
+    }
+
+    const valueStart = index + 1;
+    let cursor = valueStart;
+    let closed = false;
+    while (cursor < length) {
+      const char = source[cursor];
+      if (char === '\\') {
+        cursor += 2;
+        continue;
+      }
+      if (char === quote) {
+        closed = true;
+        break;
+      }
+      if (quote !== '`' && char === '\n') {
+        break;
+      }
+      cursor += 1;
+    }
+
+    if (closed) {
+      literals.push({ quote, value: source.slice(valueStart, cursor), valueStart });
+      index = cursor + 1;
+    } else {
+      index = valueStart;
+    }
   }
 
   return literals;
