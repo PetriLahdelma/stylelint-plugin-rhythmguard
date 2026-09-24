@@ -16,6 +16,8 @@ Thank you for being here. Rhythmguard is a small, opinionated tool with one job:
 
 **Contribute a community scale.** JSON files in `scales/community/`, scaffolded with `npm run scales:add -- --name my-team-scale --base 8 --steps 0,4,8,12,16,24,32` and checked with `npm run scales:validate`. Spec and policy in [`docs/COMMUNITY_SCALES.md`](./docs/COMMUNITY_SCALES.md).
 
+The plan for the next nine months is in [`ROADMAP.md`](./ROADMAP.md), and every item there is an issue labelled [`roadmap`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/labels/roadmap) with a milestone. Items labelled `decision` are open questions with the evidence that will settle them; a comment with evidence is a contribution.
+
 Issues labelled [`good first issue`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/labels/good%20first%20issue) are scoped for a first PR. [`help wanted`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/labels/help%20wanted) marks work the maintainer would like a second pair of hands on. If you want to work on something larger, open an issue first so we can agree the shape before you write code.
 
 ## Getting set up
@@ -27,7 +29,7 @@ npm ci
 npm test
 ```
 
-Node 20.19 or newer. No build step; the source runs as is. Tests use `node --test` through `scripts/test.mjs` and take about ten seconds. They are grouped by what they prove:
+Node 20.19 or newer. No build step; the source runs as is. Tests use `node --test` through `scripts/test.mjs` and take about fifteen seconds. They are grouped by what they prove:
 
 | Folder | Proves | Run one |
 | --- | --- | --- |
@@ -48,7 +50,7 @@ Run these before you push. They are what CI runs, so a green local run means a g
 ```bash
 npm run lint        # eslint
 npm run typecheck   # the published TypeScript declarations against a consumer file and the examples
-npm test            # 200+ tests, Stylelint 16
+npm test            # 300+ tests, on the Stylelint in the lockfile (16)
 ```
 
 Optional, depending on what you touched:
@@ -59,6 +61,8 @@ npm run test:pack-smoke        # pack the tarball and install it in a temp proje
 npm run scales:validate        # community scale JSON
 npm run bench:quiet -- --check # findings on the benchmark repos must match snapshots
 npm run build:agents           # after editing the block in docs/FOR_AGENTS.md
+npm run build:playground       # after changing anything under src/ the rules use
+npm run bench:agents -- --dry-run --limit 4   # the agent eval pipeline, no API key needed
 ```
 
 The local gate runs on whatever Node you have installed; CI runs Node 20 and 22. Node 20.19 is the floor, so avoid features that arrived in Node 21 or later. Glob patterns for `node --test` were one such feature, and they took a release run down.
@@ -96,7 +100,8 @@ CI for this repository runs on self-hosted runners for pushes and same-repo bran
 ## Compatibility
 
 - Stylelint `^16.0.0 || ^17.0.0`. The 16.0.0 floor has known autofix differences; CI runs the floor suite against it.
-- Node `>=20.19.0`.
+- Node `>=20.19.0` until 4.0, which raises it to 22.22 ([#172](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/172)).
+- ESLint `>=8.0.0` for the companion rules; tested on 9.
 - CommonJS and ESM entry points; every export has a declaration under `types/`.
 - Three runtime dependencies: `known-css-properties`, `postcss` and `postcss-value-parser`. `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers and dev dependencies here. `test/contracts/architecture.test.js` fails if a runtime import is not declared.
 
@@ -106,7 +111,7 @@ The maintainer aims to respond to issues and PRs within a week. Small PRs merge 
 
 ## Releases
 
-Maintainer-run. Bump `package.json` and `CHANGELOG.md`, create a GitHub release, and `release.yml` verifies on the self-hosted matrix and publishes through npm trusted publishing (OIDC) from a GitHub-hosted job. The checklist covers cutting a release while the farm is down. Provenance is automatic. The checklist is in [`docs/RELEASE_CHECKLIST.md`](./docs/RELEASE_CHECKLIST.md).
+Maintainer-run. Bump `package.json`, the two companion packages under `packages/` and `CHANGELOG.md` to the same version, create a GitHub release, and `release.yml` verifies on the self-hosted matrix and publishes through npm trusted publishing (OIDC) from a GitHub-hosted job. The checklist covers cutting a release while the farm is down. Provenance is automatic. The checklist is in [`docs/RELEASE_CHECKLIST.md`](./docs/RELEASE_CHECKLIST.md).
 
 ## Benchmarking performance
 

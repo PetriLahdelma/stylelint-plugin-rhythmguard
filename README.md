@@ -13,7 +13,7 @@ Nobody chose 13px. Rhythmguard catches off-scale spacing in CSS and Tailwind cla
 
 Rhythmguard is scale-aware rather than a blanket ban: values on your scale pass, values off it are reported with the two nearest steps, and tokens are only ever suggested from a map you control. It works on CSS and SCSS declarations through Stylelint and on Tailwind class strings through an ESLint companion, and it ships an audit CLI so you can measure drift and ratchet it down before enforcing anything.
 
-What it is not: it does not check colors or hex values, and the Stylelint rules do not see Tailwind class strings (that is the separate ESLint companion below). Pair it with a color linter if you need one; do not expect one tool to do both.
+What it is not: it does not check colors or hex values, and the Stylelint rules do not see Tailwind class strings (that is the separate ESLint companion below). It reads CSS and SCSS; Less and CSS-in-JS are not read. Pair it with a color linter if you need one; do not expect one tool to do both.
 
 ## Start here
 
@@ -47,7 +47,7 @@ That enables `rhythmguard/use-scale` on spacing properties with the default 4px 
 }
 ```
 
-For class strings in JSX, TSX, Vue, Svelte or Astro, add the ESLint companion. It is the same rules under two names: `stylelint-plugin-rhythmguard/eslint` if you already have this package, or [`eslint-plugin-rhythmguard`](packages/eslint-plugin-rhythmguard#readme) on its own.
+For class strings in JSX, TSX, Vue, Svelte or Astro, add the ESLint companion from `stylelint-plugin-rhythmguard/eslint`. The same rules will also be published on their own as [`eslint-plugin-rhythmguard`](packages/eslint-plugin-rhythmguard#readme); that package is in this repository but not on npm yet ([#61](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/61)). The rules also run under Oxlint's JS plugins.
 
 ```js
 // eslint.config.js
@@ -80,6 +80,8 @@ Every rule validates its options up front. Unknown option names and wrong shapes
 
 ## Audit before you enforce
 
+With the package installed, the `rhythmguard` command is available to `npx`:
+
 ```bash
 npx rhythmguard audit ./src --format markdown
 npx rhythmguard audit ./src --write-baseline
@@ -103,12 +105,13 @@ The audit scans CSS declarations, Tailwind class strings and your token contract
 - [State of Spacing](docs/STATE_OF_SPACING.md): dated editions of the same data, ranked by drift density, with the values and properties that drifted
 - [Agent evals](docs/AGENT_EVALS.md): does a finding get a coding agent to zero drift, in how many rounds, at what cost, against a rules-only control
 - [Architecture](docs/ARCHITECTURE.md): the layers, the rule kit, the invariants and where each is enforced
-- [Product direction](docs/STRATEGY_2026-09.md)
+- [Roadmap](ROADMAP.md): what is planned from October 2026 to June 2027, and the checkpoint that decides the pace
+- [Product analysis, September 2026](docs/STRATEGY_2026-09.md): the market data behind the roadmap
 - Browser playground: [petrilahdelma.github.io/stylelint-plugin-rhythmguard](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/) runs the real rules, bundled for the browser, on CSS or SCSS you paste; `scale: "auto"`, tokens and fixes included, and a test proves it reports what Stylelint reports
 
 ## Compatibility
 
-Stylelint 16 and 17. Node 20.19 or newer. Three runtime dependencies (`known-css-properties`, `postcss`, `postcss-value-parser`); `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers. CommonJS and ESM entry points, TypeScript declarations for every export. The CI matrix runs Node 20 and 22 against Stylelint 16.0.0, 16.x and 17.x. Upgrading from 2.x: [docs/MIGRATING_TO_3.md](docs/MIGRATING_TO_3.md).
+Stylelint 16 and 17. Node 20.19 or newer; Node 20 itself is end of life, and 4.0 raises the floor to 22.22 ([#172](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/172)). The ESLint companion needs ESLint 8 or newer, is tested on ESLint 9, and has been checked by hand on ESLint 10 and Oxlint 1.85. Three runtime dependencies (`known-css-properties`, `postcss`, `postcss-value-parser`); `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers. CommonJS and ESM entry points, TypeScript declarations for every export. The CI matrix runs Node 20 and 22 against Stylelint 16.0.0, 16.x and 17.x. Upgrading from 2.x: [docs/MIGRATING_TO_3.md](docs/MIGRATING_TO_3.md).
 
 ## Contributing and support
 
