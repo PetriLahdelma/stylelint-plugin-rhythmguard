@@ -1,5 +1,7 @@
 # Rhythmguard Product Direction, September 2026
 
+> **Planning moved to [`ROADMAP.md`](../ROADMAP.md) on 2026-09-24.** That page replaces the sequencing in sections 6 and 9.10 below with a plan for October 2026 to June 2027, built on what the outreach and a review of the field showed since this document was written. The market analysis here still stands.
+
 Date: 2026-09-05. Author: full-repo review after a two-month pause (last commit 2026-07-01).
 
 This document records what the codebase is today, what the market data says, what Rhythmguard should and should not be, and the two tracks of work agreed on 2026-09-05: product hygiene and distribution. It replaces the "Follow-Up Roadmap" in `AUDIT_2_VALIDATION.md` as the planning source of truth.
