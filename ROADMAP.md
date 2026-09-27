@@ -78,7 +78,7 @@ Four rules follow from that:
 2. **October.** Run and publish agent eval edition 1 ([#169](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/169)). It is the one artifact the Tailwind agent-lint conversation will quote, and the harness is built. Report a null result as plainly as a good one.
 3. **October to November: the shared-config round** ([`docs/outreach/embed/`](./docs/outreach/embed/README.md)).
    - Primer first, since its maintainers already engaged and its token package is read.
-   - Bootstrap's config after a decision under the no-follow-up rule.
+   - Bootstrap's config waits for a Bootstrap v6 release (decided 2026-09-27), then goes out with the v6 numbers.
    - WordPress, Wikimedia and GitLab after [#167](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/167) makes their consumers measurable against their own scales.
    - 10up last, if at all.
    - One draft at a time, each confirmed, and every outcome logged in [`embed-log.md`](./docs/outreach/embed-log.md).
