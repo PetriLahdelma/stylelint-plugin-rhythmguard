@@ -83,6 +83,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # npmjs.com shows the README on a white page; swap the transparent SVG banner
+      # for the non-transparent PNG in this throwaway checkout only.
+      - name: Use the PNG banner in the npm README
+        run: node scripts/ci/npm-readme.mjs
+
       - name: Publish to npm via OIDC
         run: npm publish --access public --registry https://registry.npmjs.org
 
