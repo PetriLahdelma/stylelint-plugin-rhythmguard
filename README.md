@@ -18,7 +18,7 @@ What it is not: it does not check colors or hex values, and the Stylelint rules 
 ## Start here
 
 ```bash
-npx stylelint-plugin-rhythmguard
+npx rhythmguard
 ```
 
 No install, no config. It detects your stack and token files, infers your spacing scale from your own tokens, audits the current directory, and prints the exact `.stylelintrc.json` (and ESLint snippet for Tailwind) to paste. This is the whole run on Bootstrap's `v6-dev` branch, unedited:
@@ -47,11 +47,15 @@ That enables `rhythmguard/use-scale` on spacing properties with the default 4px 
 }
 ```
 
-For class strings in JSX, TSX, Vue, Svelte or Astro, add the ESLint companion from `stylelint-plugin-rhythmguard/eslint`. The same rules will also be published on their own as [`eslint-plugin-rhythmguard`](packages/eslint-plugin-rhythmguard#readme); that package is in this repository but not on npm yet ([#61](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/61)). The rules also run under Oxlint's JS plugins.
+For class strings in JSX, TSX, Vue, Svelte or Astro, add the ESLint companion, [`eslint-plugin-rhythmguard`](packages/eslint-plugin-rhythmguard#readme). It is the same rules as `stylelint-plugin-rhythmguard/eslint`, so either import works. The rules also run under Oxlint's JS plugins.
+
+```bash
+npm install --save-dev eslint eslint-plugin-rhythmguard
+```
 
 ```js
 // eslint.config.js
-import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';
+import rhythmguard from 'eslint-plugin-rhythmguard';
 
 export default [
   {

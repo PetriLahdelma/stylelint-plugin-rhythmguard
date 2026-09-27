@@ -74,7 +74,7 @@ Every repository whose tracker accepts a free-form issue got one with its audit 
 The same command runs in any checkout:
 
 ```bash
-npx stylelint-plugin-rhythmguard
+npx rhythmguard
 ```
 
 It detects the stack, reads the project's own tokens, and prints the scale it found, where it found it, the off-scale count, and the top values and properties. If it says the scale came from a fallback, the project has no discoverable spacing tokens and the count is not a verdict on the CSS. Fix that first.
