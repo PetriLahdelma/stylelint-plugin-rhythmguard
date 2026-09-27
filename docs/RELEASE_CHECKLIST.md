@@ -58,7 +58,7 @@ Two more packages publish from this repository, by the same release run, after t
 
 The steps are gated on the repository variable `PUBLISH_COMPANIONS`. Two one-time steps before setting it, for each package:
 
-1. First publish by hand, since npm trusted publishing can only be configured on a package that exists: `cd packages/<name> && npm publish --access public --registry https://registry.npmjs.org` with your npm login and OTP.
+1. First publish by hand, since npm trusted publishing can only be configured on a package that exists: `npm login --registry https://registry.npmjs.org`, then `cd packages/<name> && npm publish --access public --provenance=false --registry https://registry.npmjs.org` with your OTP. `--provenance=false` is required: both packages set `publishConfig.provenance`, which only works inside a CI run with OIDC, so a publish from a laptop fails without it. Releases after this one publish from `release.yml` with provenance.
 2. On npmjs.com, package settings, add a trusted publisher: repository `PetriLahdelma/stylelint-plugin-rhythmguard`, workflow `release.yml`.
 
 Then `gh variable set PUBLISH_COMPANIONS --body true`. Until then the steps are skipped and the release is unaffected.

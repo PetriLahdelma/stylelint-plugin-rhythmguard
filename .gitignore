@@ -8,3 +8,5 @@ coverage/
 .claude/
 # dry-run editions of the agent eval harness
 docs/agent-evals/*-dry-run.*
+# interrupted agent eval runs; resumed with --resume, removed when the run completes
+docs/agent-evals/*.partial.json

@@ -26,6 +26,6 @@ npm run bench:agents                                  # Sonnet 5, Haiku 4.5, Opu
 npm run bench:agents -- --models claude-sonnet-5 --suite temptation
 ```
 
-A real run needs an Anthropic credential (`ANTHROPIC_API_KEY`, or an `ant auth login` profile). Sixteen tasks, three conditions and up to three rounds is at most roughly 160 requests per model; budget a few dollars per model. Dry-run editions are written with a `-dry-run` suffix and are not committed.
+A real run needs an Anthropic credential (`ANTHROPIC_API_KEY`, or an `ant auth login` profile). Progress is saved to `docs/agent-evals/<date>.partial.json` after every task run, so an interrupted run keeps what it paid for; `npm run bench:agents -- --resume` continues it the same day, skipping completed task runs and retrying failed ones. A task run that fails (a refusal, an API error after the SDK's retries, a network failure) is recorded with its reason, listed in the edition under "Task runs that did not complete", and left out of every number. Sixteen tasks, three conditions and up to three rounds is at most roughly 160 requests per model; budget a few dollars per model. Dry-run editions are written with a `-dry-run` suffix and are not committed.
 
 `scripts/bench/agents/lib.mjs` routes every model call through one `complete()` function, so the pipeline runs in tests against a scripted model and the real audit; `test/bench/agent-evals.test.js` covers extraction, classification, cost, the task list and one full task through all three conditions.
