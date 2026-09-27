@@ -105,3 +105,22 @@ test('renderReport leaves failed task runs out of every number and lists them', 
   assert.match(md, /\| claude-sonnet-5 \| b \| temptation \| api-529 \| Overloaded \\\| retry \|/);
   assert.equal(runKey(ok), 'claude-sonnet-5::a');
 });
+
+test('clientOptions sends the workspace header only when ANTHROPIC_WORKSPACE_ID is set', async () => {
+  const { clientOptions } = await load();
+  assert.deepEqual(clientOptions({}), {});
+  assert.deepEqual(clientOptions({ ANTHROPIC_WORKSPACE_ID: '  ' }), {});
+  assert.deepEqual(clientOptions({ ANTHROPIC_WORKSPACE_ID: 'wrkspc_123' }), { defaultHeaders: { 'anthropic-workspace-id': 'wrkspc_123' } });
+});
+
+test('repeatedFailure stops a run after three identical failures in a row, not after mixed ones', async () => {
+  const { repeatedFailure } = await load();
+  const fail = (message) => ({ error: { kind: 'api-400', message } });
+  const ok = { after: {}, before: {}, rulesOnly: {} };
+  assert.equal(repeatedFailure([fail('a'), fail('a')]), null, 'fewer than three');
+  assert.equal(repeatedFailure([fail('a'), ok, fail('a'), fail('a')]), null, 'a success in the window');
+  assert.equal(repeatedFailure([fail('a'), fail('b'), fail('a')]), null, 'different messages');
+  assert.deepEqual(repeatedFailure([ok, fail('no workspace'), fail('no workspace'), fail('no workspace')]), { kind: 'api-400', message: 'no workspace' });
+  const withId = (id) => fail(`401 {"error":{"type":"authentication_error"},"request_id":"req_${id}"}`);
+  assert.ok(repeatedFailure([withId('a1'), withId('b2'), withId('c3')]), 'request ids do not make failures different');
+});

@@ -250,6 +250,30 @@ export async function runTaskSafely(options) {
   }
 }
 
+/**
+ * Client options for the harness. An API key that is not scoped to a workspace
+ * must name one on every request; ANTHROPIC_WORKSPACE_ID supplies it.
+ */
+export function clientOptions(env = process.env) {
+  const workspace = (env.ANTHROPIC_WORKSPACE_ID || '').trim();
+  return workspace ? { defaultHeaders: { 'anthropic-workspace-id': workspace } } : {};
+}
+
+/**
+ * A failure that will repeat on every task (a bad key, a missing workspace, a
+ * wrong model id) should end the run after a few tries, not after all of them.
+ * True when the last `limit` records all failed with the same message.
+ */
+export function repeatedFailure(records, limit = 3) {
+  if (records.length < limit) return null;
+  const last = records.slice(-limit);
+  if (!last.every((record) => record.error)) return null;
+  // Request ids differ on every call; the failure is the same without them.
+  const same = (error) => `${error.kind} ${error.message.replace(/"request_id"\s*:\s*("[^"]*"|null)/g, '').replace(/\breq_[A-Za-z0-9]+/g, '')}`;
+  const first = same(last[0].error);
+  return last.every((record) => same(record.error) === first) ? last[0].error : null;
+}
+
 /** Key of a task run, for resuming a partial edition. */
 export const runKey = (record) => `${record.model}::${record.id}`;
 
