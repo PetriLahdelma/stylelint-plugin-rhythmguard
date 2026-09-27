@@ -12,7 +12,7 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { DEFAULT_MODELS, claudeComplete, loadTasks, renderReport, repoRoot, runKey, runTaskSafely } from './lib.mjs';
+import { DEFAULT_MODELS, claudeComplete, clientOptions, loadTasks, renderReport, repoRoot, repeatedFailure, runKey, runTaskSafely } from './lib.mjs';
 
 const args = process.argv.slice(2);
 const flag = (name, fallback = null) => {
@@ -60,7 +60,7 @@ async function main() {
     complete = scriptedComplete();
   } else {
     const { default: Anthropic } = await import('@anthropic-ai/sdk');
-    complete = await claudeComplete(new Anthropic());
+    complete = await claudeComplete(new Anthropic(clientOptions()));
   }
   const date = new Date().toISOString().slice(0, 10);
   fs.mkdirSync(outDir, { recursive: true });
@@ -78,14 +78,26 @@ async function main() {
   const done = new Set(records.map(runKey));
   const save = () => fs.writeFileSync(partialPath, `${JSON.stringify({ date, records, runId }, null, 2)}\n`);
 
-  for (const model of dryRun ? ['scripted'] : models) {
+  let stopped = null;
+  outer: for (const model of dryRun ? ['scripted'] : models) {
     for (const task of tasks) {
       if (done.has(runKey({ id: task.id, model }))) continue;
       const record = await runTaskSafely({ complete, log: (line) => process.stderr.write(`${line}\n`), model, rounds, task });
       if (record.error) process.stderr.write(`${model} ${task.id}: FAILED (${record.error.kind}) ${record.error.message}\n`);
       records.push(record);
       save();
+      stopped = repeatedFailure(records);
+      if (stopped) break outer;
     }
+  }
+  if (stopped) {
+    process.stderr.write(`\nStopped: the last three task runs failed the same way, so the rest would too.\n${stopped.message}\n`);
+    if (/workspace/i.test(stopped.message)) {
+      process.stderr.write('Set ANTHROPIC_WORKSPACE_ID to the workspace id (wrkspc_...) from the Claude Console, or use a key scoped to a workspace.\n');
+    }
+    process.stderr.write(`Nothing was written except ${path.relative(repoRoot, partialPath)}; fix the cause and rerun with --resume.\n`);
+    process.exitCode = 1;
+    return;
   }
 
   fs.writeFileSync(`${base}.json`, `${JSON.stringify({ date, records, runId }, null, 2)}\n`);
