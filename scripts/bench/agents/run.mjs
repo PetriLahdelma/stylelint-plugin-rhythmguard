@@ -1,14 +1,18 @@
 #!/usr/bin/env node
 /**
- * npm run bench:agents -- [--models a,b] [--suite temptation|neutral] [--limit N] [--rounds N] [--dry-run] [--out docs/agent-evals]
+ * npm run bench:agents -- [--models a,b] [--suite temptation|neutral] [--limit N] [--rounds N] [--dry-run] [--resume] [--out docs/agent-evals]
  *
  * Runs the agent eval harness (docs/AGENT_EVALS.md) and writes a dated edition.
  * `--dry-run` runs the whole pipeline against a scripted model that writes the
  * task's literal values, so the harness can be exercised without an API key.
+ *
+ * Progress is written to `<date>.partial.json` after every task run, so a crash
+ * or a stopped run keeps what it paid for. `--resume` reads today's partial file
+ * and skips every task run that completed; failed ones are retried.
  */
 import fs from 'node:fs';
 import path from 'node:path';
-import { DEFAULT_MODELS, claudeComplete, loadTasks, renderReport, repoRoot, runTask } from './lib.mjs';
+import { DEFAULT_MODELS, claudeComplete, loadTasks, renderReport, repoRoot, runKey, runTaskSafely } from './lib.mjs';
 
 const args = process.argv.slice(2);
 const flag = (name, fallback = null) => {
@@ -16,6 +20,7 @@ const flag = (name, fallback = null) => {
   return index === -1 ? fallback : args[index + 1];
 };
 const dryRun = args.includes('--dry-run');
+const resume = args.includes('--resume');
 const models = (flag('--models') || DEFAULT_MODELS.join(',')).split(',').map((m) => m.trim()).filter(Boolean);
 const suite = flag('--suite');
 const limit = Number(flag('--limit', '0'));
@@ -57,19 +62,37 @@ async function main() {
     const { default: Anthropic } = await import('@anthropic-ai/sdk');
     complete = await claudeComplete(new Anthropic());
   }
-  const runId = `${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}${dryRun ? '-dry' : ''}`;
-  const records = [];
-  for (const model of dryRun ? ['scripted'] : models) {
-    for (const task of tasks) {
-      records.push(await runTask({ complete, log: (line) => process.stderr.write(`${line}\n`), model, rounds, task }));
-    }
-  }
   const date = new Date().toISOString().slice(0, 10);
   fs.mkdirSync(outDir, { recursive: true });
   const base = path.join(outDir, `${date}${dryRun ? '-dry-run' : ''}`);
+  const partialPath = `${base}.partial.json`;
+
+  let runId = `${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}${dryRun ? '-dry' : ''}`;
+  let records = [];
+  if (resume && fs.existsSync(partialPath)) {
+    const partial = JSON.parse(fs.readFileSync(partialPath, 'utf8'));
+    runId = partial.runId;
+    records = partial.records.filter((record) => !record.error);
+    process.stderr.write(`resuming run ${runId}: ${records.length} task runs already complete\n`);
+  }
+  const done = new Set(records.map(runKey));
+  const save = () => fs.writeFileSync(partialPath, `${JSON.stringify({ date, records, runId }, null, 2)}\n`);
+
+  for (const model of dryRun ? ['scripted'] : models) {
+    for (const task of tasks) {
+      if (done.has(runKey({ id: task.id, model }))) continue;
+      const record = await runTaskSafely({ complete, log: (line) => process.stderr.write(`${line}\n`), model, rounds, task });
+      if (record.error) process.stderr.write(`${model} ${task.id}: FAILED (${record.error.kind}) ${record.error.message}\n`);
+      records.push(record);
+      save();
+    }
+  }
+
   fs.writeFileSync(`${base}.json`, `${JSON.stringify({ date, records, runId }, null, 2)}\n`);
   fs.writeFileSync(`${base}.md`, renderReport({ date, records, runId }));
-  process.stdout.write(`wrote ${path.relative(repoRoot, base)}.md (${records.length} task runs, run ${runId})\n`);
+  fs.rmSync(partialPath, { force: true });
+  const failed = records.filter((record) => record.error).length;
+  process.stdout.write(`wrote ${path.relative(repoRoot, base)}.md (${records.length} task runs${failed ? `, ${failed} failed; rerun with --resume to retry them` : ''}, run ${runId})\n`);
 }
 
 main().catch((error) => {

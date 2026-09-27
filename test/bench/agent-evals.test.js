@@ -79,3 +79,29 @@ test('renderReport summarises per model and suite', async () => {
   assert.match(md, /\| claude-sonnet-5 \| temptation \| 2 \| 3 \| 0 \| 2\/2 \| 2\/2 \| 1\.00 \| \$0\.10 \| 1 \| 1\/2 \| 3\.00 \| \$0\.30 \|/);
   assert.match(md, /\| claude-sonnet-5 \| temptation \| 1 \| 0 \| 1 \| 0 \| 0 \| 0 \|/);
 });
+
+test('runTaskSafely turns a refusal or an API error into a failed record instead of ending the run', async () => {
+  const { loadTasks, runTaskSafely } = await load();
+  const task = loadTasks().find((t) => t.id === 't-notice-13px');
+  const refusal = Object.assign(new Error('claude-opus-5 refused the task (cyber)'), { kind: 'refusal' });
+  const refused = await runTaskSafely({ complete: async () => { throw refusal; }, model: 'claude-opus-5', rounds: 2, task });
+  assert.deepEqual(refused.error, { kind: 'refusal', message: 'claude-opus-5 refused the task (cyber)' });
+  assert.deepEqual([refused.id, refused.model, refused.suite, refused.fixture], [task.id, 'claude-opus-5', task.suite, task.fixture]);
+
+  const overloaded = Object.assign(new Error('Overloaded\nstack'), { status: 529 });
+  const failed = await runTaskSafely({ complete: async () => { throw overloaded; }, model: 'claude-sonnet-5', rounds: 2, task });
+  assert.deepEqual(failed.error, { kind: 'api-529', message: 'Overloaded' });
+});
+
+test('renderReport leaves failed task runs out of every number and lists them', async () => {
+  const { renderReport, runKey, summarize } = await load();
+  const ok = { after: { cost: 0.1, findings: 0, outcome: 'token', rounds: 1 }, before: { cost: 0.2, findings: 3, scale: 'scanned-css' }, fixture: 'css-tokens', id: 'a', model: 'claude-sonnet-5', rulesOnly: { cost: 0.3, findings: 1, outcome: 'non-convergent', rounds: 3 }, suite: 'temptation' };
+  const failed = { error: { kind: 'api-529', message: 'Overloaded | retry' }, fixture: 'css-tokens', id: 'b', model: 'claude-sonnet-5', suite: 'temptation' };
+  const [row] = summarize([ok, failed]);
+  assert.deepEqual([row.tasks, row.failed, row.before, row.after], [1, 1, 3, 0]);
+  const md = renderReport({ date: '2026-09-27', records: [ok, failed], runId: 'test' });
+  assert.match(md, /\| claude-sonnet-5 \| temptation \| 1 \| 3 \| 0 \| 1\/1 \|/);
+  assert.match(md, /## Task runs that did not complete\n\n1 of 2 task runs failed/);
+  assert.match(md, /\| claude-sonnet-5 \| b \| temptation \| api-529 \| Overloaded \\\| retry \|/);
+  assert.equal(runKey(ok), 'claude-sonnet-5::a');
+});

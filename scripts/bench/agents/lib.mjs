@@ -220,14 +220,42 @@ export async function claudeComplete(client) {
     const stream = client.messages.stream(params);
     const message = await stream.finalMessage();
     if (message.stop_reason === 'refusal') {
-      throw new Error(`${model} refused the task`);
+      const error = new Error(`${model} refused the task${message.stop_details && message.stop_details.category ? ` (${message.stop_details.category})` : ''}`);
+      error.kind = 'refusal';
+      throw error;
     }
     const text = message.content.filter((block) => block.type === 'text').map((block) => block.text).join('\n');
     return { text, usage: message.usage };
   };
 }
 
-export function summarize(records) {
+/**
+ * runTask that never throws. A refusal, an API error after the SDK's retries or
+ * a network failure becomes a record with `error` instead of ending a paid run,
+ * so one bad task costs that task and nothing else. Failed records are listed in
+ * the edition and left out of every sum.
+ */
+export async function runTaskSafely(options) {
+  try {
+    return await runTask(options);
+  } catch (error) {
+    const { model, task } = options;
+    return {
+      error: { kind: error.kind || (error.status ? `api-${error.status}` : 'error'), message: String(error.message || error).split('\n')[0].slice(0, 300) },
+      fixture: task.fixture,
+      id: task.id,
+      model,
+      suite: task.suite,
+    };
+  }
+}
+
+/** Key of a task run, for resuming a partial edition. */
+export const runKey = (record) => `${record.model}::${record.id}`;
+
+export function summarize(allRecords) {
+  const records = allRecords.filter((record) => !record.error);
+  const failed = allRecords.filter((record) => record.error);
   const byModel = new Map();
   for (const record of records) {
     if (!byModel.has(record.model)) byModel.set(record.model, { model: record.model, suites: new Map() });
@@ -253,6 +281,7 @@ export function summarize(records) {
         roundsRulesOnly: recs.filter((r) => r.rulesOnly.rounds > 0).reduce((t, r) => t + r.rulesOnly.rounds, 0) / Math.max(1, recs.filter((r) => r.rulesOnly.rounds > 0).length),
         rulesOnly: sum((r) => r.rulesOnly.findings),
         suite,
+        failed: failed.filter((r) => r.model === entry.model && r.suite === suite).length,
         tasks: recs.length,
       });
     }
@@ -280,8 +309,15 @@ export function renderReport({ date, records, runId }) {
     lines.push(`| ${r.model} | ${r.suite} | ${o.token || 0} | ${o['snapped-literal'] || 0} | ${o['clean-before'] || 0} | ${o['non-convergent'] || 0} | ${o['inline-style'] || 0} | ${o['ignore-comment'] || 0} |`);
   }
   lines.push('', '## Tasks', '', '| Model | Task | Suite | Before | With findings (rounds) | Outcome | Rules only (rounds) |', '| --- | --- | --- | ---: | ---: | --- | ---: |');
-  for (const r of records) {
+  for (const r of records.filter((record) => !record.error)) {
     lines.push(`| ${r.model} | ${r.id} | ${r.suite} | ${r.before.findings} | ${r.after.findings} (${r.after.rounds}) | ${r.after.outcome} | ${r.rulesOnly.findings} (${r.rulesOnly.rounds}) |`);
+  }
+  const failed = records.filter((record) => record.error);
+  if (failed.length > 0) {
+    lines.push('', '## Task runs that did not complete', '', `${failed.length} of ${records.length} task runs failed and are left out of every number above.`, '', '| Model | Task | Suite | Kind | Message |', '| --- | --- | --- | --- | --- |');
+    for (const r of failed) {
+      lines.push(`| ${r.model} | ${r.id} | ${r.suite} | ${r.error.kind} | ${r.error.message.replace(/\|/g, '\\|')} |`);
+    }
   }
   lines.push('', `Prices assumed, USD per million tokens: ${Object.entries(PRICES).map(([m, p]) => `${m} ${p.input}/${p.output}`).join(', ')}.`, '');
   return lines.join('\n');
