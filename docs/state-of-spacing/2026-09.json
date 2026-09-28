@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-23",
+  "generatedAt": "2026-09-28",
   "id": "2026-09",
   "previousId": null,
   "rows": [
@@ -713,64 +713,6 @@
         [
           "0.6em",
           10
-        ]
-      ],
-      "unmeasured": false
-    },
-    {
-      "name": "pure",
-      "url": "https://github.com/pure-css/pure",
-      "sha": "d35fb6f",
-      "cssFiles": 16,
-      "cleanliness": 63,
-      "drift": 30,
-      "driftPer100Files": 188,
-      "driftDelta": null,
-      "installedPackage": false,
-      "scaleIntent": null,
-      "scalePackage": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "tokenPackages": [],
-      "topProperties": [
-        [
-          "padding",
-          12
-        ],
-        [
-          "margin",
-          7
-        ],
-        [
-          "margin-bottom",
-          5
-        ]
-      ],
-      "topValues": [
-        [
-          "0.3em",
-          6
-        ],
-        [
-          "0.2em",
-          3
-        ],
-        [
-          ".3em",
-          2
         ]
       ],
       "unmeasured": false
@@ -3248,6 +3190,64 @@
       "unmeasured": true
     },
     {
+      "name": "pure",
+      "url": "https://github.com/pure-css/pure",
+      "sha": "d35fb6f",
+      "cssFiles": 16,
+      "cleanliness": 63,
+      "drift": 30,
+      "driftPer100Files": 188,
+      "driftDelta": null,
+      "installedPackage": false,
+      "scaleIntent": "none",
+      "scalePackage": null,
+      "scaleReliable": false,
+      "scaleReasons": [
+        "fallback"
+      ],
+      "scaleRejected": null,
+      "scaleSource": "fallback",
+      "scaleValues": [
+        0,
+        4,
+        8,
+        12,
+        16,
+        24,
+        32
+      ],
+      "tokenPackages": [],
+      "topProperties": [
+        [
+          "padding",
+          12
+        ],
+        [
+          "margin",
+          7
+        ],
+        [
+          "margin-bottom",
+          5
+        ]
+      ],
+      "topValues": [
+        [
+          "0.3em",
+          6
+        ],
+        [
+          "0.2em",
+          3
+        ],
+        [
+          ".3em",
+          2
+        ]
+      ],
+      "unmeasured": true
+    },
+    {
       "name": "fundamental-styles",
       "url": "https://github.com/SAP/fundamental-styles",
       "sha": "e31a128",
@@ -3368,10 +3368,10 @@
     "cssFiles": 8729,
     "drift": 7980,
     "repos": 58,
-    "fallbackScales": 32,
+    "fallbackScales": 31,
     "inPackage": 2,
     "installedPackages": 5,
-    "noScaleByDesign": 1,
+    "noScaleByDesign": 2,
     "unreliableScales": 3
   }
 }

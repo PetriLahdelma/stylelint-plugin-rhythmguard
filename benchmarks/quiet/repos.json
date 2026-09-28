@@ -325,7 +325,9 @@
       "paths": [
         "src"
       ],
-      "notes": "Pure CSS: small plain-CSS modules."
+      "notes": "Pure: no spacing scale by design; spacing is literal em values in each module, with no tokens or custom properties (maintainer, pure-css/pure#1489). Listed without a count.",
+      "scaleIntent": "none",
+      "scaleIntentSource": "https://github.com/pure-css/pure/issues/1489"
     },
     {
       "name": "forem",

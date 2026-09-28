@@ -20,11 +20,11 @@ This is not a ranking of teams. Two thirds of the drift in any one repository is
 | Repositories measured against a scale they defined themselves | 23 |
 | Off-scale values in those 23 | 2,052 |
 | Of the 23, repositories with zero off-scale values | 3 |
-| Repositories with no discoverable tokens, measured against a default 4px scale | 32 |
-| Median share of a repository's drift explained by its top three values | 42% |
+| Repositories with no discoverable tokens, measured against a default 4px scale | 31 |
+| Median share of a repository's drift explained by its top three values | 43% |
 | Median cleanliness (files with no finding) | 93% |
 
-Only the 23 rows measured against their own scale are shown below. The 32 default-scale rows are in the edition, marked as such, and their counts say more about where those projects keep their tokens than about their CSS. Two SAP repositories are listed without a count because their theming package carries no ladder, and VitePress is listed without one because its maintainers said it has no spacing scale by design.
+Only the 23 rows measured against their own scale are shown below. The 31 default-scale rows are in the edition, marked as such, and their counts say more about where those projects keep their tokens than about their CSS. Two SAP repositories are listed without a count because their theming package carries no ladder, and VitePress and Pure are listed without one because their maintainers said they have no spacing scale by design.
 
 | Repository | Scale read from | Off-scale values | per 100 CSS files | Top three values |
 | --- | --- | ---: | ---: | --- |
@@ -54,7 +54,7 @@ Only the 23 rows measured against their own scale are shown below. The 32 defaul
 
 ## Three things the table says
 
-**Drift is concentrated.** Across the 35 repositories with at least twenty findings, the top three values explain a median 42% of them. Mastodon defines a real scale in `--space-*` custom properties and steps off it 568 times, but 61% of that is three numbers: `10px` ×165, `15px` ×112, `5px` ×70. Deciding whether `10px` is a missing step, a slip, or a token nobody defined is one conversation. It is not 165 code reviews.
+**Drift is concentrated.** Across the 34 repositories with at least twenty findings, the top three values explain a median 43% of them. Mastodon defines a real scale in `--space-*` custom properties and steps off it 568 times, but 61% of that is three numbers: `10px` ×165, `15px` ×112, `5px` ×70. Deciding whether `10px` is a missing step, a slip, or a token nobody defined is one conversation. It is not 165 code reviews.
 
 **`10px` and `5px` are the values that drift.** In the 23 repositories measured against their own scale, `10px` is a top-three value in 8. Across every measured row, the most frequent off-scale values are `10px` (1,091 occurrences), `5px` (842) and `20px` (331). Most published scales are built on 4 or 8; most hands reach for 5 and 10.
 
@@ -67,7 +67,7 @@ Every repository whose tracker accepts a free-form issue got one with its audit 
 - **The scale lives in a package.** Primer's ladder is `--base-size-*` from `@primer/primitives`; AdminLTE inherits Bootstrap's `$spacers`; mittwald Flow's steps are `--size-px--*` in `@mittwald/flow-design-tokens`. A source scan cannot see any of that. Those rows are now measured against the installed package at a pinned version. Primer CSS went from 103 findings against its consumer tokens to 69 against its real ladder; mittwald Flow went from 2 to 0.
 - **Components reach the scale through a token layer**, so a literal scan measures the wrong layer (mittwald). The audit now follows `var()` chains from spacing tokens to their terminal values and reports which chains resolve on the scale, off it, or to a computed expression.
 - **Some values are not rhythm.** PatternFly's fourteen findings were four in vendored Font Awesome and ten in documentation examples, none in component SCSS; the row is labelled accordingly and reads zero.
-- **Some projects have no scale by design** (VitePress) or a scale that varies by theme (SAP's two repositories). Those rows carry no count.
+- **Some projects have no scale by design** (VitePress, and Pure, which writes literal `em` values per module) or a scale that varies by theme (SAP's two repositories). Those rows carry no count.
 
 ## Reading your own repository
 
