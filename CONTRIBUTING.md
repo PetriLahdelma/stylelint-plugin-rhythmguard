@@ -50,7 +50,7 @@ Run these before you push. They are what CI runs, so a green local run means a g
 ```bash
 npm run lint        # eslint
 npm run typecheck   # the published TypeScript declarations against a consumer file and the examples
-npm test            # 300+ tests, on the Stylelint in the lockfile (16)
+npm test            # 300+ tests, on the Stylelint in the lockfile (17)
 ```
 
 Optional, depending on what you touched:
@@ -71,7 +71,7 @@ If your shell's npm registry is overridden by a corporate `.npmrc`, add `--regis
 
 ### Pull requests from forks
 
-CI for this repository runs on self-hosted runners for pushes and same-repo branches. For pull requests from forks a separate job runs on GitHub-hosted runners with Node 22 and current Stylelint 16, covering lint, typecheck and the test suite. You will see its result on your PR. The full matrix and the benchmark run after merge.
+CI for this repository runs on self-hosted runners for pushes and same-repo branches. For pull requests from forks a separate job runs on GitHub-hosted runners with Node 22 and the Stylelint in the lockfile (17), covering lint, typecheck and the test suite. You will see its result on your PR. The full matrix and the benchmark run after merge.
 
 ## Where things live
 
