@@ -77,7 +77,7 @@ jobs:
   # Fork PRs cannot use the self-hosted farm (public repo, untrusted code), so
   # contributors get feedback from one GitHub-hosted job: lint, typecheck, tests.
   fork-verify:
-    name: fork PR verify (GitHub-hosted, node-22 stylelint-16)
+    name: fork PR verify (GitHub-hosted, node-22, Stylelint from the lockfile)
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
     runs-on: ubuntu-latest
     steps:
