@@ -1,0 +1,110 @@
+@use "variables" as *;
+
+// Layout
+.app-main {
+  padding: map-get($spacers, 4) map-get($spacers, 5);
+}
+
+.stack > * + * {
+  margin-top: map-get($spacers, 3);
+}
+
+// Toolbar
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: map-get($spacers, 2);
+  margin-bottom: map-get($spacers, 3);
+
+  &__spacer {
+    flex: 1;
+  }
+}
+
+// Buttons
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: map-get($spacers, 2);
+  padding: map-get($spacers, 2) map-get($spacers, 3);
+
+  &--sm {
+    padding: map-get($spacers, 1) map-get($spacers, 2);
+  }
+
+  &--icon {
+    padding: map-get($spacers, 2);
+  }
+}
+
+// Cards
+.card {
+  padding: map-get($spacers, 4);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: map-get($spacers, 3);
+  }
+
+  &__footer {
+    margin-top: map-get($spacers, 4);
+  }
+}
+
+// Forms
+.form-row {
+  & + & {
+    margin-top: map-get($spacers, 3);
+  }
+
+  &__label {
+    display: block;
+    margin-bottom: map-get($spacers, 1);
+  }
+
+  &__input {
+    width: 100%;
+    padding: map-get($spacers, 2) map-get($spacers, 3);
+  }
+}
+
+// Data table
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+
+  th,
+  td {
+    padding: map-get($spacers, 2) map-get($spacers, 3);
+    text-align: left;
+  }
+}
+
+// Navigation
+.nav {
+  display: flex;
+  gap: map-get($spacers, 1);
+
+  &__link {
+    display: block;
+    padding: map-get($spacers, 2) map-get($spacers, 3);
+  }
+
+  &__dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    padding: map-get($spacers, 2) 0;
+  }
+}
+
+// Alerts
+.alert {
+  display: flex;
+  gap: map-get($spacers, 2);
+  padding: map-get($spacers, 3) map-get($spacers, 4);
+  margin-bottom: map-get($spacers, 3);
+}
