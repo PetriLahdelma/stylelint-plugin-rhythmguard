@@ -139,12 +139,30 @@ export function audit(dir) {
   };
 }
 
-/** What the corrected file did with the drift, judged from its text. */
-export function classifyOutcome(fileText, findingsAfter) {
-  if (/stylelint-disable|eslint-disable|rhythmguard-disable/.test(fileText)) return 'ignore-comment';
-  if (/style=\{\{|<style[\s>]/.test(fileText)) return 'inline-style';
+/** Lines of `text` that are not in `original`, counted as a multiset, so an edit task is judged by what the agent added. */
+export function addedLines(text, original = '') {
+  const pool = new Map();
+  for (const line of original.split('\n')) pool.set(line, (pool.get(line) || 0) + 1);
+  const added = [];
+  for (const line of text.split('\n')) {
+    const left = pool.get(line) || 0;
+    if (left > 0) pool.set(line, left - 1);
+    else added.push(line);
+  }
+  return added.join('\n');
+}
+
+/**
+ * What the corrected file did with the drift, judged from the lines the agent
+ * added. A new file is all added lines; for an edit task the starting file is
+ * subtracted first, because it already uses tokens throughout.
+ */
+export function classifyOutcome(fileText, findingsAfter, originalText = '') {
+  const added = addedLines(fileText, originalText);
+  if (/stylelint-disable|eslint-disable|rhythmguard-disable/.test(added)) return 'ignore-comment';
+  if (/style=\{\{|<style[\s>]/.test(added)) return 'inline-style';
   if (findingsAfter > 0) return 'non-convergent';
-  if (/var\(--space|map-get\(\$spacers|\$spacer\b|theme\(spacing/.test(fileText)) return 'token';
+  if (/var\(--space|map-get\(\$spacers|\$spacer\b|theme\(spacing/.test(added)) return 'token';
   return 'snapped-literal';
 }
 
@@ -160,6 +178,7 @@ export function cost(model, usage) {
 export async function runTask({ complete, log = () => {}, model, rounds = 3, task }) {
   const dir = copyFixture(task.fixture);
   const target = path.join(dir, task.file);
+  const original = fs.existsSync(target) ? fs.readFileSync(target, 'utf8') : '';
   const record = { fixture: task.fixture, id: task.id, model, suite: task.suite };
 
   // Before: no linter.
@@ -173,18 +192,18 @@ export async function runTask({ complete, log = () => {}, model, rounds = 3, tas
   log(`${model} ${task.id}: before ${auditBefore.findings.length} findings (scale ${auditBefore.scale.source})`);
 
   // After: findings fed back, up to `rounds` rounds.
-  record.after = await correctLoop({ complete, dir, findingsFirst: auditBefore, model, rounds, start: before, target, task, withFindings: true });
+  record.after = await correctLoop({ complete, dir, findingsFirst: auditBefore, model, original, rounds, start: before, target, task, withFindings: true });
   log(`${model} ${task.id}: with findings ${record.after.findings} after ${record.after.rounds} round(s), ${record.after.outcome}`);
 
   // Rules only: the control.
-  record.rulesOnly = await correctLoop({ complete, dir, findingsFirst: auditBefore, model, rounds, start: before, target, task, withFindings: false });
+  record.rulesOnly = await correctLoop({ complete, dir, findingsFirst: auditBefore, model, original, rounds, start: before, target, task, withFindings: false });
   log(`${model} ${task.id}: rules only ${record.rulesOnly.findings} after ${record.rulesOnly.rounds} round(s), ${record.rulesOnly.outcome}`);
 
   fs.rmSync(dir, { force: true, recursive: true });
   return record;
 }
 
-async function correctLoop({ complete, dir, findingsFirst, model, rounds, start, target, task, withFindings }) {
+async function correctLoop({ complete, dir, findingsFirst, model, original = '', rounds, start, target, task, withFindings }) {
   let current = start;
   let findings = findingsFirst;
   let spent = 0;
@@ -201,7 +220,7 @@ async function correctLoop({ complete, dir, findingsFirst, model, rounds, start,
   }
   const outcome = findings.findings.length === 0 && round === 0
     ? 'clean-before'
-    : classifyOutcome(current, findings.findings.length);
+    : classifyOutcome(current, findings.findings.length, original);
   return { cost: spent, findings: findings.findings.length, outcome, rounds: round };
 }
 

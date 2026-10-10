@@ -1,0 +1,1 @@
+An admin app in SCSS. The spacing scale is the $spacers map in src/_variables.scss (use map-get($spacers, n)). All component styles live in src/_app.scss, grouped by component. Edit src/_app.scss in place.

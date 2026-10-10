@@ -22,7 +22,7 @@ What it shows:
 - **Opus 5 routed around the linter once.** On `t-scss-tooltip` it fixed the findings by adding a Stylelint ignore comment, which the method counts as a failure; with the rules alone it used the project's tokens.
 - **Opus 5 refused 7 of 16 tasks,** all in the plain CSS and SCSS projects, with the safety classifier category `cyber`. The prompts and fixtures are ordinary styling tasks; this looks like a classifier false positive. The refused runs are listed in the edition and left out of the numbers.
 
-Next edition: harder tasks (larger files, several components, a scale with no exact token for the requested look) so the conditions can differ, the mid-task tool-call condition that issue #176 needs, and a visual-fidelity judge.
+Next edition: the twelve hard tasks described under "How a run works" so the conditions can differ, the mid-task tool-call condition that issue #176 needs, and a visual-fidelity judge.
 
 ## How a run works
 
@@ -36,6 +36,8 @@ The gap between before and with-findings measures the whole correction step; the
 
 **Temptation** tasks ask for off-scale styling ("13px of padding", "slightly tighter", "make it pop"). **Neutral** tasks ask for a page with no styling language (a settings form, an invoices table). Sixteen tasks in `scripts/bench/agents/tasks.json`.
 
+**Hard** tasks, added after the first edition showed both conditions reaching zero in one round on short new files, edit a long existing file in place: a 173-line stylesheet (`css-app`), a 110-line SCSS partial (`scss-app`) and a 101-line Tailwind dashboard (`tailwind-app`), each starting with no findings so every finding is the agent's. They ask for values that do not look wrong at a glance and that the audit does catch: `rem` and `em` values (`0.8rem`, `1.125rem`, `0.6em`), one odd value inside a four-value shorthand, transforms, a literal added to a map lookup (`map-get($spacers, 2) + 2px`), and Tailwind arbitrary values inside conditionals and variant maps. They avoid patterns the audit does not check by design (`calc()`, physical offsets such as `top` and `left`). Run them alone with `--suite hard`. For edit tasks the outcome (token, snapped literal, ignore comment) is judged from the lines the agent added, since the starting file already uses tokens throughout.
+
 Each corrected task gets one outcome: `token` (the fix used the project's tokens), `snapped-literal` (a literal on the scale), `clean-before` (nothing to fix), `non-convergent` (findings left after the last round), `inline-style` and `ignore-comment` (the agent routed around the linter; both count as failures). Cost is computed from the response usage and the price table in `scripts/bench/agents/lib.mjs`, which each edition prints.
 
 Not measured yet: visual fidelity. A judge model scoring whether the fix kept the task's stated look is the next step; the first edition counts findings, rounds and cost.
@@ -46,6 +48,7 @@ Not measured yet: visual fidelity. A judge model scoring whether the fix kept th
 npm run bench:agents -- --dry-run --limit 4          # the whole pipeline against a scripted model, no API key
 npm run bench:agents                                  # Sonnet 5, Haiku 4.5, Opus 5; all 16 tasks; three conditions each
 npm run bench:agents -- --models claude-sonnet-5 --suite temptation
+npm run bench:agents -- --suite hard                  # the twelve edit-in-place tasks only
 ```
 
 A real run needs an Anthropic credential (`ANTHROPIC_API_KEY`, or an `ant auth login` profile). A key that is not scoped to a workspace also needs `ANTHROPIC_WORKSPACE_ID` (the `wrkspc_...` id from the Claude Console), which the harness sends as the `anthropic-workspace-id` header. When the last three task runs fail the same way (a bad key, a missing workspace, a wrong model id), the run stops instead of repeating the failure on every task. Progress is saved to `docs/agent-evals/<date>.partial.json` after every task run, so an interrupted run keeps what it paid for; `npm run bench:agents -- --resume` continues it the same day, skipping completed task runs and retrying failed ones. A task run that fails (a refusal, an API error after the SDK's retries, a network failure) is recorded with its reason, listed in the edition under "Task runs that did not complete", and left out of every number. Sixteen tasks, three conditions and up to three rounds is at most roughly 160 requests per model; budget a few dollars per model. Dry-run editions are written with a `-dry-run` suffix and are not committed.
