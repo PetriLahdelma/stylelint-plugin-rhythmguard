@@ -123,4 +123,6 @@ test('repeatedFailure stops a run after three identical failures in a row, not a
   assert.deepEqual(repeatedFailure([ok, fail('no workspace'), fail('no workspace'), fail('no workspace')]), { kind: 'api-400', message: 'no workspace' });
   const withId = (id) => fail(`401 {"error":{"type":"authentication_error"},"request_id":"req_${id}"}`);
   assert.ok(repeatedFailure([withId('a1'), withId('b2'), withId('c3')]), 'request ids do not make failures different');
+  const refusal = { error: { kind: 'refusal', message: 'claude-opus-5 refused the task (cyber)' } };
+  assert.equal(repeatedFailure([refusal, refusal, refusal]), null, 'refusals never stop a run');
 });

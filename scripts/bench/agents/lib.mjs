@@ -263,11 +263,13 @@ export function clientOptions(env = process.env) {
  * A failure that will repeat on every task (a bad key, a missing workspace, a
  * wrong model id) should end the run after a few tries, not after all of them.
  * True when the last `limit` records all failed with the same message.
+ * Refusals are left out: they are results to report, not a setup error.
  */
 export function repeatedFailure(records, limit = 3) {
   if (records.length < limit) return null;
   const last = records.slice(-limit);
-  if (!last.every((record) => record.error)) return null;
+  // A refusal is the model's answer to one task, not a broken setup: it never stops a run.
+  if (!last.every((record) => record.error && record.error.kind !== 'refusal')) return null;
   // Request ids differ on every call; the failure is the same without them.
   const same = (error) => `${error.kind} ${error.message.replace(/"request_id"\s*:\s*("[^"]*"|null)/g, '').replace(/\breq_[A-Za-z0-9]+/g, '')}`;
   const first = same(last[0].error);
