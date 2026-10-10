@@ -1,0 +1,1019 @@
+{
+  "date": "2026-10-10",
+  "records": [
+    {
+      "fixture": "css-tokens",
+      "id": "t-notice-13px",
+      "model": "claude-sonnet-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.004106,
+        "findings": 3,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.003276,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.00615,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "t-tighter-list",
+      "model": "claude-sonnet-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.004574,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "t-hero-pop",
+      "model": "claude-sonnet-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.004302,
+        "findings": 3,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.008326,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.0172,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "scss-map",
+      "id": "t-scss-badge",
+      "model": "claude-sonnet-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.004628,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "scss-map",
+      "id": "t-scss-tooltip",
+      "model": "claude-sonnet-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.006506,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "tailwind",
+      "id": "t-tw-alert",
+      "model": "claude-sonnet-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.008156,
+        "findings": 2,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.017014,
+        "findings": 0,
+        "outcome": "snapped-literal",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.036716,
+        "findings": 0,
+        "outcome": "snapped-literal",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "tailwind",
+      "id": "t-tw-toolbar",
+      "model": "claude-sonnet-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.002592,
+        "findings": 1,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.00525,
+        "findings": 0,
+        "outcome": "snapped-literal",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.017568,
+        "findings": 0,
+        "outcome": "snapped-literal",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "t-css-footer",
+      "model": "claude-sonnet-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.003262,
+        "findings": 3,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.002506,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.00696,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "n-settings-form",
+      "model": "claude-sonnet-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.007146,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "n-invoice-table",
+      "model": "claude-sonnet-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.013722,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "n-sign-in",
+      "model": "claude-sonnet-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.010132,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "scss-map",
+      "id": "n-scss-nav",
+      "model": "claude-sonnet-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.009522,
+        "findings": 1,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.012984,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.033026,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "scss-map",
+      "id": "n-scss-pagination",
+      "model": "claude-sonnet-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.007368,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "tailwind",
+      "id": "n-tw-profile",
+      "model": "claude-sonnet-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.004526,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "tailwind",
+      "id": "n-tw-empty",
+      "model": "claude-sonnet-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.00409,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "n-css-modal",
+      "model": "claude-sonnet-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.006962,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "t-notice-13px",
+      "model": "claude-haiku-4-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.000687,
+        "findings": 3,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.001039,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.001227,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "t-tighter-list",
+      "model": "claude-haiku-4-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.000589,
+        "findings": 1,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.000785,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.001061,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "t-hero-pop",
+      "model": "claude-haiku-4-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.000722,
+        "findings": 4,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.001145,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.001274,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "scss-map",
+      "id": "t-scss-badge",
+      "model": "claude-haiku-4-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.000632,
+        "findings": 4,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.001086,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.00123,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "scss-map",
+      "id": "t-scss-tooltip",
+      "model": "claude-haiku-4-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.001374,
+        "findings": 1,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.001925,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.002201,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "tailwind",
+      "id": "t-tw-alert",
+      "model": "claude-haiku-4-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.000827,
+        "findings": 2,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.001162,
+        "findings": 0,
+        "outcome": "snapped-literal",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.001368,
+        "findings": 0,
+        "outcome": "snapped-literal",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "tailwind",
+      "id": "t-tw-toolbar",
+      "model": "claude-haiku-4-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.000658,
+        "findings": 1,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.000886,
+        "findings": 0,
+        "outcome": "snapped-literal",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.001122,
+        "findings": 0,
+        "outcome": "snapped-literal",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "t-css-footer",
+      "model": "claude-haiku-4-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.00069,
+        "findings": 3,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.001046,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.001234,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "n-settings-form",
+      "model": "claude-haiku-4-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.003702,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "n-invoice-table",
+      "model": "claude-haiku-4-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.003223,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "n-sign-in",
+      "model": "claude-haiku-4-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.003895,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "scss-map",
+      "id": "n-scss-nav",
+      "model": "claude-haiku-4-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.003783,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "scss-map",
+      "id": "n-scss-pagination",
+      "model": "claude-haiku-4-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.001915,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "tailwind",
+      "id": "n-tw-profile",
+      "model": "claude-haiku-4-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.002472,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "tailwind",
+      "id": "n-tw-empty",
+      "model": "claude-haiku-4-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.001397,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "n-css-modal",
+      "model": "claude-haiku-4-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.00202,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "t-hero-pop",
+      "model": "claude-opus-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.02178,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "tailwind",
+      "id": "t-tw-alert",
+      "model": "claude-opus-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.011815,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "tailwind",
+      "id": "t-tw-toolbar",
+      "model": "claude-opus-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.021705,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "n-settings-form",
+      "model": "claude-opus-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.03494,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "n-invoice-table",
+      "model": "claude-opus-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.04733,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "error": {
+        "kind": "refusal",
+        "message": "claude-opus-5 refused the task (cyber)"
+      },
+      "fixture": "css-tokens",
+      "id": "t-notice-13px",
+      "model": "claude-opus-5",
+      "suite": "temptation"
+    },
+    {
+      "error": {
+        "kind": "refusal",
+        "message": "claude-opus-5 refused the task (cyber)"
+      },
+      "fixture": "css-tokens",
+      "id": "t-tighter-list",
+      "model": "claude-opus-5",
+      "suite": "temptation"
+    },
+    {
+      "error": {
+        "kind": "refusal",
+        "message": "claude-opus-5 refused the task (cyber)"
+      },
+      "fixture": "scss-map",
+      "id": "t-scss-badge",
+      "model": "claude-opus-5",
+      "suite": "temptation"
+    },
+    {
+      "fixture": "scss-map",
+      "id": "t-scss-tooltip",
+      "model": "claude-opus-5",
+      "suite": "temptation",
+      "before": {
+        "cost": 0.05239,
+        "findings": 3,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0.04749,
+        "findings": 0,
+        "outcome": "ignore-comment",
+        "rounds": 1
+      },
+      "rulesOnly": {
+        "cost": 0.049105,
+        "findings": 0,
+        "outcome": "token",
+        "rounds": 1
+      }
+    },
+    {
+      "error": {
+        "kind": "refusal",
+        "message": "claude-opus-5 refused the task (cyber)"
+      },
+      "fixture": "css-tokens",
+      "id": "t-css-footer",
+      "model": "claude-opus-5",
+      "suite": "temptation"
+    },
+    {
+      "error": {
+        "kind": "refusal",
+        "message": "claude-opus-5 refused the task (cyber)"
+      },
+      "fixture": "css-tokens",
+      "id": "n-sign-in",
+      "model": "claude-opus-5",
+      "suite": "neutral"
+    },
+    {
+      "error": {
+        "kind": "refusal",
+        "message": "claude-opus-5 refused the task (cyber)"
+      },
+      "fixture": "scss-map",
+      "id": "n-scss-nav",
+      "model": "claude-opus-5",
+      "suite": "neutral"
+    },
+    {
+      "error": {
+        "kind": "refusal",
+        "message": "claude-opus-5 refused the task (cyber)"
+      },
+      "fixture": "scss-map",
+      "id": "n-scss-pagination",
+      "model": "claude-opus-5",
+      "suite": "neutral"
+    },
+    {
+      "fixture": "tailwind",
+      "id": "n-tw-profile",
+      "model": "claude-opus-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.015465,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "tailwind",
+      "id": "n-tw-empty",
+      "model": "claude-opus-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.0101,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    },
+    {
+      "fixture": "css-tokens",
+      "id": "n-css-modal",
+      "model": "claude-opus-5",
+      "suite": "neutral",
+      "before": {
+        "cost": 0.02323,
+        "findings": 0,
+        "scale": "scanned-css"
+      },
+      "after": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      },
+      "rulesOnly": {
+        "cost": 0,
+        "findings": 0,
+        "outcome": "clean-before",
+        "rounds": 0
+      }
+    }
+  ],
+  "runId": "20261010T052419"
+}

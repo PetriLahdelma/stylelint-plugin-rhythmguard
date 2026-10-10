@@ -107,7 +107,7 @@ The audit scans CSS declarations, Tailwind class strings and your token contract
 - [For coding agents](docs/FOR_AGENTS.md): a paste-ready `AGENTS.md` block, installable with `npx rhythmguard init --agents all` for Claude Code, Cursor and Copilot
 - [Quiet benchmark](docs/QUIET_BENCHMARK.md): findings on public design systems, checked on every change
 - [State of Spacing](docs/STATE_OF_SPACING.md): dated editions of the same data, ranked by drift density, with the values and properties that drifted
-- [Agent evals](docs/AGENT_EVALS.md): does a finding get a coding agent to zero drift, in how many rounds, at what cost, against a rules-only control
+- [Agent evals](docs/AGENT_EVALS.md): does a finding get a coding agent to zero drift, in how many rounds, at what cost, against a rules-only control. First edition (2026-10-10): every model fixed every finding in one round with or without the findings; fixing from findings cost Sonnet 5 less than half as much
 - [Architecture](docs/ARCHITECTURE.md): the layers, the rule kit, the invariants and where each is enforced
 - [Roadmap](ROADMAP.md): what is planned from October 2026 to June 2027, and the checkpoint that decides the pace
 - [Product analysis, September 2026](docs/STRATEGY_2026-09.md): the market data behind the roadmap

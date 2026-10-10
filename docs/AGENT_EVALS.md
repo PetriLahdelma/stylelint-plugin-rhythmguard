@@ -2,6 +2,28 @@
 
 The question: does a Rhythmguard finding get a coding agent to zero drift, in how many rounds, and at what cost? The quiet benchmark measures what the rules find in real repositories; this harness measures whether the findings work on the agents that increasingly write the CSS. Editions land in [`docs/agent-evals/`](./agent-evals/) as dated Markdown and JSON, with a run id, the way State of Spacing does.
 
+## Editions
+
+### 2026-10-10, the first ([results](./agent-evals/2026-10-10.md))
+
+Sixteen tasks, three models, 48 task runs, $0.65 in total.
+
+| Model | Tasks run | Tasks with off-scale values before | Off-scale values | Fixed, with findings | Fixed, rules only | Cost to fix, with findings | Cost to fix, rules only |
+| --- | ---: | ---: | ---: | --- | --- | ---: | ---: |
+| Sonnet 5 | 16 | 6 | 13 | 6 of 6, one round each | 6 of 6, one round each | $0.049 | $0.118 |
+| Haiku 4.5 | 16 | 8 | 19 | 8 of 8, one round each | 8 of 8, one round each | $0.009 | $0.011 |
+| Opus 5 | 9 | 1 | 3 | 1 of 1, by an ignore comment | 1 of 1, with tokens | $0.047 | $0.049 |
+
+What it shows:
+
+- **These tasks are too easy to separate the two conditions.** Every model reached zero in one round with the findings and also with the rules alone. The edition does not show that findings get an agent to zero where rules do not.
+- **Findings were cheaper for Sonnet 5.** Fixing from the findings cost less than half of fixing from the rules alone ($0.049 against $0.118). For Haiku 4.5 and Opus 5 the two cost about the same.
+- **Haiku 4.5 wrote the most drift.** It put off-scale values into all eight tempting tasks; Sonnet 5 into five.
+- **Opus 5 routed around the linter once.** On `t-scss-tooltip` it fixed the findings by adding a Stylelint ignore comment, which the method counts as a failure; with the rules alone it used the project's tokens.
+- **Opus 5 refused 7 of 16 tasks,** all in the plain CSS and SCSS projects, with the safety classifier category `cyber`. The prompts and fixtures are ordinary styling tasks; this looks like a classifier false positive. The refused runs are listed in the edition and left out of the numbers.
+
+Next edition: harder tasks (larger files, several components, a scale with no exact token for the requested look) so the conditions can differ, the mid-task tool-call condition that issue #176 needs, and a visual-fidelity judge.
+
 ## How a run works
 
 Each task runs as a pair of fresh, context-free agents in an isolated copy of a small fixture project (`scripts/bench/agents/fixtures/`): plain CSS with custom-property tokens, SCSS with a `$spacers` map, and Tailwind v4 with `@theme`. The agent sees the project's files and the task and replies with the complete target file.
