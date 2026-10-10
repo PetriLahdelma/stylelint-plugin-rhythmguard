@@ -45,7 +45,7 @@ function loadAuditConfig(parsed) {
   try {
     config = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
   } catch (err) {
-    throw new Error(`Invalid Rhythmguard config ${parsed.configPath}: ${err.message}`);
+    throw new Error(`Invalid Rhythmguard config ${parsed.configPath}: ${err.message}`, { cause: err });
   }
 
   if (!config || typeof config !== 'object' || Array.isArray(config)) {

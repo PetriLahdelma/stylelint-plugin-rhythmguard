@@ -18,7 +18,7 @@ function collectTailwindFindings(templateFiles, options) {
   const findings = [];
 
   for (const filePath of templateFiles) {
-    let source = '';
+    let source;
     try {
       source = fs.readFileSync(filePath, 'utf8');
     } catch {
@@ -64,7 +64,7 @@ function collectTailwindMotionFindings(templateFiles, options) {
   const findings = [];
 
   for (const filePath of templateFiles) {
-    let source = '';
+    let source;
     try {
       source = fs.readFileSync(filePath, 'utf8');
     } catch {

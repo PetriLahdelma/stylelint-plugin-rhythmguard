@@ -123,7 +123,7 @@ function parseTokenSources({
       continue;
     }
 
-    let tokens = [];
+    let tokens;
     const matchesSource = normalizedSource.tokenPattern
       ? createPatternMatcher(normalizedSource.tokenPattern, matchesKind)
       : matchesKind;
@@ -428,7 +428,7 @@ function createScssVariableResolver(source, fallback = () => null) {
     if (stack.has(name)) {
       return null;
     }
-    let value = null;
+    let value;
     if (declarations.has(name)) {
       stack.add(name);
       const raw = declarations.get(name);

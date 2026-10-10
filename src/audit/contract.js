@@ -26,7 +26,7 @@ function collectTokenContract({
   const matchesKind = createTokenKindMatcher(tokenKind);
 
   for (const filePath of cssFiles) {
-    let source = '';
+    let source;
     try {
       source = fs.readFileSync(filePath, 'utf8');
     } catch {
