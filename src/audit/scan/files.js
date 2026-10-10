@@ -80,7 +80,7 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
   const args = parsed.staged
     ? ['diff', '--name-only', '--cached', '--diff-filter=ACMR', '--']
     : ['diff', '--name-only', '--diff-filter=ACMR', parsed.since, '--'];
-  let output = '';
+  let output;
 
   try {
     output = execFileSync('git', args, {
@@ -90,7 +90,7 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
     });
   } catch (err) {
     const stderr = err.stderr ? String(err.stderr).trim() : err.message;
-    throw new Error(`Unable to read changed files from git: ${stderr}`);
+    throw new Error(`Unable to read changed files from git: ${stderr}`, { cause: err });
   }
 
   const cssFiles = [];

@@ -7,19 +7,13 @@ const { Linter } = require('eslint');
 const eslintPlugin = require('../../src/eslint');
 
 test('eslint tailwind class rule reports off-scale arbitrary values', () => {
-  const linter = new Linter({ configType: 'eslintrc' });
-  linter.defineRule(
-    'rhythmguard-tailwind/tailwind-class-use-scale',
-    eslintPlugin.rules['tailwind-class-use-scale'],
-  );
+  const linter = new Linter();
 
   const messages = linter.verify(
     "const classes = 'p-[13px] gap-[8px]';",
     {
-      parserOptions: {
-        ecmaVersion: 2022,
-        sourceType: 'module',
-      },
+      languageOptions: { ecmaVersion: 2022, sourceType: 'module' },
+      plugins: { 'rhythmguard-tailwind': eslintPlugin },
       rules: {
         'rhythmguard-tailwind/tailwind-class-use-scale': ['error', {
           scale: [0, 4, 8, 12, 16, 24, 32],
@@ -33,19 +27,13 @@ test('eslint tailwind class rule reports off-scale arbitrary values', () => {
 });
 
 test('eslint tailwind class rule autofixes nearest value', () => {
-  const linter = new Linter({ configType: 'eslintrc' });
-  linter.defineRule(
-    'rhythmguard-tailwind/tailwind-class-use-scale',
-    eslintPlugin.rules['tailwind-class-use-scale'],
-  );
+  const linter = new Linter();
 
   const fixResult = linter.verifyAndFix(
     "const classes = 'p-[13px]';",
     {
-      parserOptions: {
-        ecmaVersion: 2022,
-        sourceType: 'module',
-      },
+      languageOptions: { ecmaVersion: 2022, sourceType: 'module' },
+      plugins: { 'rhythmguard-tailwind': eslintPlugin },
       rules: {
         'rhythmguard-tailwind/tailwind-class-use-scale': ['error', {
           scale: [0, 4, 8, 12, 16, 24, 32],
@@ -59,19 +47,13 @@ test('eslint tailwind class rule autofixes nearest value', () => {
 });
 
 test('eslint tailwind motion rule reports arbitrary duration and easing values', () => {
-  const linter = new Linter({ configType: 'eslintrc' });
-  linter.defineRule(
-    'rhythmguard-tailwind/tailwind-class-use-motion-scale',
-    eslintPlugin.rules['tailwind-class-use-motion-scale'],
-  );
+  const linter = new Linter();
 
   const messages = linter.verify(
     "const classes = 'duration-[175ms] ease-[cubic-bezier(.2,0,0,1)] delay-[75ms]';",
     {
-      parserOptions: {
-        ecmaVersion: 2022,
-        sourceType: 'module',
-      },
+      languageOptions: { ecmaVersion: 2022, sourceType: 'module' },
+      plugins: { 'rhythmguard-tailwind': eslintPlugin },
       rules: {
         'rhythmguard-tailwind/tailwind-class-use-motion-scale': 'error',
       },
@@ -84,19 +66,13 @@ test('eslint tailwind motion rule reports arbitrary duration and easing values',
 });
 
 test('eslint tailwind motion rule autofixes nearest duration value', () => {
-  const linter = new Linter({ configType: 'eslintrc' });
-  linter.defineRule(
-    'rhythmguard-tailwind/tailwind-class-use-motion-scale',
-    eslintPlugin.rules['tailwind-class-use-motion-scale'],
-  );
+  const linter = new Linter();
 
   const fixResult = linter.verifyAndFix(
     "const classes = 'duration-[175ms] delay-[0.175s]';",
     {
-      parserOptions: {
-        ecmaVersion: 2022,
-        sourceType: 'module',
-      },
+      languageOptions: { ecmaVersion: 2022, sourceType: 'module' },
+      plugins: { 'rhythmguard-tailwind': eslintPlugin },
       rules: {
         'rhythmguard-tailwind/tailwind-class-use-motion-scale': 'error',
       },
@@ -108,13 +84,10 @@ test('eslint tailwind motion rule autofixes nearest duration value', () => {
 });
 
 function lintTailwind(code, options) {
-  const linter = new Linter({ configType: 'eslintrc' });
-  linter.defineRule(
-    'rhythmguard-tailwind/tailwind-class-use-scale',
-    eslintPlugin.rules['tailwind-class-use-scale'],
-  );
+  const linter = new Linter();
   const config = {
-    parserOptions: { ecmaVersion: 2022, sourceType: 'module' },
+    languageOptions: { ecmaVersion: 2022, sourceType: 'module' },
+    plugins: { 'rhythmguard-tailwind': eslintPlugin },
     rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['error', options] },
   };
   return {

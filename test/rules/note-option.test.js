@@ -76,10 +76,10 @@ test('note must be a non-empty string of at most 200 characters', async () => {
 });
 
 function lintTailwind(ruleName, code, options) {
-  const linter = new Linter({ configType: 'eslintrc' });
-  linter.defineRule(`rhythmguard-tailwind/${ruleName}`, eslintPlugin.rules[ruleName]);
+  const linter = new Linter();
   return linter.verify(code, {
-    parserOptions: { ecmaVersion: 2022, sourceType: 'module' },
+    languageOptions: { ecmaVersion: 2022, sourceType: 'module' },
+    plugins: { 'rhythmguard-tailwind': eslintPlugin },
     rules: { [`rhythmguard-tailwind/${ruleName}`]: ['error', options] },
   });
 }
