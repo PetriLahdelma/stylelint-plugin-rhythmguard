@@ -49,6 +49,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Typecheck
+        run: npm run typecheck
+
       - name: Test (Stylelint floor compat)
         if: matrix.stylelint-version == '16.0.0'
         run: npm run test:compat-floor
