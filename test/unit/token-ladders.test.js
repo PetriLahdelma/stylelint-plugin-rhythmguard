@@ -85,3 +85,37 @@ test('a clean ladder has no problems, and minStepPx is configurable', () => {
   assert.deepEqual(resolveTokenLadders({ declarations: clean }).entries[0].problems, []);
   assert.equal(resolveTokenLadders({ declarations: clean, minStepPx: 5 }).summary.tooClose, 3);
 });
+
+test('a ladder that aliases another step for step is folded into it, not counted twice', () => {
+  const ladders = resolveTokenLadders({
+    declarations: declarations([
+      ['--font-size-text-xs', 'clamp(0.875rem, 0.25vi + 0.8rem, 1rem)'],
+      ['--font-size-text-s', 'clamp(0.875rem, 0.35vi + 0.8rem, 1.05rem)'],
+      ['--font-size-text-m', 'clamp(1rem, 0.4vi + 0.9rem, 1.25rem)'],
+      ['--text-dt-text-xs', 'var(--font-size-text-xs)'],
+      ['--text-dt-text-s', 'var(--font-size-text-s)'],
+      ['--text-dt-text-m', 'var(--font-size-text-m)'],
+      // Mixed: one step is its own value, so this ladder is reported on its own.
+      ['--size-mixed-1', 'var(--font-size-text-xs)'],
+      ['--size-mixed-2', '20px'],
+      ['--size-mixed-3', '24px'],
+    ]),
+  });
+  assert.deepEqual(ladders.entries.map((entry) => entry.prefix), ['--font-size-text', '--size-mixed']);
+  assert.deepEqual(ladders.entries[0].aliases, ['--text-dt-text']);
+  assert.equal(ladders.summary.ladders, 2);
+  assert.equal(ladders.summary.collapsed, 1);
+});
+
+test('the inverted floor of a retuned title ladder is reported at min only', () => {
+  const ladders = resolveTokenLadders({
+    declarations: declarations([
+      ['--font-size-title-m', 'clamp(1.75rem, 2vi + 1rem, 2.25rem)'],
+      ['--font-size-title-l', 'clamp(2.75rem, 2vi + 2rem, 3.5rem)'],
+      ['--font-size-title-xl', 'clamp(2rem, 4vi + 1rem, 4.5rem)'],
+    ]),
+  });
+  assert.deepEqual(ladders.entries[0].problems.map(({ end, tokens, type }) => `${type} ${end} ${tokens.join(' ')}`), [
+    'inverted min --font-size-title-l --font-size-title-xl',
+  ]);
+});

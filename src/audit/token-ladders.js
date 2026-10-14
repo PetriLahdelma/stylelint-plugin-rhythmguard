@@ -19,7 +19,8 @@ const { formatLength, numbersEqual, parseLengthToken, toPx } = require('../core/
  * Each problem names the end it occurs at: `min`, `max`, or `both`.
  *
  * A step that cannot be evaluated (calc(), a viewport length, a token with
- * several different definitions) is left out of the comparison.
+ * several different definitions) is left out of the comparison. A ladder
+ * that only aliases another one step for step is folded into it.
  */
 const DEFAULT_MIN_STEP_PX = 2;
 const MIN_LADDER_STEPS = 3;
@@ -158,9 +159,37 @@ function resolveTokenLadders({ baseFontSize = 16, declarations, minStepPx = DEFA
     ladder.steps.push({ max: range.max, min: range.min, rank: step.rank, token });
   }
 
+  const eligible = [...ladders.values()].filter((ladder) => ladder.steps.length >= MIN_LADDER_STEPS);
+  const ladderOfToken = new Map();
+  for (const ladder of eligible) {
+    for (const step of ladder.steps) ladderOfToken.set(step.token, ladder);
+  }
+  // A ladder whose every step is a var() alias of a step on one other ladder
+  // (Tailwind @theme names over a token file) has that ladder's problems, not
+  // its own. It is listed under the other ladder's `aliases` and not counted.
+  const aliasTarget = (ladder) => {
+    let target = null;
+    for (const step of ladder.steps) {
+      const values = declarations.get(step.token);
+      const reference = values && values.size === 1 ? [...values][0].trim().match(VAR_REFERENCE) : null;
+      const owner = reference ? ladderOfToken.get(reference[1]) : null;
+      if (!owner || owner === ladder || (target && owner !== target)) return null;
+      target = owner;
+    }
+    return target;
+  };
+  const aliases = new Map();
+  for (const ladder of eligible) {
+    const target = aliasTarget(ladder);
+    if (target && !aliasTarget(target)) {
+      aliases.set(ladder, target);
+      target.aliases = [...(target.aliases || []), ladder.prefix].sort();
+    }
+  }
+
   const entries = [];
-  for (const ladder of ladders.values()) {
-    if (ladder.steps.length < MIN_LADDER_STEPS) continue;
+  for (const ladder of eligible) {
+    if (aliases.has(ladder)) continue;
     const steps = ladder.steps.sort((a, b) => a.rank - b.rank);
     const problems = [];
     for (let index = 0; index < steps.length - 1; index += 1) {
@@ -176,6 +205,7 @@ function resolveTokenLadders({ baseFontSize = 16, declarations, minStepPx = DEFA
       if (atMax) problems.push({ end: 'max', tokens, ...atMax });
     }
     entries.push({
+      ...(ladder.aliases ? { aliases: ladder.aliases } : {}),
       prefix: ladder.prefix,
       problems,
       steps: steps.map(({ max, min, token }) => ({
