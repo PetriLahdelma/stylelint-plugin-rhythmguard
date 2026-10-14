@@ -86,6 +86,13 @@
         "dist/nhsuk/core/settings/_spacing.scss"
       ],
       "note": "$nhsuk-spacing-points map"
+    },
+    {
+      "name": "@mozilla-protocol/tokens",
+      "files": [
+        "dist/units/units.custom-properties.css"
+      ],
+      "note": "--spacing-xs..2xl in px; Protocol's Sass $spacing-* come from the same package"
     }
   ]
 }

@@ -2,20 +2,20 @@
   "name": "mozilla-protocol",
   "sha": "6bcf867",
   "scale": {
-    "source": "fallback",
+    "source": "token-sources",
     "values": [
       0,
       4,
       8,
-      12,
       16,
       24,
-      32
+      32,
+      48
     ]
   },
   "summary": {
-    "total": 18,
-    "drift": 18,
+    "total": 19,
+    "drift": 19,
     "falsePositives": 0
   },
   "findings": [
@@ -30,6 +30,7 @@
     "assets/sass/protocol/components/_billboard.scss:41:-125px:drift",
     "assets/sass/protocol/components/_button.scss:237:-0.15em:drift",
     "assets/sass/protocol/components/_button.scss:66:10px:drift",
+    "assets/sass/protocol/components/_footer.scss:185:-12px:drift",
     "assets/sass/protocol/components/_navigation.scss:113:7px:drift",
     "assets/sass/protocol/components/_navigation.scss:65:120px:drift",
     "assets/sass/protocol/components/_sidebar-menu.scss:108:0.35em:drift",

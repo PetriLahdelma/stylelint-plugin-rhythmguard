@@ -309,7 +309,15 @@
       "paths": [
         "assets/sass"
       ],
-      "notes": "Mozilla Protocol: SCSS with $spacing-* variables."
+      "notes": "Mozilla Protocol: SCSS with $spacing-* variables from @mozilla-protocol/tokens, which lives in mozilla/protocol-tokens (contributor, mozilla/protocol#1132).",
+      "scaleIntent": "package",
+      "scalePackage": "@mozilla-protocol/tokens",
+      "tokenPackages": [
+        {
+          "name": "@mozilla-protocol/tokens",
+          "version": "7.0.0"
+        }
+      ]
     },
     {
       "name": "tachyons",

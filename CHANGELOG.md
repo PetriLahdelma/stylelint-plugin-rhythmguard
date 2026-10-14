@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- `scale: "auto"` reads `@mozilla-protocol/tokens` when it is installed: `--spacing-xs` to `--spacing-2xl` (4 to 48px) from `dist/units/units.custom-properties.css`. Mozilla Protocol's benchmark row is measured against that package at 7.0.0, as a Protocol contributor pointed out in mozilla/protocol#1132: 19 off-scale values, against 18 on the `rhythmic-4` fallback, because 12px is not a Protocol step and 48px is.
+
 ### Fixed
 
 - The audit no longer hangs on template files that contain an unclosed quote followed by escape-dense source. The Tailwind class-string scanner found string literals with a regex whose alternation was ambiguous on every backslash, so from an apostrophe in a comment or a quote inside a regex literal it backtracked exponentially over the `\{ \[ \(` of the next regex literal; on the Ace editor's `mode-alda.js` (10 KB, vendored by a MediaWiki skin) one `rhythmguard audit` ran for eleven hours before it was killed, and Bootswatch's audit took longer than three minutes. The finder is now a single linear pass: an escape never closes a literal, a `'` or `"` literal that reaches a line break is not a literal, a backtick literal may span lines. Both repositories audit in seconds. The benchmark gained five findings that an unclosed quote had been hiding (four in Ghost's `input-group.tsx`, one in Cal.com's `Button.tsx`).
