@@ -35,6 +35,8 @@ export interface AuditOptions {
   /** Check clamp() bounds and min()/max() arguments against the scale (equivalent to `--check-math-bounds`). */
   checkMathBounds?: boolean;
   includeMotion?: boolean;
+  /** A scale per property group (`spacing`, `radius`, `size`, `typography`): values, a preset name or "auto". Each group named is also checked. */
+  scales?: Partial<Record<"spacing" | "radius" | "size" | "typography", Array<number | string> | string | { preset?: string; scale?: Array<number | string>; customScale?: Array<number | string> }>>;
   maxFindings?: number;
   minCleanliness?: number;
   /** Skip config discovery entirely (equivalent to `--no-config`). */

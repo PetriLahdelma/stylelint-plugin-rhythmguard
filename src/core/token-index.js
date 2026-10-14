@@ -1,6 +1,6 @@
 'use strict';
 
-const { PROPERTY_GROUP_PATTERNS } = require('./css-vocabulary');
+const { propertyGroupOf } = require('./css-vocabulary');
 const { fixedLengthValue, numbersEqual, toPx } = require('./length');
 const { createTokenKindMatcher, parseTokenValueLength } = require('./token-sources');
 
@@ -21,12 +21,6 @@ const ACCEPTED_KINDS = Object.freeze({
 /** The kind a token's name declares, or null when the name says nothing. */
 function tokenKindOf(token) {
   const found = TOKEN_KINDS.find(([, matches]) => matches(token));
-  return found ? found[0] : null;
-}
-
-function propertyGroupOf(prop) {
-  const lower = String(prop || '').toLowerCase();
-  const found = Object.entries(PROPERTY_GROUP_PATTERNS).find(([, patterns]) => patterns.some((pattern) => pattern.test(lower)));
   return found ? found[0] : null;
 }
 

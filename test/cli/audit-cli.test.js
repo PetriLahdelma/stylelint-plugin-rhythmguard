@@ -1065,3 +1065,25 @@ test('audit CLI --check-math-bounds counts clamp() bounds, and the rc file can t
   const fromRc = JSON.parse(runAuditCommand(fixtureDir, path.join(fixtureDir, 'src'), '--format', 'json-v1').stdout);
   assert.equal(fromRc.offScaleValues['17px'], 1);
 });
+
+test('audit.scales checks the groups it names against their own scales', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-scales-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'type.css'), '.a {\n  font-size: 18px;\n  font-size: 17px;\n  padding: 18px;\n}\n');
+
+  const before = JSON.parse(runAuditCommand(fixtureDir, path.join(fixtureDir, 'src'), '--format', 'json-v1').stdout);
+  assert.equal(before.offScaleValues['17px'], undefined, 'typography is not audited without audit.scales');
+
+  fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), JSON.stringify({ audit: { scales: { typography: [14, 16, 18, 20, 24, 32, 40] } } }));
+  const result = runAuditCommand(fixtureDir, path.join(fixtureDir, 'src'), '--format', 'json-v1');
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.offScaleValues['17px'], 1);
+  assert.equal(report.offScaleValues['18px'], 1, 'the padding, not the font-size');
+  assert.equal(report.findings.css.find((finding) => finding.value === '17px').property, 'font-size');
+
+  fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), JSON.stringify({ audit: { scales: { motion: [100] } } }));
+  const invalid = runAuditCommand(fixtureDir, path.join(fixtureDir, 'src'), '--format', 'json-v1');
+  assert.notEqual(invalid.status, 0);
+  assert.match(invalid.stderr, /scales must map/);
+});

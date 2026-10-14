@@ -82,6 +82,7 @@ function createDefaultAuditOptions() {
     noConfig: false,
     outputPath: null,
     scale: DEFAULT_SCALE,
+    scales: null,
     schema: false,
     since: null,
     sinceBaseline: false,

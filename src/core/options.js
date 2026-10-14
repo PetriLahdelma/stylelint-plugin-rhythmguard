@@ -11,6 +11,7 @@ const {
   PROPERTY_GROUP_PATTERNS,
   SPACING_PROPERTY_PATTERNS,
   SUPPORTED_SCALE_UNITS,
+  propertyGroupOf,
 } = require('./css-vocabulary');
 const { parseLengthToken } = require('./length');
 const {
@@ -257,6 +258,42 @@ function isPropertyScaleMap(value) {
   });
 }
 
+// Groups that take a length scale of their own; motion has use-motion-scale.
+const SCALED_GROUPS = Object.freeze(['spacing', 'radius', 'size', 'typography']);
+
+/** One group's scale: values, a preset name, "auto", or a { preset | scale | customScale } object. */
+function isGroupScaleEntry(value) {
+  if (isAutoScaleLiteral(value)) {
+    return true;
+  }
+  if (typeof value === 'string') {
+    return Boolean(getScalePreset(value));
+  }
+  return isScaleOverrideEntry(value);
+}
+
+function isGroupScalesMap(value) {
+  return isPlainObject(value)
+    && Object.entries(value).every(([group, scale]) => SCALED_GROUPS.includes(group) && isGroupScaleEntry(scale));
+}
+
+/**
+ * `scales` normalised to { group: { auto, scale } }. A group set to "auto"
+ * has no scale until the rule infers one from that group's tokens.
+ */
+function buildGroupScales(scales) {
+  if (!isGroupScalesMap(scales)) {
+    return {};
+  }
+  return Object.fromEntries(Object.entries(scales).map(([group, entry]) => {
+    if (isAutoScaleLiteral(entry)) {
+      return [group, { auto: true, scale: null }];
+    }
+    const scale = typeof entry === 'string' ? getScalePreset(entry) : resolveScaleOverride(entry);
+    return [group, { auto: false, scale: Array.isArray(scale) ? [...scale] : null }];
+  }));
+}
+
 function buildPossibleOptionMap(schema) {
   return Object.fromEntries(
     Object.entries(schema).map(([optionName, descriptor]) => [
@@ -463,6 +500,10 @@ const USE_SCALE_VALIDATION_SCHEMA = Object.freeze({
     entryValidator: isPropertyScaleMap,
     expectsObject: true,
   }),
+  scales: Object.freeze({
+    entryValidator: isGroupScalesMap,
+    expectsObject: true,
+  }),
   tokenFunctions: Object.freeze({
     entryValidator: isNonEmptyString,
     expectsArray: true,
@@ -524,6 +565,10 @@ const PREFER_TOKEN_VALIDATION_SCHEMA = Object.freeze({
   }),
   propertyScales: Object.freeze({
     entryValidator: isPropertyScaleMap,
+    expectsObject: true,
+  }),
+  scales: Object.freeze({
+    entryValidator: isGroupScalesMap,
     expectsObject: true,
   }),
   scale: Object.freeze({
@@ -608,6 +653,7 @@ function buildScaleOptions(rawOptions) {
     properties: resolvePropertyPatterns(options),
     propertyGroups: normalizePropertyGroups(options.propertyGroups),
     propertyScaleOverrides: buildPropertyScaleOverrides(options.propertyScales),
+    groupScales: buildGroupScales(options.scales),
     scale: scaleSelection.scale,
     scaleAuto: isAutoScaleLiteral(options.scale),
     scaleSources: Array.isArray(options.scaleSources) ? options.scaleSources : [],
@@ -655,6 +701,7 @@ function buildTokenOptions(rawOptions) {
     properties: resolvePropertyPatterns(options),
     propertyGroups: normalizePropertyGroups(options.propertyGroups),
     propertyScaleOverrides: buildPropertyScaleOverrides(options.propertyScales),
+    groupScales: buildGroupScales(options.scales),
     scale: scaleSelection.scale,
     scaleAuto: isAutoScaleLiteral(options.scale),
     scaleSources: Array.isArray(options.scaleSources) ? options.scaleSources : [],
@@ -696,8 +743,9 @@ function createPropertyScaleResolver(options) {
     if (cached) {
       return cached;
     }
-    const selectedScale = resolvePropertyScale(prop, options);
+    const { group, scale: selectedScale } = resolvePropertyScaleEntry(prop, options);
     const state = {
+      group,
       scaleByUnit: normalizeScaleByUnit(selectedScale),
       scalePx: normalizeScale(selectedScale, options.baseFontSize),
     };
@@ -707,29 +755,41 @@ function createPropertyScaleResolver(options) {
 }
 
 function resolvePropertyScale(prop, options) {
-  if (!Array.isArray(options.propertyScaleOverrides)) {
-    return options.scale;
-  }
+  return resolvePropertyScaleEntry(prop, options).scale;
+}
 
-  for (const override of options.propertyScaleOverrides) {
+/**
+ * The scale a property is checked against, most specific first: a
+ * `propertyScales` entry for the property, then the `scales` entry for its
+ * group, then `scale`. `group` is set only when `scales` supplied it, so a
+ * message can say which scale it means.
+ */
+function resolvePropertyScaleEntry(prop, options) {
+  for (const override of options.propertyScaleOverrides || []) {
     if (override.matcher instanceof RegExp) {
       if (override.matcher.global || override.matcher.sticky) {
         override.matcher.lastIndex = 0;
       }
 
       if (override.matcher.test(prop)) {
-        return override.scale;
+        return { group: null, scale: override.scale };
       }
 
       continue;
     }
 
     if (String(override.matcher).toLowerCase() === prop.toLowerCase()) {
-      return override.scale;
+      return { group: null, scale: override.scale };
     }
   }
 
-  return options.scale;
+  const group = propertyGroupOf(prop);
+  const groupScale = group && options.groupScales ? options.groupScales[group] : null;
+  if (groupScale && Array.isArray(groupScale.scale)) {
+    return { group, scale: groupScale.scale };
+  }
+
+  return { group: null, scale: options.scale };
 }
 
 module.exports = {
@@ -745,7 +805,9 @@ module.exports = {
   USE_SCALE_VALIDATION_SCHEMA,
   buildScaleOptions,
   buildTokenOptions,
+  SCALED_GROUPS,
   createPropertyScaleResolver,
+  isGroupScalesMap,
   isPlainObject,
   resolvePropertyScale,
 };
