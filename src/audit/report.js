@@ -58,6 +58,7 @@ async function createAuditReport(options) {
 
   const lintOptions = {
     baseFontSize: parsed.baseFontSize,
+    checkMathBounds: parsed.checkMathBounds,
     includeMotion: parsed.includeMotion,
     scale: scale.values,
   };

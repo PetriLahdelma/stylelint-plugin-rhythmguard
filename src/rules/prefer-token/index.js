@@ -14,6 +14,8 @@ const {
   createPropertyScaleResolver,
 } = require('../../core/options');
 const {
+  collectMathBounds,
+  isBoundFunction,
   isKeyword,
   isMathFunction,
   isTokenFunction,
@@ -44,8 +46,8 @@ const ruleName = 'rhythmguard/prefer-token';
 const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
-  rejected: (value, replacement = null, origin = null, note = '', candidates = []) =>
-    `Unexpected raw scale value "${value}". ${replacement
+  rejected: (value, replacement = null, origin = null, note = '', candidates = [], position = null) =>
+    `Unexpected raw ${position || 'scale value'} "${value}". ${replacement
       ? `Use ${replacement}${origin ? ` (${origin})` : ''}.`
       : candidates.length > 1
         ? `Use one of the tokens that hold it: ${listTokens(candidates)}.`
@@ -177,18 +179,18 @@ const ruleFunction = (primary, secondaryOptions) => {
       const { scaleByUnit, scalePx } = getScaleStateForProperty(prop);
       let changed = false;
 
-      const reportNode = (node, parsedLength) => {
+      const reportNode = (node, parsedLength, position = null) => {
         const mapped = resolveTokenReplacement(tokenMap, node.value, parsedLength, options);
         if (mapped && tokenFitsProperty(mapped.token, prop)) {
           const origin = origins[mapped.token] || null;
-          reportValueNode({ decl, message: messages.rejected(node.value, mapped.replacement, origin, options.note), node, replacement: mapped.replacement, result, ruleName });
+          reportValueNode({ decl, message: messages.rejected(node.value, mapped.replacement, origin, options.note, [], position), node, replacement: mapped.replacement, result, ruleName });
           return;
         }
         const indexed = resolveFromIndex(tokenIndex, parsedLength, prop, options);
         const named = indexed.replacement || null;
         reportValueNode({
           decl,
-          message: messages.rejected(node.value, named, indexed.origin || null, options.note, indexed.candidates),
+          message: messages.rejected(node.value, named, indexed.origin || null, options.note, indexed.candidates, position),
           node,
           replacement: indexed.fixable ? named : null,
           result,
@@ -196,12 +198,12 @@ const ruleFunction = (primary, secondaryOptions) => {
         });
       };
 
-      const checkWordNode = (node, context) => {
+      const checkWordNode = (node, context, position = null) => {
         if (isKeyword(node.value, options.ignoreValues)) {
           return false;
         }
 
-        if (!shouldLintMathArgument(context, options)) {
+        if (!position && !shouldLintMathArgument(context, options)) {
           return false;
         }
 
@@ -259,7 +261,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           }
         }
 
-        reportNode(node, parsedLength);
+        reportNode(node, parsedLength, position);
         return true;
       };
 
@@ -285,10 +287,20 @@ const ruleFunction = (primary, secondaryOptions) => {
           return false;
         });
       } else {
+        const checkedBounds = new Set();
         walkRootValueNodes(parsed, (node, context) => {
           if (node.type === 'function') {
             if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
               return true;
+            }
+
+            if (options.checkMathBounds && isBoundFunction(node)) {
+              for (const bound of collectMathBounds(node)) {
+                if (!checkedBounds.has(bound.node)) {
+                  checkedBounds.add(bound.node);
+                  changed = checkWordNode(bound.node, null, bound.position) || changed;
+                }
+              }
             }
 
             if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
@@ -298,7 +310,7 @@ const ruleFunction = (primary, secondaryOptions) => {
             return false;
           }
 
-          if (node.type !== 'word') {
+          if (node.type !== 'word' || checkedBounds.has(node)) {
             return false;
           }
 

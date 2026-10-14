@@ -75,6 +75,7 @@ function createDefaultAuditOptions() {
     format: 'text',
     ignorePath: DEFAULT_IGNORE_PATH,
     ignorePatterns: [],
+    checkMathBounds: false,
     includeMotion: false,
     maxFindings: null,
     minCleanliness: null,

@@ -109,6 +109,7 @@ function applyAuditConfig(parsed, configResult) {
   applyConfigScalar(next, audit, cliOptions, 'tokenKind', 'tokenKind', normalizeTokenKind);
   applyConfigScalar(next, audit, cliOptions, 'baseFontSize', 'baseFontSize', parseBaseFontSize);
   applyConfigScalar(next, audit, cliOptions, 'includeMotion', 'includeMotion', parseBooleanOption);
+  applyConfigScalar(next, audit, cliOptions, 'checkMathBounds', 'checkMathBounds', parseBooleanOption);
   applyConfigScalar(next, audit, cliOptions, 'scale', 'scale', (value) => {
     if (Array.isArray(value)) {
       return value;

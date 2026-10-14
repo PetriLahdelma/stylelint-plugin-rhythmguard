@@ -1045,3 +1045,23 @@ test('audit reports token chains: spacing tokens followed through var() to their
   assert.match(markdown, /\| `--card-gap` \| off-scale \| `13px` \|/);
   assert.match(markdown, /\| `--card-inset` \| unresolved \| `--size-missing` is not declared \|/);
 });
+
+test('audit CLI --check-math-bounds counts clamp() bounds, and the rc file can turn it on', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-bounds-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'fluid.css'), '.a {\n  padding: clamp(13px, 2vi, 17px);\n}\n');
+
+  const off = JSON.parse(runAudit(fixtureDir, '--format', 'json-v1', '--no-config').stdout);
+  assert.equal(off.offScaleValues['13px'], undefined, 'bounds are not checked by default in 3.x');
+
+  const flagged = runAudit(fixtureDir, '--format', 'json-v1', '--no-config', '--check-math-bounds');
+  assert.equal(flagged.status, 0, flagged.stderr);
+  const report = JSON.parse(flagged.stdout);
+  assert.equal(report.offScaleValues['13px'], 1);
+  assert.equal(report.offScaleValues['17px'], 1);
+  assert.equal(report.findings.css.find((finding) => finding.value === '17px').property, 'padding');
+
+  fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), JSON.stringify({ audit: { checkMathBounds: true } }));
+  const fromRc = JSON.parse(runAuditCommand(fixtureDir, path.join(fixtureDir, 'src'), '--format', 'json-v1').stdout);
+  assert.equal(fromRc.offScaleValues['17px'], 1);
+});

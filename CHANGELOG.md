@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- `checkMathBounds` on `use-scale` and `prefer-token`, and `--check-math-bounds` (or `audit.checkMathBounds`) on the audit: the minimum and maximum of `clamp()` and each length argument of `min()` and `max()` are checked like literals, with the position in the message (`Unexpected off-scale clamp() maximum "1.05rem" (16.8px). ...`). Before, wrapping a value in `clamp()` was a way to leave the scale without a finding. The preferred value of `clamp()` is fluid by design and never checked; neither is an expression, a `var()` or a viewport length. `--fix` and `fixWith: "token"` apply per bound. Off by default in 3.x because it adds findings to existing configs; on by default is a candidate for 4.0. ([#203](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/203))
+
 ## [3.9.0] - 2026-10-15
 
 ### Added

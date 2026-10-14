@@ -191,6 +191,55 @@ function shouldLintMathArgument(context, options) {
   return true;
 }
 
+const BOUND_FUNCTIONS = new Set(['clamp', 'min', 'max']);
+
+function isBoundFunction(node) {
+  return node.type === 'function' && BOUND_FUNCTIONS.has(node.value.toLowerCase());
+}
+
+function splitArguments(nodes) {
+  const args = [[]];
+  for (const node of nodes) {
+    if (node.type === 'div' && node.value === ',') {
+      args.push([]);
+      continue;
+    }
+    if (node.type !== 'space' && node.type !== 'comment') {
+      args[args.length - 1].push(node);
+    }
+  }
+  return args;
+}
+
+/**
+ * The static bounds of a fluid value (issue #203): the minimum and maximum of
+ * `clamp(MIN, VAL, MAX)` and every argument of `min()` and `max()`. A bound
+ * counts only when it is one word, a length literal; the preferred value of
+ * clamp(), an expression, or a var() is fluid by design and left alone. A
+ * bound that is itself min(), max() or clamp() is followed.
+ */
+function collectMathBounds(fnNode) {
+  const name = fnNode.value.toLowerCase();
+  const args = splitArguments(fnNode.nodes);
+  const positioned = name === 'clamp'
+    ? (args.length === 3 ? [[args[0], 'clamp() minimum'], [args[2], 'clamp() maximum']] : [])
+    : args.map((arg) => [arg, `${name}() argument`]);
+
+  const bounds = [];
+  for (const [arg, position] of positioned) {
+    if (arg.length !== 1) {
+      continue;
+    }
+    const [node] = arg;
+    if (node.type === 'word') {
+      bounds.push({ node, position });
+    } else if (isBoundFunction(node)) {
+      bounds.push(...collectMathBounds(node));
+    }
+  }
+  return bounds;
+}
+
 function declarationValueIndex(decl) {
   const declarationText = decl.toString();
   const idx = declarationText.indexOf(decl.value);
@@ -198,7 +247,9 @@ function declarationValueIndex(decl) {
 }
 
 module.exports = {
+  collectMathBounds,
   declarationValueIndex,
+  isBoundFunction,
   isKeyword,
   isMathFunction,
   isTokenFunction,

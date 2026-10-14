@@ -32,6 +32,8 @@ export interface AuditOptions {
   format?: "json" | "json-v1" | "markdown" | "text" | "html" | "github" | "badge";
   ignorePath?: string;
   ignorePatterns?: string[];
+  /** Check clamp() bounds and min()/max() arguments against the scale (equivalent to `--check-math-bounds`). */
+  checkMathBounds?: boolean;
   includeMotion?: boolean;
   maxFindings?: number;
   minCleanliness?: number;
