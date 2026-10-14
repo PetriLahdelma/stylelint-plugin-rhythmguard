@@ -11,7 +11,7 @@ const {
   PROPERTY_GROUP_PATTERNS,
   SPACING_PROPERTY_PATTERNS,
   SUPPORTED_SCALE_UNITS,
-  propertyGroupOf,
+  propertyKindOf,
 } = require('./css-vocabulary');
 const { parseLengthToken } = require('./length');
 const {
@@ -783,7 +783,7 @@ function resolvePropertyScaleEntry(prop, options) {
     }
   }
 
-  const group = propertyGroupOf(prop);
+  const group = propertyKindOf(prop);
   const groupScale = group && options.groupScales ? options.groupScales[group] : null;
   if (groupScale && Array.isArray(groupScale.scale)) {
     return { group, scale: groupScale.scale };

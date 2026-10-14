@@ -24,7 +24,7 @@ By default the `spacing` property group:
 
 Opt-in groups via `propertyGroups`:
 
-- `radius`: `border-radius*`, corner radii, `outline-offset`
+- `radius`: `border-radius*`, corner radii, `outline-offset` (which takes spacing tokens and, under `scales`, the spacing scale)
 - `typography`: `font-size`, `line-height`, `letter-spacing`, `word-spacing`
 - `size`: `width`, `height`, min/max sizes, logical `inline-size` and `block-size`
 

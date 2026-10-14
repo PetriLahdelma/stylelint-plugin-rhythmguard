@@ -69,3 +69,19 @@ test('tokensForLength lists every matching token for the property, sorted, and o
   assert.deepEqual(tokensForLength(index, 16, 'em', { anyUnit: true, prop: 'padding' }), ['--space-internal-16', '--space-layout-16', '--space-px-16']);
   assert.equal(tokenForLength(index, 16, 'px', 'padding'), 'var(--space-px-16)');
 });
+
+test('no property outside the radius corners resolves to a radius token', () => {
+  const { all: knownCssProperties } = require('known-css-properties');
+  const { PROPERTY_GROUP_PATTERNS } = require('../../src/core/css-vocabulary');
+  const patterns = Object.values(PROPERTY_GROUP_PATTERNS).flat();
+  const checked = knownCssProperties.filter((prop) => patterns.some((pattern) => pattern.test(prop)));
+  assert.ok(checked.includes('outline-offset'));
+  for (const prop of checked) {
+    assert.equal(tokenFitsProperty('--radius-sm', prop), /radius$/.test(prop), prop);
+  }
+});
+
+test('outline-offset takes spacing tokens: it is the gap to the outline, not a corner', () => {
+  assert.equal(tokenFitsProperty('--space-2', 'outline-offset'), true);
+  assert.equal(tokenFitsProperty('--radius-sm', 'outline-offset'), false);
+});

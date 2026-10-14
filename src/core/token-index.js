@@ -1,6 +1,6 @@
 'use strict';
 
-const { propertyGroupOf } = require('./css-vocabulary');
+const { propertyKindOf } = require('./css-vocabulary');
 const { fixedLengthValue, numbersEqual, toPx } = require('./length');
 const { createTokenKindMatcher, parseTokenValueLength } = require('./token-sources');
 
@@ -30,7 +30,7 @@ function tokenKindOf(token) {
  * whose name declares no kind, or a property outside every group, is allowed.
  */
 function tokenFitsProperty(token, prop) {
-  const group = prop ? propertyGroupOf(prop) : null;
+  const group = prop ? propertyKindOf(prop) : null;
   const kind = group ? tokenKindOf(String(token).replace(/^var\(\s*|\s*\)$/g, '')) : null;
   return !group || !kind || ACCEPTED_KINDS[group].includes(kind);
 }

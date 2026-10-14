@@ -134,3 +134,12 @@ test('prefer-token and use-scale fixWith: "token" write the same token for the s
     assert.equal(snapped.code, preferred.code, `${prop}: ${onToken} and ${prop}: ${offScale} disagree`);
   }
 });
+
+test('outline-offset is pointed at a spacing token, never a radius token of the same size', async () => {
+  const result = await lintCss({
+    code: ':root { --radius-sm: 2px; --space-hairline: 2px; }\n.a { outline-offset: -2px; }',
+    fix: true,
+    rules: { 'rhythmguard/prefer-token': [true, { allowHairlines: false, propertyGroups: ['spacing', 'radius'], tokenPattern: TOKEN_PATTERN }] },
+  });
+  assert.equal(result.code, ':root { --radius-sm: 2px; --space-hairline: 2px; }\n.a { outline-offset: calc(-1 * var(--space-hairline)); }');
+});
