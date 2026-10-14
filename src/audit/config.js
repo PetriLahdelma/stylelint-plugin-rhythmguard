@@ -112,6 +112,9 @@ function applyAuditConfig(parsed, configResult) {
   applyConfigScalar(next, audit, cliOptions, 'includeMotion', 'includeMotion', parseBooleanOption);
   applyConfigScalar(next, audit, cliOptions, 'checkMathBounds', 'checkMathBounds', parseBooleanOption);
   applyConfigScalar(next, audit, cliOptions, 'scales', 'scales', parseGroupScales);
+  if (audit.ladders !== undefined) {
+    next.ladderMinStepPx = parseLadderOptions(audit.ladders);
+  }
   applyConfigScalar(next, audit, cliOptions, 'scale', 'scale', (value) => {
     if (Array.isArray(value)) {
       return value;
@@ -131,6 +134,15 @@ function applyConfigScalar(target, audit, cliOptions, targetKey, configKey, pars
   }
 
   target[targetKey] = parser(audit[configKey], configKey);
+}
+
+function parseLadderOptions(value) {
+  const minStepPx = value && typeof value === 'object' && !Array.isArray(value) ? value.minStepPx : undefined;
+  if (typeof minStepPx !== 'number' || !Number.isFinite(minStepPx) || minStepPx < 0) {
+    throw new Error('ladders.minStepPx must be a non-negative number of px.');
+  }
+
+  return minStepPx;
 }
 
 function parseGroupScales(value, optionName) {

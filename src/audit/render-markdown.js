@@ -55,6 +55,7 @@ function renderMarkdown(report) {
   appendMarkdownCounts(lines, 'Motion Rhythm Drift', report.motion.values);
   appendTokenContractMarkdown(lines, report.tokenContract);
   appendTokenChainsMarkdown(lines, report.tokenContract.chains);
+  appendTokenLaddersMarkdown(lines, report.tokenContract.ladders);
   appendBaselineMarkdown(lines, report);
 
   if (report.topAffectedFiles.length > 0) {
@@ -113,6 +114,39 @@ function appendTokenChainsMarkdown(lines, chains) {
         ? entry.reason
         : entry.terminals.map((terminal) => `\`${terminal}\``).join(', ');
       lines.push(`| \`${escapeMarkdown(entry.token)}\` | ${entry.outcome} | ${detail}${entry.via.length > 0 ? ` via ${entry.via.map((name) => `\`${name}\``).join(' → ')}` : ''} |`);
+    }
+    lines.push('');
+  }
+}
+
+const LADDER_PROBLEM_TEXT = Object.freeze({
+  collapsed: 'collapsed',
+  inverted: 'inverted',
+  'too-close': 'too close',
+});
+
+function appendTokenLaddersMarkdown(lines, ladders) {
+  if (!ladders || ladders.entries.length === 0) {
+    return;
+  }
+  const { summary } = ladders;
+  lines.push('## Token Ladders');
+  lines.push('');
+  lines.push(`${ladders.entries.length} of ${summary.ladders} token ladders have steps that do not read as steps: ${summary.collapsed} collapsed, ${summary.tooClose} under ${summary.minStepPx}px apart, ${summary.inverted} inverted. Each step is shown at its smallest and largest value.`);
+  lines.push('');
+  for (const entry of ladders.entries.slice(0, 20)) {
+    const flagged = new Map();
+    for (const problem of entry.problems) {
+      const where = problem.end === 'both' ? '' : ` at ${problem.end}`;
+      const note = `${LADDER_PROBLEM_TEXT[problem.type]}${where} with \`${problem.tokens[0]}\``;
+      flagged.set(problem.tokens[1], [...(flagged.get(problem.tokens[1]) || []), note]);
+    }
+    lines.push(`**\`${escapeMarkdown(entry.prefix)}\`**`);
+    lines.push('');
+    lines.push('| Token | Min | Max | Problem |');
+    lines.push('| --- | --- | --- | --- |');
+    for (const step of entry.steps) {
+      lines.push(`| \`${escapeMarkdown(step.token)}\` | ${step.min || 'fluid'} | ${step.max || 'fluid'} | ${(flagged.get(step.token) || []).join('; ')} |`);
     }
     lines.push('');
   }

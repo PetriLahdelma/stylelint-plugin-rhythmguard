@@ -111,6 +111,27 @@ In a token-layered system the stylesheet says `padding: var(--button--padding-x)
 
 `var(--x, 8px)` uses the fallback when `--x` is not declared. Declarations come from the scanned stylesheets and from token sources and installed token packages, so a scale that lives in a dependency still resolves. The Markdown report prints "6 of 8 spacing tokens resolve to the scale" and lists the tokens that need attention with their chain; the JSON contract carries the counts for every outcome and entries for the attention outcomes only.
 
+## Token ladders
+
+A ladder can have every step on the scale and still not work as a ladder. Fluid type tokens whose `clamp()` minima coincide render three named sizes as one size on every phone; steps 0.8px apart promise a hierarchy no reader can see. The audit groups custom properties into ladders by a shared prefix and a size suffix (`xxs` to `xxl`, `sm`/`md`/`lg`, or `1` to `n`), evaluates each step at its smallest and largest value, and compares neighbours at both ends. It reports the result as `contracts.tokens.ladders`:
+
+| Problem | Meaning |
+| --- | --- |
+| `collapsed` | two steps are the same size at that end |
+| `too-close` | two steps differ by less than `minStepPx` (default 2px) |
+| `inverted` | a step is larger than the next one at that end, for example two `clamp()` values that grow at different rates |
+
+A step's value is a static length, the minimum and maximum of a `clamp()`, or the static arguments of `min()` (a maximum) and `max()` (a minimum), followed through `var()`. A step written with `calc()` or a viewport length, or declared with different values in different places, is left out. Each problem names its end: `min`, `max`, or `both`. A ladder needs three evaluable steps; colours and other non-lengths never form one.
+
+The Markdown report shows each ladder with a problem as a table of its steps, smallest and largest value, and the problem next to the step it concerns:
+
+| Token | Min | Max | Problem |
+| --- | --- | --- | --- |
+| `--font-size-text-xs` | 14px | 16px | |
+| `--font-size-text-s` | 14px | 16.8px | collapsed at min with `--font-size-text-xs`; too close at max with `--font-size-text-xs` |
+
+`"ladders": { "minStepPx": 1 }` under `audit` in `.rhythmguardrc.json` sets the threshold. The section only reports; it adds no findings and does not change the exit code.
+
 ## Decisions
 
 Real drift is a handful of decisions, not hundreds of mistakes: Mastodon's `10px` appears 165 times and is one missing step or one unnamed token, not 165 slips. The `decisions` section of `.rhythmguardrc.json` records those decisions once, and both the Stylelint rules and the audit honour them.
