@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.9.0] - 2026-10-15
+
 ### Added
 
 - `scale: "auto"` reads `@mozilla-protocol/tokens` when it is installed: `--spacing-xs` to `--spacing-2xl` (4 to 48px) from `dist/units/units.custom-properties.css`. Mozilla Protocol's benchmark row is measured against that package at 7.0.0, as a Protocol contributor pointed out in mozilla/protocol#1132: 19 off-scale values, against 18 on the `rhythmic-4` fallback, because 12px is not a Protocol step and 48px is.
