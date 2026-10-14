@@ -49,6 +49,8 @@ async function runStylelintAudit(cssFiles, options) {
         baseFontSize: options.baseFontSize,
         checkMathBounds: options.checkMathBounds === true,
         scale: options.scale,
+        // audit.scales adds the groups it names, each checked against its own scale.
+        ...(options.scales ? { propertyGroups: ['spacing', ...Object.keys(options.scales)], scales: options.scales } : {}),
         severity: 'warning',
       },
     ],

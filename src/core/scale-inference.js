@@ -522,19 +522,58 @@ function fallbackInference(rejected = null) {
  * an explicit scale pass through untouched.
  */
 function withResolvedScale(options, root) {
-  if (!options.scaleAuto) {
-    return options;
+  if (options.scaleAuto) {
+    const inference = resolveAutoScale({
+      baseFontSize: options.baseFontSize,
+      root,
+      scaleSources: options.scaleSources,
+      tailwindConfigPath: options.tailwindConfigPath,
+      tokenPattern: options.tokenPatternExplicit ? options.tokenPattern : DEFAULT_AUTO_TOKEN_PATTERN,
+    });
+    options.scale = inference.scale;
+    options.scaleInference = inference;
   }
-  const inference = resolveAutoScale({
+  for (const [group, entry] of Object.entries(options.groupScales || {})) {
+    if (entry.auto) {
+      entry.scale = inferGroupScale(group, options, root);
+    }
+  }
+  return options;
+}
+
+// Token names each group's "auto" reads. Spacing is the project scale itself.
+const GROUP_TOKEN_PATTERNS = Object.freeze({
+  radius: /^--radius-/,
+  size: /^--(?:size|width|height|container)-/,
+  typography: /^--(?:font-size|text|fs)-/,
+});
+
+/**
+ * A group's scale from its own tokens (`--font-size-*` and Tailwind's
+ * `--text-*` for typography, `--radius-*` for radius). Null when fewer than
+ * four values are found, and the group then uses `scale`. Fluid tokens
+ * (`clamp()`) have no single value and are not part of an inferred scale.
+ */
+function inferGroupScale(group, options, root) {
+  if (group === 'spacing') {
+    return options.scaleAuto ? options.scale : resolveAutoScale({
+      baseFontSize: options.baseFontSize,
+      root,
+      scaleSources: options.scaleSources,
+      tailwindConfigPath: options.tailwindConfigPath,
+      tokenPattern: DEFAULT_AUTO_TOKEN_PATTERN,
+    }).scale;
+  }
+  const pattern = GROUP_TOKEN_PATTERNS[group];
+  const definitions = collectTokenDefinitions({
     baseFontSize: options.baseFontSize,
     root,
     scaleSources: options.scaleSources,
-    tailwindConfigPath: options.tailwindConfigPath,
-    tokenPattern: options.tokenPatternExplicit ? options.tokenPattern : DEFAULT_AUTO_TOKEN_PATTERN,
+    tokenPattern: pattern.source,
+    tokenRegex: pattern,
   });
-  options.scale = inference.scale;
-  options.scaleInference = inference;
-  return options;
+  const own = new Map([...definitions].filter(([token]) => pattern.test(token)));
+  return own.size > 0 ? scaleFromDefinitions(own, options.baseFontSize) : null;
 }
 
 function autoScaleFallbackNote(inference) {

@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { normalizeDecisions } = require('../core/decisions');
+const { SCALED_GROUPS, isGroupScalesMap } = require('../core/options');
 const {
   normalizeTokenKind,
   normalizeTokenSourceFormat,
@@ -110,6 +111,7 @@ function applyAuditConfig(parsed, configResult) {
   applyConfigScalar(next, audit, cliOptions, 'baseFontSize', 'baseFontSize', parseBaseFontSize);
   applyConfigScalar(next, audit, cliOptions, 'includeMotion', 'includeMotion', parseBooleanOption);
   applyConfigScalar(next, audit, cliOptions, 'checkMathBounds', 'checkMathBounds', parseBooleanOption);
+  applyConfigScalar(next, audit, cliOptions, 'scales', 'scales', parseGroupScales);
   applyConfigScalar(next, audit, cliOptions, 'scale', 'scale', (value) => {
     if (Array.isArray(value)) {
       return value;
@@ -129,6 +131,14 @@ function applyConfigScalar(target, audit, cliOptions, targetKey, configKey, pars
   }
 
   target[targetKey] = parser(audit[configKey], configKey);
+}
+
+function parseGroupScales(value, optionName) {
+  if (!isGroupScalesMap(value)) {
+    throw new Error(`${optionName} must map ${SCALED_GROUPS.join(', ')} to a scale, a preset name or "auto".`);
+  }
+
+  return value;
 }
 
 function parseBooleanOption(value, optionName) {

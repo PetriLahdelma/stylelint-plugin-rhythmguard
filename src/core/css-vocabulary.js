@@ -41,6 +41,13 @@ const PROPERTY_GROUP_PATTERNS = Object.freeze({
   ]),
 });
 
+/** The property group a CSS property belongs to, or null. */
+function propertyGroupOf(prop) {
+  const lower = String(prop || '').toLowerCase();
+  const found = Object.entries(PROPERTY_GROUP_PATTERNS).find(([, patterns]) => patterns.some((pattern) => pattern.test(lower)));
+  return found ? found[0] : null;
+}
+
 const DEFAULT_PROPERTY_GROUPS = Object.freeze(['spacing']);
 const PROPERTY_GROUP_NAMES = Object.freeze(Object.keys(PROPERTY_GROUP_PATTERNS));
 
@@ -101,6 +108,7 @@ const SUPPORTED_SCALE_UNITS = new Set([
 const DEFAULT_MATH_FUNCTION_ARGUMENT_FILTER = Object.freeze({});
 
 module.exports = {
+  propertyGroupOf,
   DEFAULT_IGNORE_KEYWORDS,
   DEFAULT_MATH_FUNCTION_ARGUMENT_FILTER,
   DEFAULT_PROPERTY_GROUPS,

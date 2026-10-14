@@ -36,6 +36,12 @@ export interface RhythmguardRuleOptions {
    * properties, then `tailwindConfigPath`, falling back to the `rhythmic-4` preset.
    */
   scale?: ScaleValue[] | "auto";
+  /**
+   * A scale per property group, used before `scale` and after `propertyScales`: values, a
+   * preset name, or `"auto"` to infer the group's scale from its tokens (`--font-size-*` and
+   * `--text-*` for typography, `--radius-*` for radius). Findings then name the group's scale.
+   */
+  scales?: Partial<Record<"spacing" | "radius" | "size" | "typography", ScaleValue[] | string | { preset?: string; scale?: ScaleValue[]; customScale?: ScaleValue[] }>>;
   /** Token files consulted first when `scale` is `"auto"`. */
   scaleSources?: Array<string | ScaleSource>;
   /** Tailwind v3 config whose `theme.spacing` feeds `scale: "auto"` and `tokenMapFromTailwindSpacing`. */

@@ -107,6 +107,27 @@ Unexpected off-scale value "$spacer * .3". Use scale values (nearest: 4px or 8px
 
 Variables resolve from the linted file first, then from `scaleSources`, the config file's token sources and installed token packages. `* / + -`, parentheses, negation and `math.div()` are understood; a term that does not resolve (an unknown variable, another function, a keyword) is left alone, as it always was. The hairline allowance and decisions apply to the evaluated value. Expressions are reported, never rewritten: `--fix` does not know whether `$spacer * .3` should become a literal or a different multiplier.
 
+## A scale per property group
+
+Spacing and type rarely share a ladder. `scales` gives a property group its own scale next to `scale`, in one rule block:
+
+```json
+"rhythmguard/use-scale": [true, {
+  "propertyGroups": ["spacing", "typography", "radius"],
+  "scale": [0, 2, 4, 8, 12, 16, 24, 32, 40, 48, 64],
+  "scales": {
+    "typography": [14, 16, 18, 20, 24, 32, 40],
+    "radius": "auto"
+  }
+}]
+```
+
+```
+Unexpected off-scale value "17px". Use typography scale values (nearest: 16px or 18px). (rhythmguard/use-scale)
+```
+
+Groups are `spacing`, `radius`, `size` and `typography`. Each takes a list of values, a preset name, or `"auto"`, which infers the group's scale from its own tokens: `--font-size-*` and Tailwind's `--text-*` for typography, `--radius-*` for radius, `--size-*`, `--width-*`, `--height-*` and `--container-*` for size. With fewer than four values found, the group uses `scale`. Fluid tokens have no single value and are not part of an inferred scale. A property is checked against the most specific scale that applies: its `propertyScales` entry, then its group's `scales` entry, then `scale`. The message names the group only when `scales` supplied the scale, so existing messages do not change. Unitless `line-height` is a ratio, not a length, and stays exempt. The audit takes the same map as `audit.scales` in `.rhythmguardrc.json` and checks each group it names.
+
 ## Fluid values
 
 `clamp()`, `min()` and `max()` are skipped by default, so `padding: clamp(13px, 2vi, 17px)` passes where `padding: 13px` does not. `checkMathBounds: true` checks their static bounds like literals: the minimum and maximum of `clamp()`, and every argument of `min()` and `max()` that is one length. The preferred value of `clamp()` (`0.35vi + 0.8rem`) is fluid by design and never checked; neither is an argument that is an expression, a `var()` or a viewport length. A bound that is itself `min()`, `max()` or `clamp()` is followed.
@@ -150,10 +171,11 @@ The message names the position: `clamp() minimum`, `clamp() maximum`, `min() arg
 | `ignoreMathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Excludes specific 1-based argument indexes per math function |
 | `propertyGroups` | `Array<'spacing' \| 'radius' \| 'typography' \| 'size'>` | `['spacing']` | Built-in property groups, used when `properties` is not set |
 | `properties` | `Array<string\|RegExp>` | built-in spacing patterns | Explicit property set. Strings may be property names or regex-like strings (`/pattern/flags`) |
+| `scales` | `Record<group, scale \| preset \| "auto">` | `{}` | A scale per property group (`spacing`, `radius`, `size`, `typography`). See [A scale per property group](#a-scale-per-property-group) |
 | `propertyScales` | `Record<propertyOrRegex, scaleOrPreset>` | `{}` | Per-property scale overrides. Keys may be exact names or `/regex/flags`; stateful `g` and `y` flags are normalized |
 | `note` | `string` | `undefined` | Appended to every finding, after the built-in text. Up to 200 characters. Point agents and reviewers at your own rules: `"See docs/spacing.md for approved exceptions."` |
 
-Scale resolution precedence: `customScale`, then `scale` (a list, or `"auto"` inference), then `preset`, then the default `rhythmic-4`.
+Scale resolution precedence: `customScale`, then `scale` (a list, or `"auto"` inference), then `preset`, then the default `rhythmic-4`. Per property, `propertyScales` and then `scales` come before all of these.
 
 ### Option validation
 

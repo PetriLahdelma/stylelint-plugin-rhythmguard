@@ -43,8 +43,8 @@ const ruleName = 'rhythmguard/use-scale';
 const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
-  rejected: (value, lower, upper, note = '', position = null, aside = '') =>
-    `Unexpected off-scale ${position ? `${position} "${value}"${aside}` : `value "${value}"`}. Use scale values (nearest: ${lower} or ${upper}).${note ? ` ${note}` : ''}`,
+  rejected: (value, lower, upper, note = '', position = null, aside = '', group = null) =>
+    `Unexpected off-scale ${position ? `${position} "${value}"${aside}` : `value "${value}"`}. Use ${group ? `${group} ` : ''}scale values (nearest: ${lower} or ${upper}).${note ? ` ${note}` : ''}`,
 });
 
 /** " (16.8px)" after a bound written in rem or em, so the reader sees what was compared. */
@@ -271,7 +271,7 @@ const ruleFunction = (primary, secondaryOptions) => {
       const tokenNote = nearest ? tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit)) : '';
       reportValueNode({
         decl,
-        message: messages.rejected(value, lower, upper, [fallbackNote, tokenNote, extraNote, options.note].filter(Boolean).join(' '), position, position ? pxAside(value, options.baseFontSize) : ''),
+        message: messages.rejected(value, lower, upper, [fallbackNote, tokenNote, extraNote, options.note].filter(Boolean).join(' '), position, position ? pxAside(value, options.baseFontSize) : '', getScaleStateForProperty(decl.prop.toLowerCase()).group),
         node,
         replacement: fixedValue,
         result,

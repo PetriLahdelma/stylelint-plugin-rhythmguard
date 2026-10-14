@@ -61,6 +61,7 @@ async function createAuditReport(options) {
     checkMathBounds: parsed.checkMathBounds,
     includeMotion: parsed.includeMotion,
     scale: scale.values,
+    scales: parsed.scales,
   };
 
   const cssResults = await runStylelintAudit(cssFiles, lintOptions);
