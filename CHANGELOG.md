@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.10.1] - 2026-10-15
+
 ### Fixed
 
 - Token ladders: a ladder whose every step is a `var()` alias of a step on one other ladder, such as Tailwind `@theme` names over a token file, is folded into that ladder instead of being reported again with the same problems. The ladder it aliases lists it under `aliases`, and the Markdown report names it next to that ladder.
