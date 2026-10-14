@@ -69,7 +69,13 @@ const ruleFunction = (primary, secondaryOptions) => {
     withResolvedScale(options, root);
     if (options.fixWith === 'token') {
       options.tokenIndex = tokenIndexFromDefinitions(
-        collectTokenDefinitions({ baseFontSize: options.baseFontSize, root, scaleSources: options.scaleSources, tokenRegex: new RegExp(options.tokenPattern) }),
+        collectTokenDefinitions({
+          baseFontSize: options.baseFontSize,
+          root,
+          scaleSources: options.scaleSources,
+          tokenPattern: options.tokenPatternExplicit ? options.tokenPattern : null,
+          tokenRegex: new RegExp(options.tokenPattern),
+        }),
         options.baseFontSize,
       );
     }
@@ -157,7 +163,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           }
 
           const fixedValue = options.fixToScale
-            ? replacementFor(parsedLength, nearest.nearest, options)
+            ? replacementFor(parsedLength, nearest.nearest, options, decl.prop)
             : null;
 
           report(node, nearest, unit, fixedValue);
@@ -181,7 +187,7 @@ const ruleFunction = (primary, secondaryOptions) => {
         }
 
         const fixedValue = options.fixToScale
-          ? replacementFor(parsedLength, nearest.nearest, options)
+          ? replacementFor(parsedLength, nearest.nearest, options, decl.prop)
           : null;
 
         report(node, nearest, 'px', fixedValue);

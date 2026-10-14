@@ -12,8 +12,19 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Fixed
 
+- `prefer-token` reads the token sources `use-scale` reads for `fixWith: "token"`: the linted stylesheet, `scaleSources`, the `audit.tokenSources` files in `.rhythmguardrc.json` and installed token packages ([#202](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/202)). Before, a token declared in a config token source was invisible to `prefer-token`, which then said no token held a value that one did; on one consumer, 478 of 611 baselined warnings were values an existing token holds. Both rules now resolve tokens through one function, so a token is known to both or to neither, and a contract test holds them to it. The fix writes such a token only when exactly one holds the value in the literal's unit, the same rule `fixWith: "token"` follows.
+- Tokens are matched to the property's kind. A `tokenPattern` such as `^--space-|^--radius-` no longer lets `padding: 1rem` be pointed at, or fixed to, `--radius-xl` because it also holds 16px. Radius, typography and motion tokens serve their own properties; spacing and size tokens serve each other's. Applies to `prefer-token` and to `fixWith: "token"` in `use-scale` and `no-offscale-transform`.
+- A rule's own `tokenPattern` applies to the token source files it reads as well as to the stylesheet, so `--radius-*` tokens in a config token source are found when the pattern asks for them.
 - The audit no longer hangs on template files that contain an unclosed quote followed by escape-dense source. The Tailwind class-string scanner found string literals with a regex whose alternation was ambiguous on every backslash, so from an apostrophe in a comment or a quote inside a regex literal it backtracked exponentially over the `\{ \[ \(` of the next regex literal; on the Ace editor's `mode-alda.js` (10 KB, vendored by a MediaWiki skin) one `rhythmguard audit` ran for eleven hours before it was killed, and Bootswatch's audit took longer than three minutes. The finder is now a single linear pass: an escape never closes a literal, a `'` or `"` literal that reaches a line break is not a literal, a backtick literal may span lines. Both repositories audit in seconds. The benchmark gained five findings that an unclosed quote had been hiding (four in Ghost's `input-group.tsx`, one in Cal.com's `Button.tsx`).
 - The audit no longer throws `All input files were ignored because of the ignore pattern` when a project's own `.stylelintignore` excludes every stylesheet the walk found. The files are counted as `scanned.stylelintIgnored` in the JSON contract and shown in text and Markdown output, so a clean report cannot hide that nothing was audited.
+
+### Messages
+
+Message text changes are listed here, so teams that key a warning baseline on message text know which warnings will reappear as resolved-plus-new pairs (see [#172](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/172)).
+
+- `prefer-token`, when a token in a config token source, `scaleSources` or an installed token package holds the value: was `No known token holds this value; use the nearest token or add one.`, now `Use var(--token) (path/to/tokens.css).` When a token in another unit holds it, the message names that token and the fix leaves the literal.
+- `prefer-token`, when several tokens hold the value: was `No known token holds this value; ...`, now `Use one of the tokens that hold it: var(--a) or var(--b).`
+- Unchanged: the message for a value no token holds, and every `use-scale` message.
 
 ### Changed
 

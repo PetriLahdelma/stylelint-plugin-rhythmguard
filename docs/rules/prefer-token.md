@@ -39,7 +39,13 @@ Message for the failing case, when a mapping holds the value:
 Unexpected raw scale value "12px". Use var(--space-3) (src/tokens.css). (rhythmguard/prefer-token)
 ```
 
-The message names the token the fix would write and where that token was read from: the linted stylesheet, the `tokenMapFile`, or the Tailwind config. An inline `tokenMap` entry has no file and is named on its own. A negative literal is named the way it is written: `Use calc(-1 * var(--space-3)).` When no mapping holds the value:
+The message names the token the fix would write and where that token was read from: the linted stylesheet, a token source, the `tokenMapFile`, or the Tailwind config. An inline `tokenMap` entry has no file and is named on its own. A negative literal is named the way it is written: `Use calc(-1 * var(--space-3)).` When several tokens hold the value, the message names them all and the fix writes none, because picking one would be a guess:
+
+```
+Unexpected raw scale value "1.5rem". Use one of the tokens that hold it: var(--space-gutter-24) or var(--space-layout-24). (rhythmguard/prefer-token)
+```
+
+When no token holds the value:
 
 ```
 Unexpected raw scale value "13px". No known token holds this value; use the nearest token or add one. (rhythmguard/prefer-token)
@@ -54,7 +60,15 @@ Only from an explicit mapping. The rule never guesses a token. Mappings come fro
 3. `tokenMapFromCssCustomProperties`, custom properties in the linted stylesheet whose names match `tokenPattern`, including Tailwind v4 `@theme` blocks
 4. `tokenMapFromTailwindSpacing`, `theme.spacing` and `theme.extend.spacing` from a Tailwind v3 JS config
 
+5. the token sources `use-scale` reads for `fixWith: "token"`: custom properties in the linted stylesheet, `scaleSources`, the `audit.tokenSources` files in `.rhythmguardrc.json`, and installed token packages. Names must match the spacing names or `tokenPattern`. The two rules share this resolver, so a token is known to both or to neither.
+
 Fix output is source-aware: a token found in `@theme` or CSS becomes `var(--spacing-4)`, one found in a Tailwind JS config becomes `theme(spacing.4)`.
+
+From the token sources (5), the fix writes a token only when exactly one holds the value in the literal's unit: `1rem` becomes `var(--space-4)` when `--space-4: 1rem`, but `16px` is only told about it. That is the same rule `fixWith: "token"` follows.
+
+### Token kinds
+
+A token is offered only for properties of its kind. With `tokenPattern: "^--space-|^--radius-"` and both `--space-4: 1rem` and `--radius-xl: 1rem`, `padding: 1rem` is pointed at `--space-4` and `border-radius: 1rem` at `--radius-xl`, never the other way round. Radius (`--radius-*`), typography (`--font-*`, `--font-size-*`, `--line-height-*`, `--leading-*`, `--tracking-*`) and motion tokens serve only their own properties; spacing and size tokens (`--space-*`, `--size-*`) serve spacing and size properties alike, since many systems space with `--size-*`. A token whose name declares no kind (`--gap-md`) is offered anywhere. `use-scale` with `fixWith: "token"` applies the same matching.
 
 ## Token file formats
 

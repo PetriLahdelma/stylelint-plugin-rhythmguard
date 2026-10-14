@@ -201,12 +201,16 @@ function scaleFromSources(sources, baseFontSize) {
  * `.rhythmguardrc.json` token sources and installed token packages. The same
  * places scale inference reads, in the same order.
  */
-function collectTokenDefinitions({ baseFontSize = 16, root, scaleSources = [], tokenRegex }) {
+function collectTokenDefinitions({ baseFontSize = 16, root, scaleSources = [], tokenPattern = null, tokenRegex }) {
   const definitions = root ? stylesheetDefinitions(root, tokenRegex, baseFontSize) : new Map();
   const sources = [...scaleSources, ...rcTokenSources(process.cwd()), ...discoverTokenPackages(process.cwd())];
-  const parsed = parseSourcesCached(sources, baseFontSize);
-  if (parsed) {
-    for (const [token, definition] of parsed.definitions) {
+  // A rule's own tokenPattern (`^--space-|^--radius-`) also applies to the
+  // files it reads, on top of the spacing names, unless a source sets its own.
+  const withPattern = tokenPattern
+    ? sources.map((source) => (typeof source === 'string' ? { path: source, tokenPattern } : { tokenPattern, ...source }))
+    : [];
+  for (const parsed of [parseSourcesCached(sources, baseFontSize), parseSourcesCached(withPattern, baseFontSize)]) {
+    for (const [token, definition] of parsed ? parsed.definitions : []) {
       if (!definitions.has(token)) {
         definitions.set(token, definition);
       }
