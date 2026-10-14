@@ -136,7 +136,7 @@ function checkLengthValue({
     }
 
     const fixedValue = options.fixToScale && fixable
-      ? replacementFor(parsedLength, nearest.nearest, options)
+      ? replacementFor(parsedLength, nearest.nearest, options, decl.prop)
       : null;
 
     report(node.value, decl, node, nearest, fixedValue, unit, evaluated ? evaluatedNote(evaluated, options) : '');
@@ -160,7 +160,7 @@ function checkLengthValue({
   }
 
   const fixedValue = options.fixToScale && fixable
-    ? replacementFor(parsedLength, nearest.nearest, options)
+    ? replacementFor(parsedLength, nearest.nearest, options, decl.prop)
     : null;
 
   report(node.value, decl, node, nearest, fixedValue, 'px', evaluated ? evaluatedNote(evaluated, options) : '');
@@ -239,7 +239,13 @@ const ruleFunction = (primary, secondaryOptions) => {
     const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);
     if (options.fixWith === 'token') {
       options.tokenIndex = tokenIndexFromDefinitions(
-        collectTokenDefinitions({ baseFontSize: options.baseFontSize, root, scaleSources: options.scaleSources, tokenRegex }),
+        collectTokenDefinitions({
+          baseFontSize: options.baseFontSize,
+          root,
+          scaleSources: options.scaleSources,
+          tokenPattern: options.tokenPatternExplicit ? options.tokenPattern : null,
+          tokenRegex,
+        }),
         options.baseFontSize,
       );
     }

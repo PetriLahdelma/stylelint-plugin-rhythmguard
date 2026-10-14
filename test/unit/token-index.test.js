@@ -10,7 +10,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 
 const { addDefinition } = require('../../src/core/token-sources');
-const { negateReplacement, tokenForLength, tokenIndexFromDefinitions } = require('../../src/core/token-index');
+const { negateReplacement, tokenFitsProperty, tokenForLength, tokenIndexFromDefinitions, tokenKindOf, tokensForLength } = require('../../src/core/token-index');
 
 function definitions(entries) {
   const map = new Map();
@@ -40,4 +40,32 @@ test('negateReplacement writes valid CSS for a negative token', () => {
   assert.equal(negateReplacement('theme(spacing.3)'), 'calc(-1 * theme(spacing.3))');
   assert.equal(negateReplacement('$spacer'), '-$spacer', 'Sass variables negate with a sign');
   assert.equal(negateReplacement('-var(--x)'), '-var(--x)', 'already negative stays as written');
+});
+
+test('tokenKindOf reads the kind a token name declares, and nothing from a name that declares none', () => {
+  assert.equal(tokenKindOf('--space-internal-16'), 'spacing');
+  assert.equal(tokenKindOf('--radius-xl'), 'radius');
+  assert.equal(tokenKindOf('--font-size-text-m'), 'typography');
+  assert.equal(tokenKindOf('--size-px--16'), 'size');
+  assert.equal(tokenKindOf('--gap-md'), null);
+});
+
+test('tokenFitsProperty keeps radius and type tokens out of spacing, and lets spacing and size share', () => {
+  assert.equal(tokenFitsProperty('--radius-xl', 'padding'), false);
+  assert.equal(tokenFitsProperty('var(--radius-xl)', 'padding-inline'), false);
+  assert.equal(tokenFitsProperty('--font-size-text-m', 'margin'), false);
+  assert.equal(tokenFitsProperty('--space-4', 'border-radius'), false);
+  assert.equal(tokenFitsProperty('--radius-xl', 'border-radius'), true);
+  assert.equal(tokenFitsProperty('--size-px--16', 'padding'), true, 'mittwald and Open Props space with --size-*');
+  assert.equal(tokenFitsProperty('--gap-md', 'border-radius'), true, 'a name without a kind is not excluded');
+  assert.equal(tokenFitsProperty('--radius-xl', null), true);
+});
+
+test('tokensForLength lists every matching token for the property, sorted, and other units only on request', () => {
+  const index = tokenIndexFromDefinitions(definitions([['--space-layout-16', '1rem'], ['--space-internal-16', '1rem'], ['--radius-xl', '1rem'], ['--space-px-16', '16px']]));
+  assert.deepEqual(tokensForLength(index, 16, 'rem', { prop: 'padding' }), ['--space-internal-16', '--space-layout-16']);
+  assert.deepEqual(tokensForLength(index, 16, 'rem', { prop: 'border-radius' }), ['--radius-xl']);
+  assert.deepEqual(tokensForLength(index, 16, 'em', { prop: 'padding' }), []);
+  assert.deepEqual(tokensForLength(index, 16, 'em', { anyUnit: true, prop: 'padding' }), ['--space-internal-16', '--space-layout-16', '--space-px-16']);
+  assert.equal(tokenForLength(index, 16, 'px', 'padding'), 'var(--space-px-16)');
 });

@@ -25,24 +25,39 @@ const {
 const { buildEffectiveTokenMap } = require('../../core/token-map');
 
 const {
+  collectTokenDefinitions,
   withResolvedScale,
 } = require('../../core/scale-inference');
 
 const { createTokenRegex, reportInvalidPreset, reportValueNode } = require('../report');
 const { validatePrimary, validatePreferTokenSecondaryOptions } = require('../validate');
 
-const { negateReplacement } = require('../../core/token-index');
+const {
+  negateReplacement,
+  tokenFitsProperty,
+  tokenIndexFromDefinitions,
+  tokensForLength,
+} = require('../../core/token-index');
 
 const ruleName = 'rhythmguard/prefer-token';
 
 const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
-  rejected: (value, replacement = null, origin = null, note = '') =>
+  rejected: (value, replacement = null, origin = null, note = '', candidates = []) =>
     `Unexpected raw scale value "${value}". ${replacement
       ? `Use ${replacement}${origin ? ` (${origin})` : ''}.`
-      : 'No known token holds this value; use the nearest token or add one.'}${note ? ` ${note}` : ''}`,
+      : candidates.length > 1
+        ? `Use one of the tokens that hold it: ${listTokens(candidates)}.`
+        : 'No known token holds this value; use the nearest token or add one.'}${note ? ` ${note}` : ''}`,
 });
+
+function listTokens(tokens) {
+  const references = tokens.map((token) => `var(${token})`);
+  return references.length > 1
+    ? `${references.slice(0, -1).join(', ')} or ${references[references.length - 1]}`
+    : references.join('');
+}
 
 function applyNegativeToken(replacement, parsedLength) {
   return !replacement || parsedLength.number >= 0 ? replacement : negateReplacement(replacement);
@@ -72,6 +87,36 @@ function resolveTokenReplacement(tokenMap, raw, parsedLength, options) {
   }
 
   return null;
+}
+
+/**
+ * The tokens use-scale's `fixWith: "token"` would see: the stylesheet,
+ * `scaleSources`, `.rhythmguardrc.json` token sources and installed token
+ * packages, filtered to the property's kind. One same-unit token is a fix; a
+ * token in another unit, or several tokens, are named but never written.
+ */
+function resolveFromIndex(tokenIndex, parsedLength, prop, options) {
+  const px = toPx(Math.abs(parsedLength.number), parsedLength.unit || 'px', options.baseFontSize);
+  if (px === null || tokenIndex.length === 0) {
+    return { candidates: [] };
+  }
+  const unit = parsedLength.unit || 'px';
+  const sameUnit = tokensForLength(tokenIndex, px, unit, { prop });
+  const candidates = sameUnit.length > 0 || options.unitStrategy !== 'convert'
+    ? sameUnit
+    : tokensForLength(tokenIndex, px, unit, { anyUnit: true, prop });
+  if (candidates.length !== 1) {
+    return { candidates };
+  }
+  const token = `var(${candidates[0]})`;
+  const entry = tokenIndex.find((item) => item.token === candidates[0]);
+  return {
+    candidates,
+    fixable: sameUnit.length === 1,
+    origin: entry ? entry.file : null,
+    replacement: applyNegativeToken(token, parsedLength),
+    token,
+  };
 }
 
 const ruleFunction = (primary, secondaryOptions) => {
@@ -105,6 +150,17 @@ const ruleFunction = (primary, secondaryOptions) => {
       tokenRegex,
     });
 
+    const tokenIndex = tokenIndexFromDefinitions(
+      collectTokenDefinitions({
+        baseFontSize: options.baseFontSize,
+        root,
+        scaleSources: options.scaleSources,
+        tokenPattern: options.tokenPatternExplicit ? options.tokenPattern : null,
+        tokenRegex,
+      }),
+      options.baseFontSize,
+    );
+
     const getScaleStateForProperty = createPropertyScaleResolver(options);
 
     root.walkDecls((decl) => {
@@ -121,10 +177,23 @@ const ruleFunction = (primary, secondaryOptions) => {
       const { scaleByUnit, scalePx } = getScaleStateForProperty(prop);
       let changed = false;
 
-      const reportNode = (node, resolved = null) => {
-        const replacement = resolved ? resolved.replacement : null;
-        const origin = resolved ? origins[resolved.token] || null : null;
-        reportValueNode({ decl, message: messages.rejected(node.value, replacement, origin, options.note), node, replacement, result, ruleName });
+      const reportNode = (node, parsedLength) => {
+        const mapped = resolveTokenReplacement(tokenMap, node.value, parsedLength, options);
+        if (mapped && tokenFitsProperty(mapped.token, prop)) {
+          const origin = origins[mapped.token] || null;
+          reportValueNode({ decl, message: messages.rejected(node.value, mapped.replacement, origin, options.note), node, replacement: mapped.replacement, result, ruleName });
+          return;
+        }
+        const indexed = resolveFromIndex(tokenIndex, parsedLength, prop, options);
+        const named = indexed.replacement || null;
+        reportValueNode({
+          decl,
+          message: messages.rejected(node.value, named, indexed.origin || null, options.note, indexed.candidates),
+          node,
+          replacement: indexed.fixable ? named : null,
+          result,
+          ruleName,
+        });
       };
 
       const checkWordNode = (node, context) => {
@@ -190,7 +259,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           }
         }
 
-        reportNode(node, resolveTokenReplacement(tokenMap, node.value, parsedLength, options));
+        reportNode(node, parsedLength);
         return true;
       };
 
