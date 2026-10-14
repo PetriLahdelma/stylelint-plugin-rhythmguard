@@ -15,6 +15,8 @@ const {
   createPropertyScaleResolver,
 } = require('../../core/options');
 const {
+  collectMathBounds,
+  isBoundFunction,
   isKeyword,
   isMathFunction,
   isTokenFunction,
@@ -41,9 +43,19 @@ const ruleName = 'rhythmguard/use-scale';
 const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
-  rejected: (value, lower, upper, note = '') =>
-    `Unexpected off-scale value "${value}". Use scale values (nearest: ${lower} or ${upper}).${note ? ` ${note}` : ''}`,
+  rejected: (value, lower, upper, note = '', position = null, aside = '') =>
+    `Unexpected off-scale ${position ? `${position} "${value}"${aside}` : `value "${value}"`}. Use scale values (nearest: ${lower} or ${upper}).${note ? ` ${note}` : ''}`,
 });
+
+/** " (16.8px)" after a bound written in rem or em, so the reader sees what was compared. */
+function pxAside(value, baseFontSize) {
+  const parsed = parseLengthToken(value);
+  if (!parsed || !parsed.unit || parsed.unit === 'px' || parsed.unit === '%') {
+    return '';
+  }
+  const px = toPx(Math.abs(parsed.number), parsed.unit, baseFontSize);
+  return px === null ? '' : ` (${formatLength(parsed.number < 0 ? -px : px, 'px')})`;
+}
 
 /** Decisions from .rhythmguardrc.json; an invalid section is reported once and ignored. */
 function readDecisions(options, { result, root }) {
@@ -253,13 +265,13 @@ const ruleFunction = (primary, secondaryOptions) => {
     let fallbackNote = autoScaleFallbackNote(options.scaleInference);
     const getScaleStateForProperty = createPropertyScaleResolver(options);
 
-    const report = (value, decl, node, nearest, fixedValue = null, nearestUnit = 'px', extraNote = '') => {
+    const report = (value, decl, node, nearest, fixedValue = null, nearestUnit = 'px', extraNote = '', position = null) => {
       const lower = nearest ? formatLength(nearest.lower, nearestUnit) : 'n/a';
       const upper = nearest ? formatLength(nearest.upper, nearestUnit) : 'n/a';
       const tokenNote = nearest ? tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit)) : '';
       reportValueNode({
         decl,
-        message: messages.rejected(value, lower, upper, [fallbackNote, tokenNote, extraNote, options.note].filter(Boolean).join(' ')),
+        message: messages.rejected(value, lower, upper, [fallbackNote, tokenNote, extraNote, options.note].filter(Boolean).join(' '), position, position ? pxAside(value, options.baseFontSize) : ''),
         node,
         replacement: fixedValue,
         result,
@@ -342,11 +354,26 @@ const ruleFunction = (primary, secondaryOptions) => {
           return false;
         });
       } else {
+        const checkedBounds = new Set();
         walkRootValueNodes(parsed, (node, context) => {
 
           if (node.type === 'function') {
             if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
               return true;
+            }
+
+            if (options.checkMathBounds && isBoundFunction(node)) {
+              for (const bound of collectMathBounds(node)) {
+                if (checkedBounds.has(bound.node)) {
+                  continue;
+                }
+                checkedBounds.add(bound.node);
+                if (isKeyword(bound.node.value, options.ignoreValues)) {
+                  continue;
+                }
+                const boundReport = (value, d, n, nearest, fixed, unit, extra) => report(value, d, n, nearest, fixed, unit, extra, bound.position);
+                changed = checkLengthValue({ decl, node: bound.node, options, report: boundReport, scaleByUnit, scalePx }) || changed;
+              }
             }
 
             if (
@@ -359,7 +386,7 @@ const ruleFunction = (primary, secondaryOptions) => {
             return false;
           }
 
-          if (node.type !== 'word') {
+          if (node.type !== 'word' || checkedBounds.has(node)) {
             return false;
           }
 

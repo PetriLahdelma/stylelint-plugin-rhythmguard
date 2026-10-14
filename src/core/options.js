@@ -398,6 +398,9 @@ const SCALE_VALIDATION_SCHEMA = Object.freeze({
     entryValidator: isScaleEntry,
     expectsArray: true,
   }),
+  checkMathBounds: Object.freeze({
+    entryValidator: isBoolean,
+  }),
   enforceInsideMathFunctions: Object.freeze({
     entryValidator: isBoolean,
   }),
@@ -486,6 +489,9 @@ const PREFER_TOKEN_VALIDATION_SCHEMA = Object.freeze({
   customScale: Object.freeze({
     entryValidator: isScaleEntry,
     expectsArray: true,
+  }),
+  checkMathBounds: Object.freeze({
+    entryValidator: isBoolean,
   }),
   enforceInsideMathFunctions: Object.freeze({
     entryValidator: isBoolean,
@@ -586,6 +592,7 @@ function buildScaleOptions(rawOptions) {
       options.baseFontSize > 0
         ? options.baseFontSize
         : 16,
+    checkMathBounds: options.checkMathBounds === true,
     enforceInsideMathFunctions: options.enforceInsideMathFunctions === true,
     fixToScale: options.fixToScale !== false,
     fixWith: options.fixWith === 'token' ? 'token' : 'value',
@@ -634,6 +641,7 @@ function buildTokenOptions(rawOptions) {
       options.baseFontSize > 0
         ? options.baseFontSize
         : 16,
+    checkMathBounds: options.checkMathBounds === true,
     enforceInsideMathFunctions: options.enforceInsideMathFunctions === true,
     ignoreMathFunctionArguments: normalizeMathFunctionArgumentMap(options.ignoreMathFunctionArguments),
     ignoreValues: Array.isArray(options.ignoreValues)

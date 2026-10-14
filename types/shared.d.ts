@@ -17,6 +17,8 @@ export interface ScaleSource {
 export interface RhythmguardRuleOptions {
   /** Exempt non-zero lengths of one CSS pixel or less (1px, -1px, 0.5px, 0.0625rem). Default true. */
   allowHairlines?: boolean;
+  /** Check the static bounds of fluid values: the clamp() minimum and maximum and each length argument of min() and max(). Default false; the preferred value of clamp() is never checked. */
+  checkMathBounds?: boolean;
   /** What autofix writes: the nearest literal (default) or, with "token", `var(--name)` when exactly one custom property holds that value in the same unit. */
   fixWith?: "value" | "token";
   /** Read the `decisions` section of `.rhythmguardrc.json` (default true). The audit sets false and applies decisions itself. */

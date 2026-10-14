@@ -47,6 +47,7 @@ async function runStylelintAudit(cssFiles, options) {
       {
         decisions: false,
         baseFontSize: options.baseFontSize,
+        checkMathBounds: options.checkMathBounds === true,
         scale: options.scale,
         severity: 'warning',
       },
@@ -55,6 +56,7 @@ async function runStylelintAudit(cssFiles, options) {
       true,
       {
         baseFontSize: options.baseFontSize,
+        checkMathBounds: options.checkMathBounds === true,
         scale: options.scale,
         severity: 'warning',
         tokenMapFromCssCustomProperties: true,
@@ -127,10 +129,10 @@ function collectCssFindings(fileResults) {
       const text = warning.text || '';
       const source = readSourceOnce(sources, fileResult.source);
       const offScaleMatch = text.match(
-        /Unexpected (?:off-scale value|transform translation value) "([^"]+)"/,
+        /Unexpected (?:off-scale (?:value|(?:clamp|min|max)\(\) (?:minimum|maximum|argument))|transform translation value) "([^"]+)"/,
       );
       const tokenMatch = text.match(
-        /Unexpected raw scale value "([^"]+)"/,
+        /Unexpected raw (?:scale value|(?:clamp|min|max)\(\) (?:minimum|maximum|argument)) "([^"]+)"/,
       );
       const motionDurationMatch = text.match(
         /Unexpected (?:motion duration|negative motion duration) "([^"]+)"/,

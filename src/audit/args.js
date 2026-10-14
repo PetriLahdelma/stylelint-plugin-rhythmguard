@@ -54,6 +54,8 @@ const OPTIONS = [
   { flag: '--since', kind: 'value', value: '<git-ref>', help: 'Scan only changed files since a git ref',
     apply: (p, raw) => { p.since = parsePathOption(raw, '--since'); setFrom(p, 'since'); } },
   { flag: '--staged', kind: 'flag', help: 'Scan only staged files', apply: (p) => { p.staged = true; setFrom(p, 'staged'); } },
+  { flag: '--check-math-bounds', kind: 'flag', help: 'Check clamp() minimum and maximum and min()/max() arguments against the scale',
+    apply: (p) => { p.checkMathBounds = true; setFrom(p, 'checkMathBounds'); } },
   { flag: '--include-motion', kind: 'flag', help: 'Include opt-in motion duration/easing drift',
     apply: (p) => { p.includeMotion = true; setFrom(p, 'includeMotion'); } },
   { flag: '--token-source', kind: 'value', value: '<file>', help: 'External token source (repeatable, comma-separated)',

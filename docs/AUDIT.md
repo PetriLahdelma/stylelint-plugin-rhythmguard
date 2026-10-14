@@ -25,8 +25,11 @@ npx rhythmguard audit ./src --scale auto
 npx rhythmguard audit ./src --token-source ./tokens.json
 npx rhythmguard audit ./src --token-source ./theme.css --token-source-format css
 npx rhythmguard audit ./src --include-motion
+npx rhythmguard audit ./src --check-math-bounds
 npx rhythmguard audit --schema
 ```
+
+`--check-math-bounds` checks the static bounds of fluid values, the `clamp()` minimum and maximum and the length arguments of `min()` and `max()`, which are skipped by default in 3.x. See [Fluid values](./rules/use-scale.md#fluid-values).
 
 Scan paths are scoped to the directory argument. Common generated directories are skipped by default. Use `--ignore`, a `.rhythmguardignore` file, or `--ignore-path` for legacy subtrees. `--help` prints every flag.
 
@@ -160,6 +163,7 @@ Shared settings go in `.rhythmguardrc.json`, loaded automatically when present. 
     ],
     "tokenKind": "spacing",
     "includeMotion": false,
+    "checkMathBounds": false,
     "tokenCandidateMinCount": 2,
     "minCleanliness": 90
   }

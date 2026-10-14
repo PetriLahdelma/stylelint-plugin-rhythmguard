@@ -107,6 +107,23 @@ Unexpected off-scale value "$spacer * .3". Use scale values (nearest: 4px or 8px
 
 Variables resolve from the linted file first, then from `scaleSources`, the config file's token sources and installed token packages. `* / + -`, parentheses, negation and `math.div()` are understood; a term that does not resolve (an unknown variable, another function, a keyword) is left alone, as it always was. The hairline allowance and decisions apply to the evaluated value. Expressions are reported, never rewritten: `--fix` does not know whether `$spacer * .3` should become a literal or a different multiplier.
 
+## Fluid values
+
+`clamp()`, `min()` and `max()` are skipped by default, so `padding: clamp(13px, 2vi, 17px)` passes where `padding: 13px` does not. `checkMathBounds: true` checks their static bounds like literals: the minimum and maximum of `clamp()`, and every argument of `min()` and `max()` that is one length. The preferred value of `clamp()` (`0.35vi + 0.8rem`) is fluid by design and never checked; neither is an argument that is an expression, a `var()` or a viewport length. A bound that is itself `min()`, `max()` or `clamp()` is followed.
+
+```css
+.a { font-size: clamp(0.875rem, 0.35vi + 0.8rem, 1.05rem); }
+```
+
+```
+Unexpected off-scale clamp() minimum "0.875rem" (14px). Use scale values (nearest: 12px or 16px). (rhythmguard/use-scale)
+Unexpected off-scale clamp() maximum "1.05rem" (16.8px). Use scale values (nearest: 16px or 24px). (rhythmguard/use-scale)
+```
+
+The message names the position: `clamp() minimum`, `clamp() maximum`, `min() argument`, `max() argument`. `--fix` snaps each bound like any literal, and `fixWith: "token"` applies per bound. The option is off by default in 3.x because it adds findings to existing configs; turning it on by default is a candidate for 4.0 ([#172](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/172)). `prefer-token` takes the same option, and the audit has `--check-math-bounds` (or `"checkMathBounds": true` in `.rhythmguardrc.json`).
+
+`enforceInsideMathFunctions` is the older, blunter switch: it lints every length inside `calc()`, `clamp()`, `min()` and `max()`, preferred values included, unless `mathFunctionArguments` narrows it. With both on, a bound is reported once.
+
 ## Options
 
 | Option | Type | Default | Description |
@@ -127,6 +144,7 @@ Variables resolve from the linted file first, then from `scaleSources`, the conf
 | `allowPercentages` | `boolean` | `true` | Skips `%` values |
 | `allowHairlines` | `boolean` | `true` | Skips non-zero lengths of one CSS pixel or less. See [Hairlines](#hairlines) |
 | `fixToScale` | `boolean` | `true` | Enables nearest-value autofix |
+| `checkMathBounds` | `boolean` | `false` | Checks the `clamp()` minimum and maximum and each length argument of `min()` and `max()`. See [Fluid values](#fluid-values) |
 | `enforceInsideMathFunctions` | `boolean` | `false` | Lints inside `calc()`, `clamp()`, `min()`, `max()` |
 | `mathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Restricts linting to specific 1-based argument indexes per math function |
 | `ignoreMathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Excludes specific 1-based argument indexes per math function |
