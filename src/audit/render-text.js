@@ -51,6 +51,11 @@ function renderText(report) {
     lines.push(`  Token chains             ${summary['on-scale']} of ${summary.total} resolve to the scale (${summary['off-scale']} off-scale, ${summary.unresolved} unresolved, ${summary.ambiguous} ambiguous)`);
     lines.push('');
   }
+  if (report.tokenContract.ladders && report.tokenContract.ladders.summary.ladders > 0) {
+    const { summary } = report.tokenContract.ladders;
+    lines.push(`  Token ladders            ${summary.ladders} checked (${summary.collapsed} collapsed, ${summary.tooClose} under ${summary.minStepPx}px apart, ${summary.inverted} inverted steps)`);
+    lines.push('');
+  }
   appendBaselineText(lines, report);
 
   if (report.topAffectedFiles.length > 0) {

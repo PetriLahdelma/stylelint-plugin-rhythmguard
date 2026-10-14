@@ -1087,3 +1087,33 @@ test('audit.scales checks the groups it names against their own scales', () => {
   assert.notEqual(invalid.status, 0);
   assert.match(invalid.stderr, /scales must map/);
 });
+
+test('audit reports token ladders under contracts.tokens.ladders and in Markdown', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-ladders-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'tokens.css'), [
+    ':root {',
+    '  --font-size-text-xs: clamp(0.875rem, 0.25vi + 0.8rem, 1rem);',
+    '  --font-size-text-s: clamp(0.875rem, 0.35vi + 0.8rem, 1.05rem);',
+    '  --font-size-text-m: clamp(1rem, 0.4vi + 0.9rem, 1.25rem);',
+    '}',
+    '',
+  ].join('\n'));
+
+  const json = runAuditCommand(fixtureDir, path.join(fixtureDir, 'src'), '--format', 'json');
+  assert.equal(json.status, 0, json.stderr);
+  const { ladders } = JSON.parse(json.stdout).contracts.tokens;
+  assert.equal(ladders.summary.ladders, 1);
+  assert.equal(ladders.summary.collapsed, 1);
+  assert.equal(ladders.summary.tooClose, 1);
+  assert.equal(ladders.entries[0].prefix, '--font-size-text');
+
+  const markdown = runAuditCommand(fixtureDir, path.join(fixtureDir, 'src'), '--format', 'markdown').stdout;
+  assert.match(markdown, /## Token Ladders/);
+  assert.match(markdown, /\| `--font-size-text-s` \| 14px \| 16\.8px \| collapsed at min with `--font-size-text-xs`; too close at max with `--font-size-text-xs` \|/);
+
+  fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), JSON.stringify({ audit: { ladders: { minStepPx: 0.5 } } }));
+  const relaxed = JSON.parse(runAuditCommand(fixtureDir, path.join(fixtureDir, 'src'), '--format', 'json').stdout).contracts.tokens.ladders;
+  assert.equal(relaxed.summary.tooClose, 0);
+  assert.equal(relaxed.summary.minStepPx, 0.5);
+});

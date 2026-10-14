@@ -77,6 +77,7 @@ function createDefaultAuditOptions() {
     ignorePatterns: [],
     checkMathBounds: false,
     includeMotion: false,
+    ladderMinStepPx: 2,
     maxFindings: null,
     minCleanliness: null,
     noConfig: false,
