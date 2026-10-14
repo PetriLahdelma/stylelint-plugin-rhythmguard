@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.10.0] - 2026-10-15
+
 ### Added
 
 - The audit reports token ladders as `contracts.tokens.ladders`: custom properties that share a prefix and a size suffix (`xxs` to `xxl`, `sm`/`md`/`lg`, `1` to `n`) are evaluated at their smallest and largest value (a static length, `clamp()` bounds, the static arguments of `min()` and `max()`, through `var()`) and neighbours are compared at both ends. Collapsed steps (the same size), steps under `minStepPx` apart (default 2px, `audit.ladders.minStepPx`) and inverted steps are reported, and the Markdown report shows each such ladder as a min and max table. A fluid body ladder whose three smallest steps all start at 14px now says so. The section adds no findings and does not change the exit code. ([#205](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/205))
