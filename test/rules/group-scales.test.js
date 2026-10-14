@@ -68,3 +68,11 @@ test('scales rejects unknown groups and unknown presets', async () => {
     assert.equal(result.invalidOptionWarnings.length, 1, JSON.stringify(scales));
   }
 });
+
+test('outline-offset follows the spacing scale in scales, not the radius one, though the radius group checks it', async () => {
+  const result = await lintCss({
+    code: '.a { outline-offset: 3px; border-radius: 3px; }',
+    rules: rule({ scales: { radius: [0, 3, 6], spacing: [0, 2, 4, 8] } }),
+  });
+  assert.deepEqual(texts(result), ['Unexpected off-scale value "3px". Use spacing scale values (nearest: 2px or 4px). (rhythmguard/use-scale)']);
+});

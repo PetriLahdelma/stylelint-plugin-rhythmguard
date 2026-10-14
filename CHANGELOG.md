@@ -14,6 +14,14 @@ The format follows Keep a Changelog principles and semantic versioning.
 - `scales` on `use-scale` and `prefer-token`: a scale per property group (`spacing`, `radius`, `size`, `typography`), so a type ladder such as 14, 16, 18, 20, 24, 32, 40 can sit next to a 4px spacing scale in one rule block. A group takes values, a preset name or `"auto"`, which reads the group's own tokens (`--font-size-*` and `--text-*`, `--radius-*`). `propertyScales` still wins for its property. Findings checked against a group scale say so: `Use typography scale values (nearest: 16px or 18px).`; every other message is unchanged. The audit takes the same map as `audit.scales` and checks each group it names. ([#204](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/204))
 - `checkMathBounds` on `use-scale` and `prefer-token`, and `--check-math-bounds` (or `audit.checkMathBounds`) on the audit: the minimum and maximum of `clamp()` and each length argument of `min()` and `max()` are checked like literals, with the position in the message (`Unexpected off-scale clamp() maximum "1.05rem" (16.8px). ...`). Before, wrapping a value in `clamp()` was a way to leave the scale without a finding. The preferred value of `clamp()` is fluid by design and never checked; neither is an expression, a `var()` or a viewport length. `--fix` and `fixWith: "token"` apply per bound. Off by default in 3.x because it adds findings to existing configs; on by default is a candidate for 4.0. ([#203](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/203))
 
+### Fixed
+
+- `outline-offset` is no longer offered radius tokens. It is checked with the `radius` property group, so 3.9.0's token-kind matching pointed it at `--radius-*`: on one consumer, all 89 `prefer-token` warnings that named a radius token were on `outline-offset` (`outline-offset: -2px` read `Use calc(-1 * var(--radius-sm))`). It is the gap between the border edge and the outline, a spacing length, so it now takes spacing tokens, and under `scales` the spacing scale. Which properties each group checks is unchanged. A contract test asserts that no property but the corner radii resolves to a radius token.
+
+### Messages
+
+- `prefer-token` on `outline-offset`, when a radius token held the value: was `Use var(--radius-*)`, now names the spacing token that holds it, or `No known token holds this value; ...` when none does.
+
 ## [3.9.0] - 2026-10-15
 
 ### Added

@@ -48,6 +48,23 @@ function propertyGroupOf(prop) {
   return found ? found[0] : null;
 }
 
+// Properties whose length is a different kind from the group that checks them.
+// outline-offset is checked with the radius group (it always has been), but it
+// is the gap between the border edge and the outline: a spacing length. A
+// radius token there would tie every focus ring to the corner radius.
+const PROPERTY_KIND_OVERRIDES = Object.freeze({
+  'outline-offset': 'spacing',
+});
+
+/**
+ * The kind of length a property takes, for choosing tokens and a group's
+ * scale. The property group, except where PROPERTY_KIND_OVERRIDES says otherwise.
+ */
+function propertyKindOf(prop) {
+  const lower = String(prop || '').toLowerCase();
+  return PROPERTY_KIND_OVERRIDES[lower] || propertyGroupOf(lower);
+}
+
 const DEFAULT_PROPERTY_GROUPS = Object.freeze(['spacing']);
 const PROPERTY_GROUP_NAMES = Object.freeze(Object.keys(PROPERTY_GROUP_PATTERNS));
 
@@ -109,6 +126,7 @@ const DEFAULT_MATH_FUNCTION_ARGUMENT_FILTER = Object.freeze({});
 
 module.exports = {
   propertyGroupOf,
+  propertyKindOf,
   DEFAULT_IGNORE_KEYWORDS,
   DEFAULT_MATH_FUNCTION_ARGUMENT_FILTER,
   DEFAULT_PROPERTY_GROUPS,

@@ -68,7 +68,7 @@ From the token sources (5), the fix writes a token only when exactly one holds t
 
 ### Token kinds
 
-A token is offered only for properties of its kind. With `tokenPattern: "^--space-|^--radius-"` and both `--space-4: 1rem` and `--radius-xl: 1rem`, `padding: 1rem` is pointed at `--space-4` and `border-radius: 1rem` at `--radius-xl`, never the other way round. Radius (`--radius-*`), typography (`--font-*`, `--font-size-*`, `--line-height-*`, `--leading-*`, `--tracking-*`) and motion tokens serve only their own properties; spacing and size tokens (`--space-*`, `--size-*`) serve spacing and size properties alike, since many systems space with `--size-*`. A token whose name declares no kind (`--gap-md`) is offered anywhere. `use-scale` with `fixWith: "token"` applies the same matching.
+A token is offered only for properties of its kind. With `tokenPattern: "^--space-|^--radius-"` and both `--space-4: 1rem` and `--radius-xl: 1rem`, `padding: 1rem` is pointed at `--space-4` and `border-radius: 1rem` at `--radius-xl`, never the other way round. Radius (`--radius-*`), typography (`--font-*`, `--font-size-*`, `--line-height-*`, `--leading-*`, `--tracking-*`) and motion tokens serve only their own properties; spacing and size tokens (`--space-*`, `--size-*`) serve spacing and size properties alike, since many systems space with `--size-*`. A token whose name declares no kind (`--gap-md`) is offered anywhere. `outline-offset` is checked with the `radius` group but takes spacing tokens: it is the gap between the border edge and the outline, and a radius token there would move every focus ring when the corner radius changes. `use-scale` with `fixWith: "token"` applies the same matching.
 
 ## Token file formats
 
