@@ -121,7 +121,9 @@ A ladder can have every step on the scale and still not work as a ladder. Fluid 
 | `too-close` | two steps differ by less than `minStepPx` (default 2px) |
 | `inverted` | a step is larger than the next one at that end, for example two `clamp()` values that grow at different rates |
 
-A step's value is a static length, the minimum and maximum of a `clamp()`, or the static arguments of `min()` (a maximum) and `max()` (a minimum), followed through `var()`. A step written with `calc()` or a viewport length, or declared with different values in different places, is left out. Each problem names its end: `min`, `max`, or `both`. A ladder needs three evaluable steps; colours and other non-lengths never form one.
+A step's value is a static length, the minimum and maximum of a `clamp()`, or the static arguments of `min()` (a maximum) and `max()` (a minimum), followed through `var()`. A step written with `calc()` or a viewport length, or declared with different values in different places, is left out. Each problem names its end: `min`, `max`, or `both`. A ladder needs three evaluable steps; colours and other non-lengths never form one. A ladder whose every step is a `var()` alias of a step on one other ladder (Tailwind `@theme` names over a token file, `--text-body-s: var(--font-size-text-s)`) shares that ladder's problems; it is listed under the other ladder's `aliases` and not counted again.
+
+Inversions are the problem that hides longest. On one production site the audit found `--font-size-title-xl` with a smaller `clamp()` minimum than `--font-size-title-l` (32px against 44px): a mobile retune had lowered one floor and not the other, so below about 390px wide every `h1` rendered smaller than every `h2`. Each step was a reasonable value on its own.
 
 The Markdown report shows each ladder with a problem as a table of its steps, smallest and largest value, and the problem next to the step it concerns:
 

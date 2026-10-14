@@ -141,7 +141,8 @@ function appendTokenLaddersMarkdown(lines, ladders) {
       const note = `${LADDER_PROBLEM_TEXT[problem.type]}${where} with \`${problem.tokens[0]}\``;
       flagged.set(problem.tokens[1], [...(flagged.get(problem.tokens[1]) || []), note]);
     }
-    lines.push(`**\`${escapeMarkdown(entry.prefix)}\`**`);
+    const aliasNote = entry.aliases ? ` (also aliased as ${entry.aliases.map((alias) => `\`${escapeMarkdown(alias)}\``).join(', ')})` : '';
+    lines.push(`**\`${escapeMarkdown(entry.prefix)}\`**${aliasNote}`);
     lines.push('');
     lines.push('| Token | Min | Max | Problem |');
     lines.push('| --- | --- | --- | --- |');
