@@ -255,3 +255,15 @@ test('use-scale treats one-pixel offsets as hairlines by default and reports the
   });
   assert.equal(invalid.invalidOptionWarnings.length, 1, JSON.stringify(invalid.invalidOptionWarnings));
 });
+
+test('a value outside the scale names its one nearest step, not the same step twice', async () => {
+  const result = await lintCss({
+    code: '.a { font-size: 12px; font-size: 15px; font-size: 80px; }',
+    rules: { 'rhythmguard/use-scale': [true, { propertyGroups: ['typography'], scale: [14, 16, 18, 20, 24, 32, 40] }] },
+  });
+  assert.deepEqual(result.warnings.map((warning) => warning.text), [
+    'Unexpected off-scale value "12px". Use scale values (nearest: 14px). (rhythmguard/use-scale)',
+    'Unexpected off-scale value "15px". Use scale values (nearest: 14px or 16px). (rhythmguard/use-scale)',
+    'Unexpected off-scale value "80px". Use scale values (nearest: 40px). (rhythmguard/use-scale)',
+  ]);
+});

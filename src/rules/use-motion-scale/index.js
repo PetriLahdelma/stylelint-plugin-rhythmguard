@@ -4,6 +4,7 @@ const stylelint = require('stylelint');
 const valueParser = require('postcss-value-parser');
 const {
   nearestScaleValues,
+  nearestText,
   numbersEqual,
 } = require('../../core/length');
 const {
@@ -43,7 +44,7 @@ const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidDuration: (value, note = '') =>
     withNote(`Unexpected negative motion duration "${value}". Use non-negative duration values.`, note),
   rejectedDuration: (value, lower, upper, note = '') =>
-    withNote(`Unexpected motion duration "${value}". Use duration scale values (nearest: ${lower} or ${upper}).`, note),
+    withNote(`Unexpected motion duration "${value}". Use duration scale values (${nearestText(lower, upper)}).`, note),
   rejectedEasing: (value, note = '') =>
     withNote(`Unexpected raw motion easing "${value}". Use motion tokens for easing decisions.`, note),
 });

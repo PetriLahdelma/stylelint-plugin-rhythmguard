@@ -4,6 +4,7 @@ const {
   formatLength,
   formatNumber,
   nearestScaleValues,
+  nearestText,
   normalizeScale,
   numbersEqual,
   parseLengthToken,
@@ -264,9 +265,11 @@ function offScaleClassMessage(token, analysis) {
   const upperPx = analysis.nearest ? formatLength(analysis.nearest.upper, 'px') : 'n/a';
   if (analysis.nearestUtilities) {
     const { lower, upper } = analysis.nearestUtilities;
-    return `Unexpected Tailwind arbitrary spacing value "${token}". Use "${lower}" (${lowerPx}) or "${upper}" (${upperPx}).`;
+    return lower === upper
+      ? `Unexpected Tailwind arbitrary spacing value "${token}". Use "${lower}" (${lowerPx}).`
+      : `Unexpected Tailwind arbitrary spacing value "${token}". Use "${lower}" (${lowerPx}) or "${upper}" (${upperPx}).`;
   }
-  return `Unexpected Tailwind arbitrary spacing value "${token}". Use scale values (nearest: ${lowerPx} or ${upperPx}).`;
+  return `Unexpected Tailwind arbitrary spacing value "${token}". Use scale values (${nearestText(lowerPx, upperPx)}).`;
 }
 
 module.exports = {
