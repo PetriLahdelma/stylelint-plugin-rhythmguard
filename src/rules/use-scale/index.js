@@ -6,6 +6,7 @@ const {
   formatLength,
   isHairlineLength,
   nearestScaleValues,
+  nearestText,
   numbersEqual,
   parseLengthToken,
   toPx,
@@ -44,7 +45,7 @@ const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
   rejected: (value, lower, upper, note = '', position = null, aside = '', group = null) =>
-    `Unexpected off-scale ${position ? `${position} "${value}"${aside}` : `value "${value}"`}. Use ${group ? `${group} ` : ''}scale values (nearest: ${lower} or ${upper}).${note ? ` ${note}` : ''}`,
+    `Unexpected off-scale ${position ? `${position} "${value}"${aside}` : `value "${value}"`}. Use ${group ? `${group} ` : ''}scale values (${nearestText(lower, upper)}).${note ? ` ${note}` : ''}`,
 });
 
 /** " (16.8px)" after a bound written in rem or em, so the reader sees what was compared. */

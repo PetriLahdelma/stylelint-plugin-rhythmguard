@@ -6,6 +6,7 @@ const {
   formatLength,
   isHairlineLength,
   nearestScaleValues,
+  nearestText,
   numbersEqual,
   parseLengthToken,
   toPx,
@@ -37,7 +38,7 @@ const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
   rejected: (value, lower, upper, note = '') =>
-    `Unexpected transform translation value "${value}". Use scale values (nearest: ${lower} or ${upper}).${note ? ` ${note}` : ''}`,
+    `Unexpected transform translation value "${value}". Use scale values (${nearestText(lower, upper)}).${note ? ` ${note}` : ''}`,
 });
 
 const ruleFunction = (primary, secondaryOptions) => {

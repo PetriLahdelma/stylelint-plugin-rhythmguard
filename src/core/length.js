@@ -183,6 +183,14 @@ function nearestScaleValues(target, scale) {
 }
 
 /**
+ * "nearest: 12px or 16px" for a value between two steps, "nearest: 14px" for a
+ * value below the smallest step or above the largest, where both are the same.
+ */
+function nearestText(lower, upper) {
+  return lower === upper ? `nearest: ${lower}` : `nearest: ${lower} or ${upper}`;
+}
+
+/**
  * The replacement text for an off-scale length, or null when the value's unit
  * is not one the rule may rewrite. Keeps the sign, and with the `exact` unit
  * strategy keeps the unit as written instead of converting through px.
@@ -203,6 +211,7 @@ function fixedLengthValue(parsedLength, nearestPx, { baseFontSize, unitStrategy,
 }
 
 module.exports = {
+  nearestText,
   fixedLengthValue,
   formatLength,
   formatNumber,

@@ -137,3 +137,20 @@ test('tailwind rule spacingUnit follows a non-default unit', () => {
   const { fixed } = lintTailwind("const c = 'p-[13px]';", { scale: [0, 8, 16], spacingUnit: 8 });
   assert.equal(fixed.output, "const c = 'p-2';");
 });
+
+test('a class above the largest step names one class, not the same class twice', () => {
+  const linter = new Linter();
+  const messages = linter.verify(
+    "const classes = 'p-[40px] m-[13px]';",
+    {
+      languageOptions: { ecmaVersion: 2022, sourceType: 'module' },
+      plugins: { 'rhythmguard-tailwind': eslintPlugin },
+      rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { scale: [0, 4, 8, 12, 16, 24, 32] }] },
+    },
+  );
+
+  assert.deepEqual(messages.map(({ message }) => message), [
+    'Unexpected Tailwind arbitrary spacing value "p-[40px]". Use "p-8" (32px).',
+    'Unexpected Tailwind arbitrary spacing value "m-[13px]". Use "m-3" (12px) or "m-4" (16px).',
+  ]);
+});

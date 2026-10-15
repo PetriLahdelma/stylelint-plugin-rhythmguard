@@ -1,6 +1,7 @@
 'use strict';
 
 const { MAX_NOTE_LENGTH, normalizeNote, withNote } = require('../../core/options');
+const { nearestText } = require('../../core/length');
 const { formatTime } = require('../../core/time');
 const { createTailwindMotionAnalyzer } = require('../../core/tailwind-motion-analysis');
 
@@ -71,7 +72,7 @@ function buildMessage(analysis, segment, lower, upper) {
     return `Unexpected Tailwind arbitrary motion duration "${segment.token}". Use non-negative duration values.`;
   }
 
-  return `Unexpected Tailwind arbitrary motion duration "${segment.token}". Use duration scale values (nearest: ${lower} or ${upper}).`;
+  return `Unexpected Tailwind arbitrary motion duration "${segment.token}". Use duration scale values (${nearestText(lower, upper)}).`;
 }
 
 module.exports = {

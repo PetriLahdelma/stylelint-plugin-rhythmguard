@@ -54,7 +54,7 @@ test('propertyScales still wins over the group scale for its property', async ()
     code: '.a { font-size: 17px; letter-spacing: 3px; }',
     rules: rule({ propertyScales: { 'font-size': [17] }, scales: { typography: TYPE } }),
   });
-  assert.deepEqual(texts(result), ['Unexpected off-scale value "3px". Use typography scale values (nearest: 14px or 14px). (rhythmguard/use-scale)']);
+  assert.deepEqual(texts(result), ['Unexpected off-scale value "3px". Use typography scale values (nearest: 14px). (rhythmguard/use-scale)']);
 });
 
 test('--fix snaps to the group scale', async () => {
