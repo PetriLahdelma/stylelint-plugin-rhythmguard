@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.10.2] - 2026-10-15
+
 ### Messages
 
 - A value below the smallest step or above the largest named that step twice: `Use scale values (nearest: 14px or 14px).` It is now named once: `(nearest: 14px)`, and for a Tailwind class `Use "p-8" (32px).` Applies to `use-scale`, `no-offscale-transform`, `use-motion-scale` and both ESLint rules. Messages for values between two steps are unchanged.
