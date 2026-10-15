@@ -3,6 +3,11 @@ name: Release
 on:
   release:
     types: [published]
+  # A manual run publishes whatever version main carries and is not on npm yet.
+  # Used to publish the companion packages when a release run published only the
+  # main package (their trusted publisher was not set up yet). Every publish step
+  # below skips a version the registry already lists.
+  workflow_dispatch:
 
 jobs:
   verify:
@@ -89,7 +94,13 @@ jobs:
         run: node scripts/ci/npm-readme.mjs
 
       - name: Publish to npm via OIDC
-        run: npm publish --access public --registry https://registry.npmjs.org
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ -n "$(npm view "stylelint-plugin-rhythmguard@$version" version --registry https://registry.npmjs.org 2>/dev/null)" ]; then
+            echo "stylelint-plugin-rhythmguard@$version is already on npm; skipping."
+          else
+            npm publish --access public --registry https://registry.npmjs.org
+          fi
 
       # The companion packages (rhythmguard, the command name; eslint-plugin-rhythmguard,
       # the ESLint companion under its own name) depend on the version published above,
@@ -114,9 +125,21 @@ jobs:
       - name: Publish rhythmguard to npm via OIDC
         if: vars.PUBLISH_COMPANIONS == 'true'
         working-directory: packages/rhythmguard
-        run: npm publish --access public --registry https://registry.npmjs.org
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ -n "$(npm view "rhythmguard@$version" version --registry https://registry.npmjs.org 2>/dev/null)" ]; then
+            echo "rhythmguard@$version is already on npm; skipping."
+          else
+            npm publish --access public --registry https://registry.npmjs.org
+          fi
 
       - name: Publish eslint-plugin-rhythmguard to npm via OIDC
         if: vars.PUBLISH_COMPANIONS == 'true'
         working-directory: packages/eslint-plugin-rhythmguard
-        run: npm publish --access public --registry https://registry.npmjs.org
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          if [ -n "$(npm view "eslint-plugin-rhythmguard@$version" version --registry https://registry.npmjs.org 2>/dev/null)" ]; then
+            echo "eslint-plugin-rhythmguard@$version is already on npm; skipping."
+          else
+            npm publish --access public --registry https://registry.npmjs.org
+          fi
