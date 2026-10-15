@@ -74,6 +74,10 @@ gh variable delete RELEASE_ON_HOSTED
 
 The variable is read when the run starts, so set it before creating the release. The publish job is always GitHub-hosted (OIDC requires it).
 
+## 7b. If only the companions failed
+
+Each publish step skips a version npm already lists, so a release run that published the main package and failed on a companion (a trusted publisher missing on npmjs.com) is finished by a manual run once the publisher is set up: `gh workflow run release.yml --ref main`. It verifies again and publishes only what is missing. A new trusted publisher shows "not yet validated" until its first publish.
+
 ## 8. If the run fails before publish
 
 Nothing was published, so keep the version number. Fix on `main`, then move the release to the fixed commit:
