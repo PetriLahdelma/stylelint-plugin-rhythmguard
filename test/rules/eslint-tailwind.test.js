@@ -83,6 +83,53 @@ test('eslint tailwind motion rule autofixes nearest duration value', () => {
   assert.equal(fixResult.output, "const classes = 'duration-[150ms] delay-[0.15s]';");
 });
 
+function lintTailwindMotion(code) {
+  const linter = new Linter();
+  const config = {
+    languageOptions: { ecmaVersion: 2022, sourceType: 'module' },
+    plugins: { 'rhythmguard-tailwind': eslintPlugin },
+    rules: { 'rhythmguard-tailwind/tailwind-class-use-motion-scale': 'error' },
+  };
+  return {
+    fixed: linter.verifyAndFix(code, config),
+    messages: linter.verify(code, config).map((message) => message.message),
+  };
+}
+
+test('eslint tailwind motion rule accepts negative delays and checks their size (#236)', () => {
+  assert.deepEqual(lintTailwindMotion("const c = 'delay-[-100ms] hover:delay-[-0.5s]';").messages, []);
+
+  const { fixed, messages } = lintTailwindMotion("const c = 'delay-[-130ms]';");
+  assert.deepEqual(messages, [
+    'Unexpected Tailwind arbitrary motion duration "delay-[-130ms]". Use duration scale values (nearest: 100ms or 150ms).',
+  ]);
+  assert.equal(fixed.output, "const c = 'delay-[-150ms]';");
+});
+
+test('eslint tailwind motion rule still rejects negative durations (#236)', () => {
+  const { fixed, messages } = lintTailwindMotion("const c = 'duration-[-100ms]';");
+  assert.deepEqual(messages, [
+    'Unexpected Tailwind arbitrary motion duration "duration-[-100ms]". Use non-negative duration values.',
+  ]);
+  assert.equal(fixed.fixed, false);
+});
+
+test('eslint tailwind motion rule reports raw easing curves only, not easing tokens (#245)', () => {
+  assert.deepEqual(
+    lintTailwindMotion("const c = 'ease-[var(--ease-out)] ease-[--my-ease] ease-(--my-ease) ease-[theme(--ease-in)]';").messages,
+    [],
+  );
+  assert.deepEqual(
+    lintTailwindMotion("const c = 'ease-[cubic-bezier(.2,0,0,1)] ease-[linear(0,0.5,1)] ease-[steps(4,_end)] md:ease-[Cubic-Bezier(0,0,1,1)]';").messages,
+    [
+      'Unexpected Tailwind arbitrary motion easing "ease-[cubic-bezier(.2,0,0,1)]". Use motion tokens for easing decisions.',
+      'Unexpected Tailwind arbitrary motion easing "ease-[linear(0,0.5,1)]". Use motion tokens for easing decisions.',
+      'Unexpected Tailwind arbitrary motion easing "ease-[steps(4,_end)]". Use motion tokens for easing decisions.',
+      'Unexpected Tailwind arbitrary motion easing "md:ease-[Cubic-Bezier(0,0,1,1)]". Use motion tokens for easing decisions.',
+    ],
+  );
+});
+
 function lintTailwind(code, options) {
   const linter = new Linter();
   const config = {

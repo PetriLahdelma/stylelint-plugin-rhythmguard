@@ -8,6 +8,7 @@ const {
   numbersEqual,
 } = require('../../core/length');
 const {
+  isMathFunction,
   walkRootValueNodes,
 } = require('../../core/value-nodes');
 const {
@@ -39,6 +40,7 @@ const EASING_PROPERTIES = new Set([
   'animation',
 ]);
 const EASING_FUNCTIONS = new Set(['cubic-bezier', 'linear', 'steps']);
+const SHORTHAND_PROPERTIES = new Set(['transition', 'animation']);
 
 const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidDuration: (value, note = '') =>
@@ -96,11 +98,60 @@ function getFixedNodeValue(parsedTime, nearestMs, options) {
     return null;
   }
 
-  return formatTime(converted, parsedTime.unit);
+  return formatTime(parsedTime.number < 0 ? -converted : converted, parsedTime.unit);
 }
 
 function functionToString(node) {
   return valueParser.stringify(node);
+}
+
+/**
+ * The time nodes of a transition or animation shorthand that are its
+ * durations: the first time of each comma-separated layer (#236). The second
+ * is the delay, which may be negative. A function before the first time, such
+ * as var() or calc(), may itself be the duration, so that layer has no time
+ * known to be a duration and none is returned for it.
+ */
+function shorthandDurationNodes(parsed) {
+  const durations = new Set();
+  let settled = false;
+
+  for (const node of parsed.nodes) {
+    if (node.type === 'div' && node.value === ',') {
+      settled = false;
+      continue;
+    }
+
+    if (settled) {
+      continue;
+    }
+
+    if (node.type === 'function') {
+      settled = !EASING_FUNCTIONS.has(node.value.toLowerCase());
+      continue;
+    }
+
+    if (node.type === 'word' && parseTimeToken(node.value)) {
+      durations.add(node);
+      settled = true;
+    }
+  }
+
+  return durations;
+}
+
+/** Whether a negative time in this place is an error: true for durations, false for delays. */
+function createDurationRole(prop, parsed) {
+  if (prop.endsWith('-duration')) {
+    return () => true;
+  }
+
+  if (!SHORTHAND_PROPERTIES.has(prop)) {
+    return () => false;
+  }
+
+  const durations = shorthandDurationNodes(parsed);
+  return (node) => durations.has(node);
 }
 
 const ruleFunction = (primary, secondaryOptions) => {
@@ -118,6 +169,7 @@ const ruleFunction = (primary, secondaryOptions) => {
       }
 
       const parsed = valueParser(decl.value);
+      const isDuration = createDurationRole(prop, parsed);
       let changed = false;
 
       const reportDuration = (node, nearest, fixedValue = null) => {
@@ -161,6 +213,12 @@ const ruleFunction = (primary, secondaryOptions) => {
       walkRootValueNodes(parsed, (node) => {
         if (node.type === 'function') {
           const functionName = node.value.toLowerCase();
+          // A time inside calc(), clamp(), min() or max() is a term of the
+          // expression, not a duration on its own (#232).
+          if (isMathFunction(functionName)) {
+            return true;
+          }
+
           if (!EASING_PROPERTIES.has(prop) || !EASING_FUNCTIONS.has(functionName)) {
             return false;
           }
@@ -180,7 +238,9 @@ const ruleFunction = (primary, secondaryOptions) => {
           return false;
         }
 
-        if (parsedTime.number < 0) {
+        // A negative duration is invalid; a negative delay starts the motion
+        // partway through, so its size is checked like any other (#236).
+        if (parsedTime.number < 0 && isDuration(node)) {
           reportDuration(node, null);
           return false;
         }
@@ -189,7 +249,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           return false;
         }
 
-        const msValue = toMs(parsedTime.number, parsedTime.unit);
+        const msValue = toMs(Math.abs(parsedTime.number), parsedTime.unit);
         if (msValue === null) {
           return false;
         }

@@ -515,6 +515,8 @@ const USE_SCALE_VALIDATION_SCHEMA = Object.freeze({
 
 const NO_OFFSCALE_TRANSFORM_VALIDATION_SCHEMA = Object.freeze({
   ...SCALE_VALIDATION_SCHEMA,
+  tokenFunctions: USE_SCALE_VALIDATION_SCHEMA.tokenFunctions,
+  tokenPattern: USE_SCALE_VALIDATION_SCHEMA.tokenPattern,
 });
 
 const PREFER_TOKEN_VALIDATION_SCHEMA = Object.freeze({

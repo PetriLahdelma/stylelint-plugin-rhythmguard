@@ -18,6 +18,7 @@ const {
 } = require('../../core/options');
 const {
   isMathFunction,
+  isTokenFunction,
   shouldLintMathArgument,
   walkRootValueNodes,
   walkTransformTranslateNodes,
@@ -30,7 +31,7 @@ const {
 
 const { validatePrimary, validateNoOffscaleTransformSecondaryOptions } = require('../validate');
 
-const { reportInvalidPreset, reportProblem, reportValueNode } = require('../report');
+const { createTokenRegex, reportInvalidPreset, reportProblem, reportValueNode } = require('../report');
 const { decisionFor, loadRcDecisions } = require('../../core/decisions');
 const { replacementFor, tokenHoldsNote, tokenIndexFromDefinitions } = require('../../core/token-index');
 
@@ -69,6 +70,7 @@ const ruleFunction = (primary, secondaryOptions) => {
     }
 
     withResolvedScale(options, root);
+    const tokenRegex = createTokenRegex(options.tokenPattern, { result, root, ruleName });
     if (options.fixWith === 'token') {
       options.tokenIndex = tokenIndexFromDefinitions(
         collectTokenDefinitions({
@@ -76,7 +78,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           root,
           scaleSources: options.scaleSources,
           tokenPattern: options.tokenPatternExplicit ? options.tokenPattern : null,
-          tokenRegex: new RegExp(options.tokenPattern),
+          tokenRegex,
         }),
         options.baseFontSize,
       );
@@ -94,14 +96,15 @@ const ruleFunction = (primary, secondaryOptions) => {
       const { scaleByUnit, scalePx } = getScaleStateForProperty(prop);
       let changed = false;
 
+      // `nearest` is null for a value the options forbid outright, as in use-scale.
       const report = (node, nearest, nearestUnit, fixedValue = null) => {
         reportValueNode({
           decl,
           message: messages.rejected(
             node.value,
-            formatLength(nearest.lower, nearestUnit),
-            formatLength(nearest.upper, nearestUnit),
-            [tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit), node.value.trim().startsWith('-')), options.note].filter(Boolean).join(' '),
+            nearest ? formatLength(nearest.lower, nearestUnit) : 'n/a',
+            nearest ? formatLength(nearest.upper, nearestUnit) : 'n/a',
+            [nearest ? tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit), node.value.trim().startsWith('-')) : '', options.note].filter(Boolean).join(' '),
           ),
           node,
           replacement: fixedValue,
@@ -120,7 +123,10 @@ const ruleFunction = (primary, secondaryOptions) => {
           return;
         }
 
-        if (parsedLength.unit === '%' && options.allowPercentages) {
+        if (parsedLength.unit === '%') {
+          if (!options.allowPercentages) {
+            report(node, null, '%');
+          }
           return;
         }
 
@@ -129,6 +135,7 @@ const ruleFunction = (primary, secondaryOptions) => {
         }
 
         if (!options.allowNegative && parsedLength.number < 0) {
+          report(node, null, parsedLength.unit);
           return;
         }
 
@@ -199,6 +206,10 @@ const ruleFunction = (primary, secondaryOptions) => {
       if (prop === 'transform') {
         walkTransformTranslateNodes(parsed, (node, context) => {
           if (node.type === 'function') {
+            if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
+              return true;
+            }
+
             if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
               return true;
             }
@@ -220,6 +231,10 @@ const ruleFunction = (primary, secondaryOptions) => {
       } else {
         walkRootValueNodes(parsed, (node, context) => {
           if (node.type === 'function') {
+            if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
+              return true;
+            }
+
             if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
               return true;
             }

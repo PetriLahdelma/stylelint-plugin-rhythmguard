@@ -31,6 +31,14 @@ Unexpected motion duration "175ms". Use motion scale values (nearest: 150ms or 2
 Unexpected raw motion easing "cubic-bezier(.2, 0, 0, 1)". Use an easing token. (rhythmguard/use-motion-scale)
 ```
 
+## What it checks
+
+- `transition-duration`, `animation-duration`: a negative duration is invalid and is reported without a fix.
+- `transition-delay`, `animation-delay`: a negative delay starts the motion partway through, so it is valid; its size is checked against the scale and a fix keeps the sign (`-130ms` becomes `-150ms`).
+- `transition`, `animation`: the first time in each comma-separated layer is the duration and the second is the delay. When a function such as `var()` or `calc()` comes before the first time, that time may be the delay, so it is not reported as a negative duration.
+- Times inside `calc()`, `clamp()`, `min()` and `max()` are terms of an expression, such as the step of a stagger in `calc(var(--i) * 30ms)`, and are not checked.
+- `*-timing-function` and the shorthands: raw `cubic-bezier()`, `linear()` and `steps()` curves.
+
 ## Autofix
 
 Durations and delays snap to the nearest scale value when `fixToScale` is on. Easing functions are only replaced when `easingTokenMap` has an exact entry for the raw value; otherwise they are reported without a fix.
