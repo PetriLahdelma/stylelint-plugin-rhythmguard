@@ -297,6 +297,40 @@ test('scale "auto" reads Sass variables and maps from the linted SCSS file itsel
   assert.doesNotMatch(texts[0], /No spacing tokens/);
 });
 
+test('scale "auto" reads only top-level or !global Sass variables from the linted SCSS file (issue #266)', async () => {
+  const result = await lintCss({
+    customSyntax: require.resolve('postcss-scss'),
+    code: [
+      '$spacer: 8px;',
+      '$spacers: (1: $spacer * .5, 2: $spacer, 3: $spacer * 2, 4: $spacer * 3);',
+      '.compact { $spacer: 2px; }',
+      '@media (min-width: 40em) { $spacers: (1: 1px, 2: 2px, 3: 3px); }',
+      '.a { padding: 16px; margin: 4px; gap: 6px; }',
+    ].join('\n'),
+    rules: useScaleAuto(),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 1, texts.join('\n'));
+  assert.match(texts[0], /"6px".*nearest: 4px or 8px/, 'the scale is 4/8/16/24, not 1/2/4/6');
+});
+
+test('scale "auto" leaves component variables in a scaleSources CSS file out of the scale (issue #258)', async () => {
+  const dir = tempDir('scope-sources');
+  const tokensPath = path.join(dir, 'tokens.css');
+  fs.writeFileSync(tokensPath, ':root{--space-1:4px;--space-2:8px;--space-3:16px;--space-4:24px} .chip{--chip-spacing:3px}');
+
+  const result = await lintCss({
+    code: '.a { padding: 3px; margin: 8px; }',
+    rules: useScaleAuto({ scaleSources: [tokensPath] }),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  assert.equal(result.warnings.length, 1, result.warnings.map((w) => w.text).join('\n'));
+  assert.match(result.warnings[0].text, /"3px".*nearest: 0px or 4px/);
+});
+
 test('scale "auto" accepts tokens named spacer, as PatternFly names them (issue #85)', async () => {
   const result = await lintCss({
     code: [

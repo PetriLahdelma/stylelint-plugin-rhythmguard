@@ -112,12 +112,17 @@ function discoverTokenPackagesUncached(cwd, consult) {
   return sources;
 }
 
+/** A non-zero number without a unit is a ratio or a multiplier, not a length (issue #268). */
+function isUnitlessNonZero(parsed) {
+  return parsed.unit === '' && parsed.number !== 0;
+}
+
 function pxValuesFromKeys(keys, baseFontSize) {
   const values = new Set([0]);
 
   for (const key of keys) {
     const parsed = parseLengthToken(String(key));
-    if (!parsed) {
+    if (!parsed || isUnitlessNonZero(parsed)) {
       continue;
     }
 
@@ -317,7 +322,7 @@ function expandTailwindBase(scale, baseKeys, baseFontSize) {
 function firstPositivePx(keys, baseFontSize) {
   for (const key of keys) {
     const parsed = parseLengthToken(String(key));
-    if (!parsed) {
+    if (!parsed || isUnitlessNonZero(parsed)) {
       continue;
     }
     const px = toPx(Math.abs(parsed.number), parsed.unit || 'px', baseFontSize);
@@ -379,7 +384,10 @@ function rcTokenSourcesUncached(rcPath) {
 function sassTokensFromRoot(root) {
   const lines = [];
   root.walkDecls((decl) => {
-    if (typeof decl.prop === 'string' && decl.prop.startsWith('$')) {
+    // Only top-level or `!global` variables are the project's; `$spacer: 2px`
+    // inside `.compact` is local to that block (issue #266).
+    const global = (decl.parent && decl.parent.type === 'root') || /!global\b/.test(String(decl.value));
+    if (typeof decl.prop === 'string' && decl.prop.startsWith('$') && global) {
       lines.push(`${decl.prop}: ${decl.value};`);
     }
   });
