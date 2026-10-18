@@ -21,6 +21,16 @@
   "type": "commonjs",
   "main": "src/index.js",
   "types": "./types/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "audit": ["./types/audit.d.ts"],
+      "cli": ["./types/cli.d.ts"],
+      "configs/*": ["./types/config.d.ts"],
+      "eslint": ["./types/eslint.d.ts"],
+      "presets": ["./types/presets.d.ts"],
+      "rules/*": ["./types/rule.d.ts"]
+    }
+  },
   "exports": {
     ".": {
       "types": "./types/index.d.ts",

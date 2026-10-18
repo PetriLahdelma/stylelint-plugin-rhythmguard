@@ -90,6 +90,35 @@ test('package exports expose TypeScript declaration paths', () => {
   }
 });
 
+test('typesVersions maps every subpath export to its types, for moduleResolution "node" (#281)', () => {
+  // TypeScript's node10 resolution ignores `exports`; typesVersions is what it reads.
+  const map = packageJson.typesVersions['*'];
+  const subpaths = Object.keys(packageJson.exports).filter((name) => name !== '.');
+  const covered = new Set();
+  for (const subpath of subpaths) {
+    const name = subpath.slice(2);
+    const pattern = Object.keys(map).find((key) => key === name || (key.endsWith('/*') && name.startsWith(key.slice(0, -1))));
+    assert.ok(pattern, `${subpath} has a typesVersions entry`);
+    assert.deepEqual(map[pattern], [packageJson.exports[subpath].types], `${subpath} maps to the same types file`);
+    covered.add(pattern);
+  }
+  assert.deepEqual([...covered].sort(), Object.keys(map).sort(), 'typesVersions has no entry without an export');
+});
+
+test('every shipped config is type-checked against RhythmguardStylelintConfig (#280)', () => {
+  const root = path.join(__dirname, '..', '..');
+  const tsconfig = JSON.parse(fs.readFileSync(path.join(root, 'tsconfig.typecheck.json'), 'utf8'));
+  assert.ok(tsconfig.include.includes('src/configs/*.js'), 'npm run typecheck checks src/configs');
+  const fixture = fs.readFileSync(path.join(root, 'types', '__checks__', 'shipped-configs.ts'), 'utf8');
+  const names = fs.readdirSync(path.join(root, 'src', 'configs')).filter((file) => file.endsWith('.js'));
+  assert.deepEqual(names.map((file) => file.slice(0, -3)).sort(), Object.keys(plugin.configs).sort());
+  for (const file of names) {
+    const source = fs.readFileSync(path.join(root, 'src', 'configs', file), 'utf8');
+    assert.match(source, /@type \{import\('\.\.\/\.\.\/types\/shared'\)\.RhythmguardStylelintConfig\}/, `${file} declares its type`);
+    assert.ok(fixture.includes(`from '../../src/configs/${file}'`), `types/__checks__/shipped-configs.ts imports ${file}`);
+  }
+});
+
 test('every ./configs/* package export is exposed on plugin.configs (cjs and esm)', async () => {
   const exportedConfigNames = Object.keys(packageJson.exports)
     .filter((exportName) => exportName.startsWith('./configs/'))

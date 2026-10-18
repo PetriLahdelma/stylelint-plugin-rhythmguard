@@ -81,3 +81,29 @@ test('the bundle agrees with Stylelint on scale auto and prefer-token with token
     byPosition(expected.warnings.map(([line, column, text]) => [line, column, strip(text)])),
   );
 });
+
+test('the tailwind config in the bundle includes what it extends, as Stylelint resolves it (#281)', async () => {
+  const Rhythmguard = loadBundle();
+  assert.deepEqual(Object.keys(Rhythmguard.configs.tailwind).sort(), [
+    'rhythmguard/no-offscale-transform',
+    'rhythmguard/prefer-token',
+    'rhythmguard/use-scale',
+  ]);
+
+  const code = `${Rhythmguard.sample}\n.shift { translate: 13px; }\n`;
+  // The token note names the file; Stylelint and the bundle spell its path differently.
+  const strip = (text) => text.replace(/ \([^()]*playground\.css\)/, '');
+  const { default: stylelint } = await import('stylelint');
+  const result = await stylelint.lint({
+    code,
+    codeFilename: 'playground.css',
+    config: { extends: [path.join(root, 'src', 'configs', 'tailwind.js')] },
+    configBasedir: root,
+  });
+  const expected = result.results[0].warnings
+    .filter((w) => w.rule.startsWith('rhythmguard/'))
+    .map((w) => [w.line, w.column, strip(w.text)]);
+  const actual = Rhythmguard.lint(code, { config: 'tailwind' });
+  assert.ok(expected.some(([, , text]) => text.includes('rhythmguard/no-offscale-transform')), 'strict rules run');
+  assert.deepEqual(byPosition(plain(actual.warnings.map((w) => [w.line, w.column, strip(w.text)]))), byPosition(expected));
+});

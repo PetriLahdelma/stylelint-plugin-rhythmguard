@@ -66,6 +66,8 @@ export default [
 ];
 ```
 
+`configs.recommended` also registers the plugin, so it works as a config object of its own: `export default [rhythmguard.configs.recommended]` lints `.js`, `.mjs` and `.cjs`, and `{ ...rhythmguard.configs.recommended, files: ['**/*.{js,jsx,mjs,cjs}'], languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } } }` adds JSX.
+
 ### Other file types
 
 Espree, ESLint's default parser, reads JavaScript and JSX only. Other files need their parser in `languageOptions.parser`, in a config block whose `files` matches them, with the plugin and rule added to that block:

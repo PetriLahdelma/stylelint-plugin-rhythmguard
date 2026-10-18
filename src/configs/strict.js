@@ -1,5 +1,6 @@
 'use strict';
 
+/** @type {import('../../types/shared').RhythmguardStylelintConfig} */
 module.exports = {
   plugins: ['stylelint-plugin-rhythmguard'],
   rules: {
