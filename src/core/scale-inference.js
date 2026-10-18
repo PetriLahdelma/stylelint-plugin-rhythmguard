@@ -21,6 +21,12 @@ const DEFAULT_AUTO_TOKEN_PATTERN = '(^--|-)(?<!letter-)(?<!word-)(space|spacing|
 // Tailwind v4 defines one base (`--spacing: 0.25rem`) and derives utilities by multiplying it.
 // A bare `--space` is not Tailwind's; it is one token like any other (issue #293).
 const TAILWIND_BASE_TOKENS = new Set(['--spacing']);
+// A bare `--space` is a base only when the other spacing tokens do not form a
+// scale on their own. Discourse declares `--space: 0.25rem` and writes every
+// step as `calc(var(--space) * N)`, so its scale is the multiples; a ladder of
+// plain lengths (`--space-s`, `--space-m`) next to `--space` is the scale, and
+// `--space` is one more step on it (issue #293).
+const CONDITIONAL_BASE_TOKENS = new Set(['--space']);
 const TAILWIND_SPACING_MULTIPLIERS = [
   0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 96,
 ];
@@ -273,15 +279,34 @@ function scaleFromDefinitions(definitions, baseFontSize = 16) {
 function scaleFromAllDefinitions(definitions, baseFontSize) {
   const keys = [];
   const baseKeys = [];
+  const conditionalKeys = [];
   for (const definition of definitions.values()) {
     if (TAILWIND_BASE_TOKENS.has(definition.token)) {
       baseKeys.push(...definition.normalizedValues);
       continue;
     }
+    if (CONDITIONAL_BASE_TOKENS.has(definition.token)) {
+      conditionalKeys.push(...definition.normalizedValues);
+      continue;
+    }
     keys.push(...definition.normalizedValues);
   }
-  const scale = expandTailwindBase(pxValuesFromKeys(keys, baseFontSize), baseKeys, baseFontSize);
+  const scale = scaleWithBase({ baseFontSize, baseKeys, conditionalKeys, keys });
   return scale.length >= MIN_INFERRED_SCALE_LENGTH ? scale : null;
+}
+
+/**
+ * The scale from plain token values, expanded by a base multiplier where one
+ * applies: `--spacing` always, a bare `--space` only when the plain values do
+ * not already form a scale (see CONDITIONAL_BASE_TOKENS).
+ */
+function scaleWithBase({ baseFontSize, baseKeys, conditionalKeys, keys }) {
+  const plain = pxValuesFromKeys(keys, baseFontSize);
+  if (baseKeys.length > 0 || plain.length >= MIN_INFERRED_SCALE_LENGTH || conditionalKeys.length === 0) {
+    const withConditional = conditionalKeys.length > 0 ? pxValuesFromKeys([...keys, ...conditionalKeys], baseFontSize) : plain;
+    return expandTailwindBase(withConditional, baseKeys, baseFontSize);
+  }
+  return expandTailwindBase(plain, conditionalKeys, baseFontSize);
 }
 
 /** The scope of a declaration node: the AST-side twin of customPropertyDeclarations. */
@@ -421,15 +446,18 @@ function sassTokensFromRoot(root) {
 function scaleFromTokenMap(map, baseFontSize, extraKeys = []) {
   const keys = [...extraKeys];
   const baseKeys = [];
+  const conditionalKeys = [];
   for (const [key, reference] of Object.entries(map)) {
     const name = String(reference).match(/^var\((--[\w-]+)\)$/);
     if (name && TAILWIND_BASE_TOKENS.has(name[1])) {
       baseKeys.push(key);
+    } else if (name && CONDITIONAL_BASE_TOKENS.has(name[1])) {
+      conditionalKeys.push(key);
     } else {
       keys.push(key);
     }
   }
-  const scale = expandTailwindBase(pxValuesFromKeys(keys, baseFontSize), baseKeys, baseFontSize);
+  const scale = scaleWithBase({ baseFontSize, baseKeys, conditionalKeys, keys });
   return scale.length >= MIN_INFERRED_SCALE_LENGTH ? scale : null;
 }
 

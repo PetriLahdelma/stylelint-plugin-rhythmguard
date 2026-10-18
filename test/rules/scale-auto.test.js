@@ -522,6 +522,17 @@ test('a bare --space is one token, not a Tailwind base to multiply (issue #293)'
   assert.match(texts[1], /"12px".*nearest: 8px or 16px/);
 });
 
+test('a bare --space whose steps are calc() multiples of it is still the base (Discourse, issue #293)', async () => {
+  const result = await lintCss({
+    code: ':root { --space: 0.25rem; --space-1: var(--space); --space-2: calc(var(--space) * 2); --space-4: calc(var(--space) * 4); }\n.a { margin: 8px; padding: 20px; gap: 13px; }',
+    rules: useScaleAuto(),
+  });
+
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 1, texts.join('\n'));
+  assert.match(texts[0], /"13px".*nearest: 12px or 14px/, '8px and 20px are multiples of the 4px base');
+});
+
 test('an explicit tokenPattern also selects the tokens scale "auto" reads from scaleSources, as it does for fixes (issue #296)', async () => {
   const dir = tempDir('scale-sources-pattern');
   const sizes = path.join(dir, 'sizes.css');
