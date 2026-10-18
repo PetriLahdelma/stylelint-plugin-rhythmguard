@@ -28,6 +28,15 @@ test('replaceLength swaps every spacing literal equal to the value, across units
   assert.deepEqual(changes[0], { column: 14, from: '10px', line: 1, property: 'margin', to: 'var(--space-sm)' });
 });
 
+test('replaceLength applies several replacements in one pass, never rewriting a value another replacement wrote (#256)', () => {
+  const { changes, css } = run(
+    '.a { padding: 10px 14px; margin: 14px; gap: 0.625rem; }',
+    { replacements: [{ px: 10, replacement: '14px' }, { px: 14, replacement: '16px' }] },
+  );
+  assert.equal(css, '.a { padding: 14px 16px; margin: 16px; gap: 14px; }');
+  assert.deepEqual(changes.map((change) => `${change.from} -> ${change.to}`), ['10px -> 14px', '14px -> 16px', '14px -> 16px', '0.625rem -> 14px']);
+});
+
 test('replaceLength leaves token definitions, token functions, non-spacing properties and other values alone', () => {
   const { changes, css } = run(
     ':root { --space-sm: 10px; }\n.a { font-size: 10px; width: 10px; margin: var(--x, 10px); padding: 110px; border-width: 10px; }',

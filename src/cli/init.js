@@ -72,23 +72,117 @@ function detect() {
     fs.existsSync(path.join(cwd, 'next.config.mjs')) ||
     fs.existsSync(path.join(cwd, 'next.config.ts'));
 
-  const hasExistingConfig =
-    fs.existsSync(path.join(cwd, '.stylelintrc')) ||
-    fs.existsSync(path.join(cwd, '.stylelintrc.json')) ||
-    fs.existsSync(path.join(cwd, '.stylelintrc.js')) ||
-    fs.existsSync(path.join(cwd, '.stylelintrc.cjs')) ||
-    fs.existsSync(path.join(cwd, '.stylelintrc.mjs')) ||
-    fs.existsSync(path.join(cwd, '.stylelintrc.yml')) ||
-    fs.existsSync(path.join(cwd, '.stylelintrc.yaml')) ||
-    fs.existsSync(path.join(cwd, 'stylelint.config.js')) ||
-    fs.existsSync(path.join(cwd, 'stylelint.config.cjs')) ||
-    fs.existsSync(path.join(cwd, 'stylelint.config.mjs')) ||
-    Boolean(pkg.stylelint);
+  const activeConfig = findActiveStylelintConfig(cwd);
+  const hasExistingConfig = activeConfig !== null;
 
   const tailwind = hasTailwindConfig || hasTailwindDep;
   const nextjs = hasNextConfig;
 
-  return { tailwind, nextjs, hasExistingConfig };
+  return { activeConfig, tailwind, nextjs, hasExistingConfig };
+}
+
+/**
+ * Where Stylelint looks for a config in one directory, in its order. Stylelint
+ * searches with cosmiconfig and does not expose the file it picks, so this is
+ * cosmiconfig 9's default list for the module name "stylelint". The first hit
+ * wins: package.json counts only with a "stylelint" key, and an empty file is
+ * skipped, as cosmiconfig skips it.
+ */
+const STYLELINT_SEARCH_PLACES = [
+  'package.json',
+  '.stylelintrc',
+  '.stylelintrc.json',
+  '.stylelintrc.yaml',
+  '.stylelintrc.yml',
+  '.stylelintrc.js',
+  '.stylelintrc.ts',
+  '.stylelintrc.cjs',
+  '.stylelintrc.mjs',
+  '.config/stylelintrc',
+  '.config/stylelintrc.json',
+  '.config/stylelintrc.yaml',
+  '.config/stylelintrc.yml',
+  '.config/stylelintrc.js',
+  '.config/stylelintrc.ts',
+  '.config/stylelintrc.cjs',
+  '.config/stylelintrc.mjs',
+  'stylelint.config.js',
+  'stylelint.config.ts',
+  'stylelint.config.cjs',
+  'stylelint.config.mjs',
+];
+
+/**
+ * The config file Stylelint loads in `cwd`, or null. `kind` says what init can
+ * do with it: 'json' is rewritten in place; 'package' (the package.json key),
+ * 'yaml' and 'code' (JS or TS) get a snippet to add by hand, because writing a
+ * .stylelintrc.json next to them changes nothing: Stylelint never reads it.
+ */
+function findActiveStylelintConfig(cwd = process.cwd()) {
+  for (const file of STYLELINT_SEARCH_PLACES) {
+    let content;
+    try {
+      content = fs.readFileSync(path.join(cwd, file), 'utf8');
+    } catch {
+      continue;
+    }
+
+    if (file === 'package.json') {
+      let pkg = null;
+      try {
+        pkg = JSON.parse(content);
+      } catch {
+        // cosmiconfig would throw here; a broken package.json is no Stylelint config
+      }
+      if (pkg && typeof pkg === 'object' && pkg.stylelint !== undefined && pkg.stylelint !== null) {
+        return { file, kind: 'package' };
+      }
+      continue;
+    }
+
+    if (content.trim() === '') {
+      continue;
+    }
+
+    return { file, kind: configKind(file, content) };
+  }
+
+  return null;
+}
+
+function configKind(file, content) {
+  const extension = path.extname(file);
+  if (extension === '.json') {
+    return 'json';
+  }
+  if (extension === '.yaml' || extension === '.yml') {
+    return 'yaml';
+  }
+  if (extension === '') {
+    // .stylelintrc holds JSON or YAML; only JSON is rewritten.
+    try {
+      JSON.parse(content);
+      return 'json';
+    } catch {
+      return 'yaml';
+    }
+  }
+  return 'code';
+}
+
+/** What to add to a config init cannot rewrite, in that file's own syntax. */
+function configSnippet(kind, config) {
+  if (kind === 'package') {
+    return JSON.stringify({ stylelint: config }, null, 2).split('\n').slice(1, -1).map((line) => line.slice(2)).join('\n');
+  }
+  if (kind === 'yaml') {
+    return Object.entries(config)
+      .map(([key, values]) => `${key}:\n${values.map((value) => `  - ${JSON.stringify(value)}`).join('\n')}`)
+      .join('\n');
+  }
+  return Object.entries(config)
+    .map(([key, values]) => `${key}: ${JSON.stringify(values)},`)
+    .join('\n');
 }
 
 function selectProfile(stack) {
@@ -193,6 +287,31 @@ async function run() {
       process.stdout.write('Detected: plain CSS project\n');
     }
 
+    const profile = selectProfile(stack);
+    const config = {
+      extends: [`stylelint-plugin-rhythmguard/configs/${profile}`],
+      // Next.js build output is generated CSS; never lint it.
+      ...(stack.nextjs ? { ignoreFiles: ['.next/**', 'out/**', 'node_modules/**'] } : {}),
+    };
+
+    // A .stylelintrc.json next to the config Stylelint actually loads is either
+    // never read (package.json, a YAML .stylelintrc) or silently takes over
+    // from it (YAML, JS and TS files later in the search). When that config is
+    // not JSON, say what to add to it and write nothing.
+    const active = stack.activeConfig;
+    if (active && active.kind !== 'json') {
+      const where = active.kind === 'package' ? 'the "stylelint" key in package.json' : active.file;
+      const shadowsJson = STYLELINT_SEARCH_PLACES.indexOf(active.file) < STYLELINT_SEARCH_PLACES.indexOf('.stylelintrc.json');
+      process.stdout.write(`\nProfile: ${profile}\n`);
+      process.stdout.write(shadowsJson
+        ? `\n⚠ Stylelint loads ${where} before .stylelintrc.json, so it would never read a .stylelintrc.json.\n`
+        : `\n⚠ Stylelint loads ${where}; a new .stylelintrc.json would replace it and leave it unused.\n`);
+      process.stdout.write(`Add this to ${active.kind === 'package' ? 'package.json' : active.file}, merging with what is there:\n\n`);
+      process.stdout.write(`${configSnippet(active.kind, config)}\n\n`);
+      process.stdout.write('Nothing was written.\n\n');
+      return;
+    }
+
     // Warn about existing config
     if (stack.hasExistingConfig) {
       process.stdout.write('\n⚠ Existing Stylelint config found.\n');
@@ -203,22 +322,16 @@ async function run() {
       }
     }
 
-    const profile = selectProfile(stack);
     process.stdout.write(`\nProfile: ${profile}\n`);
 
-    const answer = await prompter.ask('Write .stylelintrc.json? (y/n) ');
+    const targetFile = active ? active.file : '.stylelintrc.json';
+    const answer = await prompter.ask(`Write ${targetFile}? (y/n) `);
     if (answer !== 'y' && answer !== 'yes') {
       process.stdout.write('Aborted.\n');
       process.exit(0);
     }
 
-    const config = {
-      extends: [`stylelint-plugin-rhythmguard/configs/${profile}`],
-      // Next.js build output is generated CSS; never lint it.
-      ...(stack.nextjs ? { ignoreFiles: ['.next/**', 'out/**', 'node_modules/**'] } : {}),
-    };
-
-    const configPath = path.join(process.cwd(), '.stylelintrc.json');
+    const configPath = path.join(process.cwd(), targetFile);
     fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
 
     process.stdout.write(`\n✓ Wrote ${configPath}\n`);
@@ -229,7 +342,7 @@ async function run() {
   }
 }
 
-module.exports = { AGENT_TARGETS, detect, installAgents, run, selectProfile };
+module.exports = { AGENT_TARGETS, detect, findActiveStylelintConfig, installAgents, run, selectProfile };
 
 if (require.main === module) {
   run();

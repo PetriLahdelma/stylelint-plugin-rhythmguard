@@ -98,3 +98,79 @@ test('init overwrites an existing Stylelint config after confirmation', () => {
     extends: ['stylelint-plugin-rhythmguard/configs/recommended'],
   });
 });
+
+test('init does not write a .stylelintrc.json that a package.json "stylelint" key shadows; it prints what to add (#257)', () => {
+  const fixtureDir = makeFixture('package-key');
+  const pkg = `${JSON.stringify({ name: 'app', stylelint: { rules: { 'color-no-invalid-hex': true } } }, null, 2)}\n`;
+  fs.writeFileSync(path.join(fixtureDir, 'package.json'), pkg);
+
+  const result = runInit(fixtureDir, 'y\ny\n');
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(fs.existsSync(path.join(fixtureDir, '.stylelintrc.json')), false, 'no shadowed file is written');
+  assert.equal(fs.readFileSync(path.join(fixtureDir, 'package.json'), 'utf8'), pkg);
+  assert.match(result.stdout, /Stylelint loads the "stylelint" key in package\.json/);
+  assert.match(result.stdout, /"stylelint": \{\n\s+"extends": \[\n\s+"stylelint-plugin-rhythmguard\/configs\/recommended"/);
+  assert.doesNotMatch(result.stdout, /Wrote/);
+});
+
+test('init prints a snippet for a JS config instead of writing a file Stylelint would not load (#257)', () => {
+  const fixtureDir = makeFixture('js-config');
+  const source = 'export default { rules: {} };\n';
+  fs.writeFileSync(path.join(fixtureDir, 'stylelint.config.mjs'), source);
+
+  const result = runInit(fixtureDir, 'y\ny\n');
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(fs.existsSync(path.join(fixtureDir, '.stylelintrc.json')), false);
+  assert.equal(fs.readFileSync(path.join(fixtureDir, 'stylelint.config.mjs'), 'utf8'), source);
+  assert.match(result.stdout, /Stylelint loads stylelint\.config\.mjs/);
+  assert.match(result.stdout, /extends: \["stylelint-plugin-rhythmguard\/configs\/recommended"\],/);
+});
+
+test('init writes a JSON-shaped .stylelintrc in place, since Stylelint reads it before .stylelintrc.json (#257)', () => {
+  const fixtureDir = makeFixture('rc-no-ext');
+  fs.writeFileSync(path.join(fixtureDir, '.stylelintrc'), '{"extends":["existing"]}\n');
+
+  const result = runInit(fixtureDir, 'y\ny\n');
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Write \.stylelintrc\? \(y\/n\)/);
+  assert.equal(fs.existsSync(path.join(fixtureDir, '.stylelintrc.json')), false);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(fixtureDir, '.stylelintrc'), 'utf8')), {
+    extends: ['stylelint-plugin-rhythmguard/configs/recommended'],
+  });
+});
+
+test('init still writes .stylelintrc.json when it is the config Stylelint loads (#257)', () => {
+  const fixtureDir = makeFixture('json-wins');
+  fs.writeFileSync(path.join(fixtureDir, '.stylelintrc.json'), '{"extends":["existing"]}\n');
+  fs.writeFileSync(path.join(fixtureDir, 'stylelint.config.js'), 'module.exports = {};\n');
+
+  const result = runInit(fixtureDir, 'y\ny\n');
+
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /Write \.stylelintrc\.json\? \(y\/n\)/);
+  assert.deepEqual(readGeneratedConfig(fixtureDir), {
+    extends: ['stylelint-plugin-rhythmguard/configs/recommended'],
+  });
+});
+
+test('findActiveStylelintConfig follows Stylelint\'s search order (#257)', () => {
+  const { findActiveStylelintConfig } = require('../../src/cli/init');
+  const fixtureDir = makeFixture('order');
+  assert.equal(findActiveStylelintConfig(fixtureDir), null);
+
+  fs.writeFileSync(path.join(fixtureDir, 'stylelint.config.cjs'), 'module.exports = {};\n');
+  assert.deepEqual(findActiveStylelintConfig(fixtureDir), { file: 'stylelint.config.cjs', kind: 'code' });
+  fs.writeFileSync(path.join(fixtureDir, '.stylelintrc.yml'), 'rules: {}\n');
+  assert.deepEqual(findActiveStylelintConfig(fixtureDir), { file: '.stylelintrc.yml', kind: 'yaml' });
+  fs.writeFileSync(path.join(fixtureDir, '.stylelintrc.json'), '{}\n');
+  assert.deepEqual(findActiveStylelintConfig(fixtureDir), { file: '.stylelintrc.json', kind: 'json' });
+  fs.writeFileSync(path.join(fixtureDir, '.stylelintrc'), 'rules: {}\n');
+  assert.deepEqual(findActiveStylelintConfig(fixtureDir), { file: '.stylelintrc', kind: 'yaml' });
+  fs.writeFileSync(path.join(fixtureDir, 'package.json'), '{"name":"x"}\n');
+  assert.deepEqual(findActiveStylelintConfig(fixtureDir), { file: '.stylelintrc', kind: 'yaml' }, 'package.json without the key is skipped');
+  fs.writeFileSync(path.join(fixtureDir, 'package.json'), '{"name":"x","stylelint":{}}\n');
+  assert.deepEqual(findActiveStylelintConfig(fixtureDir), { file: 'package.json', kind: 'package' });
+});

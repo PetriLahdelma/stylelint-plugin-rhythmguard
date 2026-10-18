@@ -62,6 +62,32 @@ test('fix --decided executes every snap decision that names its target', () => {
   assert.doesNotMatch(result.stdout, /15px ->/);
 });
 
+test('fix --decided applies every snap once, to the original values, and the dry run shows what --write writes (#256)', () => {
+  const dir = emptyFixture();
+  fs.writeFileSync(path.join(dir, 'src', 'a.css'), '.a { padding: 10px; margin: 14px; }\n');
+  fs.writeFileSync(path.join(dir, '.rhythmguardrc.json'), JSON.stringify({
+    decisions: [
+      { value: '10px', decision: 'snap', to: '14px' },
+      { value: '14px', decision: 'snap', to: '16px' },
+    ],
+  }));
+
+  const dry = runFix(dir, 'src', '--decided');
+  assert.equal(dry.status, 0, dry.stderr);
+  const write = runFix(dir, 'src', '--decided', '--write');
+  assert.equal(write.status, 0, write.stderr);
+
+  assert.equal(fs.readFileSync(path.join(dir, 'src', 'a.css'), 'utf8'), '.a { padding: 14px; margin: 16px; }\n');
+  const changes = (output) => output.split('\n').filter((line) => line.includes(' -> '));
+  assert.deepEqual(changes(write.stdout), [
+    '  src/a.css:1:15  padding: 10px -> 14px',
+    '  src/a.css:1:29  margin: 14px -> 16px',
+  ]);
+  assert.deepEqual(changes(dry.stdout), changes(write.stdout));
+  assert.match(write.stdout, /2 replacements in 1 file\n/);
+  assert.match(dry.stdout, /2 replacements in 1 file \(dry run/);
+});
+
 test('fix refuses an unparsable value or a missing target', () => {
   const dir = fixture();
   assert.equal(runFix(dir, 'src', '--value', 'lots', '--to', '8px').status, 1);

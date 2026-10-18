@@ -2,6 +2,9 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { applyAuditConfig, loadAuditConfig, resolveIgnorePatterns } = require('../audit/config');
+const { createDefaultAuditOptions } = require('../audit/shared');
+const { normalizeDecisions } = require('../core/decisions');
 const { normalizeTokenSourceFormat } = require('../core/token-sources');
 
 const cwd = process.cwd();
@@ -221,16 +224,54 @@ function checkRhythmguardConfig() {
     return;
   }
 
-  const audit = parsed.audit;
-  if (!audit || typeof audit !== 'object' || Array.isArray(audit)) {
-    fail('.rhythmguardrc.json audit config missing', 'Add an "audit" object or remove the config file');
+  // Validate with the audit's own loader, so doctor passes exactly the files
+  // `rhythmguard audit` accepts. The "audit" section is optional there too.
+  // Decisions are checked on their own, so an error in one section does not
+  // hide an error in the other.
+  let configResult = null;
+  let options = null;
+  try {
+    configResult = loadAuditConfig({});
+    const applied = applyAuditConfig(
+      { ...createDefaultAuditOptions(), cliOptions: new Set() },
+      { ...configResult, decisions: undefined },
+    );
+    resolveIgnorePatterns(applied);
+    options = applied;
+    pass('.rhythmguardrc.json audit config valid');
+  } catch (err) {
+    fail(
+      `.rhythmguardrc.json audit config invalid: ${err.message}`,
+      'Fix the "audit" section; rhythmguard audit stops on the same error',
+    );
+  }
+
+  checkRhythmguardDecisions(parsed, options ? options.baseFontSize : undefined);
+
+  const audit = configResult ? configResult.audit : {};
+  if (options) {
+    checkRhythmguardTokenSources(audit, path.dirname(configPath));
+    checkRhythmguardMotionConfig(audit);
+  }
+  checkRhythmguardBaseline(audit);
+}
+
+function checkRhythmguardDecisions(config, baseFontSize) {
+  const raw = config && typeof config === 'object' && !Array.isArray(config) ? config.decisions : undefined;
+  if (raw === undefined || raw === null) {
+    skip('decisions check skipped (not configured)');
     return;
   }
 
-  pass('.rhythmguardrc.json audit config valid');
-  checkRhythmguardTokenSources(audit, path.dirname(configPath));
-  checkRhythmguardMotionConfig(audit);
-  checkRhythmguardBaseline(audit);
+  try {
+    const decisions = normalizeDecisions(raw, baseFontSize === undefined ? {} : { baseFontSize });
+    pass(`.rhythmguardrc.json decisions valid (${decisions.length} decision${decisions.length === 1 ? '' : 's'})`);
+  } catch (err) {
+    fail(
+      `.rhythmguardrc.json decisions invalid: ${err.message}`,
+      'Fix the "decisions" section; rhythmguard audit and the Stylelint rules read the same entries',
+    );
+  }
 }
 
 function checkRhythmguardTokenSources(audit, baseDir) {

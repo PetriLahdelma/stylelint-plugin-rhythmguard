@@ -122,15 +122,28 @@ function buildTailwindMotionFindingText(token, analysis) {
  * bundle that took hours. This walks the source once: an escape never closes a
  * literal, a ' or " literal that reaches a line break is not a literal (the
  * language agrees), and a backtick literal may span lines.
+ *
+ * Class strings also sit inside other literals: a ternary in a template
+ * literal's ${}, a Vue :class="{ 'p-2': on }" object, a Svelte {expression}
+ * inside class="...". After a literal closes, its value is scanned again for
+ * literals in the other quote kinds. A literal never holds its own quote
+ * unescaped, so each level drops one quote kind: at most three levels, and
+ * every character is read at most three times.
  */
+const QUOTES = ['"', "'", '`'];
+
 function findStringLiterals(source) {
   const literals = [];
-  const { length } = source;
-  let index = 0;
+  scanStringLiterals(source, 0, source.length, QUOTES, literals);
+  return literals;
+}
+
+function scanStringLiterals(source, start, length, quotes, literals) {
+  let index = start;
 
   while (index < length) {
     const quote = source[index];
-    if (quote !== '"' && quote !== "'" && quote !== '`') {
+    if (!quotes.includes(quote)) {
       index += 1;
       continue;
     }
@@ -156,13 +169,15 @@ function findStringLiterals(source) {
 
     if (closed) {
       literals.push({ quote, value: source.slice(valueStart, cursor), valueStart });
+      const innerQuotes = quotes.filter((candidate) => candidate !== quote);
+      if (innerQuotes.length > 0) {
+        scanStringLiterals(source, valueStart, cursor, innerQuotes, literals);
+      }
       index = cursor + 1;
     } else {
       index = valueStart;
     }
   }
-
-  return literals;
 }
 
 function getLineStarts(source) {

@@ -32,3 +32,35 @@ test('findStringLiterals is linear on escape-dense source with an unclosed quote
   assert.ok(Date.now() - started < 1000, 'must finish immediately');
   assert.deepEqual(literals, ['gap-2']);
 });
+
+test('findStringLiterals also reads quoted literals nested inside an outer literal (#254)', () => {
+  const jsx = "<div className={`flex ${on ? 'p-[13px]' : 'm-[15px]'}`} />";
+  assert.deepEqual(values(jsx), ["flex ${on ? 'p-[13px]' : 'm-[15px]'}", 'p-[13px]', 'm-[15px]']);
+
+  const vue = `<div :class="{ 'p-[13px]': active }" /><div :class="[active ? 'px-[13px]' : '']" />`;
+  assert.deepEqual(values(vue), ["{ 'p-[13px]': active }", 'p-[13px]', "[active ? 'px-[13px]' : '']", 'px-[13px]', '']);
+
+  const svelte = `<div class="m-[15px] {on ? 'gap-[13px]' : ''}"></div>`;
+  assert.deepEqual(values(svelte), ["m-[15px] {on ? 'gap-[13px]' : ''}", 'gap-[13px]', '']);
+
+  // Offsets of nested literals point into the original source.
+  const nested = findStringLiterals(jsx).find((literal) => literal.value === 'm-[15px]');
+  assert.equal(jsx.slice(nested.valueStart, nested.valueStart + nested.value.length), 'm-[15px]');
+});
+
+test('findStringLiterals never reads the enclosing quote as a nested literal', () => {
+  // An escaped outer quote inside the literal opens nothing.
+  assert.deepEqual(values('const a = "say \\"p-[13px]\\" now";'), ['say \\"p-[13px]\\" now']);
+  // Three levels: double, single, backtick.
+  assert.deepEqual(values('x = "a \'b `c` d\' e";'), ["a 'b `c` d' e", 'b `c` d', 'c']);
+});
+
+test('findStringLiterals stays linear on deeply nested, escape-dense input', () => {
+  const inner = `'${'\\{\\[\\('.repeat(20)} p-[13px] "x" ' `;
+  const source = `const a = \`${inner.repeat(20000)}\`;\nconst ok = 'gap-2';\n`;
+  const started = Date.now();
+  const literals = values(source);
+  assert.ok(Date.now() - started < 2000, 'must finish quickly');
+  assert.equal(literals.at(-1), 'gap-2');
+  assert.equal(literals.length, 1 + 20000 * 2 + 1);
+});
