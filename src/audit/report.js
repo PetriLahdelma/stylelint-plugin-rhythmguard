@@ -14,7 +14,7 @@ const { createDefaultAuditOptions } = require('./shared');
 const {
   applyAuditConfig,
   loadAuditConfig,
-  loadIgnorePatterns,
+  resolveIgnorePatterns,
 } = require('./config');
 const { buildReport, collectTokenDefinitions } = require('./contract');
 const { DEFAULT_SCALE, formatPath } = require('./shared');
@@ -34,11 +34,7 @@ const { collectTailwindFindings, collectTailwindMotionFindings } = require('./sc
 async function createAuditReport(options) {
   const parsed = normalizeCreateAuditOptions(options);
   const resolvedDir = assertDirectory(parsed.dir);
-  let ignorePatterns;
-  ignorePatterns = [
-    ...loadIgnorePatterns(parsed.ignorePath),
-    ...parsed.ignorePatterns,
-  ];
+  const ignorePatterns = resolveIgnorePatterns(parsed);
 
   const scanFiles = getScanFiles(resolvedDir, ignorePatterns, parsed);
 

@@ -240,6 +240,19 @@ function loadIgnorePatterns(ignorePath) {
     .filter(Boolean);
 }
 
+/**
+ * The ignore list a run uses: the ignore file (.rhythmguardignore unless
+ * --ignore-path or audit.ignorePath names another), then audit.ignore and
+ * --ignore. `parsed` is the options after applyAuditConfig. The audit and
+ * `rhythmguard fix` both call this, so they never disagree on what is skipped.
+ */
+function resolveIgnorePatterns(parsed) {
+  return [
+    ...loadIgnorePatterns(parsed.ignorePath),
+    ...parsed.ignorePatterns,
+  ];
+}
+
 module.exports = {
   applyAuditConfig,
   applyConfigScalar,
@@ -248,4 +261,5 @@ module.exports = {
   normalizeCliTokenSources,
   normalizeConfigTokenSources,
   parseBooleanOption,
+  resolveIgnorePatterns,
 };

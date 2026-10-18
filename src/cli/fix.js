@@ -2,7 +2,14 @@
 
 const { loadRcDecisions } = require('../core/decisions');
 const { parseLengthToken, toPx } = require('../core/length');
+const { OPTIONS: AUDIT_OPTIONS } = require('../audit/args');
 const { runCodemod } = require('../audit/codemod');
+const { resolveIgnorePatterns } = require('../audit/config');
+const { normalizeCreateAuditOptions } = require('../audit/report');
+const { DEFAULT_IGNORE_PATH } = require('../audit/shared');
+
+// --ignore and --ignore-path are the audit's own flags, parsed by the audit's table.
+const IGNORE_OPTIONS = AUDIT_OPTIONS.filter((option) => option.flag === '--ignore' || option.flag === '--ignore-path');
 
 const HELP = `Usage: rhythmguard fix <dir> --value <length> --to <replacement> [options]
        rhythmguard fix <dir> --decided [options]
@@ -11,7 +18,9 @@ Replace one spacing literal everywhere it appears on a spacing property, or
 execute the snap decisions in .rhythmguardrc.json that name a "to". Matching is
 by px, so --value 10px also rewrites 0.625rem. Token definitions, values inside
 var()/theme()/token(), and non-spacing properties are never touched. Dry run by
-default.
+default. Files the audit skips are skipped too: .rhythmguardignore, audit.ignore
+in .rhythmguardrc.json, --ignore, and generated or vendored directories such as
+node_modules and dist.
 
 Options:
   --value <length>       The literal to replace, for example 10px or 0.625rem
@@ -19,16 +28,32 @@ Options:
   --decided              Apply every snap decision that has a "to"
   --properties <list>    Comma-separated property names or prefix-* patterns (default: spacing properties)
   --base-font-size <px>  Base for rem/em conversion (default: 16)
+  --ignore <pattern>     Exclude a root-relative path or glob (repeatable, comma-separated)
+  --ignore-path <file>   Load ignore patterns from file (default: .rhythmguardignore when present)
   --write                Apply the changes; without it, only list them
   --help                 Show this help message
 `;
 
 function parseArgs(argv) {
-  const parsed = { baseFontSize: 16, decided: false, dir: null, help: false, properties: null, replacement: null, value: null, write: false };
+  const parsed = {
+    baseFontSize: 16,
+    cliOptions: new Set(),
+    decided: false,
+    dir: null,
+    help: false,
+    ignorePath: DEFAULT_IGNORE_PATH,
+    ignorePatterns: [],
+    properties: null,
+    replacement: null,
+    value: null,
+    write: false,
+  };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     const next = () => argv[++index];
-    if (arg === '--help' || arg === '-h') parsed.help = true;
+    const ignoreOption = IGNORE_OPTIONS.find((option) => arg === option.flag || arg.startsWith(`${option.flag}=`));
+    if (ignoreOption) ignoreOption.apply(parsed, arg === ignoreOption.flag ? next() : arg.slice(ignoreOption.flag.length + 1));
+    else if (arg === '--help' || arg === '-h') parsed.help = true;
     else if (arg === '--write') parsed.write = true;
     else if (arg === '--decided') parsed.decided = true;
     else if (arg === '--value') parsed.value = next();
@@ -59,6 +84,19 @@ function lengthToPx(value, baseFontSize) {
     throw new Error(`--value must be a CSS length such as 10px or 0.625rem, got ${JSON.stringify(value)}.`);
   }
   return px;
+}
+
+/**
+ * The ignore list, loaded exactly as the audit loads it: .rhythmguardrc.json's
+ * audit.ignore and audit.ignorePath, the ignore file, then --ignore.
+ */
+function auditIgnorePatterns(parsed) {
+  return resolveIgnorePatterns(normalizeCreateAuditOptions({
+    cliOptions: parsed.cliOptions,
+    dir: parsed.dir,
+    ignorePath: parsed.ignorePath,
+    ignorePatterns: parsed.ignorePatterns,
+  }));
 }
 
 /** The replacements to run: one from --value/--to, or every snap decision with a "to". */
@@ -98,8 +136,10 @@ function run() {
   }
 
   let plan;
+  let ignorePatterns;
   try {
     plan = plannedReplacements(parsed);
+    ignorePatterns = auditIgnorePatterns(parsed);
   } catch (error) {
     process.stderr.write(`${error.message}\n`);
     process.exit(1);
@@ -108,11 +148,12 @@ function run() {
   const lines = [];
   let total = 0;
   const touched = new Set();
-  const skipped = [];
+  const skipped = new Map();
   for (const replacement of plan.replacements) {
     const outcome = runCodemod({
       baseFontSize: parsed.baseFontSize,
       dir: parsed.dir,
+      ignorePatterns,
       properties: parsed.properties,
       px: replacement.px,
       replacement: replacement.replacement,
@@ -125,7 +166,10 @@ function run() {
         lines.push(`  ${result.file}:${change.line}:${change.column}  ${change.property}: ${change.from} -> ${change.to}`);
       }
     }
-    skipped.push(...outcome.skipped);
+    // --decided runs once per decision; a file that cannot be read is named once
+    for (const entry of outcome.skipped) {
+      skipped.set(entry.file, entry);
+    }
   }
 
   if (lines.length > 0) {
@@ -138,7 +182,7 @@ function run() {
     const noun2 = plan.skippedSnaps.length === 1 ? 'snap decision has' : 'snap decisions have';
     lines.push(`${plan.skippedSnaps.length} ${noun2} no "to" and ${plan.skippedSnaps.length === 1 ? 'was' : 'were'} skipped: ${plan.skippedSnaps.join(', ')}`);
   }
-  for (const entry of skipped) {
+  for (const entry of skipped.values()) {
     lines.push(`skipped ${entry.file}: ${entry.reason}`);
   }
   process.stdout.write(`${lines.join('\n')}\n`);
