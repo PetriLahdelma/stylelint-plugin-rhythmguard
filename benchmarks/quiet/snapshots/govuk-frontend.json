@@ -17,8 +17,8 @@
     ]
   },
   "summary": {
-    "total": 24,
-    "drift": 24,
+    "total": 25,
+    "drift": 25,
     "falsePositives": 0
   },
   "findings": [
@@ -31,6 +31,7 @@
     "packages/govuk-frontend/src/govuk/components/back-link/_mixin.scss:32:14px:drift",
     "packages/govuk-frontend/src/govuk/components/checkboxes/_mixin.scss:255:($govuk-small-checkboxes-size + $input-offset):drift",
     "packages/govuk-frontend/src/govuk/components/exit-this-page/_mixin.scss:47:0.125em:drift",
+    "packages/govuk-frontend/src/govuk/components/generic-header/_mixin.scss:91:$link-underline-thickness * -1:drift",
     "packages/govuk-frontend/src/govuk/components/header/_mixin.scss:114:2px:drift",
     "packages/govuk-frontend/src/govuk/components/header/_mixin.scss:43:7px:drift",
     "packages/govuk-frontend/src/govuk/components/header/_mixin.scss:45:$logo-bottom-margin:drift",
