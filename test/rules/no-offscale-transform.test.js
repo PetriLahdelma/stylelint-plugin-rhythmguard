@@ -100,3 +100,66 @@ test('no-offscale-transform treats one-pixel translations as hairlines unless al
   const strict = await lint({ code, rules: { 'rhythmguard/no-offscale-transform': [true, { scale: [0, 4, 8, 12, 16], allowHairlines: false }] } });
   assertStrict.equal(strict.warnings.length, 4, strict.warnings.map((w) => w.text).join('\n'));
 });
+
+const SCALE = [0, 4, 8, 12, 16, 24, 32];
+
+test('no-offscale-transform accepts tokenPattern and uses it for fixWith token (#237)', async () => {
+  const result = await lintCss({
+    code: ':root { --gap-3: 12px; --space-3: 12px; }\n.a { transform: translateX(13px); }',
+    fix: true,
+    rules: { 'rhythmguard/no-offscale-transform': [true, { scale: SCALE, tokenPattern: '^--gap-', fixWith: 'token' }] },
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  assert.equal(result.code, ':root { --gap-3: 12px; --space-3: 12px; }\n.a { transform: translateX(var(--gap-3)); }');
+});
+
+test('no-offscale-transform accepts tokenFunctions and skips values tokenized through them (#237)', async () => {
+  const code = '.a { transform: translateX(tok(13px)); translate: tok(13px); }';
+  const custom = await lintCss({
+    code,
+    rules: { 'rhythmguard/no-offscale-transform': [true, { scale: SCALE, tokenFunctions: ['var', 'tok'] }] },
+  });
+  assert.deepEqual(custom.invalidOptionWarnings, []);
+  assert.deepEqual(custom.warnings.map((warning) => warning.text), []);
+
+  const defaults = await lintCss({ code, rules: { 'rhythmguard/no-offscale-transform': [true, { scale: SCALE }] } });
+  assert.equal(defaults.warnings.length, 2);
+});
+
+test('no-offscale-transform reports an invalid tokenPattern instead of throwing (#237)', async () => {
+  const result = await lintCss({
+    code: '.a { transform: translateX(13px); }',
+    rules: { 'rhythmguard/no-offscale-transform': [true, { scale: SCALE, tokenPattern: '(' }] },
+  });
+
+  assert.deepEqual(result.warnings.map((warning) => warning.text), [
+    'Invalid tokenPattern regex: ( (rhythmguard/no-offscale-transform)',
+    'Unexpected transform translation value "13px". Use scale values (nearest: 12px or 16px). (rhythmguard/no-offscale-transform)',
+  ]);
+});
+
+test('no-offscale-transform reports negatives with allowNegative false (#238)', async () => {
+  const result = await lintCss({
+    code: '.a { transform: translateX(-8px); translate: -8px 8px; }',
+    fix: true,
+    rules: { 'rhythmguard/no-offscale-transform': [true, { scale: SCALE, allowNegative: false }] },
+  });
+
+  assert.deepEqual(result.warnings.map((warning) => warning.text), [
+    'Unexpected transform translation value "-8px". Use scale values (nearest: n/a). (rhythmguard/no-offscale-transform)',
+    'Unexpected transform translation value "-8px". Use scale values (nearest: n/a). (rhythmguard/no-offscale-transform)',
+  ]);
+  assert.equal(result.code, '.a { transform: translateX(-8px); translate: -8px 8px; }');
+});
+
+test('no-offscale-transform reports percentages with allowPercentages false (#238)', async () => {
+  const result = await lintCss({
+    code: '.a { transform: translateX(13%); }',
+    rules: { 'rhythmguard/no-offscale-transform': [true, { scale: SCALE, allowPercentages: false }] },
+  });
+
+  assert.deepEqual(result.warnings.map((warning) => warning.text), [
+    'Unexpected transform translation value "13%". Use scale values (nearest: n/a). (rhythmguard/no-offscale-transform)',
+  ]);
+});

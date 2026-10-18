@@ -36,7 +36,9 @@ Unexpected Tailwind arbitrary motion duration "duration-[175ms]". Use duration s
 
 ## Autofix
 
-Duration and delay values snap to the nearest scale step inside string literals. Easing values are reported only. Negative durations are reported without a fix.
+Duration and delay values snap to the nearest scale step inside string literals. Easing values are reported only. Negative durations are reported without a fix. A negative delay such as `delay-[-100ms]` is valid (the motion starts partway through); its size is checked and a fix keeps the sign.
+
+Only raw curves in `ease-[...]` are reported: `cubic-bezier(...)`, `linear(...)` and `steps(...)`, as in the Stylelint rule. Token easings such as `ease-[var(--ease-out)]` and `ease-[--my-ease]` pass.
 
 ## Options
 

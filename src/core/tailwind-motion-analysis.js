@@ -15,6 +15,9 @@ const {
 const { findClassSegments } = require('./tailwind-class-analysis');
 
 const ARBITRARY_MOTION_CLASS = /^(?<utility>duration|delay|ease)-\[(?<rawValue>[^\]]+)\]$/;
+// The raw curves the Stylelint rule reports; anything else in `ease-[...]`,
+// such as `var(--ease-out)` or `--my-ease`, is already a token (#245).
+const RAW_EASING_CURVE = /^(?:cubic-bezier|linear|steps)\(/i;
 
 function normalizeTailwindMotionOptions(option = {}) {
   return {
@@ -85,6 +88,10 @@ function analyzeMotionToken(token, options) {
   }
 
   if (match.groups.utility === 'ease') {
+    if (!RAW_EASING_CURVE.test(match.groups.rawValue.trim())) {
+      return null;
+    }
+
     return {
       fixedToken: null,
       rawValue: match.groups.rawValue,
@@ -98,7 +105,9 @@ function analyzeMotionToken(token, options) {
     return null;
   }
 
-  if (parsedTime.number < 0) {
+  // A negative delay starts the motion partway through and is valid; only a
+  // negative duration is (#236). The size of a delay is still checked.
+  if (parsedTime.number < 0 && match.groups.utility === 'duration') {
     return {
       fixedToken: null,
       nearest: null,
@@ -112,7 +121,7 @@ function analyzeMotionToken(token, options) {
     return null;
   }
 
-  const msValue = toMs(parsedTime.number, parsedTime.unit);
+  const msValue = toMs(Math.abs(parsedTime.number), parsedTime.unit);
   if (msValue === null) {
     return null;
   }
@@ -132,7 +141,7 @@ function analyzeMotionToken(token, options) {
     return null;
   }
 
-  const replacementValue = formatTime(converted, parsedTime.unit);
+  const replacementValue = formatTime(parsedTime.number < 0 ? -converted : converted, parsedTime.unit);
   const fixedCandidate = parsedToken.candidate.replace(match.groups.rawValue, replacementValue);
   const fixedToken = `${parsedToken.prefix}${parsedToken.leadingImportant}${fixedCandidate}${parsedToken.trailingImportant}`;
 
