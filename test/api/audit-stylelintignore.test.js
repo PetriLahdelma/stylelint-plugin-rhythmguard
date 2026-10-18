@@ -18,7 +18,7 @@ test('a project .stylelintignore that excludes every stylesheet is reported, not
   try {
     const report = await createAuditReport({ dir: '.', noConfig: true, scale: [0, 4, 8, 12, 16] });
     const contract = toAuditContractReport(report);
-    assert.equal(contract.scanned.cssFiles, 1, 'the file was found by the walk');
+    assert.equal(contract.scanned.cssFiles, 0, 'the file was found by the walk but not audited, so it is not counted as scanned (issue #250)');
     assert.equal(contract.scanned.stylelintIgnored, 1, 'and Stylelint skipped it because of the project ignore file');
     assert.equal(contract.findings.css.length, 0);
   } finally {

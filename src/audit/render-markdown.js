@@ -28,6 +28,7 @@ function renderMarkdown(report) {
     ...(report.scanned && report.scanned.scssFiles > 0 ? [`| SCSS files scanned | ${report.scanned.scssFiles - report.scanned.scssSkipped} |`] : []),
     ...(report.scanned && report.scanned.scssSkipped > 0 ? [`| SCSS files skipped (install postcss-scss) | ${report.scanned.scssSkipped} |`] : []),
     ...(report.scanned && report.scanned.stylelintIgnored > 0 ? [`| Stylesheets ignored by .stylelintignore (not audited) | ${report.scanned.stylelintIgnored} |`] : []),
+    ...(parseErrors(report).length > 0 ? [`| Stylesheets that failed to parse (not audited) | ${parseErrors(report).length} |`] : []),
     `| Files with issues | ${report.filesWithIssues} |`,
     `| Total findings | ${report.totalWarnings} |`,
     `| Scale cleanliness | ${report.scaleCleanliness}% |`,
@@ -57,6 +58,7 @@ function renderMarkdown(report) {
   appendTokenChainsMarkdown(lines, report.tokenContract.chains);
   appendTokenLaddersMarkdown(lines, report.tokenContract.ladders);
   appendBaselineMarkdown(lines, report);
+  appendParseErrorsMarkdown(lines, report);
 
   if (report.topAffectedFiles.length > 0) {
     lines.push('## Top Affected Files');
@@ -82,6 +84,9 @@ function renderMarkdown(report) {
 
   lines.push('## Recommended Next Actions');
   lines.push('');
+  if (parseErrors(report).length > 0) {
+    lines.push('- Fix the parse errors above: those stylesheets were not audited.');
+  }
   if (report.totalWarnings === 0) {
     lines.push('- Keep Rhythmguard in CI to prevent new drift.');
   } else {
@@ -92,6 +97,27 @@ function renderMarkdown(report) {
   lines.push('');
 
   return `${lines.join('\n')}\n`;
+}
+
+function parseErrors(report) {
+  return (report.findings && report.findings.parseErrors) || [];
+}
+
+function appendParseErrorsMarkdown(lines, report) {
+  const errors = parseErrors(report);
+  if (errors.length === 0) {
+    return;
+  }
+  lines.push('## Parse Errors');
+  lines.push('');
+  lines.push('These stylesheets could not be parsed, so they were not audited. They are not counted as findings or in scale cleanliness.');
+  lines.push('');
+  lines.push('| File | Error |');
+  lines.push('| --- | --- |');
+  for (const finding of errors) {
+    lines.push(`| \`${escapeMarkdown(`${finding.file}:${finding.line}:${finding.column}`)}\` | ${escapeMarkdown(finding.text)} |`);
+  }
+  lines.push('');
 }
 
 function appendTokenChainsMarkdown(lines, chains) {
@@ -295,6 +321,7 @@ function appendMarkdownCounts(lines, title, counts, label = 'Value') {
 module.exports = {
   appendBaselineMarkdown,
   appendMarkdownCounts,
+  appendParseErrorsMarkdown,
   appendTokenContractMarkdown,
   renderMarkdown,
 };

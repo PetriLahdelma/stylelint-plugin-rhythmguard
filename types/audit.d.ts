@@ -61,12 +61,16 @@ export interface AuditSummary {
   filesWithFindings: number;
   findingCount: number;
   motionFindingCount?: number;
+  /** Stylesheets that could not be parsed. They are not findings and are left out of cleanliness. */
+  parseErrors?: number;
+  /** Share of audited files with no finding, rounded down, so it is never 100 while a file has a finding. */
+  scaleCleanliness?: number;
   tokenOpportunityCount?: number;
   [key: string]: unknown;
 }
 
 export interface AuditScanned {
-  /** Authored stylesheets scanned: .css plus .scss when postcss-scss is available. */
+  /** Authored stylesheets audited: .css plus .scss when postcss-scss is available. Skipped and .stylelintignore'd files are not counted. */
   cssFiles: number;
   /** .scss files found. Audited through postcss-scss when it resolves. */
   scssFiles?: number;
@@ -75,6 +79,7 @@ export interface AuditScanned {
   /** Stylesheets Stylelint skipped because the project's own .stylelintignore excludes them. */
   stylelintIgnored?: number;
   templateFiles: number;
+  /** Audited stylesheets plus template files. Stylesheets that failed to parse are taken out of this for cleanliness. */
   totalFiles?: number;
   [key: string]: unknown;
 }
@@ -88,8 +93,9 @@ export interface AuditFinding {
   /** CSS property of the declaration, recovered from the source. Null when the position is not inside a declaration. CSS findings only. */
   property?: string | null;
   rule?: string;
+  /** "off-scale", "token-opportunity", "motion-duration", "motion-easing", or "parse-error" for a stylesheet that could not be parsed. */
   type: string;
-  value?: string;
+  value?: string | null;
   [key: string]: unknown;
 }
 
@@ -159,6 +165,8 @@ export interface AuditReport {
   findings: {
     css: AuditFinding[];
     motion: AuditFinding[];
+    /** Stylesheets that could not be parsed, one "parse-error" entry each. They were not audited. */
+    parseErrors?: AuditFinding[];
     tailwind: AuditFinding[];
   };
   /** Off-scale CSS findings counted by property, top ten. */

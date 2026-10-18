@@ -77,41 +77,39 @@ function getScanFiles(rootDir, ignorePatterns, parsed) {
 }
 
 function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
-  // -z prints names raw and NUL-separated: no quoting of spaces or non-ASCII
-  // bytes. diff.relative is pinned off so every name is relative to the
-  // repository top level, whatever the user's git config says.
-  const diffArgs = parsed.staged
-    ? ['diff', '--name-only', '-z', '--cached', '--diff-filter=ACMR', '--']
-    : ['diff', '--name-only', '-z', '--diff-filter=ACMR', parsed.since, '--'];
   // Git runs in the scanned directory, so the repository is the one that holds
   // the files, whichever directory the command was started from.
   const topLevel = runGit(rootDir, ['rev-parse', '--show-toplevel']).replace(/\r?\n$/, '');
-  const output = runGit(rootDir, ['-c', 'diff.relative=false', ...diffArgs]);
+  const changed = parsed.staged
+    ? listStagedFiles(rootDir)
+    : listFilesChangedSince(rootDir, parsed.since);
 
   // git reports the top level with symlinks resolved (/private/var on macOS);
   // compare in that form, then name files under the directory as it was given.
   const realRootDir = fs.realpathSync(rootDir);
-  const changedFiles = output.split('\0').filter(Boolean);
-  const changedPaths = [];
-  for (const filePath of changedFiles) {
-    const realPath = path.resolve(topLevel, filePath);
-    if (isPathInside(realRootDir, realPath)) {
-      changedPaths.push(path.join(rootDir, path.relative(realRootDir, realPath)));
-    }
-  }
-
   const cssFiles = [];
   const templateFiles = [];
   const ignoreMatchers = createIgnoreMatchers(ignorePatterns);
   const seen = new Set();
+  const stagedBlobs = new Map();
 
-  for (const fullPath of changedPaths) {
-    if (seen.has(fullPath) || !fs.existsSync(fullPath)) {
+  for (const entry of changed) {
+    const realPath = path.resolve(topLevel, entry.path);
+    if (!isPathInside(realRootDir, realPath)) {
+      continue;
+    }
+    const fullPath = path.join(rootDir, path.relative(realRootDir, realPath));
+    if (seen.has(fullPath)) {
       continue;
     }
 
-    const stat = fs.statSync(fullPath);
-    if (!stat.isFile()) {
+    if (parsed.staged) {
+      // The index entry is what gets committed: a regular file blob, whatever
+      // the working tree holds now, or whether the file is still there at all.
+      if (!REGULAR_FILE_MODES.has(entry.mode)) {
+        continue;
+      }
+    } else if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) {
       continue;
     }
 
@@ -125,26 +123,138 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
       cssFiles.push(fullPath);
     } else if (isTemplateFile(fullPath)) {
       templateFiles.push(fullPath);
+    } else {
+      continue;
+    }
+    if (parsed.staged) {
+      stagedBlobs.set(fullPath, entry.blob);
     }
   }
 
-  return {
+  const result = {
     cssFiles,
     scanScope: {
-      changedFiles: changedFiles.length,
+      changedFiles: changed.length,
       mode: parsed.staged ? 'staged' : 'since',
       since: parsed.since,
     },
     templateFiles,
   };
+
+  if (parsed.staged) {
+    result.readSource = createStagedSourceReader(rootDir, stagedBlobs);
+  }
+
+  return result;
 }
 
-function runGit(cwd, args) {
+const REGULAR_FILE_MODES = new Set(['100644', '100755']);
+
+// -z prints names raw and NUL-separated: no quoting of spaces or non-ASCII
+// bytes. diff.relative is pinned off so every name is relative to the
+// repository top level, whatever the user's git config says.
+function listFilesChangedSince(rootDir, since) {
+  const output = runGit(rootDir, ['-c', 'diff.relative=false', 'diff', '--name-only', '-z', '--diff-filter=ACMR', since, '--']);
+  return output.split('\0').filter(Boolean).map((filePath) => ({ path: filePath }));
+}
+
+/**
+ * Staged files with the mode and blob id the index holds for each. `--raw -z`
+ * prints `:<old mode> <new mode> <old id> <new id> <status>` and then the path,
+ * or two paths (from, then to) for a rename or a copy.
+ */
+function listStagedFiles(rootDir) {
+  const output = runGit(rootDir, [
+    '-c', 'diff.relative=false',
+    'diff', '--cached', '--raw', '-z', '--no-abbrev', '--no-color', '--diff-filter=ACMR', '--',
+  ]);
+  const fields = output.split('\0');
+  const entries = [];
+  for (let index = 0; index < fields.length; index++) {
+    const header = fields[index];
+    if (!header.startsWith(':')) {
+      continue;
+    }
+    const [, mode, , blob, status = ''] = header.slice(1).split(' ');
+    const pathCount = /^[RC]/.test(status) ? 2 : 1;
+    const filePath = fields[index + pathCount];
+    index += pathCount;
+    if (filePath) {
+      entries.push({ blob, mode, path: filePath });
+    }
+  }
+  return entries;
+}
+
+/**
+ * Reads staged files from their index blobs, fetched in one `git cat-file
+ * --batch` call, and any other path from disk. Each blob comes back as a
+ * `<id> blob <size>` line followed by exactly <size> bytes and a newline.
+ */
+function createStagedSourceReader(rootDir, stagedBlobs) {
+  const contents = new Map();
+  const ids = Array.from(new Set(stagedBlobs.values()));
+  if (ids.length > 0) {
+    const output = runGit(rootDir, ['cat-file', '--batch'], `${ids.join('\n')}\n`, null);
+    const byId = new Map();
+    let offset = 0;
+    while (offset < output.length) {
+      const headerEnd = output.indexOf(0x0a, offset);
+      if (headerEnd === -1) {
+        break;
+      }
+      const [id, type, size] = output.subarray(offset, headerEnd).toString('utf8').split(' ');
+      offset = headerEnd + 1;
+      if (type !== 'blob') {
+        continue;
+      }
+      const length = Number(size);
+      byId.set(id, output.subarray(offset, offset + length).toString('utf8'));
+      offset += length + 1;
+    }
+    for (const [filePath, id] of stagedBlobs) {
+      if (byId.has(id)) {
+        contents.set(filePath, byId.get(id));
+      }
+    }
+  }
+
+  return (filePath) => (contents.has(filePath)
+    ? contents.get(filePath)
+    : readSourceFromDisk(filePath));
+}
+
+/** Reads a scanned file from disk. A staged run swaps in a reader for the index. */
+function readSourceFromDisk(filePath) {
+  return fs.readFileSync(filePath, 'utf8');
+}
+
+/**
+ * The repository top level for a directory, with symlinks resolved, or null
+ * when the directory is not inside a git work tree (or git is not installed).
+ */
+function findGitTopLevel(dir) {
+  try {
+    const output = execFileSync('git', ['rev-parse', '--show-toplevel'], {
+      cwd: dir,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'ignore'],
+    }).replace(/\r?\n$/, '');
+    return output ? path.resolve(output) : null;
+  } catch {
+    return null;
+  }
+}
+
+// With `encoding` null the output comes back as a Buffer (blob sizes are bytes).
+function runGit(cwd, args, input, encoding = 'utf8') {
   try {
     return execFileSync('git', args, {
       cwd,
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
+      encoding,
+      input,
+      maxBuffer: 1024 * 1024 * 1024,
+      stdio: [input === undefined ? 'ignore' : 'pipe', 'pipe', 'pipe'],
     });
   } catch (err) {
     const stderr = err.stderr ? String(err.stderr).trim() : err.message;
@@ -262,6 +372,7 @@ module.exports = {
   assertDirectory,
   createIgnoreMatchers,
   escapeRegExp,
+  findGitTopLevel,
   getGitChangedScanFiles,
   getScanFiles,
   globToRegExp,
@@ -270,6 +381,7 @@ module.exports = {
   isPathInside,
   isScssFile,
   isTemplateFile,
+  readSourceFromDisk,
   shouldIgnorePath,
   shouldIgnoreRelativeFile,
   toPosixRelativePath,

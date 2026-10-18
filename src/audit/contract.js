@@ -16,6 +16,7 @@ function collectTokenContract({
   cssFindings,
   externalTokenDefinitions,
   minCandidateCount,
+  readSource = (filePath) => fs.readFileSync(filePath, 'utf8'),
   tailwindFindings,
   tokenKind,
   tokenSourceReports,
@@ -29,7 +30,7 @@ function collectTokenContract({
   for (const filePath of cssFiles) {
     let source;
     try {
-      source = fs.readFileSync(filePath, 'utf8');
+      source = readSource(filePath);
     } catch {
       continue;
     }
@@ -232,6 +233,8 @@ function buildReport({
   externalTokenDefinitions,
   includeMotion,
   motionFindings,
+  parseErrorFindings = [],
+  readSource,
   scale,
   scanScope,
   scssFiles = 0,
@@ -268,18 +271,24 @@ function buildReport({
     ...tailwindFindings.map((finding) => finding.file),
   ])).slice(0, 10);
 
-  const totalFiles = cssFiles.length + templateFiles.length;
+  // A stylesheet skipped for want of postcss-scss, or excluded by the project's
+  // .stylelintignore, was not audited: it is neither scanned nor clean.
+  const cssFilesScanned = Math.max(0, cssFiles.length - scssSkipped - stylelintIgnored);
+  const totalFiles = cssFilesScanned + templateFiles.length;
   const totalWarnings = cssFindings.length + motionFindings.length + tailwindFindings.length;
   const filesWithIssues = issueFiles.size;
-  const scaleCleanliness = totalFiles > 0
-    ? Math.max(0, Math.round(((totalFiles - filesWithIssues) / totalFiles) * 100))
-    : 100;
+  const scaleCleanliness = Math.floor(computeScaleCleanliness({
+    filesWithIssues,
+    parseErrorFiles: countFiles(parseErrorFindings),
+    totalFiles,
+  }));
   const tokenContract = collectTokenContract({
     baseFontSize,
     cssFiles,
     cssFindings,
     externalTokenDefinitions,
     minCandidateCount: tokenCandidateMinCount,
+    readSource,
     tailwindFindings,
     tokenKind,
     tokenSourceReports,
@@ -287,12 +296,13 @@ function buildReport({
 
   return {
     config,
-    cssFilesScanned: cssFiles.length,
+    cssFilesScanned,
     directory: dir,
     filesWithIssues,
     findings: {
       css: cssFindings,
       motion: motionFindings,
+      parseErrors: parseErrorFindings,
       tailwind: tailwindFindings,
     },
     formatVersion: 5,
@@ -307,7 +317,7 @@ function buildReport({
     scaleCleanliness,
     scanScope,
     scanned: {
-      cssFiles: cssFiles.length,
+      cssFiles: cssFilesScanned,
       scssFiles,
       scssSkipped,
       stylelintIgnored,
@@ -318,6 +328,7 @@ function buildReport({
       cssWarnings: cssFindings.length,
       filesWithIssues,
       motionFindings: motionFindings.length,
+      parseErrors: parseErrorFindings.length,
       rawValueMatches: tokenContract.summary.rawValueMatches,
       missingTokens: tokenContract.summary.missingTokens,
       rawValueCandidates: tokenContract.summary.rawValueCandidates,
@@ -337,6 +348,36 @@ function buildReport({
     totalFiles,
     totalWarnings,
   };
+}
+
+/**
+ * The share of audited files with no finding, unrounded. A file that failed to
+ * parse was not audited, so it is out of the denominator. The report shows the
+ * floor of this, so it never reads 100% while a file has a finding, and the
+ * --min-cleanliness gate compares this exact value.
+ */
+function computeScaleCleanliness({ filesWithIssues, parseErrorFiles = 0, totalFiles }) {
+  const auditedFiles = totalFiles - parseErrorFiles;
+  if (auditedFiles <= 0) {
+    return 100;
+  }
+  return Math.max(0, ((auditedFiles - filesWithIssues) * 100) / auditedFiles);
+}
+
+/** The unrounded cleanliness of a built report. */
+function exactScaleCleanliness(report) {
+  if (!Number.isFinite(report.totalFiles) || !Number.isFinite(report.filesWithIssues)) {
+    return report.scaleCleanliness;
+  }
+  return computeScaleCleanliness({
+    filesWithIssues: report.filesWithIssues,
+    parseErrorFiles: countFiles((report.findings && report.findings.parseErrors) || []),
+    totalFiles: report.totalFiles,
+  });
+}
+
+function countFiles(findings) {
+  return new Set(findings.map((finding) => finding.file)).size;
 }
 
 function countByValue(values) {
@@ -396,10 +437,52 @@ const AUDIT_JSON_SCHEMA = Object.freeze({
     baseline: { type: ['object', 'null'] },
     command: { type: 'object' },
     contracts: { type: 'object' },
-    findings: { type: 'object' },
+    findings: {
+      additionalProperties: true,
+      properties: {
+        css: { type: 'array' },
+        motion: { type: 'array' },
+        parseErrors: {
+          description: 'Stylesheets that could not be parsed and so were not audited. Not counted as findings or in cleanliness.',
+          items: {
+            additionalProperties: true,
+            properties: {
+              column: { type: 'integer' },
+              file: { type: 'string' },
+              line: { type: 'integer' },
+              rule: { const: 'CssSyntaxError' },
+              text: { type: 'string' },
+              type: { const: 'parse-error' },
+            },
+            required: ['file', 'text', 'type'],
+            type: 'object',
+          },
+          type: 'array',
+        },
+        tailwind: { type: 'array' },
+      },
+      type: 'object',
+    },
     scanned: { type: 'object' },
     schemaVersion: { const: '2.0' },
-    summary: { type: 'object' },
+    summary: {
+      additionalProperties: true,
+      properties: {
+        parseErrors: {
+          description: 'Number of stylesheets that could not be parsed.',
+          minimum: 0,
+          type: 'integer',
+        },
+        scaleCleanliness: {
+          description: 'Percentage of audited files with no finding, rounded down.',
+          maximum: 100,
+          minimum: 0,
+          type: 'integer',
+        },
+        totalFindings: { minimum: 0, type: 'integer' },
+      },
+      type: 'object',
+    },
   },
   required: ['schemaVersion', 'command', 'summary', 'scanned', 'contracts', 'findings'],
   title: 'Rhythmguard Audit Report',
@@ -415,8 +498,10 @@ module.exports = {
   collectTokenContract,
   collectTokenDefinitions,
   collectTokenUses,
+  computeScaleCleanliness,
   countByValue,
   createValueToTokensMap,
+  exactScaleCleanliness,
   mapTokenEntries,
   sortCountMap,
   sumCounts,

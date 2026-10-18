@@ -7,6 +7,10 @@ function renderGithub(report) {
   const lines = report.baseline
     ? [`::notice title=Rhythmguard audit::Since baseline: ${report.baseline.resolvedFindingsCount} resolved, ${report.baseline.newFindingsCount} new`]
     : [];
+  // A stylesheet that failed to parse was not audited: an error on its line.
+  lines.push(...((report.findings && report.findings.parseErrors) || []).map((finding) =>
+    `::error file=${escapeGithubProperty(finding.file)},line=${finding.line || 1},col=${finding.column || 1},title=${escapeGithubProperty(finding.rule || 'CssSyntaxError')}::${escapeGithubData(`Not audited: ${finding.text || ''}`)}`,
+  ));
   lines.push(...findings.map((finding) =>
     `::warning file=${escapeGithubProperty(finding.file)},line=${finding.line || 1},col=${finding.column || 1},title=${escapeGithubProperty(finding.rule || 'rhythmguard')}::${escapeGithubData(finding.text || '')}`,
   ));

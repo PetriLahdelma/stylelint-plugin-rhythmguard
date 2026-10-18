@@ -5,13 +5,13 @@
  * warning into a finding, and recover the CSS property at the warning position
  * from the source, since Stylelint reports positions rather than nodes.
  */
-const fs = require('node:fs');
+const path = require('node:path');
 const {
   DEFAULT_AUDIT_TOKEN_PATTERN,
   formatPath,
   pluginPath,
 } = require('../shared');
-const { isScssFile } = require('./files');
+const { isScssFile, readSourceFromDisk } = require('./files');
 
 let scssSyntaxCache;
 
@@ -37,6 +37,8 @@ async function runStylelintAudit(cssFiles, options) {
     const empty = [];
     empty.scssFiles = 0;
     empty.scssSkipped = 0;
+    empty.stylelintIgnored = 0;
+    empty.unauditedFiles = [];
     return empty;
   }
 
@@ -80,47 +82,55 @@ async function runStylelintAudit(cssFiles, options) {
   const scssFiles = cssFiles.filter(isScssFile);
   const results = [];
 
+  // A project's own .stylelintignore may exclude every file we pass; that is
+  // a count to report, not a reason for the audit to throw.
+  const lint = (files, config) => (options.readSource
+    ? lintSources(stylelint, files, config, options.readSource)
+    : stylelint.lint({ allowEmptyInput: true, config, files }).then((result) => result.results || []));
+
   if (plainFiles.length > 0) {
-    // A project's own .stylelintignore may exclude every file we pass; that is
-    // a count to report, not a reason for the audit to throw.
-    const result = await stylelint.lint({
-      allowEmptyInput: true,
-      files: plainFiles,
-      config: {
-        plugins: [pluginPath],
-        rules,
-      },
-    });
-    results.push(...(result.results || []));
+    results.push(...await lint(plainFiles, { plugins: [pluginPath], rules }));
   }
 
-  let scssSkipped = 0;
+  let skippedScssFiles = [];
   if (scssFiles.length > 0) {
     const scssSyntax = resolveScssSyntax();
     if (scssSyntax) {
-      const result = await stylelint.lint({
-        allowEmptyInput: true,
-        files: scssFiles,
-        config: {
-          customSyntax: scssSyntax,
-          plugins: [pluginPath],
-          rules,
-        },
-      });
-      results.push(...(result.results || []));
+      results.push(...await lint(scssFiles, { customSyntax: scssSyntax, plugins: [pluginPath], rules }));
     } else {
-      scssSkipped = scssFiles.length;
+      skippedScssFiles = scssFiles;
     }
   }
 
   assertNoInvalidOptions(results);
 
-  results.scssFiles = scssFiles.length;
-  results.scssSkipped = scssSkipped;
   // Stylelint returns no result at all for a file its ignore file excludes, so
-  // the difference between what was passed and what came back is that count.
-  const linted = plainFiles.length + scssFiles.length - scssSkipped;
-  results.stylelintIgnored = Math.max(0, linted - results.length);
+  // a file passed in with no result back is one it ignored.
+  const returned = new Set(results.map((result) => path.resolve(String(result.source))));
+  const skipped = new Set(skippedScssFiles);
+  const ignoredFiles = cssFiles.filter((file) => !skipped.has(file) && !returned.has(path.resolve(file)));
+
+  results.scssFiles = scssFiles.length;
+  results.scssSkipped = skippedScssFiles.length;
+  results.stylelintIgnored = ignoredFiles.length;
+  // Neither kind was audited: they count as neither scanned nor clean.
+  results.unauditedFiles = [...skippedScssFiles, ...ignoredFiles];
+  return results;
+}
+
+/** Lints each file from the text the reader returns (the staged blob in a --staged run). */
+async function lintSources(stylelint, files, config, readSource) {
+  const results = [];
+  for (const file of files) {
+    let code;
+    try {
+      code = readSource(file);
+    } catch {
+      continue;
+    }
+    const result = await stylelint.lint({ allowEmptyInput: true, code, codeFilename: file, config });
+    results.push(...(result.results || []));
+  }
   return results;
 }
 
@@ -142,14 +152,36 @@ function assertNoInvalidOptions(results) {
   }
 }
 
-function collectCssFindings(fileResults) {
+/**
+ * Stylelint reports a stylesheet it cannot parse as a single CssSyntaxError
+ * warning and runs no rule on it. That is not drift: it is a file the audit
+ * could not read, kept apart as a `parse-error` finding.
+ */
+function isParseErrorWarning(warning) {
+  return warning.rule === 'CssSyntaxError';
+}
+
+function collectCssFindings(fileResults, readSource) {
   const findings = [];
   const sources = new Map();
 
   for (const fileResult of fileResults) {
     for (const warning of fileResult.warnings || []) {
       const text = warning.text || '';
-      const source = readSourceOnce(sources, fileResult.source);
+      if (isParseErrorWarning(warning)) {
+        findings.push({
+          column: warning.column || 1,
+          file: formatPath(fileResult.source),
+          line: warning.line || 1,
+          property: null,
+          rule: warning.rule,
+          text,
+          type: 'parse-error',
+          value: null,
+        });
+        continue;
+      }
+      const source = readSourceOnce(sources, fileResult.source, readSource);
       const offScaleMatch = text.match(
         /Unexpected (?:off-scale (?:value|(?:clamp|min|max)\(\) (?:minimum|maximum|argument))|transform translation value) "([^"]+)"/,
       );
@@ -186,13 +218,13 @@ function collectCssFindings(fileResults) {
   return findings;
 }
 
-function readSourceOnce(cache, filePath) {
+function readSourceOnce(cache, filePath, readSource = readSourceFromDisk) {
   if (!filePath) {
     return null;
   }
   if (!cache.has(filePath)) {
     try {
-      cache.set(filePath, fs.readFileSync(filePath, 'utf8'));
+      cache.set(filePath, readSource(filePath));
     } catch {
       cache.set(filePath, null);
     }
@@ -301,6 +333,7 @@ module.exports = {
   findDeclarationProperty,
   getCssFindingType,
   getCssFindingValue,
+  isParseErrorWarning,
   positionToOffset,
   readSourceOnce,
   resolveScssSyntax,

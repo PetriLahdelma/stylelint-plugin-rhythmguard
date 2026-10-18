@@ -22,6 +22,7 @@ function renderText(report) {
     ...(report.scanned && report.scanned.scssFiles > 0 ? [`  SCSS files scanned       ${String(report.scanned.scssFiles - report.scanned.scssSkipped).padStart(4)}`] : []),
     ...(report.scanned && report.scanned.scssSkipped > 0 ? [`  SCSS files skipped       ${String(report.scanned.scssSkipped).padStart(4)}  (install postcss-scss to audit them)`] : []),
     ...(report.scanned && report.scanned.stylelintIgnored > 0 ? [`  Ignored by .stylelintignore ${String(report.scanned.stylelintIgnored).padStart(4)}  (not audited)`] : []),
+    ...(parseErrors(report).length > 0 ? [`  Parse errors             ${String(parseErrors(report).length).padStart(4)}  (not audited)`] : []),
     `  Files with issues        ${String(report.filesWithIssues).padStart(4)}`,
     `  Scale cleanliness        ${scoreBar(report.scaleCleanliness)}  ${report.scaleCleanliness}%`,
   ];
@@ -57,6 +58,7 @@ function renderText(report) {
     lines.push('');
   }
   appendBaselineText(lines, report);
+  appendParseErrorsText(lines, report);
 
   if (report.topAffectedFiles.length > 0) {
     lines.push('  ── TOP AFFECTED FILES ──');
@@ -68,7 +70,9 @@ function renderText(report) {
     lines.push('');
   }
 
-  if (report.totalWarnings === 0) {
+  if (report.totalWarnings === 0 && parseErrors(report).length > 0) {
+    lines.push(`  ! No findings in the stylesheets that parsed; ${parseErrors(report).length} could not be parsed and were not audited.`);
+  } else if (report.totalWarnings === 0) {
     lines.push('  ✓ No issues found. Your design-system rhythm is clean.');
   } else {
     lines.push('  → Run "npx stylelint --fix" for CSS declaration fixes.');
@@ -77,6 +81,23 @@ function renderText(report) {
   lines.push('');
 
   return `${lines.join('\n')}\n`;
+}
+
+function parseErrors(report) {
+  return (report.findings && report.findings.parseErrors) || [];
+}
+
+function appendParseErrorsText(lines, report) {
+  const errors = parseErrors(report);
+  if (errors.length === 0) {
+    return;
+  }
+  lines.push(`  ── PARSE ERRORS ──  ${errors.length} not audited`);
+  lines.push('');
+  for (const finding of errors) {
+    lines.push(`  ${finding.file}:${finding.line}:${finding.column}  ${finding.text}`);
+  }
+  lines.push('');
 }
 
 function appendTokenContractText(lines, tokenContract) {
@@ -184,6 +205,7 @@ function appendHistogram(lines, title, counts = {}) {
 module.exports = {
   appendBaselineText,
   appendHistogram,
+  appendParseErrorsText,
   appendTokenContractText,
   renderText,
 };
