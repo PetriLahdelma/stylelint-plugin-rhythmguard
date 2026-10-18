@@ -8,8 +8,10 @@ const {
   numbersEqual,
 } = require('../../core/length');
 const {
+  declarationValueSource,
   isMathFunction,
   walkRootValueNodes,
+  writeDeclarationValue,
 } = require('../../core/value-nodes');
 const {
   formatTime,
@@ -168,7 +170,8 @@ const ruleFunction = (primary, secondaryOptions) => {
         return;
       }
 
-      const parsed = valueParser(decl.value);
+      const source = declarationValueSource(decl);
+      const parsed = valueParser(source.parseText);
       const isDuration = createDurationRole(prop, parsed);
       let changed = false;
 
@@ -274,7 +277,7 @@ const ruleFunction = (primary, secondaryOptions) => {
       });
 
       if (changed) {
-        decl.value = parsed.toString();
+        writeDeclarationValue(decl, source, parsed);
       }
     });
   };

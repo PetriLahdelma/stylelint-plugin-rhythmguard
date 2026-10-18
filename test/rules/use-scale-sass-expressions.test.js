@@ -71,3 +71,36 @@ test('use-scale fixes a literal term of a fully evaluated Sass value and only re
   const fixed = await scss(code, {}, true);
   assert.equal(fixed.code, '$spacer: 1rem;\n.a { padding: 12px $spacer * .3; }');
 });
+
+// Issue #234: when a Sass expression does not resolve, its literal operands are
+// still reported by the literal walk, but rewriting one changes what the
+// expression computes, so they are never fixed.
+test('use-scale reports but never rewrites an operand of a Sass expression it cannot resolve', async () => {
+  const code = '.a { margin: $gap * 13px; padding: 13px * $n; inset: 13px / $n; gap: $a + 13px - $b; }';
+  const reported = await scss(code);
+  assert.deepEqual(reported.warnings.map((w) => w.column), [
+    code.indexOf('13px') + 1,
+    code.indexOf('13px * $n') + 1,
+    code.indexOf('13px / $n') + 1,
+    code.indexOf('13px - $b') + 1,
+  ]);
+  const fixed = await scss(code, {}, true);
+  assert.equal(fixed.code, code);
+});
+
+test('use-scale reports but never rewrites a literal argument of a Sass module function it cannot resolve', async () => {
+  const code = '@use "sass:math";\n.a { margin: math.div(13px, $n); }';
+  const reported = await scss(code);
+  assert.equal(reported.warnings.length, 1);
+  const fixed = await scss(code, {}, true);
+  assert.equal(fixed.code, code);
+});
+
+test('prefer-token reports but never rewrites an operand of a Sass expression', async () => {
+  const code = ':root { --space-3: 12px; }\n.a { margin: $gap * 12px; padding: 12px $gap; }';
+  const rules = { 'rhythmguard/prefer-token': [true] };
+  const reported = await lintCss({ code, customSyntax: 'postcss-scss', rules });
+  assert.equal(reported.warnings.length, 2);
+  const fixed = await lintCss({ code, customSyntax: 'postcss-scss', fix: true, rules });
+  assert.equal(fixed.code, ':root { --space-3: 12px; }\n.a { margin: $gap * 12px; padding: var(--space-3) $gap; }');
+});

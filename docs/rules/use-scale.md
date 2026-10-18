@@ -28,7 +28,7 @@ Opt-in groups via `propertyGroups`:
 - `typography`: `font-size`, `line-height`, `letter-spacing`, `word-spacing`
 - `size`: `width`, `height`, min/max sizes, logical `inline-size` and `block-size`
 
-Values that are `0`, percentages (when `allowPercentages` is on), hairlines (when `allowHairlines` is on, see below), keywords, or tokenized through one of `tokenFunctions` are never reported.
+Values that are `0`, percentages (when `allowPercentages` is on), hairlines (when `allowHairlines` is on, see below), keywords, or tokenized through one of `tokenFunctions` are never reported. A `var()` whose name matches `tokenPattern` is a token, but its fallback is a value: `padding: var(--space-1, 7px)` reports the `7px`, also in a nested `var(--a, var(--b, 7px))`. With `fixWith: "token"`, a fallback is never fixed to the token it is the fallback of; the literal is written instead.
 
 ## Examples
 
@@ -105,7 +105,7 @@ $spacer: 1rem;
 Unexpected off-scale value "$spacer * .3". Use scale values (nearest: 4px or 8px). Evaluates to 4.8px. (rhythmguard/use-scale)
 ```
 
-Variables resolve from the linted file first, then from `scaleSources`, the config file's token sources and installed token packages. `* / + -`, parentheses, negation and `math.div()` are understood; a term that does not resolve (an unknown variable, another function, a keyword) is left alone, as it always was. The hairline allowance and decisions apply to the evaluated value. Expressions are reported, never rewritten: `--fix` does not know whether `$spacer * .3` should become a literal or a different multiplier.
+Variables resolve from the linted file first, then from `scaleSources`, the config file's token sources and installed token packages. `* / + -`, parentheses, negation and `math.div()` are understood; a term that does not resolve (an unknown variable, another function, a keyword) is left alone, as it always was. The hairline allowance and decisions apply to the evaluated value. Expressions are reported, never rewritten: `--fix` does not know whether `$spacer * .3` should become a literal or a different multiplier. The same holds when an expression does not resolve: a literal next to a Sass operator (`$gap * 13px`, `13px / $n`) or inside a Sass module function (`math.div(13px, $n)`) is still reported, but never fixed, since rewriting an operand changes what the expression computes.
 
 ## A scale per property group
 

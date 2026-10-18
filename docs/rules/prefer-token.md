@@ -68,7 +68,7 @@ From the token sources (5), the fix writes a token only when exactly one holds t
 
 ### Token kinds
 
-A token is offered only for properties of its kind. With `tokenPattern: "^--space-|^--radius-"` and both `--space-4: 1rem` and `--radius-xl: 1rem`, `padding: 1rem` is pointed at `--space-4` and `border-radius: 1rem` at `--radius-xl`, never the other way round. Radius (`--radius-*`), typography (`--font-*`, `--font-size-*`, `--line-height-*`, `--leading-*`, `--tracking-*`) and motion tokens serve only their own properties; spacing and size tokens (`--space-*`, `--size-*`) serve spacing and size properties alike, since many systems space with `--size-*`. A token whose name declares no kind (`--gap-md`) is offered anywhere. `outline-offset` is checked with the `radius` group but takes spacing tokens: it is the gap between the border edge and the outline, and a radius token there would move every focus ring when the corner radius changes. `use-scale` with `fixWith: "token"` applies the same matching.
+A token is offered only for properties of its kind. With `tokenPattern: "^--space-|^--radius-"` and both `--space-4: 1rem` and `--radius-xl: 1rem`, `padding: 1rem` is pointed at `--space-4` and `border-radius: 1rem` at `--radius-xl`, never the other way round. Radius (`--radius-*`), typography (`--font-*`, `--font-size-*`, `--text-*`, `--fs-*`, `--line-height-*`, `--leading-*`, `--tracking-*`, `--letter-spacing-*`, `--word-spacing-*`) and motion tokens serve only their own properties; spacing and size tokens (`--space-*`, `--size-*`) serve spacing and size properties alike, since many systems space with `--size-*`. A token whose name declares no kind (`--gap-md`) is offered anywhere. `outline-offset` is checked with the `radius` group but takes spacing tokens: it is the gap between the border edge and the outline, and a radius token there would move every focus ring when the corner radius changes. `use-scale` with `fixWith: "token"` applies the same matching.
 
 ## Token file formats
 
@@ -100,6 +100,8 @@ W3C DTCG:
 Nested DTCG groups are walked recursively and the key path becomes the variable name, so `spacing.4` maps to `var(--spacing-4)`. Non-length values such as colors and fonts are ignored.
 
 Negative literals are replaced with `calc(-1 * var(--token))`, which is valid CSS; `-var()` is not.
+
+The fallback of a token `var()` is a raw value like any other: `padding: var(--brand-gap, 8px)` asks for `var(--space-2)` and the fix writes `var(--brand-gap, var(--space-2))`. A fallback that the token it falls back from already holds (`var(--space-2, 8px)` with `--space-2: 8px`) restates that token and passes. In a Sass expression, a literal next to an operator (`$gap * 12px`) or inside a Sass module function is reported but never fixed.
 
 ## Options
 

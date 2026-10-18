@@ -61,6 +61,19 @@ test('tokenFitsProperty keeps radius and type tokens out of spacing, and lets sp
   assert.equal(tokenFitsProperty('--radius-xl', null), true);
 });
 
+// Issue #239: Tailwind's --text-*, the --fs-* shorthand and tracking tokens are
+// type tokens; none of them may serve a spacing property.
+test('tokenKindOf reads --text-*, --fs-*, letter-spacing and word-spacing tokens as typography', () => {
+  for (const token of ['--text-sm', '--text-sm--line-height', '--fs-300', '--letter-spacing-wide', '--word-spacing-loose', '--mantine-letter-spacing-md']) {
+    assert.equal(tokenKindOf(token), 'typography', token);
+    assert.equal(tokenFitsProperty(token, 'padding'), false, token);
+  }
+  assert.equal(tokenFitsProperty('--text-sm', 'font-size'), true);
+  assert.equal(tokenFitsProperty('--letter-spacing-wide', 'letter-spacing'), true);
+  assert.equal(tokenKindOf('--spacing-4'), 'spacing', 'the scale word still wins on its own');
+  assert.equal(tokenKindOf('--textarea-gap'), null, 'a name that only starts with "text" declares no kind');
+});
+
 test('tokensForLength lists every matching token for the property, sorted, and other units only on request', () => {
   const index = tokenIndexFromDefinitions(definitions([['--space-layout-16', '1rem'], ['--space-internal-16', '1rem'], ['--radius-xl', '1rem'], ['--space-px-16', '16px']]));
   assert.deepEqual(tokensForLength(index, 16, 'rem', { prop: 'padding' }), ['--space-internal-16', '--space-layout-16']);
