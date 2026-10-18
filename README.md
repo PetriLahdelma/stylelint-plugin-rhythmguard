@@ -59,11 +59,15 @@ import rhythmguard from 'eslint-plugin-rhythmguard';
 
 export default [
   {
+    files: ['**/*.{js,jsx,mjs,cjs}'],
+    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
     plugins: { 'rhythmguard-tailwind': rhythmguard },
     rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { scale: [0, 4, 8, 12, 16, 24, 32] }] },
   },
 ];
 ```
+
+`files` and `ecmaFeatures.jsx` are what make ESLint read `.jsx`; without them it lints no JSX at all. TypeScript, Vue, Svelte and Astro files need their parser (`typescript-eslint`, `vue-eslint-parser`, `svelte-eslint-parser`, `astro-eslint-parser`) in a block of their own: see [Other file types](packages/eslint-plugin-rhythmguard#other-file-types).
 
 ## Rules
 

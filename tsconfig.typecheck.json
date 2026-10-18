@@ -32,6 +32,9 @@
       ],
       "stylelint-plugin-rhythmguard/rules/*": [
         "./types/rule.d.ts"
+      ],
+      "eslint-plugin-rhythmguard": [
+        "./packages/eslint-plugin-rhythmguard/index.d.ts"
       ]
     },
     "noImplicitAny": false

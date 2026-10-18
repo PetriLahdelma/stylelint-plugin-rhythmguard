@@ -11,29 +11,34 @@ const {
   toPx,
 } = require('./length');
 
+// The ESLint rule's and the audit's default scale. It is not the `rhythmic-4`
+// preset (which continues to 40, 48, 64); unifying the defaults changes
+// reports, so it waits for a major (#246).
 const DEFAULT_SCALE = [0, 4, 8, 12, 16, 24, 32];
 const DEFAULT_UNITS = ['px', 'rem', 'em'];
 // Tailwind's numeric spacing utilities are multiples of one unit: `--spacing`
-// (0.25rem, 4px) in v4, and the same 4px step in the v3 default scale.
-const DEFAULT_SPACING_UNIT_PX = 4;
+// (0.25rem) in v4, and the same 0.25rem step in the v3 default scale. In px
+// that is a quarter of the root font size: 4px at 16px, 2.5px at 10px (#247).
+const SPACING_UNIT_REM = 0.25;
 
 const ARBITRARY_SPACING_CLASS = /^(?<utility>-?(?:m(?:[trblxy])?|p(?:[trblxy])?|gap(?:-[xy])?|space-[xy]|inset(?:-[xy])?|top|right|bottom|left|translate-[xy]|scroll-(?:m|p)(?:[trblxy])?))-\[(?<rawValue>[^\]]+)\]$/;
 
 function normalizeTailwindClassOptions(option = {}) {
+  const baseFontSize =
+    typeof option.baseFontSize === 'number' &&
+    Number.isFinite(option.baseFontSize) &&
+    option.baseFontSize > 0
+      ? option.baseFontSize
+      : 16;
   return {
     allowNegative: option.allowNegative !== false,
-    baseFontSize:
-      typeof option.baseFontSize === 'number' &&
-      Number.isFinite(option.baseFontSize) &&
-      option.baseFontSize > 0
-        ? option.baseFontSize
-        : 16,
+    baseFontSize,
     scale: Array.isArray(option.scale) ? option.scale : DEFAULT_SCALE,
     spacingUnit: option.spacingUnit === false
       ? null
       : typeof option.spacingUnit === 'number' && Number.isFinite(option.spacingUnit) && option.spacingUnit > 0
         ? option.spacingUnit
-        : DEFAULT_SPACING_UNIT_PX,
+        : baseFontSize * SPACING_UNIT_REM,
     units: Array.isArray(option.units)
       ? option.units.map((unit) => String(unit).toLowerCase())
       : DEFAULT_UNITS,
@@ -167,7 +172,10 @@ function analyzeClassToken(token, options, scalePx) {
     return null;
   }
 
-  if (!options.allowNegative && parsedLength.number < 0) {
+  // `-m-[16px]` and `m-[-16px]` are both negative margins (#241).
+  const negative = match.groups.utility.startsWith('-') || parsedLength.number < 0;
+
+  if (!options.allowNegative && negative) {
     return {
       fixedToken: null,
       nearest: null,
@@ -205,12 +213,14 @@ function analyzeClassToken(token, options, scalePx) {
     ? signedNearest
     : signedNearest / options.baseFontSize;
 
-  const negative = match.groups.utility.startsWith('-') || parsedLength.number < 0;
   const wrap = (candidate) =>
     `${parsedToken.prefix}${parsedToken.leadingImportant}${candidate}${parsedToken.trailingImportant}`;
-  const utilityFix = utilityClassFor(match.groups.utility, nearest.nearest, negative, options.spacingUnit);
-  const lowerUtility = utilityClassFor(match.groups.utility, nearest.lower, negative, options.spacingUnit);
-  const upperUtility = utilityClassFor(match.groups.utility, nearest.upper, negative, options.spacingUnit);
+  // Utility classes are root-relative; an `em` value follows the element's own
+  // font size, so it keeps the arbitrary form and its unit (#247).
+  const spacingUnit = parsedLength.unit === 'em' ? null : options.spacingUnit;
+  const utilityFix = utilityClassFor(match.groups.utility, nearest.nearest, negative, spacingUnit);
+  const lowerUtility = utilityClassFor(match.groups.utility, nearest.lower, negative, spacingUnit);
+  const upperUtility = utilityClassFor(match.groups.utility, nearest.upper, negative, spacingUnit);
 
   const replacementValue = formatLength(replacementNumber, parsedLength.unit);
   const fixedCandidate = utilityFix || parsedToken.candidate.replace(match.groups.rawValue, replacementValue);

@@ -8,7 +8,7 @@ This is not a ranking of teams. It is a reading of one signal on a fixed commit,
 npx rhythmguard audit . --scale auto --format markdown
 ```
 
-Across the set: 7980 off-scale values in 8729 CSS files; 31 of 58 repositories had no discoverable spacing tokens and were measured against the `rhythmic-4` fallback, which says more about token discovery than about their CSS; 5 keep the scale in an npm package their maintainers named, which the benchmark installs at a pinned version and measures against; 2 told us the scale lives in a dependency package that carries no ladder of its own and are listed without a count; 2 told us they have no spacing scale by design and are listed without a count, and 3 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
+Across the set: 7980 off-scale values in 8729 CSS files; 31 of 58 repositories had no discoverable spacing tokens and were measured against the audit's default scale (`0, 4, 8, 12, 16, 24, 32`), which says more about token discovery than about their CSS; 5 keep the scale in an npm package their maintainers named, which the benchmark installs at a pinned version and measures against; 2 told us the scale lives in a dependency package that carries no ladder of its own and are listed without a count; 2 told us they have no spacing scale by design and are listed without a count, and 3 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
 
 ## Repositories
 
