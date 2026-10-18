@@ -56,9 +56,15 @@ function collectDeclarations({ cssFiles, externalDefinitions, skipFile = () => f
   return declarations;
 }
 
-function resolveTokenChains({ baseFontSize = 16, declarations, scale }) {
+/**
+ * `declarations` are the tokens reported on; `references` are looked up only,
+ * so a chain can end in a token package or a token of another kind without
+ * that token becoming an entry of its own (issue #259).
+ */
+function resolveTokenChains({ baseFontSize = 16, declarations, references = null, scale }) {
   const scalePx = (scale || []).map(Number).filter(Number.isFinite);
   const memo = new Map();
+  const declared = (token) => declarations.get(token) || (references ? references.get(token) : undefined);
 
   const classifyValue = (raw, stack, via) => {
     const value = String(raw).trim();
@@ -70,7 +76,7 @@ function resolveTokenChains({ baseFontSize = 16, declarations, scale }) {
     const reference = value.match(VAR_REFERENCE);
     if (reference) {
       const [, target, fallback] = reference;
-      if (declarations.has(target)) {
+      if (declared(target)) {
         via.push(target);
         return resolve(target, stack);
       }
@@ -90,7 +96,7 @@ function resolveTokenChains({ baseFontSize = 16, declarations, scale }) {
     if (stack.includes(token)) {
       return { outcomes: ['unresolved'], reason: `cycle through \`${stack[stack.length - 1]}\``, terminals: [], via: [] };
     }
-    const values = declarations.get(token);
+    const values = declared(token);
     if (!values) return { outcomes: ['unresolved'], reason: `\`${token}\` is not declared`, terminals: [], via: [] };
     const nextStack = [...stack, token];
     const outcomes = new Set();

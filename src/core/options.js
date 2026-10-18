@@ -14,6 +14,7 @@ const {
   propertyKindOf,
 } = require('./css-vocabulary');
 const { parseLengthToken } = require('./length');
+const { VALID_TOKEN_SOURCE_FORMATS } = require('./token-sources');
 const {
   getScalePreset,
   listScalePresetNames,
@@ -100,7 +101,10 @@ function isScaleSourceEntry(value) {
     return true;
   }
 
-  return isPlainObject(value) && (isNonEmptyString(value.path) || isNonEmptyString(value.file));
+  return isPlainObject(value)
+    && (isNonEmptyString(value.path) || isNonEmptyString(value.file))
+    // An unknown format is an invalid option, not a throw from the parser (issue #265).
+    && (value.format === undefined || VALID_TOKEN_SOURCE_FORMATS.has(String(value.format).trim().toLowerCase()));
 }
 
 function isScaleEntry(value) {
