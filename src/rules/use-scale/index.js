@@ -9,6 +9,7 @@ const {
   nearestText,
   numbersEqual,
   parseLengthToken,
+  pxOnScale,
   toPx,
 } = require('../../core/length');
 const {
@@ -162,7 +163,7 @@ function checkLengthValue({
     return false;
   }
 
-  const isOnScale = scalePx.some((scaleValue) => numbersEqual(scaleValue, pxValue));
+  const isOnScale = pxOnScale(scalePx, pxValue, parsedLength.unit, options.baseFontSize);
   if (isOnScale) {
     return false;
   }
@@ -249,7 +250,7 @@ const ruleFunction = (primary, secondaryOptions) => {
     options.decisions = readDecisions(options, { result, root });
     withResolvedScale(options, root);
 
-    const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);
+    const tokenRegex = createTokenRegex(options.tokenPattern, { result, root, ruleName });
     if (options.fixWith === 'token') {
       options.tokenIndex = tokenIndexFromDefinitions(
         collectTokenDefinitions({
@@ -269,7 +270,7 @@ const ruleFunction = (primary, secondaryOptions) => {
     const report = (value, decl, node, nearest, fixedValue = null, nearestUnit = 'px', extraNote = '', position = null) => {
       const lower = nearest ? formatLength(nearest.lower, nearestUnit) : 'n/a';
       const upper = nearest ? formatLength(nearest.upper, nearestUnit) : 'n/a';
-      const tokenNote = nearest ? tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit)) : '';
+      const tokenNote = nearest ? tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit), String(value).trim().startsWith('-')) : '';
       reportValueNode({
         decl,
         message: messages.rejected(value, lower, upper, [fallbackNote, tokenNote, extraNote, options.note].filter(Boolean).join(' '), position, position ? pxAside(value, options.baseFontSize) : '', getScaleStateForProperty(decl.prop.toLowerCase()).group),

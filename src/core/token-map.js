@@ -71,11 +71,12 @@ function addLengthValueMapping(map, rawLength, tokenReference, baseFontSize, ori
     origins[token] = origin;
   }
 
-  const absolute = Math.abs(parsed.number);
-  const normalizedRaw = formatLength(absolute, parsed.unit || 'px');
+  // Keyed by the signed value: a -8px token stands for -8px, never for 8px
+  // (issue #221). prefer-token negates a positive token for a negative literal.
+  const normalizedRaw = formatLength(parsed.number, parsed.unit || 'px');
   map[normalizedRaw] = token;
 
-  const px = toPx(absolute, parsed.unit, baseFontSize);
+  const px = toPx(parsed.number, parsed.unit, baseFontSize);
   if (px !== null) {
     map[`${px}px`] = token;
   }
@@ -211,23 +212,36 @@ function mergeTokenMapFromCssCustomProperties({
   };
   const origin = displayOrigin(root && root.source && root.source.input ? root.source.input.file : null);
 
+  // Every value each custom property is given in the file. A property given
+  // two values (at the root and under a media query, a theme or a data
+  // attribute) renders differently there, so no fix writes it (issue #231).
+  const valuesByProp = new Map();
   root.walkDecls((decl) => {
     const prop = decl.prop.toLowerCase();
-    if (!prop.startsWith('--')) {
+    if (!prop.startsWith('--') || !tokenRegex.test(prop)) {
       return;
     }
+    const parsed = parseTokenValueLength(decl.value);
+    const px = parsed ? toPx(parsed.number, parsed.unit, baseFontSize) : null;
+    const key = px === null ? `raw:${decl.value.trim()}` : `px:${formatLength(px, 'px')}`;
+    if (!valuesByProp.has(decl.prop)) {
+      valuesByProp.set(decl.prop, { decl, keys: new Set() });
+    }
+    valuesByProp.get(decl.prop).keys.add(key);
+  });
 
-    if (!tokenRegex.test(prop)) {
-      return;
+  for (const { decl, keys } of valuesByProp.values()) {
+    if (keys.size > 1) {
+      continue;
     }
 
     const parsed = parseTokenValueLength(decl.value);
     if (!parsed || parsed.number === 0) {
-      return;
+      continue;
     }
 
     addLengthValueMapping(nextMap, decl.value, `var(${decl.prop})`, baseFontSize, origins, origin);
-  });
+  }
 
   return nextMap;
 }
@@ -375,8 +389,7 @@ function mergeTokenMapFromTailwindSpacing({
       continue;
     }
 
-    const absolute = Math.abs(parsed.number);
-    const normalizedRaw = formatLength(absolute, parsed.unit || 'px');
+    const normalizedRaw = formatLength(parsed.number, parsed.unit || 'px');
     nextMap[normalizedRaw] = `theme(spacing.${key})`;
     if (origins && !origins[nextMap[normalizedRaw]]) {
       origins[nextMap[normalizedRaw]] = displayOrigin(resolvedPath);

@@ -93,6 +93,20 @@ function numbersEqual(a, b) {
   return Math.abs(a - b) < EPSILON;
 }
 
+/**
+ * Whether a px value is one of the scale steps. A fix writes rem and em with
+ * four decimals, so at a base font size other than 16 the written value can
+ * sit up to half a unit in the fourth decimal off the step: 0.6667rem at an
+ * 18px base is 12.0006px. For those units the comparison allows exactly that
+ * much, so a value a fix wrote is on the scale on the next run (issue #224).
+ */
+function pxOnScale(scalePx, px, unit, baseFontSize) {
+  const tolerance = unit === 'rem' || unit === 'em'
+    ? EPSILON + 0.00005 * Math.abs(baseFontSize)
+    : EPSILON;
+  return scalePx.some((entry) => Math.abs(entry - px) < tolerance);
+}
+
 function normalizeScale(scale, baseFontSize) {
   const normalized = [];
 
@@ -222,5 +236,6 @@ module.exports = {
   normalizeScaleByUnit,
   numbersEqual,
   parseLengthToken,
+  pxOnScale,
   toPx,
 };

@@ -7,6 +7,7 @@ const {
   isHairlineLength,
   numbersEqual,
   parseLengthToken,
+  pxOnScale,
   toPx,
 } = require('../../core/length');
 const {
@@ -36,9 +37,9 @@ const { validatePrimary, validatePreferTokenSecondaryOptions } = require('../val
 
 const {
   negateReplacement,
+  signedTokensForLength,
   tokenFitsProperty,
   tokenIndexFromDefinitions,
-  tokensForLength,
 } = require('../../core/token-index');
 
 const ruleName = 'rhythmguard/prefer-token';
@@ -61,30 +62,31 @@ function listTokens(tokens) {
     : references.join('');
 }
 
-function applyNegativeToken(replacement, parsedLength) {
-  return !replacement || parsedLength.number >= 0 ? replacement : negateReplacement(replacement);
-}
-
-/** The token for a raw length, and the text the fix writes (negated when the literal is). */
+/**
+ * The token for a raw length, and the text the fix writes. A key with the
+ * literal's sign holds exactly that value, so its token is written as is; a
+ * negative literal that only matches the positive key gets the token negated.
+ * Keys are signed, so a positive literal never finds a negative token (issue
+ * #221).
+ */
 function resolveTokenReplacement(tokenMap, raw, parsedLength, options) {
-  const found = (token) => ({ replacement: applyNegativeToken(token, parsedLength), token });
-
-  if (Object.prototype.hasOwnProperty.call(tokenMap, raw)) {
-    return found(tokenMap[raw]);
-  }
-
-  const absoluteRaw = formatLength(Math.abs(parsedLength.number), parsedLength.unit || 'px');
-  if (Object.prototype.hasOwnProperty.call(tokenMap, absoluteRaw)) {
-    return found(tokenMap[absoluteRaw]);
-  }
-
+  const unit = parsedLength.unit || 'px';
+  const negative = parsedLength.number < 0;
+  // [key, negate]: the literal as written, then normalized, then in px.
+  const lookups = [[raw, false], [formatLength(parsedLength.number, unit), false]];
+  if (negative) lookups.push([formatLength(Math.abs(parsedLength.number), unit), true]);
   if (options.unitStrategy === 'convert') {
-    const absPx = toPx(Math.abs(parsedLength.number), parsedLength.unit, options.baseFontSize);
-    if (absPx !== null) {
-      const pxKey = `${absPx}px`;
-      if (Object.prototype.hasOwnProperty.call(tokenMap, pxKey)) {
-        return found(tokenMap[pxKey]);
-      }
+    const px = toPx(parsedLength.number, parsedLength.unit, options.baseFontSize);
+    if (px !== null) {
+      lookups.push([`${px}px`, false]);
+      if (negative) lookups.push([`${Math.abs(px)}px`, true]);
+    }
+  }
+
+  for (const [key, negate] of lookups) {
+    if (Object.prototype.hasOwnProperty.call(tokenMap, key)) {
+      const token = tokenMap[key];
+      return { replacement: negate ? negateReplacement(token) : token, token };
     }
   }
 
@@ -98,15 +100,16 @@ function resolveTokenReplacement(tokenMap, raw, parsedLength, options) {
  * token in another unit, or several tokens, are named but never written.
  */
 function resolveFromIndex(tokenIndex, parsedLength, prop, options) {
-  const px = toPx(Math.abs(parsedLength.number), parsedLength.unit || 'px', options.baseFontSize);
+  const px = toPx(parsedLength.number, parsedLength.unit || 'px', options.baseFontSize);
   if (px === null || tokenIndex.length === 0) {
     return { candidates: [] };
   }
   const unit = parsedLength.unit || 'px';
-  const sameUnit = tokensForLength(tokenIndex, px, unit, { prop });
-  const candidates = sameUnit.length > 0 || options.unitStrategy !== 'convert'
+  const sameUnit = signedTokensForLength(tokenIndex, px, unit, { prop });
+  const found = sameUnit.tokens.length > 0 || options.unitStrategy !== 'convert'
     ? sameUnit
-    : tokensForLength(tokenIndex, px, unit, { anyUnit: true, prop });
+    : signedTokensForLength(tokenIndex, px, unit, { anyUnit: true, prop });
+  const candidates = found.tokens;
   if (candidates.length !== 1) {
     return { candidates };
   }
@@ -114,9 +117,9 @@ function resolveFromIndex(tokenIndex, parsedLength, prop, options) {
   const entry = tokenIndex.find((item) => item.token === candidates[0]);
   return {
     candidates,
-    fixable: sameUnit.length === 1,
+    fixable: sameUnit.tokens.length === 1,
     origin: entry ? entry.file : null,
-    replacement: applyNegativeToken(token, parsedLength),
+    replacement: found.negate ? negateReplacement(token) : token,
     token,
   };
 }
@@ -143,7 +146,7 @@ const ruleFunction = (primary, secondaryOptions) => {
 
     withResolvedScale(options, root);
 
-    const tokenRegex = createTokenRegex(options.tokenPattern, result, ruleName);
+    const tokenRegex = createTokenRegex(options.tokenPattern, { result, root, ruleName });
     const origins = {};
     const tokenMap = buildEffectiveTokenMap({
       options,
@@ -253,7 +256,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           } else {
             const absPx = toPx(Math.abs(parsedLength.number), parsedLength.unit, options.baseFontSize);
             if (absPx !== null) {
-              const onScale = scalePx.some((entry) => numbersEqual(entry, absPx));
+              const onScale = pxOnScale(scalePx, absPx, parsedLength.unit, options.baseFontSize);
               if (onScale) {
                 return false;
               }

@@ -10,7 +10,7 @@ const assert = require('node:assert/strict');
 const test = require('node:test');
 
 const { addDefinition } = require('../../src/core/token-sources');
-const { negateReplacement, tokenFitsProperty, tokenForLength, tokenIndexFromDefinitions, tokenKindOf, tokensForLength } = require('../../src/core/token-index');
+const { negateReplacement, replacementFor, signedTokensForLength, tokenFitsProperty, tokenForLength, tokenIndexFromDefinitions, tokenKindOf, tokensForLength } = require('../../src/core/token-index');
 
 function definitions(entries) {
   const map = new Map();
@@ -84,4 +84,32 @@ test('no property outside the radius corners resolves to a radius token', () => 
 test('outline-offset takes spacing tokens: it is the gap to the outline, not a corner', () => {
   assert.equal(tokenFitsProperty('--space-2', 'outline-offset'), true);
   assert.equal(tokenFitsProperty('--radius-sm', 'outline-offset'), false);
+});
+
+test('tokenIndexFromDefinitions keeps the sign, so a negative token serves only a negative value (issue #221)', () => {
+  const index = tokenIndexFromDefinitions(definitions([['--space-neg-2', '-8px'], ['--space-3', '12px']]));
+  assert.deepEqual(index.map((entry) => [entry.token, entry.px]), [['--space-neg-2', -8], ['--space-3', 12]]);
+  assert.equal(tokenForLength(index, 8, 'px'), null, 'a positive value never gets the -8px token');
+  assert.equal(tokenForLength(index, -8, 'px'), 'var(--space-neg-2)');
+  assert.deepEqual(signedTokensForLength(index, -8, 'px'), { negate: false, tokens: ['--space-neg-2'] });
+  assert.deepEqual(signedTokensForLength(index, -12, 'px'), { negate: true, tokens: ['--space-3'] });
+  assert.deepEqual(signedTokensForLength(index, 8, 'px'), { negate: false, tokens: [] });
+});
+
+test('tokenIndexFromDefinitions leaves out a token that holds more than one value (issue #231)', () => {
+  const map = definitions([['--space-2', '8px'], ['--space-3', '12px'], ['--space-4', '16px']]);
+  addDefinition(map, { baseFontSize: 16, file: 'tokens.css', scope: 'media', source: 'tokens.css', token: '--space-3', value: '20px' });
+  addDefinition(map, { baseFontSize: 16, file: 'tokens.css', scope: 'other', source: 'tokens.css', token: '--space-4', value: '1rem' });
+  addDefinition(map, { baseFontSize: 16, file: 'tokens.css', scope: 'other', source: 'tokens.css', token: '--space-2', value: 'var(--density-2)' });
+  const index = tokenIndexFromDefinitions(map);
+  assert.deepEqual(index.map((entry) => [entry.token, entry.unit]), [['--space-4', 'px'], ['--space-4', 'rem']], 'the same value in two units is still one value');
+});
+
+test('replacementFor with unitStrategy "exact" compares the nearest value in px (issue #223)', () => {
+  const tokenIndex = tokenIndexFromDefinitions(definitions([['--space-a', '0.0625rem'], ['--space-1', '1rem']]));
+  const options = { baseFontSize: 16, fixWith: 'token', tokenIndex, unitStrategy: 'exact', units: ['px', 'rem', 'em'] };
+  assert.equal(replacementFor({ number: 1.1, unit: 'rem' }, 1, options, 'padding'), 'var(--space-1)');
+  assert.equal(replacementFor({ number: -1.1, unit: 'rem' }, 1, options, 'margin'), 'calc(-1 * var(--space-1))');
+  assert.equal(replacementFor({ number: 1.6, unit: 'rem' }, 2, options, 'padding'), '2rem', 'no token holds 2rem, so the literal');
+  assert.equal(replacementFor({ number: 0.9, unit: 'rem' }, 16, { ...options, unitStrategy: 'convert' }, 'padding'), 'var(--space-1)', 'convert passes px already');
 });

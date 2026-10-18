@@ -13,12 +13,14 @@ const { declarationValueIndex } = require('../core/value-nodes');
  * against the root and replaced with the historical default so the file still
  * lints instead of throwing inside Stylelint.
  */
-function createTokenRegex(tokenPattern, result, ruleName) {
+function createTokenRegex(tokenPattern, { result, root, ruleName }) {
   try {
     return new RegExp(tokenPattern);
   } catch {
+    // Stylelint throws on a report without a node, so the root carries it (issue #222).
     stylelint.utils.report({
       message: `Invalid tokenPattern regex: ${tokenPattern}`,
+      node: root,
       result,
       ruleName,
     });
