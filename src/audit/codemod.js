@@ -9,7 +9,7 @@ const { numbersEqual, parseLengthToken, toPx } = require('../core/length');
 const { negateReplacement } = require('../core/token-index');
 const { isTokenFunction, propertyMatches, walkRootValueNodes } = require('../core/value-nodes');
 const { formatPath } = require('./shared');
-const { isCssFile, isScssFile, walkFiles } = require('./scan/files');
+const { isCssFile, isPathInside, isScssFile, isTemplateFile, walkFiles } = require('./scan/files');
 const { resolveScssSyntax } = require('./scan/stylesheets');
 
 /**
@@ -136,10 +136,26 @@ function parseStylesheet(filePath, source) {
  */
 function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], properties = null, px, replacement, replacements, write = false }) {
   const rootDir = path.resolve(process.cwd(), dir);
-  const files = walkFiles(rootDir, ignorePatterns).cssFiles.filter(isCssFile).sort();
+  const walked = walkFiles(rootDir, ignorePatterns);
+  const files = walked.cssFiles.filter(isCssFile).sort();
   const results = [];
-  const skipped = [];
+  const skipped = walked.linksOutsideRoot
+    .filter((link) => !isTemplateFile(link))
+    .map((link) => ({ file: formatPath(path.join(rootDir, link)), reason: 'symbolic link to a path outside the directory; not followed' }));
+  const realRoot = fs.realpathSync(rootDir);
+  const rewritten = new Set();
   for (const filePath of files) {
+    // Never write through a symbolic link: a file is rewritten only at its own
+    // path inside the directory, and only once (#289).
+    const realPath = writableRealPath(filePath, rootDir, realRoot);
+    if (!realPath) {
+      skipped.push({ file: formatPath(filePath), reason: 'reached through a symbolic link; rewrite the file it points to instead' });
+      continue;
+    }
+    if (rewritten.has(realPath)) {
+      continue;
+    }
+    rewritten.add(realPath);
     const source = fs.readFileSync(filePath, 'utf8');
     let parsed;
     try {
@@ -163,6 +179,24 @@ function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], properties = 
     results.push({ changes, file: formatPath(filePath) });
   }
   return { results, skipped };
+}
+
+/**
+ * The real path of `filePath` when it is the file's own path: no symbolic link
+ * between `rootDir` and the file, and the file inside `rootDir`. Null otherwise.
+ */
+function writableRealPath(filePath, rootDir, realRoot) {
+  let realPath;
+  try {
+    if (fs.lstatSync(filePath).isSymbolicLink()) {
+      return null;
+    }
+    realPath = fs.realpathSync(filePath);
+  } catch {
+    return null;
+  }
+  const expected = path.join(realRoot, path.relative(rootDir, filePath));
+  return realPath === expected && isPathInside(realRoot, realPath) ? realPath : null;
 }
 
 module.exports = {

@@ -113,43 +113,72 @@ function git(cwd, ...args) {
   return result.stdout;
 }
 
+const OUTSIDE_CSS = '.outside { margin: 13px; }\n';
+
 function symlinkFixture() {
   const dir = tempDir('rhythmguard-symlinks-');
-  write(dir, 'real/r.css', '.r { margin: 13px; }\n');
-  write(dir, 'src/own.css', '.o { padding: 21px; }\n');
-  fs.symlinkSync('../real', path.join(dir, 'src', 'linked'));
-  fs.symlinkSync('../real/r.css', path.join(dir, 'src', 'l.css'));
+  write(dir, 'src/real/r.css', '.r { margin: 13px; }\n');
+  write(dir, 'src/own.css', '.o { padding: 13px; }\n');
+  // Only reachable through a link: its own directory is skipped (node_modules).
+  write(dir, 'src/node_modules/shared.css', '.s { gap: 13px; }\n');
+  fs.symlinkSync('node_modules/shared.css', path.join(dir, 'src', 'shared.css'));
   // Reached directly and through a link: scanned once, under its own path.
+  fs.symlinkSync('real', path.join(dir, 'src', 'linked'));
+  fs.symlinkSync('real/r.css', path.join(dir, 'src', 'l.css'));
   fs.symlinkSync('own.css', path.join(dir, 'src', 'alias.css'));
-  // A link back up the tree is a cycle, not an endless walk.
-  fs.symlinkSync('..', path.join(dir, 'src', 'loop'));
-  fs.symlinkSync('missing.css', path.join(dir, 'src', 'broken.css'));
+  // Links that leave the scanned directory are never followed.
+  write(dir, 'outside/o.css', OUTSIDE_CSS);
+  fs.symlinkSync('../outside/o.css', path.join(dir, 'src', 'out.css'));
+  fs.symlinkSync('../outside', path.join(dir, 'src', 'outdir'));
   return dir;
 }
 
-test('the audit follows symlinked files and directories, once per file, without looping (#289)', () => {
+function offScaleFiles(report) {
+  return [...new Set(report.findings.css.filter((finding) => finding.type === 'off-scale').map((finding) => finding.file))].sort();
+}
+
+test('the audit follows symlinks inside the directory, once per file, without looping, and never outside it (#289)', () => {
   const dir = symlinkFixture();
+  // A link back up the tree is a cycle, not an endless walk; a broken link is skipped.
+  fs.symlinkSync('..', path.join(dir, 'src', 'real', 'up'));
+  fs.symlinkSync('missing.css', path.join(dir, 'src', 'broken.css'));
+
   const report = json(audit(dir, 'src', '--format', 'json-v1'));
-  assert.equal(report.cssFilesScanned, 2);
-  assert.deepEqual(
-    [...new Set(report.findings.css.filter((finding) => finding.type === 'off-scale').map((finding) => finding.file))].sort(),
-    ['src/l.css', 'src/own.css'],
-  );
+  assert.equal(report.cssFilesScanned, 3);
+  assert.deepEqual(offScaleFiles(report), ['src/own.css', 'src/real/r.css', 'src/shared.css']);
+  assert.equal(report.scanned.linksOutsideRoot, 2);
+
+  assert.match(audit(dir, 'src').stdout, /Links not followed\s+2 {2}\(they point outside the scanned directory\)/);
+  assert.match(audit(dir, 'src', '--format', 'markdown').stdout, /\| Symbolic links not followed \(they point outside the scanned directory\) \| 2 \|/);
+  assert.equal(json(audit(dir, '.', '--format', 'json-v1')).scanned.linksOutsideRoot, undefined, 'from the parent the same links stay inside');
 });
 
-test('--staged follows a staged symlink and does not count its target twice (#289)', () => {
+test('--staged follows a staged symlink inside the directory, not one that leaves it, and counts a target once (#289)', () => {
   const dir = symlinkFixture();
-  fs.unlinkSync(path.join(dir, 'src', 'loop'));
-  fs.unlinkSync(path.join(dir, 'src', 'broken.css'));
   git(dir, 'init', '-q');
   git(dir, 'add', '-A');
 
   const report = json(audit(dir, 'src', '--staged', '--format', 'json-v1'));
-  assert.deepEqual(
-    [...new Set(report.findings.css.filter((finding) => finding.type === 'off-scale').map((finding) => finding.file))].sort(),
-    ['src/l.css', 'src/own.css'],
-  );
-  assert.equal(report.cssFilesScanned, 2);
+  assert.deepEqual(offScaleFiles(report), ['src/own.css', 'src/real/r.css', 'src/shared.css']);
+  assert.equal(report.cssFilesScanned, 3);
+  assert.equal(report.scanned.linksOutsideRoot, 1, 'the linked file; git lists a directory link as a link, not as its files');
+});
+
+test('fix --write never writes through a symbolic link or outside the directory (#289)', () => {
+  const dir = symlinkFixture();
+  const result = spawnSync(process.execPath, [cliPath, 'fix', 'src', '--value', '13px', '--to', '12px', '--write'], { cwd: dir, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+
+  assert.equal(fs.readFileSync(path.join(dir, 'outside', 'o.css'), 'utf8'), OUTSIDE_CSS, 'the file outside is byte-identical');
+  assert.equal(fs.readFileSync(path.join(dir, 'src', 'node_modules', 'shared.css'), 'utf8'), '.s { gap: 13px; }\n');
+  assert.equal(fs.readFileSync(path.join(dir, 'src', 'real', 'r.css'), 'utf8'), '.r { margin: 12px; }\n', 'an in-root file is rewritten at its own path');
+  assert.equal(fs.readFileSync(path.join(dir, 'src', 'own.css'), 'utf8'), '.o { padding: 12px; }\n');
+  assert.ok(fs.lstatSync(path.join(dir, 'src', 'shared.css')).isSymbolicLink(), 'the link is still a link');
+
+  assert.match(result.stdout, /^2 replacements in 2 files$/m);
+  assert.match(result.stdout, /^skipped src\/shared\.css: reached through a symbolic link; rewrite the file it points to instead$/m);
+  assert.match(result.stdout, /^skipped src\/out\.css: symbolic link to a path outside the directory; not followed$/m);
+  assert.match(result.stdout, /^skipped src\/outdir: symbolic link to a path outside the directory; not followed$/m);
 });
 
 test('an invalid baseline file is named in the error (#290)', () => {

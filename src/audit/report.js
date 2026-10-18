@@ -101,6 +101,7 @@ async function createAuditReport(options) {
     dir: parsed.dir,
     externalTokenDefinitions: tokenSourceResult.definitions,
     includeMotion: parsed.includeMotion,
+    linksOutsideRoot: scanFiles.linksOutsideRoot || [],
     motionFindings,
     parseErrorFindings,
     readSource,

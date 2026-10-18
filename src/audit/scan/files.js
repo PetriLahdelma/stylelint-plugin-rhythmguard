@@ -31,15 +31,21 @@ function assertDirectory(dir) {
 }
 
 /**
- * Every stylesheet and template under `rootDir`. Symbolic links are followed:
- * a linked directory is walked unless it is one of the directories being
- * walked already (a cycle), and a file reached by more than one path is
- * scanned once, under its own path when the walk reaches it directly, else
- * under the first linked path in sorted order (#289). A broken link is skipped.
+ * Every stylesheet and template under `rootDir`. Symbolic links are followed
+ * when they resolve inside `rootDir`: a linked directory is walked unless it
+ * is one of the directories being walked already (a cycle), and a file
+ * reached by more than one path is scanned once, under its own path when the
+ * walk reaches it directly, else under the first linked path in sorted order
+ * (#289). A link that resolves outside `rootDir` is never followed, so the
+ * audit cannot read, and `rhythmguard fix` cannot rewrite, files outside the
+ * directory it was given; such links are returned in `linksOutsideRoot`
+ * (root-relative). A broken link is skipped.
  */
 function walkFiles(rootDir, ignorePatterns = []) {
   const ignoreMatchers = createIgnoreMatchers(ignorePatterns);
+  const realRoot = realPathOf(rootDir) || rootDir;
   const found = [];
+  const linksOutsideRoot = [];
 
   // `realDir` is where `currentDir` really is. Below a plain directory that is
   // its real path plus the entry name, so only a link costs a realpath call.
@@ -65,6 +71,12 @@ function walkFiles(rootDir, ignorePatterns = []) {
       if (!realPath) {
         continue;
       }
+      if (link && !isPathInside(realRoot, realPath)) {
+        if (kind.isDirectory() || isCssFile(fullPath) || isTemplateFile(fullPath)) {
+          linksOutsideRoot.push(relativePath);
+        }
+        continue;
+      }
 
       if (kind.isDirectory()) {
         if (!ancestors.has(realPath)) {
@@ -79,7 +91,6 @@ function walkFiles(rootDir, ignorePatterns = []) {
     }
   }
 
-  const realRoot = realPathOf(rootDir) || rootDir;
   walk(rootDir, realRoot, new Set([realRoot]), false);
 
   const chosen = new Map();
@@ -97,7 +108,7 @@ function walkFiles(rootDir, ignorePatterns = []) {
     }
     (isCssFile(file.fullPath) ? cssFiles : templateFiles).push(file.fullPath);
   }
-  return { cssFiles, templateFiles };
+  return { cssFiles, linksOutsideRoot: linksOutsideRoot.sort(), templateFiles };
 }
 
 // A direct path beats a linked one; between two of a kind, the first in sorted order.
@@ -143,6 +154,7 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
   const ignoreMatchers = createIgnoreMatchers(ignorePatterns);
   const seen = new Set();
   const found = [];
+  const linksOutsideRoot = [];
 
   for (const entry of changed) {
     const realPath = path.resolve(topLevel, entry.path);
@@ -175,10 +187,16 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
     }
 
     seen.add(fullPath);
+    const fileRealPath = realPathOf(fullPath) || fullPath;
+    // A link that resolves outside the scanned directory is not followed (#289).
+    if (!isPathInside(realRootDir, fileRealPath)) {
+      linksOutsideRoot.push(relativePath);
+      continue;
+    }
     found.push({
       blob: parsed.staged && !link ? entry.blob : null,
       fullPath,
-      realPath: realPathOf(fullPath) || fullPath,
+      realPath: fileRealPath,
       viaLink: link || isSymbolicLink(fullPath),
     });
   }
@@ -206,6 +224,7 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
 
   const result = {
     cssFiles,
+    linksOutsideRoot: linksOutsideRoot.sort(),
     scanScope: {
       changedFiles: changed.length,
       mode: parsed.staged ? 'staged' : 'since',
