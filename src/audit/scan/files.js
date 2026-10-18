@@ -30,37 +30,101 @@ function assertDirectory(dir) {
   return resolvedDir;
 }
 
+/**
+ * Every stylesheet and template under `rootDir`. Symbolic links are followed
+ * when they resolve inside `rootDir`: a linked directory is walked unless it
+ * is one of the directories being walked already (a cycle), and a file
+ * reached by more than one path is scanned once, under its own path when the
+ * walk reaches it directly, else under the first linked path in sorted order
+ * (#289). A link that resolves outside `rootDir` is never followed, so the
+ * audit cannot read, and `rhythmguard fix` cannot rewrite, files outside the
+ * directory it was given; such links are returned in `linksOutsideRoot`
+ * (root-relative). A broken link is skipped.
+ */
 function walkFiles(rootDir, ignorePatterns = []) {
-  const cssFiles = [];
-  const templateFiles = [];
   const ignoreMatchers = createIgnoreMatchers(ignorePatterns);
+  const realRoot = realPathOf(rootDir) || rootDir;
+  const found = [];
+  const linksOutsideRoot = [];
 
-  function walk(currentDir) {
+  // `realDir` is where `currentDir` really is. Below a plain directory that is
+  // its real path plus the entry name, so only a link costs a realpath call.
+  function walk(currentDir, realDir, ancestors, viaLink) {
     for (const entry of fs.readdirSync(currentDir, { withFileTypes: true })) {
       const fullPath = path.join(currentDir, entry.name);
       const relativePath = toPosixRelativePath(rootDir, fullPath);
-
-      if (shouldIgnorePath(relativePath, entry, ignoreMatchers)) {
-        continue;
-      }
-
-      if (entry.isDirectory()) {
-        walk(fullPath);
-        continue;
-      }
-
-      if (entry.isFile()) {
-        if (isCssFile(fullPath)) {
-          cssFiles.push(fullPath);
-        } else if (isTemplateFile(fullPath)) {
-          templateFiles.push(fullPath);
+      const link = entry.isSymbolicLink();
+      let kind = entry;
+      if (link) {
+        try {
+          kind = fs.statSync(fullPath);
+        } catch {
+          continue;
         }
+      }
+
+      if (shouldIgnorePath(relativePath, { isDirectory: () => kind.isDirectory(), name: entry.name }, ignoreMatchers)) {
+        continue;
+      }
+
+      const realPath = link ? realPathOf(fullPath) : path.join(realDir, entry.name);
+      if (!realPath) {
+        continue;
+      }
+      if (link && !isPathInside(realRoot, realPath)) {
+        if (kind.isDirectory() || isCssFile(fullPath) || isTemplateFile(fullPath)) {
+          linksOutsideRoot.push(relativePath);
+        }
+        continue;
+      }
+
+      if (kind.isDirectory()) {
+        if (!ancestors.has(realPath)) {
+          walk(fullPath, realPath, new Set([...ancestors, realPath]), viaLink || link);
+        }
+        continue;
+      }
+
+      if (kind.isFile() && (isCssFile(fullPath) || isTemplateFile(fullPath))) {
+        found.push({ fullPath, realPath, viaLink: viaLink || link });
       }
     }
   }
 
-  walk(rootDir);
-  return { cssFiles, templateFiles };
+  walk(rootDir, realRoot, new Set([realRoot]), false);
+
+  const chosen = new Map();
+  for (const file of found) {
+    const current = chosen.get(file.realPath);
+    if (!current || preferPath(file, current)) {
+      chosen.set(file.realPath, file);
+    }
+  }
+  const cssFiles = [];
+  const templateFiles = [];
+  for (const file of found) {
+    if (chosen.get(file.realPath) !== file) {
+      continue;
+    }
+    (isCssFile(file.fullPath) ? cssFiles : templateFiles).push(file.fullPath);
+  }
+  return { cssFiles, linksOutsideRoot: linksOutsideRoot.sort(), templateFiles };
+}
+
+// A direct path beats a linked one; between two of a kind, the first in sorted order.
+function preferPath(candidate, current) {
+  if (candidate.viaLink !== current.viaLink) {
+    return !candidate.viaLink;
+  }
+  return candidate.fullPath < current.fullPath;
+}
+
+function realPathOf(filePath) {
+  try {
+    return fs.realpathSync(filePath);
+  } catch {
+    return null;
+  }
 }
 
 function getScanFiles(rootDir, ignorePatterns, parsed) {
@@ -87,11 +151,10 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
   // git reports the top level with symlinks resolved (/private/var on macOS);
   // compare in that form, then name files under the directory as it was given.
   const realRootDir = fs.realpathSync(rootDir);
-  const cssFiles = [];
-  const templateFiles = [];
   const ignoreMatchers = createIgnoreMatchers(ignorePatterns);
   const seen = new Set();
-  const stagedBlobs = new Map();
+  const found = [];
+  const linksOutsideRoot = [];
 
   for (const entry of changed) {
     const realPath = path.resolve(topLevel, entry.path);
@@ -103,13 +166,18 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
       continue;
     }
 
-    if (parsed.staged) {
-      // The index entry is what gets committed: a regular file blob, whatever
-      // the working tree holds now, or whether the file is still there at all.
-      if (!REGULAR_FILE_MODES.has(entry.mode)) {
-        continue;
-      }
-    } else if (!fs.existsSync(fullPath) || !fs.statSync(fullPath).isFile()) {
+    // A staged regular file is read from its index blob: that is what gets
+    // committed, whatever the working tree holds now, or whether the file is
+    // still there at all. A staged symbolic link is followed on disk, as a
+    // changed one is in a --since run (#289).
+    const link = entry.mode === SYMLINK_MODE;
+    if (parsed.staged && !REGULAR_FILE_MODES.has(entry.mode) && !link) {
+      continue;
+    }
+    if ((!parsed.staged || link) && !isFileOnDisk(fullPath)) {
+      continue;
+    }
+    if (!isCssFile(fullPath) && !isTemplateFile(fullPath)) {
       continue;
     }
 
@@ -119,20 +187,44 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
     }
 
     seen.add(fullPath);
-    if (isCssFile(fullPath)) {
-      cssFiles.push(fullPath);
-    } else if (isTemplateFile(fullPath)) {
-      templateFiles.push(fullPath);
-    } else {
+    const fileRealPath = realPathOf(fullPath) || fullPath;
+    // A link that resolves outside the scanned directory is not followed (#289).
+    if (!isPathInside(realRootDir, fileRealPath)) {
+      linksOutsideRoot.push(relativePath);
       continue;
     }
-    if (parsed.staged) {
-      stagedBlobs.set(fullPath, entry.blob);
+    found.push({
+      blob: parsed.staged && !link ? entry.blob : null,
+      fullPath,
+      realPath: fileRealPath,
+      viaLink: link || isSymbolicLink(fullPath),
+    });
+  }
+
+  // A file changed under two paths (itself and a link to it) is scanned once.
+  const chosen = new Map();
+  for (const file of found) {
+    const current = chosen.get(file.realPath);
+    if (!current || preferPath(file, current)) {
+      chosen.set(file.realPath, file);
+    }
+  }
+  const cssFiles = [];
+  const templateFiles = [];
+  const stagedBlobs = new Map();
+  for (const file of found) {
+    if (chosen.get(file.realPath) !== file) {
+      continue;
+    }
+    (isCssFile(file.fullPath) ? cssFiles : templateFiles).push(file.fullPath);
+    if (file.blob) {
+      stagedBlobs.set(file.fullPath, file.blob);
     }
   }
 
   const result = {
     cssFiles,
+    linksOutsideRoot: linksOutsideRoot.sort(),
     scanScope: {
       changedFiles: changed.length,
       mode: parsed.staged ? 'staged' : 'since',
@@ -149,6 +241,23 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
 }
 
 const REGULAR_FILE_MODES = new Set(['100644', '100755']);
+const SYMLINK_MODE = '120000';
+
+function isFileOnDisk(filePath) {
+  try {
+    return fs.statSync(filePath).isFile();
+  } catch {
+    return false;
+  }
+}
+
+function isSymbolicLink(filePath) {
+  try {
+    return fs.lstatSync(filePath).isSymbolicLink();
+  } catch {
+    return false;
+  }
+}
 
 // -z prints names raw and NUL-separated: no quoting of spaces or non-ASCII
 // bytes. diff.relative is pinned off so every name is relative to the

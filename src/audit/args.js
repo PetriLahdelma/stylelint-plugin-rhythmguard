@@ -164,8 +164,27 @@ function parsePathOption(raw, optionName) {
   return String(raw);
 }
 
+/**
+ * A number typed on the command line or written in .rhythmguardrc.json. A
+ * JSON number is taken as is; a string must be plain decimal digits, with a
+ * fraction only where one is allowed. `Number()` alone would read an empty
+ * value (an unset `$THRESHOLD` in CI) as 0 and `0x10` as 16 (#282).
+ */
+const DECIMAL_INTEGER = /^\d+$/;
+const DECIMAL_NUMBER = /^(?:\d+(?:\.\d*)?|\.\d+)$/;
+
+function parseDecimal(raw, pattern) {
+  if (typeof raw === 'number') {
+    return raw;
+  }
+  if (typeof raw === 'string' && pattern.test(raw)) {
+    return Number(raw);
+  }
+  return Number.NaN;
+}
+
 function parseNonNegativeInteger(raw, optionName) {
-  const value = Number(raw);
+  const value = parseDecimal(raw, DECIMAL_INTEGER);
   if (!Number.isInteger(value) || value < 0) {
     throw new Error(`${optionName} must be a non-negative integer.`);
   }
@@ -174,7 +193,7 @@ function parseNonNegativeInteger(raw, optionName) {
 }
 
 function parsePositiveInteger(raw, optionName) {
-  const value = Number(raw);
+  const value = parseDecimal(raw, DECIMAL_INTEGER);
   if (!Number.isInteger(value) || value <= 0) {
     throw new Error(`${optionName} must be a positive integer.`);
   }
@@ -183,7 +202,7 @@ function parsePositiveInteger(raw, optionName) {
 }
 
 function parsePercentage(raw, optionName) {
-  const value = Number(raw);
+  const value = parseDecimal(raw, DECIMAL_NUMBER);
   if (!Number.isFinite(value) || value < 0 || value > 100) {
     throw new Error(`${optionName} must be a number between 0 and 100.`);
   }
@@ -267,7 +286,7 @@ function validateScale(scale, optionName = '--scale', raw = scale) {
 }
 
 function parseBaseFontSize(raw) {
-  const value = Number(raw);
+  const value = parseDecimal(raw, DECIMAL_NUMBER);
   if (!Number.isFinite(value) || value <= 0) {
     throw new Error('--base-font-size must be a positive number.');
   }

@@ -200,14 +200,39 @@ const AGENT_TARGETS = {
 const AGENT_BLOCK_START = '<!-- rhythmguard:agents:start -->';
 const AGENT_BLOCK_END = '<!-- rhythmguard:agents:end -->';
 
+const HELP = `Usage: rhythmguard init [options]
+
+Scaffold a Rhythmguard Stylelint config for the project in the current
+directory. Detects Tailwind and Next.js, picks a profile and asks before it
+writes. When Stylelint loads a config init cannot rewrite (package.json, YAML,
+JS or TS), it prints what to add and writes nothing.
+
+Options:
+  --agents [claude|cursor|copilot|all]  Install the agent instruction packs instead (default: all)
+  --help                                Show this help message
+`;
+
+/**
+ * Init writes files, so anything it does not know stops it: `init --help`
+ * and a typo such as `--agnets` used to fall through to the interactive
+ * init and write a config (#286).
+ */
 function parseInitArgs(argv) {
-  const parsed = { agents: null };
+  const parsed = { agents: null, help: false };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
-    if (arg === '--agents') {
-      parsed.agents = String(argv[++index] || 'all').toLowerCase();
+    if (arg === '--help' || arg === '-h') {
+      parsed.help = true;
+    } else if (arg === '--agents') {
+      const next = argv[index + 1];
+      parsed.agents = next !== undefined && !next.startsWith('-') ? argv[++index].toLowerCase() : 'all';
     } else if (arg.startsWith('--agents=')) {
       parsed.agents = arg.slice('--agents='.length).toLowerCase();
+      if (!parsed.agents) {
+        throw new Error('Missing value for --agents.');
+      }
+    } else {
+      throw new Error(`Unknown option: ${arg}`);
     }
   }
   return parsed;
@@ -252,7 +277,18 @@ function installAgents(selection, cwd = process.cwd()) {
 }
 
 async function run() {
-  const args = parseInitArgs(process.argv.slice(3));
+  let args;
+  try {
+    args = parseInitArgs(process.argv.slice(3));
+  } catch (error) {
+    process.stderr.write(`${error.message}\n\n${HELP}`);
+    process.exit(1);
+  }
+
+  if (args.help) {
+    process.stdout.write(HELP);
+    return;
+  }
 
   if (args.agents) {
     let written;
@@ -342,7 +378,7 @@ async function run() {
   }
 }
 
-module.exports = { AGENT_TARGETS, detect, findActiveStylelintConfig, installAgents, run, selectProfile };
+module.exports = { AGENT_TARGETS, HELP, detect, findActiveStylelintConfig, installAgents, parseInitArgs, run, selectProfile };
 
 if (require.main === module) {
   run();

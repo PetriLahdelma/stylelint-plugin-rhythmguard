@@ -25,6 +25,29 @@ function runInit(cwd, input = 'y\n') {
   });
 }
 
+test('init --help prints the usage and writes nothing; an unknown flag is refused before any prompt (#286)', () => {
+  const fixtureDir = makeFixture('help');
+  const runWith = (...args) => spawnSync(process.execPath, [cliPath, 'init', ...args], { cwd: fixtureDir, encoding: 'utf8', input: 'y\ny\n' });
+
+  for (const flag of ['--help', '-h']) {
+    const help = runWith(flag);
+    assert.equal(help.status, 0, help.stderr);
+    assert.match(help.stdout, /^Usage: rhythmguard init \[options\]/);
+    assert.match(help.stdout, /--agents/);
+  }
+
+  const typo = runWith('--agnets', 'claude');
+  assert.equal(typo.status, 1);
+  assert.match(typo.stderr, /^Unknown option: --agnets\n\nUsage: rhythmguard init/);
+  assert.doesNotMatch(typo.stdout, /Overwrite|Write/);
+
+  const empty = runWith('--agents=');
+  assert.equal(empty.status, 1);
+  assert.match(empty.stderr, /^Missing value for --agents\./);
+
+  assert.deepEqual(fs.readdirSync(fixtureDir), [], 'nothing was written');
+});
+
 test('init writes recommended config for plain CSS projects', () => {
   const fixtureDir = makeFixture('plain');
 

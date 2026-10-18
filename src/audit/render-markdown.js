@@ -1,7 +1,7 @@
 'use strict';
 
 const { sortCountMap } = require('./contract');
-const { escapeMarkdown } = require('./render-utils');
+const { escapeMarkdown, markdownCode, tableCode } = require('./render-utils');
 
 function describeScaleSource(scale) {
   if (scale.rejected) {
@@ -17,7 +17,7 @@ function renderMarkdown(report) {
     '# Rhythmguard Design-System Audit',
     '',
     ...(report.baseline ? [`**Since baseline:** ${report.baseline.resolvedFindingsCount} resolved, ${report.baseline.newFindingsCount} new.`, ''] : []),
-    `Directory: \`${report.directory}\``,
+    `Directory: ${markdownCode(report.directory)}`,
     '',
     '## Summary',
     '',
@@ -28,6 +28,7 @@ function renderMarkdown(report) {
     ...(report.scanned && report.scanned.scssFiles > 0 ? [`| SCSS files scanned | ${report.scanned.scssFiles - report.scanned.scssSkipped} |`] : []),
     ...(report.scanned && report.scanned.scssSkipped > 0 ? [`| SCSS files skipped (install postcss-scss) | ${report.scanned.scssSkipped} |`] : []),
     ...(report.scanned && report.scanned.stylelintIgnored > 0 ? [`| Stylesheets ignored by .stylelintignore (not audited) | ${report.scanned.stylelintIgnored} |`] : []),
+    ...(report.scanned && report.scanned.linksOutsideRoot > 0 ? [`| Symbolic links not followed (they point outside the scanned directory) | ${report.scanned.linksOutsideRoot} |`] : []),
     ...(parseErrors(report).length > 0 ? [`| Stylesheets that failed to parse (not audited) | ${parseErrors(report).length} |`] : []),
     `| Files with issues | ${report.filesWithIssues} |`,
     `| Total findings | ${report.totalWarnings} |`,
@@ -36,7 +37,7 @@ function renderMarkdown(report) {
 
   if (report.scale) {
     lines.push(`| Scale | ${report.scale.values.join(', ')} |`);
-    lines.push(`| Scale source | ${describeScaleSource(report.scale)} |`);
+    lines.push(`| Scale source | ${escapeMarkdown(describeScaleSource(report.scale))} |`);
   }
 
   if (report.decisions) {
@@ -66,7 +67,7 @@ function renderMarkdown(report) {
     lines.push('| File | Findings |');
     lines.push('| --- | ---: |');
     for (const { file, count } of report.topAffectedFiles) {
-      lines.push(`| \`${escapeMarkdown(file)}\` | ${count} |`);
+      lines.push(`| ${tableCode(file)} | ${count} |`);
     }
     lines.push('');
   }
@@ -77,7 +78,7 @@ function renderMarkdown(report) {
     lines.push('| File | Class | Suggested class |');
     lines.push('| --- | --- | --- |');
     for (const finding of report.findings.tailwind.slice(0, 10)) {
-      lines.push(`| \`${escapeMarkdown(`${finding.file}:${finding.line}`)}\` | \`${escapeMarkdown(finding.token)}\` | \`${escapeMarkdown(finding.fixedToken || 'n/a')}\` |`);
+      lines.push(`| ${tableCode(`${finding.file}:${finding.line}`)} | ${tableCode(finding.token)} | ${tableCode(finding.fixedToken || 'n/a')} |`);
     }
     lines.push('');
   }
@@ -115,7 +116,7 @@ function appendParseErrorsMarkdown(lines, report) {
   lines.push('| File | Error |');
   lines.push('| --- | --- |');
   for (const finding of errors) {
-    lines.push(`| \`${escapeMarkdown(`${finding.file}:${finding.line}:${finding.column}`)}\` | ${escapeMarkdown(finding.text)} |`);
+    lines.push(`| ${tableCode(`${finding.file}:${finding.line}:${finding.column}`)} | ${escapeMarkdown(finding.text)} |`);
   }
   lines.push('');
 }
@@ -138,8 +139,8 @@ function appendTokenChainsMarkdown(lines, chains) {
     for (const entry of chains.entries.slice(0, 50)) {
       const detail = entry.reason
         ? entry.reason
-        : entry.terminals.map((terminal) => `\`${terminal}\``).join(', ');
-      lines.push(`| \`${escapeMarkdown(entry.token)}\` | ${entry.outcome} | ${detail}${entry.via.length > 0 ? ` via ${entry.via.map((name) => `\`${name}\``).join(' → ')}` : ''} |`);
+        : entry.terminals.map((terminal) => tableCode(terminal)).join(', ');
+      lines.push(`| ${tableCode(entry.token)} | ${entry.outcome} | ${detail}${entry.via.length > 0 ? ` via ${entry.via.map((name) => tableCode(name)).join(' → ')}` : ''} |`);
     }
     lines.push('');
   }
@@ -164,16 +165,16 @@ function appendTokenLaddersMarkdown(lines, ladders) {
     const flagged = new Map();
     for (const problem of entry.problems) {
       const where = problem.end === 'both' ? '' : ` at ${problem.end}`;
-      const note = `${LADDER_PROBLEM_TEXT[problem.type]}${where} with \`${problem.tokens[0]}\``;
+      const note = `${LADDER_PROBLEM_TEXT[problem.type]}${where} with ${tableCode(problem.tokens[0])}`;
       flagged.set(problem.tokens[1], [...(flagged.get(problem.tokens[1]) || []), note]);
     }
-    const aliasNote = entry.aliases ? ` (also aliased as ${entry.aliases.map((alias) => `\`${escapeMarkdown(alias)}\``).join(', ')})` : '';
-    lines.push(`**\`${escapeMarkdown(entry.prefix)}\`**${aliasNote}`);
+    const aliasNote = entry.aliases ? ` (also aliased as ${entry.aliases.map((alias) => markdownCode(alias)).join(', ')})` : '';
+    lines.push(`**${markdownCode(entry.prefix)}**${aliasNote}`);
     lines.push('');
     lines.push('| Token | Min | Max | Problem |');
     lines.push('| --- | --- | --- | --- |');
     for (const step of entry.steps) {
-      lines.push(`| \`${escapeMarkdown(step.token)}\` | ${step.min || 'fluid'} | ${step.max || 'fluid'} | ${(flagged.get(step.token) || []).join('; ')} |`);
+      lines.push(`| ${tableCode(step.token)} | ${step.min || 'fluid'} | ${step.max || 'fluid'} | ${(flagged.get(step.token) || []).join('; ')} |`);
     }
     lines.push('');
   }
@@ -208,7 +209,7 @@ function appendTokenContractMarkdown(lines, tokenContract) {
     lines.push('| File | Format | Tokens | Warnings |');
     lines.push('| --- | --- | ---: | --- |');
     for (const source of sources.slice(0, 10)) {
-      lines.push(`| \`${escapeMarkdown(source.file)}\` | \`${source.format}\` | ${source.tokenCount} | \`${escapeMarkdown(source.warnings.join('; ') || 'none')}\` |`);
+      lines.push(`| ${tableCode(source.file)} | ${tableCode(source.format)} | ${source.tokenCount} | ${tableCode(source.warnings.join('; ') || 'none')} |`);
     }
     lines.push('');
   }
@@ -219,7 +220,7 @@ function appendTokenContractMarkdown(lines, tokenContract) {
     lines.push('| Token | Files |');
     lines.push('| --- | --- |');
     for (const entry of missingTokens.slice(0, 10)) {
-      lines.push(`| \`${escapeMarkdown(entry.token)}\` | \`${escapeMarkdown(entry.files.join(', '))}\` |`);
+      lines.push(`| ${tableCode(entry.token)} | ${tableCode(entry.files.join(', '))} |`);
     }
     lines.push('');
   }
@@ -230,7 +231,7 @@ function appendTokenContractMarkdown(lines, tokenContract) {
     lines.push('| Token | Value |');
     lines.push('| --- | --- |');
     for (const entry of unusedTokens.slice(0, 10)) {
-      lines.push(`| \`${escapeMarkdown(entry.token)}\` | \`${escapeMarkdown((entry.values || []).join(', ') || 'n/a')}\` |`);
+      lines.push(`| ${tableCode(entry.token)} | ${tableCode((entry.values || []).join(', ') || 'n/a')} |`);
     }
     lines.push('');
   }
@@ -241,7 +242,7 @@ function appendTokenContractMarkdown(lines, tokenContract) {
     lines.push('| Value | Count | Files |');
     lines.push('| --- | ---: | --- |');
     for (const entry of rawValueCandidates.slice(0, 10)) {
-      lines.push(`| \`${escapeMarkdown(entry.value)}\` | ${entry.count} | \`${escapeMarkdown(entry.files.join(', '))}\` |`);
+      lines.push(`| ${tableCode(entry.value)} | ${entry.count} | ${tableCode(entry.files.join(', '))} |`);
     }
     lines.push('');
   }
@@ -252,7 +253,7 @@ function appendTokenContractMarkdown(lines, tokenContract) {
     lines.push('| Value | Count | Tokens |');
     lines.push('| --- | ---: | --- |');
     for (const entry of rawValueMatches.slice(0, 10)) {
-      lines.push(`| \`${escapeMarkdown(entry.value)}\` | ${entry.count} | \`${escapeMarkdown(entry.tokens.join(', '))}\` |`);
+      lines.push(`| ${tableCode(entry.value)} | ${entry.count} | ${tableCode(entry.tokens.join(', '))} |`);
     }
     lines.push('');
   }
@@ -263,7 +264,7 @@ function appendTokenContractMarkdown(lines, tokenContract) {
     lines.push('| Value | Tokens |');
     lines.push('| --- | --- |');
     for (const entry of conflictingTokens.slice(0, 10)) {
-      lines.push(`| \`${escapeMarkdown(entry.value)}\` | \`${escapeMarkdown(entry.tokens.join(', '))}\` |`);
+      lines.push(`| ${tableCode(entry.value)} | ${tableCode(entry.tokens.join(', '))} |`);
     }
     lines.push('');
   }
@@ -290,13 +291,13 @@ function appendBaselineMarkdown(lines, report) {
     lines.push('| New finding | Location |');
     lines.push('| --- | --- |');
     for (const finding of report.baseline.newFindings.slice(0, 10)) {
-      lines.push(`| \`${escapeMarkdown(finding.text)}\` | \`${escapeMarkdown(`${finding.file}:${finding.line}`)}\` |`);
+      lines.push(`| ${tableCode(finding.text)} | ${tableCode(`${finding.file}:${finding.line}`)} |`);
     }
     lines.push('');
   }
 
   if (report.baselineWritten) {
-    lines.push(`Baseline written: \`${escapeMarkdown(report.baselineWritten.file)}\``);
+    lines.push(`Baseline written: ${markdownCode(report.baselineWritten.file)}`);
     lines.push('');
   }
 }
@@ -313,7 +314,7 @@ function appendMarkdownCounts(lines, title, counts, label = 'Value') {
   lines.push(`| ${label} | Count |`);
   lines.push('| --- | ---: |');
   for (const [value, count] of entries) {
-    lines.push(`| \`${escapeMarkdown(value)}\` | ${count} |`);
+    lines.push(`| ${tableCode(value)} | ${count} |`);
   }
   lines.push('');
 }

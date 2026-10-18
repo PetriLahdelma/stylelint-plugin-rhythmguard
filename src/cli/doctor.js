@@ -8,6 +8,16 @@ const { normalizeDecisions } = require('../core/decisions');
 const { readJsonFile } = require('../core/json');
 const { normalizeTokenSourceFormat } = require('../core/token-sources');
 
+const HELP = `Usage: rhythmguard doctor
+
+Validate the Rhythmguard setup in the current directory: Stylelint, its config,
+the rules it references, .rhythmguardrc.json, token sources and the baseline.
+Exits 1 when a check fails.
+
+Options:
+  --help        Show this help message
+`;
+
 const cwd = process.cwd();
 let issues = 0;
 
@@ -342,6 +352,16 @@ function checkRhythmguardBaseline(audit) {
 }
 
 function run() {
+  // Doctor takes no arguments; --help prints the usage, anything else is refused (#286).
+  for (const arg of process.argv.slice(3)) {
+    if (arg === '--help' || arg === '-h') {
+      process.stdout.write(HELP);
+      return;
+    }
+    process.stderr.write(`Unknown option: ${arg}\n\n${HELP}`);
+    process.exit(1);
+  }
+
   process.stdout.write('\nRhythmguard Doctor\n\n');
 
   const stylelintOk = checkStylelint();
@@ -365,4 +385,8 @@ function run() {
   process.exit(stylelintOk && issues === 0 ? 0 : 1);
 }
 
-run();
+module.exports = { HELP, run };
+
+if (require.main === module) {
+  run();
+}

@@ -96,6 +96,29 @@ test('fix refuses an unparsable value or a missing target', () => {
   assert.match(missing.stderr, /--to/);
 });
 
+test('fix refuses a missing directory or a file with the audit\'s message, not a stack trace (#288)', () => {
+  const dir = fixture();
+  const missing = runFix(dir, './nope', '--value', '10px', '--to', '8px');
+  assert.equal(missing.status, 1);
+  assert.equal(missing.stderr, 'Directory not found: ./nope\n');
+
+  const file = runFix(dir, './src/a.css', '--value', '10px', '--to', '8px');
+  assert.equal(file.status, 1);
+  assert.equal(file.stderr, 'Not a directory: ./src/a.css\n');
+
+  assert.match(runFix(dir, 'src', '--value', '10px', '--to', '8px', '--base-font-size', '0x10').stderr, /^--base-font-size must be a positive number\./, 'numeric flags are strict here too (#282)');
+});
+
+test('fix reports the line and column of each literal in a value that spans lines (#288)', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-fix-'));
+  fs.mkdirSync(path.join(dir, 'src'));
+  fs.writeFileSync(path.join(dir, 'src', 'm.css'), '.a {\n  margin:\n    20px\n    10px;\n  padding: 10px 10px;\n}\n');
+
+  const result = runFix(dir, 'src', '--value', '10px', '--to', '8px');
+  assert.equal(result.status, 0, result.stderr);
+  assert.deepEqual(Array.from(result.stdout.matchAll(/^ {2}src\/m\.css:(\d+:\d+)/gm), (match) => match[1]), ['4:5', '5:12', '5:17']);
+});
+
 function emptyFixture() {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-fix-'));
   fs.mkdirSync(path.join(dir, 'src'));

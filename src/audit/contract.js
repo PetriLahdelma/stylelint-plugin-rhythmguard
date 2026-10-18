@@ -232,6 +232,7 @@ function buildReport({
   dir,
   externalTokenDefinitions,
   includeMotion,
+  linksOutsideRoot = [],
   motionFindings,
   parseErrorFindings = [],
   readSource,
@@ -323,6 +324,8 @@ function buildReport({
       stylelintIgnored,
       templateFiles: templateFiles.length,
       totalFiles,
+      // Symbolic links that resolve outside the scanned directory: not followed (#289).
+      ...(linksOutsideRoot.length > 0 ? { linksOutsideRoot: linksOutsideRoot.length } : {}),
     },
     summary: {
       cssWarnings: cssFindings.length,

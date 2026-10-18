@@ -8,7 +8,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const { HELP, OPTIONS, parseArgs } = require('../../src/audit/args');
+const { HELP, OPTIONS, parseArgs, parseNonNegativeInteger, parsePercentage } = require('../../src/audit/args');
 
 test('every option in the table is documented in the help text, and every documented flag is in the table', () => {
   for (const option of OPTIONS) {
@@ -44,4 +44,31 @@ test('the positional directory is the first bare argument and unknown options ar
   assert.throws(() => parseArgs(['src', '--format', 'yaml']), /Invalid format "yaml"/);
   assert.throws(() => parseArgs(['src', '--fail-on-new-drift']), /requires --since-baseline/);
   assert.throws(() => parseArgs(['src', '--since', 'main', '--staged']), /either --since or --staged/);
+});
+
+test('numeric options refuse empty, whitespace and non-decimal values instead of reading them as numbers (#282)', () => {
+  for (const flag of ['--max-findings', '--min-cleanliness', '--token-candidate-min-count', '--base-font-size']) {
+    for (const raw of ['', ' ', ' 3', '3 ', '0x10', '1e1', '+3', '-1', 'abc', '3px']) {
+      assert.throws(() => parseArgs(['src', `${flag}=${raw}`]), new RegExp(`^Error: ${flag} must be`), `${flag}=${JSON.stringify(raw)}`);
+    }
+  }
+  assert.throws(() => parseArgs(['src', '--max-findings']), /--max-findings must be a non-negative integer/, 'a missing value is refused too');
+  assert.throws(() => parseArgs(['src', '--min-cleanliness', '']), /--min-cleanliness must be a number between 0 and 100/);
+
+  assert.equal(parseArgs(['src', '--max-findings=0']).maxFindings, 0);
+  assert.equal(parseArgs(['src', '--max-findings', '010']).maxFindings, 10, 'leading zeros are still decimal');
+  assert.equal(parseArgs(['src', '--min-cleanliness=87.5']).minCleanliness, 87.5);
+  assert.equal(parseArgs(['src', '--min-cleanliness=.5']).minCleanliness, 0.5);
+  assert.equal(parseArgs(['src', '--base-font-size=10']).baseFontSize, 10);
+  assert.equal(parseArgs(['src', '--token-candidate-min-count=3']).tokenCandidateMinCount, 3);
+});
+
+test('numeric values in .rhythmguardrc.json are JSON numbers or decimal strings (#282)', () => {
+  assert.equal(parseNonNegativeInteger(5, 'maxFindings'), 5);
+  assert.equal(parseNonNegativeInteger('5', 'maxFindings'), 5);
+  assert.equal(parsePercentage(90, 'minCleanliness'), 90);
+  for (const raw of [null, true, '', '0x10', [], {}]) {
+    assert.throws(() => parseNonNegativeInteger(raw, 'maxFindings'), /maxFindings must be a non-negative integer/, JSON.stringify(raw));
+    assert.throws(() => parsePercentage(raw, 'minCleanliness'), /minCleanliness must be a number between 0 and 100/, JSON.stringify(raw));
+  }
 });

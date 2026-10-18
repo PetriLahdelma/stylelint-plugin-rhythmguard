@@ -9,7 +9,7 @@ const { numbersEqual, parseLengthToken, toPx } = require('../core/length');
 const { negateReplacement } = require('../core/token-index');
 const { isTokenFunction, propertyMatches, walkRootValueNodes } = require('../core/value-nodes');
 const { formatPath } = require('./shared');
-const { isCssFile, isScssFile, walkFiles } = require('./scan/files');
+const { isCssFile, isPathInside, isScssFile, isTemplateFile, walkFiles } = require('./scan/files');
 const { resolveScssSyntax } = require('./scan/stylesheets');
 
 /**
@@ -64,10 +64,11 @@ function replaceLength(root, { baseFontSize = 16, properties = null, px, replace
         return false;
       }
       const to = length.number < 0 ? negateReplacement(match.replacement) : match.replacement;
+      const position = positionInDeclaration(decl, declarationValueOffset(decl) + node.sourceIndex);
       changes.push({
-        column: (decl.source && decl.source.start ? decl.source.start.column : 1) + declarationValueOffset(decl) + node.sourceIndex,
+        column: position.column,
         from: node.value,
-        line: decl.source && decl.source.start ? decl.source.start.line : 1,
+        line: position.line,
         property: decl.prop,
         to,
       });
@@ -87,6 +88,22 @@ function declarationValueOffset(decl) {
   const raws = decl.raws || {};
   const between = typeof raws.between === 'string' ? raws.between : ': ';
   return decl.prop.length + between.length;
+}
+
+/**
+ * The line and column of `index`, an offset into the declaration as written
+ * (property, separator, value), counted from where the declaration starts. A
+ * value that spans lines puts later literals on later lines (#288).
+ */
+function positionInDeclaration(decl, index) {
+  const start = decl.source && decl.source.start ? decl.source.start : { column: 1, line: 1 };
+  const raws = decl.raws || {};
+  const text = `${decl.prop}${typeof raws.between === 'string' ? raws.between : ': '}${decl.value}`.slice(0, index);
+  const lastBreak = text.lastIndexOf('\n');
+  const breaks = text.split('\n').length - 1;
+  return breaks === 0
+    ? { column: start.column + index, line: start.line }
+    : { column: index - lastBreak, line: start.line + breaks };
 }
 
 /**
@@ -119,10 +136,26 @@ function parseStylesheet(filePath, source) {
  */
 function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], properties = null, px, replacement, replacements, write = false }) {
   const rootDir = path.resolve(process.cwd(), dir);
-  const files = walkFiles(rootDir, ignorePatterns).cssFiles.filter(isCssFile).sort();
+  const walked = walkFiles(rootDir, ignorePatterns);
+  const files = walked.cssFiles.filter(isCssFile).sort();
   const results = [];
-  const skipped = [];
+  const skipped = walked.linksOutsideRoot
+    .filter((link) => !isTemplateFile(link))
+    .map((link) => ({ file: formatPath(path.join(rootDir, link)), reason: 'symbolic link to a path outside the directory; not followed' }));
+  const realRoot = fs.realpathSync(rootDir);
+  const rewritten = new Set();
   for (const filePath of files) {
+    // Never write through a symbolic link: a file is rewritten only at its own
+    // path inside the directory, and only once (#289).
+    const realPath = writableRealPath(filePath, rootDir, realRoot);
+    if (!realPath) {
+      skipped.push({ file: formatPath(filePath), reason: 'reached through a symbolic link; rewrite the file it points to instead' });
+      continue;
+    }
+    if (rewritten.has(realPath)) {
+      continue;
+    }
+    rewritten.add(realPath);
     const source = fs.readFileSync(filePath, 'utf8');
     let parsed;
     try {
@@ -146,6 +179,24 @@ function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], properties = 
     results.push({ changes, file: formatPath(filePath) });
   }
   return { results, skipped };
+}
+
+/**
+ * The real path of `filePath` when it is the file's own path: no symbolic link
+ * between `rootDir` and the file, and the file inside `rootDir`. Null otherwise.
+ */
+function writableRealPath(filePath, rootDir, realRoot) {
+  let realPath;
+  try {
+    if (fs.lstatSync(filePath).isSymbolicLink()) {
+      return null;
+    }
+    realPath = fs.realpathSync(filePath);
+  } catch {
+    return null;
+  }
+  const expected = path.join(realRoot, path.relative(rootDir, filePath));
+  return realPath === expected && isPathInside(realRoot, realPath) ? realPath : null;
 }
 
 module.exports = {
