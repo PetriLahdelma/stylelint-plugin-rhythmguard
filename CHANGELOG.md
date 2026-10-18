@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.12.0] - 2026-10-18
+
 ### Fixed
 
 - `use-motion-scale` no longer snaps times inside `calc()`, `clamp()`, `min()` and `max()`. They are terms of an expression, so `transition-delay: calc(var(--i) * 30ms)` was reported and fixed to `calc(var(--i) * 0ms)`, removing the stagger, and `calc(var(--index) * 50ms + 100ms)` became `* 75ms`. They are now skipped, as `use-scale` skips them by default; times outside the math function in the same value are still checked. This removes reports for times inside math functions. ([#232](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/232))
