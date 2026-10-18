@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+const { stripBom } = require('./json');
 const {
   formatLength,
   parseLengthToken,
@@ -116,7 +117,7 @@ function parseTokenSources({
 
     let text;
     try {
-      text = fs.readFileSync(normalizedSource.resolvedPath, 'utf8');
+      text = stripBom(fs.readFileSync(normalizedSource.resolvedPath, 'utf8'));
     } catch (err) {
       const warning = `Unable to read token source ${normalizedSource.displayPath}: ${err.message}`;
       sourceReport.warnings.push(warning);

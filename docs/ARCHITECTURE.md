@@ -49,6 +49,7 @@ The graph has no cycles. `src/index.js` is the only module that imports from eve
 | `core/token-index.js` | which token a fix may write for a length: same px, same unit, one candidate, custom properties only; negation that stays valid CSS | `var(--name)` or null |
 | `core/decisions.js` | the `decisions` section of `.rhythmguardrc.json`: normalisation, matching by px and property scope, cached loading | normalised decisions with a px value |
 | `core/fs-cache.js` | results cached per key and revalidated by the mtime of every file consulted | |
+| `core/json.js` | reading the JSON files people edit (token files, `.rhythmguardrc.json`, baselines) with a leading byte order mark tolerated | parsed JSON |
 | `core/scale-inference.js` | `scale: "auto"`: the source order, the plausibility check, package discovery, caches | an inference `{ scale, source, files, rejected? }` |
 | `core/tailwind-class-analysis.js`, `core/tailwind-motion-analysis.js` | reading spacing and motion out of Tailwind class strings | analyses per class segment |
 

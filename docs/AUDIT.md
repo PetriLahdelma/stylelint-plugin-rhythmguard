@@ -98,7 +98,7 @@ The value histogram tells you which numbers drifted; the property table tells yo
 
 ## Token chains
 
-In a token-layered system the stylesheet says `padding: var(--button--padding-x)` and the discipline lives one level up: does every spacing token resolve to the scale? A literal scan finds almost nothing there. The audit therefore follows every spacing-named custom property (`size`, `space`, `spacing`, `spacer`, `padding`, `margin`, `gap`, `inset` in the name; `font-size`, `letter-spacing` and `word-spacing` excluded) through `var()` references to its terminal values and reports the result as `contracts.tokens.chains`:
+In a token-layered system the stylesheet says `padding: var(--button--padding-x)` and the discipline lives one level up: does every spacing token resolve to the scale? A literal scan finds almost nothing there. The audit therefore follows every spacing-named custom property (`size`, `space`, `spacing`, `spacer`, `padding`, `margin`, `gap`, `inset` in the name; `font-size`, `letter-spacing`, `word-spacing` and any name containing `shadow`, such as Tailwind's `--inset-shadow-sm`, excluded) through `var()` references to its terminal values and reports the result as `contracts.tokens.chains`:
 
 | Outcome | Meaning |
 | --- | --- |
@@ -121,7 +121,7 @@ A ladder can have every step on the scale and still not work as a ladder. Fluid 
 | `too-close` | two steps differ by less than `minStepPx` (default 2px) |
 | `inverted` | a step is larger than the next one at that end, for example two `clamp()` values that grow at different rates |
 
-A step's value is a static length, the minimum and maximum of a `clamp()`, or the static arguments of `min()` (a maximum) and `max()` (a minimum), followed through `var()`. A step written with `calc()` or a viewport length, or declared with different values in different places, is left out. Each problem names its end: `min`, `max`, or `both`. A ladder needs three evaluable steps; colours and other non-lengths never form one. A ladder whose every step is a `var()` alias of a step on one other ladder (Tailwind `@theme` names over a token file, `--text-body-s: var(--font-size-text-s)`) shares that ladder's problems; it is listed under the other ladder's `aliases` and not counted again.
+A step's value is a static length, the minimum and maximum of a `clamp()`, or the static arguments of `min()` (a maximum) and `max()` (a minimum), followed through `var()`. A step written with `calc()` or a viewport length, or declared with different values in different places, is left out. Each problem names its end: `min`, `max`, or `both`. A ladder whose every step is negative (`--space-negative-1: -4px` to `--space-negative-3: -16px`) is compared by magnitude, so it is not inverted; `min` is then the end with the smaller magnitude. A ladder needs three evaluable steps; colours and other non-lengths never form one. A ladder whose every step is a `var()` alias of a step on one other ladder (Tailwind `@theme` names over a token file, `--text-body-s: var(--font-size-text-s)`) shares that ladder's problems; it is listed under the other ladder's `aliases` and not counted again.
 
 Inversions are the problem that hides longest. On one production site the audit found `--font-size-title-xl` with a smaller `clamp()` minimum than `--font-size-title-l` (32px against 44px): a mobile retune had lowered one floor and not the other, so below about 390px wide every `h1` rendered smaller than every `h2`. Each step was a reasonable value on its own.
 

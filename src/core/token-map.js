@@ -1,5 +1,6 @@
 'use strict';
 
+const { readJsonFile } = require('./json');
 const { parseTokenValueLength } = require('./token-sources');
 
 const { spawnSync } = require('node:child_process');
@@ -140,7 +141,7 @@ function mergeTokenMapFromFile({
 
   let parsed;
   try {
-    parsed = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
+    parsed = readJsonFile(resolvedPath);
   } catch {
     return currentMap;
   }

@@ -7,9 +7,12 @@
  * it is a slip to fix, `undecided` records that nobody has decided yet.
  */
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
 const test = require('node:test');
 
-const { decisionFor, normalizeDecisions } = require('../../src/core/decisions');
+const { decisionFor, loadRcDecisions, normalizeDecisions } = require('../../src/core/decisions');
 
 test('normalizeDecisions parses values to px and keeps the fields the rules need', () => {
   const decisions = normalizeDecisions([
@@ -47,4 +50,12 @@ test('decisionFor matches by px value and by property scope', () => {
   assert.equal(decisionFor(2, 'padding', decisions), null, 'an allow scoped to properties does not cover others');
   assert.equal(decisionFor(15, 'padding', decisions).decision, 'snap');
   assert.equal(decisionFor(13, 'padding', decisions), null);
+});
+
+test('loadRcDecisions reads a .rhythmguardrc.json saved with a UTF-8 byte order mark (issue #291)', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-decisions-bom-'));
+  fs.writeFileSync(path.join(dir, '.rhythmguardrc.json'), `\uFEFF${JSON.stringify({ decisions: [{ value: '10px', decision: 'adopt' }] })}`);
+  const decisions = loadRcDecisions(dir);
+  assert.equal(decisions.length, 1);
+  assert.equal(decisions[0].decision, 'adopt');
 });

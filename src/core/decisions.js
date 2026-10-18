@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { cachedByFiles } = require('./fs-cache');
+const { readJsonFile } = require('./json');
 const { numbersEqual, parseLengthToken, toPx } = require('./length');
 
 /**
@@ -105,7 +106,7 @@ function loadRcDecisions(cwd = process.cwd(), { baseFontSize = 16 } = {}) {
     }
     let config;
     try {
-      config = JSON.parse(fs.readFileSync(rcPath, 'utf8'));
+      config = readJsonFile(rcPath);
     } catch {
       return [];
     }

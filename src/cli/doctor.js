@@ -5,6 +5,7 @@ const path = require('node:path');
 const { applyAuditConfig, loadAuditConfig, resolveIgnorePatterns } = require('../audit/config');
 const { createDefaultAuditOptions } = require('../audit/shared');
 const { normalizeDecisions } = require('../core/decisions');
+const { readJsonFile } = require('../core/json');
 const { normalizeTokenSourceFormat } = require('../core/token-sources');
 
 const cwd = process.cwd();
@@ -218,7 +219,7 @@ function checkRhythmguardConfig() {
 
   let parsed;
   try {
-    parsed = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+    parsed = readJsonFile(configPath);
   } catch {
     fail('.rhythmguardrc.json is not valid JSON', 'Fix or remove .rhythmguardrc.json');
     return;
@@ -329,7 +330,7 @@ function checkRhythmguardBaseline(audit) {
   }
 
   try {
-    const baseline = JSON.parse(fs.readFileSync(baselinePath, 'utf8'));
+    const baseline = readJsonFile(baselinePath);
     if (!Array.isArray(baseline.findings)) {
       fail('baseline file does not include findings array', 'Regenerate it with rhythmguard audit --write-baseline');
       return;

@@ -207,3 +207,13 @@ test('a comment or a trailing !important inside a custom property value does not
     [['--space-1', '4px'], ['--font', '"a;b"']],
   );
 });
+
+test('a token file saved with a UTF-8 byte order mark is read like one without (issue #291)', () => {
+  const json = parse('tokens.json', `\uFEFF${JSON.stringify({ spacing: { 1: '4px', 2: '8px', 3: '12px', 4: '16px' } })}`);
+  assert.deepEqual(json.warnings, []);
+  assert.deepEqual(json.scale, [0, 4, 8, 12, 16]);
+
+  const css = parse('tokens.css', '\uFEFF:root { --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; }');
+  assert.deepEqual(css.warnings, []);
+  assert.deepEqual(css.scale, [0, 4, 8, 12, 16]);
+});
