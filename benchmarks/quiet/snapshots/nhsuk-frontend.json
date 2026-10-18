@@ -17,8 +17,8 @@
     ]
   },
   "summary": {
-    "total": 28,
-    "drift": 28,
+    "total": 30,
+    "drift": 30,
     "falsePositives": 0
   },
   "findings": [
@@ -34,6 +34,8 @@
     "packages/nhsuk-frontend/src/nhsuk/components/button/_index.scss:326:6px:drift",
     "packages/nhsuk-frontend/src/nhsuk/components/card/_index.scss:108:10px:drift",
     "packages/nhsuk-frontend/src/nhsuk/components/file-upload/_index.scss:35:2px:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/header/_index.scss:750:$_header-item-padding:drift",
+    "packages/nhsuk-frontend/src/nhsuk/components/header/_index.scss:751:$_header-item-padding - 1px:drift",
     "packages/nhsuk-frontend/src/nhsuk/components/hero/_index.scss:250:10px:drift",
     "packages/nhsuk-frontend/src/nhsuk/components/notification-banner/_index.scss:26:2px:drift",
     "packages/nhsuk-frontend/src/nhsuk/components/pagination/_index.scss:258:-0.175rem:drift",

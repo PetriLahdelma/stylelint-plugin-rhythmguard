@@ -6,6 +6,7 @@ const {
   collectCssTokens,
   createTokenKindMatcher,
   getNormalizedValueKeys,
+  hasLineComments,
 } = require('../core/token-sources');
 const { formatPath } = require('./shared');
 
@@ -97,7 +98,7 @@ function collectTokenContract({
 
 /** Custom properties and Sass tokens declared in one stylesheet, added to the definitions map. */
 function collectTokenDefinitions(source, file, definitions, matchesKind, baseFontSize) {
-  for (const { scope, token, value } of collectCssTokens(source, matchesKind)) {
+  for (const { scope, token, value } of collectCssTokens(source, matchesKind, { lineComments: hasLineComments(file) })) {
     addDefinition(definitions, { baseFontSize, file, scope, source: file, token, value });
   }
 }

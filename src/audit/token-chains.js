@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 const { formatLength, numbersEqual, parseLengthToken, toPx } = require('../core/length');
-const { customPropertyDeclarations, parseTokenValueLength } = require('../core/token-sources');
+const { customPropertyDeclarations, hasLineComments, parseTokenValueLength } = require('../core/token-sources');
 const { formatPath } = require('./shared');
 
 /**
@@ -47,7 +47,8 @@ function collectDeclarations({ cssFiles, externalDefinitions, skipFile = () => f
     } catch {
       continue;
     }
-    for (const declaration of customPropertyDeclarations(source)) add(declaration.token, declaration.value);
+    const lineComments = hasLineComments(filePath);
+    for (const declaration of customPropertyDeclarations(source, { lineComments })) add(declaration.token, declaration.value);
   }
   for (const definition of (externalDefinitions || new Map()).values()) {
     if (!definition.token.startsWith('--')) continue;
@@ -70,6 +71,10 @@ function resolveTokenChains({ baseFontSize = 16, declarations, references = null
     const value = String(raw).trim();
     const length = parseTokenValueLength(value) || parseLengthToken(value);
     if (length && !/^var\(/i.test(value)) {
+      // A non-zero number without a unit (`--space-ratio: 1.5`) is a ratio, not 1.5px (issue #268).
+      if (length.unit === '' && length.number !== 0) {
+        return { outcomes: ['non-length'], terminals: [] };
+      }
       const px = toPx(Math.abs(length.number), length.unit || 'px', baseFontSize);
       return px === null ? { outcomes: ['non-length'], terminals: [] } : { outcomes: [], terminals: [formatLength(px, 'px')] };
     }

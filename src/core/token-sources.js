@@ -127,16 +127,17 @@ function parseTokenSources({
     const matchesSource = normalizedSource.tokenPattern
       ? createPatternMatcher(normalizedSource.tokenPattern, matchesKind)
       : matchesKind;
+    const skipped = [];
     try {
       if (normalizedSource.format === 'css') {
-        tokens = collectCssTokens(text, matchesSource);
+        tokens = collectCssTokens(text, matchesSource, { lineComments: hasLineComments(normalizedSource.resolvedPath) });
       } else {
         const parsed = JSON.parse(text);
         const detectedFormat = normalizedSource.requestedFormat === 'auto'
           ? detectJsonTokenFormat(parsed)
           : normalizedSource.format;
         sourceReport.format = detectedFormat;
-        tokens = collectJsonTokens(parsed, matchesSource);
+        tokens = collectJsonTokens(parsed, matchesSource, (token, reason) => skipped.push(`${token} (${reason})`));
       }
     } catch (err) {
       const warning = `Unable to parse token source ${normalizedSource.displayPath}: ${err.message}`;
@@ -146,10 +147,19 @@ function parseTokenSources({
       continue;
     }
 
+    if (skipped.length > 0) {
+      const warning = `Token source ${normalizedSource.displayPath}: skipped ${skipped.join(', ')}.`;
+      sourceReport.warnings.push(warning);
+      warnings.push(warning);
+    }
+
     for (const token of tokens) {
       addDefinition(definitions, {
         baseFontSize,
         file: sourceReport.file,
+        // `:root` and `@theme` declarations are the scale; a `.chip` variable is a
+        // component parameter and stays out of it, as in the linted stylesheet (issue #258).
+        scope: token.scope || 'root',
         source: sourceReport.file,
         token: token.token,
         value: token.value,
@@ -236,25 +246,125 @@ function detectJsonTokenFormat(parsed) {
   return 'flat-json';
 }
 
-function collectCssTokens(source, matchesKind) {
+/**
+ * Custom properties and Sass tokens in a stylesheet. `lineComments` says
+ * whether `//` starts a comment: true for SCSS and Less, false for a plain
+ * `.css` file (see hasLineComments).
+ */
+function collectCssTokens(source, matchesKind, { lineComments = true } = {}) {
   const tokens = [];
-  for (const declaration of customPropertyDeclarations(source)) {
+  for (const declaration of customPropertyDeclarations(source, { lineComments })) {
     if (matchesKind(declaration.token)) {
       tokens.push(declaration);
     }
   }
-  for (const sassToken of collectScssTokens(source, matchesKind)) {
+  for (const sassToken of collectScssTokens(source, matchesKind, { lineComments })) {
     tokens.push({ ...sassToken, scope: 'root' });
   }
   return tokens;
+}
+
+/** Plain CSS has no `//` comments; SCSS, Less and the other preprocessor syntaxes do. */
+function hasLineComments(filePath) {
+  return path.extname(String(filePath || '')).toLowerCase() !== '.css';
 }
 
 const ROOT_SELECTOR = /^(?::root|html|:host|:(?:where|is)\(\s*(?::root|html)\s*\))$/i;
 // At-rules that only condition their contents; the enclosing selector still decides the scope.
 const TRANSPARENT_AT_RULES = new Set(['media', 'supports', 'layer', 'container', 'scope', 'document']);
 
-function stripComments(text) {
-  return text.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+/**
+ * Whether `//` at `index` starts a line comment. Never in plain CSS, and never
+ * right after `:` or `(`, so `https://` and an unquoted `url(//cdn...)` stay
+ * values (issue #263).
+ */
+function startsLineComment(source, index, lineComments) {
+  return lineComments
+    && source[index] === '/'
+    && source[index + 1] === '/'
+    && !/[:(]/.test(source[index - 1] || '');
+}
+
+/** The index just past the string that opens at `index`, honouring backslash escapes. */
+function skipString(source, index) {
+  const quote = source[index];
+  let end = index + 1;
+  while (end < source.length && source[end] !== quote) end += source[end] === '\\' ? 2 : 1;
+  return Math.min(end + 1, source.length);
+}
+
+/**
+ * The text with comments removed and strings kept as written. A block comment
+ * becomes a space so the tokens on either side stay apart; a line comment is
+ * dropped up to its newline.
+ */
+function stripComments(text, { lineComments = true } = {}) {
+  let output = '';
+  let index = 0;
+  while (index < text.length) {
+    const char = text[index];
+    if (char === '"' || char === "'") {
+      const end = skipString(text, index);
+      output += text.slice(index, end);
+      index = end;
+      continue;
+    }
+    if (char === '/' && text[index + 1] === '*') {
+      const end = text.indexOf('*/', index + 2);
+      output += ' ';
+      index = end === -1 ? text.length : end + 2;
+      continue;
+    }
+    if (startsLineComment(text, index, lineComments)) {
+      const end = text.indexOf('\n', index);
+      index = end === -1 ? text.length : end;
+      continue;
+    }
+    output += char;
+    index += 1;
+  }
+  return output;
+}
+
+/**
+ * The value of a custom property declaration whose value starts at `start`:
+ * the text up to the `;` that ends it (outside strings and parentheses) or up
+ * to the brace that closes its block. Comments are dropped and a trailing
+ * `!important` is removed, so `4px !important` and `4px` followed by a
+ * comment are both `4px` (issue #269). Returns the value and where it ends.
+ */
+function readCustomPropertyValue(source, start, lineComments) {
+  let value = '';
+  let depth = 0;
+  let index = start;
+  while (index < source.length) {
+    const char = source[index];
+    if (char === '"' || char === "'") {
+      const end = skipString(source, index);
+      value += source.slice(index, end);
+      index = end;
+      continue;
+    }
+    if (char === '/' && source[index + 1] === '*') {
+      const end = source.indexOf('*/', index + 2);
+      value += ' ';
+      index = end === -1 ? source.length : end + 2;
+      continue;
+    }
+    if (startsLineComment(source, index, lineComments)) {
+      const end = source.indexOf('\n', index);
+      index = end === -1 ? source.length : end;
+      continue;
+    }
+    if (char === '{' || char === '}' || (char === ';' && depth === 0)) {
+      break;
+    }
+    if (char === '(') depth += 1;
+    else if (char === ')') depth = Math.max(0, depth - 1);
+    value += char;
+    index += 1;
+  }
+  return { end: index, value: value.replace(/\s*!\s*important\s*$/i, '').trim() };
 }
 
 function scopeOfBlockHeaders(headers) {
@@ -278,7 +388,7 @@ function scopeOfBlockHeaders(headers) {
  * skips comments and strings, so a brace in a comment cannot shift the
  * scope; this is the text-side twin of scopeOfNode in scale-inference.js.
  */
-function customPropertyDeclarations(source) {
+function customPropertyDeclarations(source, { lineComments = true } = {}) {
   const declarations = [];
   const headers = [];
   let headerStart = 0;
@@ -294,15 +404,13 @@ function customPropertyDeclarations(source) {
       index = end === -1 ? length : end + 2;
       continue;
     }
-    if (char === '/' && next === '/') {
+    if (startsLineComment(source, index, lineComments)) {
       const end = source.indexOf('\n', index);
       index = end === -1 ? length : end;
       continue;
     }
     if (char === '"' || char === "'") {
-      let end = index + 1;
-      while (end < length && source[end] !== char) end += source[end] === '\\' ? 2 : 1;
-      index = end + 1;
+      index = skipString(source, index);
       continue;
     }
     if (char === '{') {
@@ -311,7 +419,7 @@ function customPropertyDeclarations(source) {
         index = end === -1 ? length : end + 1;
         continue;
       }
-      headers.push(stripComments(source.slice(headerStart, index)).trim().replace(/\s+/g, ' '));
+      headers.push(stripComments(source.slice(headerStart, index), { lineComments }).trim().replace(/\s+/g, ' '));
       headerStart = index + 1;
       index += 1;
       continue;
@@ -328,10 +436,13 @@ function customPropertyDeclarations(source) {
       continue;
     }
     if (char === '-' && next === '-' && !/[\w-]/.test(source[index - 1] || '')) {
-      const match = /^(--[\w-]+)\s*:\s*([^;{}]+)/.exec(source.slice(index));
+      const match = /^(--[\w-]+)\s*:/.exec(source.slice(index, index + 256));
       if (match) {
-        declarations.push({ scope: scopeOfBlockHeaders(headers), token: match[1], value: match[2].trim() });
-        index += match[0].length;
+        const { end, value } = readCustomPropertyValue(source, index + match[0].length, lineComments);
+        if (value) {
+          declarations.push({ scope: scopeOfBlockHeaders(headers), token: match[1], value });
+        }
+        index = end;
         continue;
       }
     }
@@ -348,8 +459,10 @@ function customPropertyDeclarations(source) {
  * evaluate (function calls, strings, keywords, interpolated keys, cycles) is
  * skipped rather than guessed. Token names are `$name` or `$name.key.path`.
  */
-function collectScssTokens(source, matchesKind) {
-  const declarations = parseScssDeclarations(source);
+function collectScssTokens(source, matchesKind, { lineComments = true } = {}) {
+  // Only top-level and `!global` declarations define the project's variables;
+  // `$spacer: 2px` inside `.compact` is local to that block (issue #266).
+  const declarations = parseScssDeclarations(source, { lineComments, topLevelOnly: true });
   const cache = new Map();
 
   const resolveVariable = (name, stack) => {
@@ -447,45 +560,119 @@ function createScssVariableResolver(source, fallback = () => null) {
 const NAMESPACED_SPACING_MAP = /^\$[a-z0-9]+-(?:space|spacing|spacer)s?(?:-|$)/i;
 const MIN_NAMESPACED_MAP_LENGTHS = 4;
 
-function stripScssComments(source) {
-  return source
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/(^|[^:])\/\/[^\n]*/g, '$1');
+/**
+ * The value of a Sass variable declaration starting at `start`: the text up to
+ * the `;` outside parentheses and strings. With `stopAtBrace`, a `}` outside
+ * parentheses also ends it (a last declaration without `;` in a block), and an
+ * interpolation `#{...}` is kept whole.
+ */
+function readScssValue(text, start, stopAtBrace) {
+  let depth = 0;
+  let index = start;
+  while (index < text.length) {
+    const char = text[index];
+    if (char === '"' || char === "'") {
+      index = skipString(text, index);
+      continue;
+    }
+    if (stopAtBrace && char === '#' && text[index + 1] === '{') {
+      const end = text.indexOf('}', index + 2);
+      index = end === -1 ? text.length : end + 1;
+      continue;
+    }
+    if (char === '(') depth += 1;
+    else if (char === ')') depth -= 1;
+    else if (char === ';' && depth <= 0) break;
+    else if (stopAtBrace && depth <= 0 && (char === '}' || char === '{')) break;
+    index += 1;
+  }
+  return { end: index, value: text.slice(start, index) };
 }
 
-function parseScssDeclarations(source) {
-  const text = stripScssComments(source);
-  const declarations = new Map();
-  const startPattern = /(?:^|\n)[ \t]*\$([\w-]+)[ \t]*:/g;
-  let match;
-
-  while ((match = startPattern.exec(text)) !== null) {
-    const name = match[1];
-    let index = match.index + match[0].length;
-    let depth = 0;
-    let quote = null;
-    let value = '';
-
-    for (; index < text.length; index += 1) {
-      const char = text[index];
-      if (quote) {
-        value += char;
-        if (char === quote) quote = null;
+/**
+ * The start of every top-level Sass variable declaration, plus those inside a
+ * block that carry `!global`. Declarations in style rules, mixins, functions,
+ * `@media` and control-flow blocks are local or conditional, and `$name:`
+ * inside parentheses is a parameter or a `@use ... with (...)` setting, so
+ * none of those count. Several declarations may share a line.
+ */
+function topLevelScssDeclarations(text) {
+  const found = [];
+  let braceDepth = 0;
+  let parenDepth = 0;
+  let statementStart = true;
+  let index = 0;
+  while (index < text.length) {
+    const char = text[index];
+    if (char === '"' || char === "'") {
+      index = skipString(text, index);
+      statementStart = false;
+      continue;
+    }
+    if (char === '#' && text[index + 1] === '{') {
+      const end = text.indexOf('}', index + 2);
+      index = end === -1 ? text.length : end + 1;
+      statementStart = false;
+      continue;
+    }
+    if (char === '{' || char === '}') {
+      braceDepth = Math.max(0, braceDepth + (char === '{' ? 1 : -1));
+      parenDepth = 0;
+      statementStart = true;
+      index += 1;
+      continue;
+    }
+    if (char === ';') {
+      statementStart = parenDepth === 0;
+      index += 1;
+      continue;
+    }
+    if (/\s/.test(char)) {
+      index += 1;
+      continue;
+    }
+    if (char === '$' && statementStart && parenDepth === 0) {
+      const match = /^\$([\w-]+)\s*:/.exec(text.slice(index, index + 256));
+      if (match) {
+        const { end, value } = readScssValue(text, index + match[0].length, true);
+        if (braceDepth === 0 || /!global\b/.test(value)) {
+          found.push({ name: match[1], value });
+        }
+        index = end;
+        statementStart = false;
         continue;
       }
-      if (char === '"' || char === "'") {
-        quote = char;
-      } else if (char === '(') {
-        depth += 1;
-      } else if (char === ')') {
-        depth -= 1;
-      } else if (char === ';' && depth === 0) {
-        break;
-      }
-      value += char;
     }
+    if (char === '(') parenDepth += 1;
+    else if (char === ')') parenDepth = Math.max(0, parenDepth - 1);
+    statementStart = false;
+    index += 1;
+  }
+  return found;
+}
 
-    startPattern.lastIndex = index;
+/**
+ * Every Sass variable declaration that starts a line, wherever it is. The
+ * resolver for a linted stylesheet's own values reads these; token collection
+ * reads topLevelScssDeclarations instead.
+ */
+function lineStartScssDeclarations(text) {
+  const found = [];
+  const startPattern = /(?:^|\n)[ \t]*\$([\w-]+)[ \t]*:/g;
+  let match;
+  while ((match = startPattern.exec(text)) !== null) {
+    const { end, value } = readScssValue(text, match.index + match[0].length, false);
+    found.push({ name: match[1], value });
+    startPattern.lastIndex = end;
+  }
+  return found;
+}
+
+function parseScssDeclarations(source, { lineComments = true, topLevelOnly = false } = {}) {
+  const text = stripComments(source, { lineComments });
+  const declarations = new Map();
+
+  for (const { name, value } of topLevelOnly ? topLevelScssDeclarations(text) : lineStartScssDeclarations(text)) {
     const isDefault = /!default\b/.test(value);
     const cleaned = value.replace(/!(default|global)\b/g, '').trim();
     // Sass semantics at the top level: `!default` assigns only when the variable is
@@ -764,17 +951,26 @@ function formatScssValue(value) {
   return `${rounded}${value.unit}`;
 }
 
-function collectJsonTokens(parsed, matchesKind) {
+/**
+ * Tokens in a DTCG, Style Dictionary or flat JSON file. References
+ * (`{dimension.100}`, `{size.base.value}`) are resolved against the whole file
+ * first, so a semantic alias over a primitive of another kind still counts
+ * (issue #267). `onSkip(token, reason)` hears about tokens of the requested
+ * kind that were left out, such as a dimension in an unsupported unit.
+ */
+function collectJsonTokens(parsed, matchesKind, onSkip = () => {}) {
   if (!isPlainObject(parsed)) {
     return [];
   }
 
   const tokens = [];
-  walkJsonTokenGroup(parsed, [], tokens, matchesKind);
+  const context = { matchesKind, onSkip, root: parsed };
+  walkJsonTokenGroup(parsed, [], tokens, context);
   return tokens;
 }
 
-function walkJsonTokenGroup(group, segments, tokens, matchesKind) {
+function walkJsonTokenGroup(group, segments, tokens, context) {
+  const { matchesKind, onSkip } = context;
   for (const [key, value] of Object.entries(group)) {
     if (isMetadataKey(key)) {
       continue;
@@ -792,21 +988,22 @@ function walkJsonTokenGroup(group, segments, tokens, matchesKind) {
       continue;
     }
 
-    const leafValue = leafTokenValue(value);
-    if (leafValue !== null) {
+    const leaf = leafTokenValue(value, context.root);
+    if (leaf !== null) {
       const token = key.startsWith('--')
         ? key
         : toCustomProperty([...segments, key]);
       if (matchesKind(token)) {
-        tokens.push({
-          token,
-          value: leafValue,
-        });
+        if (leaf.value !== null) {
+          tokens.push({ token, value: leaf.value });
+        } else if (leaf.skipped) {
+          onSkip(token, leaf.skipped);
+        }
       }
       continue;
     }
 
-    walkJsonTokenGroup(value, [...segments, key], tokens, matchesKind);
+    walkJsonTokenGroup(value, [...segments, key], tokens, context);
   }
 }
 
@@ -842,16 +1039,105 @@ function tokenFromPrimitive(key, value, segments) {
   return null;
 }
 
-function leafTokenValue(value) {
-  if (typeof value.$value === 'string' || typeof value.$value === 'number') {
-    return String(value.$value);
-  }
+// DTCG 2025.10 dimensions are `{ "value": 4, "unit": "px" }`; the format allows px and rem.
+const DTCG_DIMENSION_UNITS = new Set(['px', 'rem']);
+const JSON_REFERENCE = /^\{([^{}]+)\}$/;
+const MAX_JSON_REFERENCE_DEPTH = 32;
 
-  if (typeof value.value === 'string' || typeof value.value === 'number') {
-    return String(value.value);
-  }
+function isDimensionObject(value) {
+  return isPlainObject(value)
+    && typeof value.value === 'number'
+    && typeof value.unit === 'string';
+}
 
-  return null;
+/**
+ * The raw value a token node holds: `$value` (DTCG, any shape) or a string or
+ * number `value` (Style Dictionary). Undefined when the node is a group.
+ */
+function rawTokenValue(node) {
+  if (!isPlainObject(node)) {
+    return undefined;
+  }
+  if (Object.prototype.hasOwnProperty.call(node, '$value')) {
+    const raw = node.$value;
+    if (typeof raw === 'string' || typeof raw === 'number' || isDimensionObject(raw)) {
+      return raw;
+    }
+    return undefined;
+  }
+  if (isDimensionObject(node)) {
+    // `{ "value": 4, "unit": "rem" }` is one dimension, not a number with metadata.
+    return node;
+  }
+  if (typeof node.value === 'string' || typeof node.value === 'number') {
+    return node.value;
+  }
+  return undefined;
+}
+
+/**
+ * The node a reference path names: `dimension.100` is a token, and in Style
+ * Dictionary's `size.base.value` the last segment is the value itself.
+ */
+function lookupJsonReference(root, reference) {
+  let node = root;
+  for (const segment of reference.split('.').map((part) => part.trim())) {
+    if (!isPlainObject(node) || !Object.prototype.hasOwnProperty.call(node, segment)) {
+      return undefined;
+    }
+    node = node[segment];
+  }
+  return isPlainObject(node) ? rawTokenValue(node) : node;
+}
+
+/**
+ * A raw token value as a string: a number as written, a dimension object as
+ * `4px` or `0.75rem`, a whole-value reference followed through the file. A
+ * reference that cannot be followed (a missing target, a cycle) keeps its text,
+ * as before, and reads as a non-length; a dimension in another unit is skipped.
+ */
+function resolveJsonValue(raw, root, stack = new Set()) {
+  if (typeof raw === 'number') {
+    return { value: String(raw) };
+  }
+  if (isDimensionObject(raw)) {
+    const unit = raw.unit.trim().toLowerCase();
+    if (!Number.isFinite(raw.value) || !DTCG_DIMENSION_UNITS.has(unit)) {
+      return { skipped: `dimension unit "${raw.unit}" is not px or rem`, value: null };
+    }
+    return { value: `${raw.value}${unit}` };
+  }
+  if (typeof raw !== 'string') {
+    return { value: null };
+  }
+  const reference = raw.trim().match(JSON_REFERENCE);
+  if (!reference) {
+    return { value: raw };
+  }
+  const target = reference[1].trim();
+  if (stack.has(target) || stack.size >= MAX_JSON_REFERENCE_DEPTH) {
+    return { value: raw };
+  }
+  const next = lookupJsonReference(root, target);
+  if (next === undefined || next === null) {
+    return { value: raw };
+  }
+  stack.add(target);
+  const resolved = resolveJsonValue(next, root, stack);
+  stack.delete(target);
+  if (resolved.value === null && !resolved.skipped) {
+    return { value: raw };
+  }
+  return resolved;
+}
+
+/** The value of a token node, resolved; null when the node is a group, not a token. */
+function leafTokenValue(node, root = node) {
+  const raw = rawTokenValue(node);
+  if (raw === undefined) {
+    return null;
+  }
+  return resolveJsonValue(raw, root);
 }
 
 function isMetadataKey(key) {
@@ -952,7 +1238,10 @@ function getNormalizedValueKeys(value, baseFontSize = 16) {
 
   const keys = new Set([raw]);
   const parsed = parseTokenValueLength(raw);
-  if (!parsed) {
+  // A non-zero number without a unit (`--space-ratio: 1.5`) is a ratio or a
+  // multiplier, not a px length (issue #268). Flat-JSON numbers get their px
+  // unit explicitly in tokenFromPrimitive before they reach this point.
+  if (!parsed || (parsed.unit === '' && parsed.number !== 0)) {
     return Array.from(keys);
   }
 
@@ -982,6 +1271,7 @@ module.exports = {
   customPropertyDeclarations,
   createTokenKindMatcher,
   getNormalizedValueKeys,
+  hasLineComments,
   normalizeTokenKind,
   normalizeTokenSourceFormat,
   parseTokenSources,

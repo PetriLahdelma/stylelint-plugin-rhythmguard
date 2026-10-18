@@ -67,3 +67,24 @@ test('resolveTokenChains terminates on cycles and reports several definitions as
   assert.deepEqual(byToken['--themed-padding'].terminals, ['16px', '20px']);
   assert.equal(byToken['--section-spacing'].outcome, 'ambiguous');
 });
+
+test('resolveTokenChains reads a non-zero unitless value as a non-length, not as px (issue #268)', () => {
+  const chains = resolveTokenChains({
+    baseFontSize: 16,
+    declarations: declarations({
+      '--space-1': '4px',
+      '--space-ratio': '1.5',
+      '--spacing-scale': '3',
+      '--space-none': '0',
+      '--gap-ratio': 'var(--space-ratio)',
+    }),
+    scale,
+  });
+  const byToken = Object.fromEntries(chains.entries.map((entry) => [entry.token, entry]));
+  assert.equal(byToken['--space-1'].outcome, 'on-scale');
+  assert.equal(byToken['--space-ratio'].outcome, 'non-length');
+  assert.deepEqual(byToken['--space-ratio'].terminals, []);
+  assert.equal(byToken['--spacing-scale'].outcome, 'non-length');
+  assert.equal(byToken['--gap-ratio'].outcome, 'non-length');
+  assert.equal(byToken['--space-none'].outcome, 'on-scale', 'a unitless zero is a length');
+});
