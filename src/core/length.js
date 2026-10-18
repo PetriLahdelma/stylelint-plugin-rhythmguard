@@ -224,6 +224,16 @@ function fixedLengthValue(parsedLength, nearestPx, { baseFontSize, unitStrategy,
   return converted === null ? null : formatLength(converted, unit);
 }
 
+/** " (16.8px)" after a bound written in rem or em, so the reader sees what was compared. */
+function pxAside(value, baseFontSize) {
+  const parsed = parseLengthToken(value);
+  if (!parsed || !parsed.unit || parsed.unit === 'px' || parsed.unit === '%') {
+    return '';
+  }
+  const px = toPx(Math.abs(parsed.number), parsed.unit, baseFontSize);
+  return px === null ? '' : ` (${formatLength(parsed.number < 0 ? -px : px, 'px')})`;
+}
+
 module.exports = {
   nearestText,
   fixedLengthValue,
@@ -236,6 +246,7 @@ module.exports = {
   normalizeScaleByUnit,
   numbersEqual,
   parseLengthToken,
+  pxAside,
   pxOnScale,
   toPx,
 };

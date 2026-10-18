@@ -27,8 +27,8 @@ This rule is experimental and is not part of `recommended` or `strict`. Real-rep
 Messages for the failing case:
 
 ```
-Unexpected motion duration "175ms". Use motion scale values (nearest: 150ms or 200ms). (rhythmguard/use-motion-scale)
-Unexpected raw motion easing "cubic-bezier(.2, 0, 0, 1)". Use an easing token. (rhythmguard/use-motion-scale)
+Unexpected motion duration "175ms". Use duration scale values (nearest: 150ms or 200ms). (rhythmguard/use-motion-scale)
+Unexpected raw motion easing "cubic-bezier(.2, 0, 0, 1)". Use motion tokens for easing decisions. (rhythmguard/use-motion-scale)
 ```
 
 ## What it checks
@@ -47,8 +47,8 @@ Durations and delays snap to the nearest scale value when `fixToScale` is on. Ea
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `durationScale` | `number[]` | `[0,75,100,150,200,300,500,700,1000]` | Allowed duration and delay values in milliseconds |
-| `durationUnits` | `Array<'ms' \| 's'>` | `['ms','s']` | Time units considered by the rule |
+| `durationScale` | `number[]` | `[0,75,100,150,200,300,500,700,1000]` | Allowed duration and delay values in milliseconds. A single number or an empty list is an invalid option |
+| `durationUnits` | `Array<'ms' \| 's'>` | `['ms','s']` | Time units considered by the rule. A single string or an empty list is an invalid option |
 | `fixToScale` | `boolean` | `true` | Autofix simple duration and delay values to the nearest scale value |
 | `note` | `string` | `undefined` | Appended to every finding, after the built-in text. Up to 200 characters. Point agents and reviewers at your own rules: `"See docs/spacing.md for approved exceptions."` |
 | `easingTokenMap` | `Record<string,string>` | `{}` | Exact replacements for raw easing functions |

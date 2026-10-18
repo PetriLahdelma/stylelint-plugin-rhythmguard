@@ -117,7 +117,7 @@ The fallback of a token `var()` is a raw value like any other: `padding: var(--b
 | `baseFontSize` | `number` | `16` | Used for `rem` and `em` scale checks |
 | `unitStrategy` | `'convert' \| 'exact'` | `'convert'` | Matching strategy in migration mode |
 | `units` | `string[]` | `['px','rem','em']` | Units considered for numeric scale checks |
-| `checkMathBounds` | `boolean` | `false` | Asks for a token for the `clamp()` minimum and maximum and each length argument of `min()` and `max()`: `Unexpected raw clamp() minimum "1rem". Use var(--space-4).` See [Fluid values](./use-scale.md#fluid-values) |
+| `checkMathBounds` | `boolean` | `false` | Asks for a token for the `clamp()` minimum and maximum and each length argument of `min()` and `max()`: `Unexpected raw clamp() minimum "1rem". Use var(--space-4).` Bounds inside a translate function of `transform` are checked too. See [Fluid values](./use-scale.md#fluid-values) |
 | `enforceInsideMathFunctions` | `boolean` | `false` | Lints inside `calc()`, `clamp()`, `min()`, `max()` |
 | `mathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Restricts linting to specific 1-based argument indexes per math function |
 | `ignoreMathFunctionArguments` | `Record<mathFn, number[]>` | `{}` | Excludes specific 1-based argument indexes per math function |

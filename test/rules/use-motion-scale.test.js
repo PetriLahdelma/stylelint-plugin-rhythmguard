@@ -154,3 +154,39 @@ test('use-motion-scale does not guess which time a var() stands for in a shortha
 
   assert.deepEqual(result.warnings.map((warning) => warning.text), []);
 });
+
+// Issue #273: a scalar or empty durationScale and durationUnits fell back to the defaults silently.
+for (const options of [{ durationScale: 100 }, { durationScale: [] }, { durationUnits: 's' }, { durationUnits: [] }, { durationUnits: ['ms', 'min'] }]) {
+  test(`use-motion-scale rejects ${JSON.stringify(options)} (#273)`, async () => {
+    const result = await lintCss({ code: '.a { transition: opacity 175ms; }', rules: { 'rhythmguard/use-motion-scale': [true, options] } });
+    const [optionName] = Object.keys(options);
+    assert.equal(result.errored, true);
+    assert.ok(
+      result.invalidOptionWarnings.some((warning) => warning.text.includes(`option "${optionName}" of rule "rhythmguard/use-motion-scale"`)),
+      result.invalidOptionWarnings.map((warning) => warning.text).join('\n') || 'no invalid option warning',
+    );
+  });
+}
+
+test('use-motion-scale still accepts array durationScale and durationUnits (#273)', async () => {
+  const result = await lintCss({
+    code: '.a { transition: opacity 175ms; }',
+    rules: { 'rhythmguard/use-motion-scale': [true, { durationScale: [0, 175], durationUnits: ['ms'] }] },
+  });
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  assert.deepEqual(result.warnings, []);
+});
+
+// Issue #276: the messages the docs print are the messages the rule reports.
+test('the use-motion-scale docs show the messages the rule reports (#276)', async () => {
+  const fs = require('node:fs');
+  const path = require('node:path');
+  const doc = fs.readFileSync(path.join(__dirname, '..', '..', 'docs', 'rules', 'use-motion-scale.md'), 'utf8');
+  const result = await lintCss({ code: '.button {\n  transition: opacity 175ms cubic-bezier(.2, 0, 0, 1);\n}', rules: MOTION });
+  const texts = result.warnings.map((warning) => warning.text);
+
+  assert.equal(texts.length, 2, texts.join('\n'));
+  for (const text of texts) {
+    assert.ok(doc.includes(text), `docs/rules/use-motion-scale.md does not show: ${text}`);
+  }
+});

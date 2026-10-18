@@ -235,6 +235,32 @@ test('use-scale allows percentage translations by default and reports them when 
   assert.equal(strict.warnings.length, 3, strict.warnings.map((w) => w.text).join('\n'));
 });
 
+// Issue #274: a value the options forbid outright says why, instead of "nearest: n/a".
+test('use-scale says negative values and percentages are disabled instead of naming no nearest value', async () => {
+  const result = await lintCss({
+    code: '.a { margin: -8px; padding: 5%; margin-top: 13px; }',
+    rules: { 'rhythmguard/use-scale': [true, { ...ruleConfig['rhythmguard/use-scale'][1], allowNegative: false, allowPercentages: false, note: 'See docs/spacing.md.' }] },
+  });
+
+  assert.deepEqual(result.warnings.map((w) => w.text), [
+    'Unexpected value "-8px". Negative values are disabled for this rule. See docs/spacing.md. (rhythmguard/use-scale)',
+    'Unexpected value "5%". Percentages are disabled for this rule. See docs/spacing.md. (rhythmguard/use-scale)',
+    'Unexpected off-scale value "13px". Use scale values (nearest: 12px or 16px). See docs/spacing.md. (rhythmguard/use-scale)',
+  ]);
+});
+
+test('use-scale names the position of a negative or percentage clamp() bound', async () => {
+  const result = await lintCss({
+    code: '.a { margin: clamp(-8px, 2vw, 10%); }',
+    rules: { 'rhythmguard/use-scale': [true, { ...ruleConfig['rhythmguard/use-scale'][1], allowNegative: false, allowPercentages: false, checkMathBounds: true }] },
+  });
+
+  assert.deepEqual(result.warnings.map((w) => w.text), [
+    'Unexpected clamp() minimum "-8px". Negative values are disabled for this rule. (rhythmguard/use-scale)',
+    'Unexpected clamp() maximum "10%". Percentages are disabled for this rule. (rhythmguard/use-scale)',
+  ]);
+});
+
 test('use-scale treats one-pixel offsets as hairlines by default and reports them when allowHairlines is false', async () => {
   const code = '.a { margin: -1px; inset: 1px; inset-block-start: 0.5px; transform: translateY(1px); padding: 2px; gap: 0.0625rem; }';
 

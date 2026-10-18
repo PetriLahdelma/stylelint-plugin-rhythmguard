@@ -147,8 +147,8 @@ test('no-offscale-transform reports negatives with allowNegative false (#238)', 
   });
 
   assert.deepEqual(result.warnings.map((warning) => warning.text), [
-    'Unexpected transform translation value "-8px". Use scale values (nearest: n/a). (rhythmguard/no-offscale-transform)',
-    'Unexpected transform translation value "-8px". Use scale values (nearest: n/a). (rhythmguard/no-offscale-transform)',
+    'Unexpected transform translation value "-8px". Negative values are disabled for this rule. (rhythmguard/no-offscale-transform)',
+    'Unexpected transform translation value "-8px". Negative values are disabled for this rule. (rhythmguard/no-offscale-transform)',
   ]);
   assert.equal(result.code, '.a { transform: translateX(-8px); translate: -8px 8px; }');
 });
@@ -160,6 +160,6 @@ test('no-offscale-transform reports percentages with allowPercentages false (#23
   });
 
   assert.deepEqual(result.warnings.map((warning) => warning.text), [
-    'Unexpected transform translation value "13%". Use scale values (nearest: n/a). (rhythmguard/no-offscale-transform)',
+    'Unexpected transform translation value "13%". Percentages are disabled for this rule. (rhythmguard/no-offscale-transform)',
   ]);
 });

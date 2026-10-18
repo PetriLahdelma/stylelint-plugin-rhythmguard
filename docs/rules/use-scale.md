@@ -130,7 +130,7 @@ Groups are `spacing`, `radius`, `size` and `typography`. Each takes a list of va
 
 ## Fluid values
 
-`clamp()`, `min()` and `max()` are skipped by default, so `padding: clamp(13px, 2vi, 17px)` passes where `padding: 13px` does not. `checkMathBounds: true` checks their static bounds like literals: the minimum and maximum of `clamp()`, and every argument of `min()` and `max()` that is one length. The preferred value of `clamp()` (`0.35vi + 0.8rem`) is fluid by design and never checked; neither is an argument that is an expression, a `var()` or a viewport length. A bound that is itself `min()`, `max()` or `clamp()` is followed.
+`clamp()`, `min()` and `max()` are skipped by default, so `padding: clamp(13px, 2vi, 17px)` passes where `padding: 13px` does not. `checkMathBounds: true` checks their static bounds like literals: the minimum and maximum of `clamp()`, and every argument of `min()` and `max()` that is one length. The preferred value of `clamp()` (`0.35vi + 0.8rem`) is fluid by design and never checked; neither is an argument that is an expression, a `var()` or a viewport length. A bound that is itself `min()`, `max()` or `clamp()` is followed. Bounds inside a translate function of `transform` (`translateX(clamp(13px, 2vw, 17px))`) and in the `translate` property are checked the same way.
 
 ```css
 .a { font-size: clamp(0.875rem, 0.35vi + 0.8rem, 1.05rem); }
@@ -152,8 +152,8 @@ The message names the position: `clamp() minimum`, `clamp() maximum`, `min() arg
 | `preset` | `string` | `rhythmic-4` | Selects a built-in scale. See [scale presets](../SCALE_PRESETS.md). |
 | `fixWith` | `"value" \| "token"` | `"value"` | What autofix writes. `"token"` writes `var(--name)` when exactly one custom property holds the snapped value in the literal's own unit, read from this stylesheet, `scaleSources`, `.rhythmguardrc.json` token sources and installed token packages; otherwise the literal. Negative values become `calc(-1 * var(--name))`. When a token qualifies the message says so: `var(--space-3) holds 12px.` |
 | `decisions` | `boolean` | `true` | Read the `decisions` section of `.rhythmguardrc.json`: adopted values count as on scale, allowed values are not findings (optionally on some properties only). See [decisions](../AUDIT.md#decisions). |
-| `customScale` | `Array<number\|string>` | `undefined` | Highest-priority custom scale override |
-| `scale` | `Array<number\|string> \| "auto"` | `[0,4,8,12,16,24,32,40,48,64]` | Allowed values, or `"auto"` to infer them from tokens (see above) |
+| `customScale` | `Array<number\|string>` | `undefined` | Highest-priority custom scale override. An empty list is an invalid option |
+| `scale` | `Array<number\|string> \| "auto"` | `[0,4,8,12,16,24,32,40,48,64]` | Allowed values, or `"auto"` to infer them from tokens (see above). An empty list, or `"auto"` inside a list, is an invalid option |
 | `scaleSources` | `Array<string \| { path, format? }>` | `[]` | Token files consulted first when `scale` is `"auto"`. `format` is `auto`, `css`, `flat-json`, `style-dictionary` or `dtcg`; any other value is an invalid option |
 | `tailwindConfigPath` | `string` | `null` | Tailwind v3 config whose `theme.spacing` feeds `scale: "auto"` |
 | `units` | `string[]` | `['px','rem','em']` | Units considered for scale enforcement |
@@ -161,8 +161,8 @@ The message names the position: `clamp() minimum`, `clamp() maximum`, `min() arg
 | `baseFontSize` | `number` | `16` | Used for `rem` and `em` conversion |
 | `tokenPattern` | `string` | `^--space-` | Regex for accepted token variable names |
 | `tokenFunctions` | `string[]` | `['var','theme','token']` | Functions treated as tokenized values |
-| `allowNegative` | `boolean` | `true` | Allows negative scale values |
-| `allowPercentages` | `boolean` | `true` | Skips `%` values |
+| `allowNegative` | `boolean` | `true` | Allows negative scale values. When `false`, a negative value is reported without a fix: `Unexpected value "-8px". Negative values are disabled for this rule.` |
+| `allowPercentages` | `boolean` | `true` | Skips `%` values. When `false`, a percentage is reported without a fix: `Unexpected value "5%". Percentages are disabled for this rule.` |
 | `allowHairlines` | `boolean` | `true` | Skips non-zero lengths of one CSS pixel or less. See [Hairlines](#hairlines) |
 | `fixToScale` | `boolean` | `true` | Enables nearest-value autofix |
 | `checkMathBounds` | `boolean` | `false` | Checks the `clamp()` minimum and maximum and each length argument of `min()` and `max()`. See [Fluid values](#fluid-values) |
@@ -172,7 +172,7 @@ The message names the position: `clamp() minimum`, `clamp() maximum`, `min() arg
 | `propertyGroups` | `Array<'spacing' \| 'radius' \| 'typography' \| 'size'>` | `['spacing']` | Built-in property groups, used when `properties` is not set |
 | `properties` | `Array<string\|RegExp>` | built-in spacing patterns | Explicit property set. Strings may be property names or regex-like strings (`/pattern/flags`) |
 | `scales` | `Record<group, scale \| preset \| "auto">` | `{}` | A scale per property group (`spacing`, `radius`, `size`, `typography`). See [A scale per property group](#a-scale-per-property-group) |
-| `propertyScales` | `Record<propertyOrRegex, scaleOrPreset>` | `{}` | Per-property scale overrides. Keys may be exact names or `/regex/flags`; stateful `g` and `y` flags are normalized |
+| `propertyScales` | `Record<propertyOrRegex, scaleOrPreset>` | `{}` | Per-property scale overrides. Keys may be exact names or `/regex/flags`; stateful `g` and `y` flags are normalized. A value is a list of values, a preset name (`{ "padding": "rhythmic-8" }`), or a `{ preset, scale, customScale }` object; an empty list or an unknown preset is an invalid option |
 | `note` | `string` | `undefined` | Appended to every finding, after the built-in text. Up to 200 characters. Point agents and reviewers at your own rules: `"See docs/spacing.md for approved exceptions."` |
 
 Scale resolution precedence: `customScale`, then `scale` (a list, or `"auto"` inference), then `preset`, then the default `rhythmic-4`. Per property, `propertyScales` and then `scales` come before all of these.
