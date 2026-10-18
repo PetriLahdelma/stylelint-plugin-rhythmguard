@@ -77,21 +77,31 @@ function declarationValueOffset(decl) {
   return decl.prop.length + between.length;
 }
 
+/**
+ * Parse with the syntax that will write the file back. SCSS goes through
+ * postcss-scss's own parse and stringify: `postcss.parse` ignores a `syntax`
+ * option, so it would read `// a: 10px` as a declaration and rewrite it.
+ * Returns null for SCSS when postcss-scss cannot be resolved; such a file is
+ * skipped, never parsed as CSS.
+ */
 function parseStylesheet(filePath, source) {
   if (isScssFile(filePath)) {
     const syntaxPath = resolveScssSyntax();
     if (!syntaxPath) {
       return null;
     }
-    return postcss.parse(source, { from: filePath, syntax: require(syntaxPath) });
+    const syntax = require(syntaxPath);
+    return { root: syntax.parse(source, { from: filePath }), syntax };
   }
-  return postcss.parse(source, { from: filePath });
+  return { root: postcss.parse(source, { from: filePath }), syntax: null };
 }
 
 /**
  * Apply one replacement across a directory. Dry run unless `write`; returns
  * the per-file changes and which files were skipped (unparseable, or SCSS
- * without postcss-scss).
+ * without postcss-scss). `ignorePatterns` are root-relative paths and globs,
+ * as the audit takes them; the audit's generated and vendored directories
+ * (node_modules, dist, build and the rest of SKIP_DIRS) are always skipped.
  */
 function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], properties = null, px, replacement, write = false }) {
   const rootDir = path.resolve(process.cwd(), dir);
@@ -100,23 +110,24 @@ function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], properties = 
   const skipped = [];
   for (const filePath of files) {
     const source = fs.readFileSync(filePath, 'utf8');
-    let root;
+    let parsed;
     try {
-      root = parseStylesheet(filePath, source);
+      parsed = parseStylesheet(filePath, source);
     } catch {
       skipped.push({ file: formatPath(filePath), reason: 'could not parse' });
       continue;
     }
-    if (!root) {
-      skipped.push({ file: formatPath(filePath), reason: 'install postcss-scss to rewrite SCSS' });
+    if (!parsed) {
+      skipped.push({ file: formatPath(filePath), reason: 'postcss-scss is not installed; install it to rewrite SCSS' });
       continue;
     }
+    const { root, syntax } = parsed;
     const changes = replaceLength(root, { baseFontSize, properties, px, replacement });
     if (changes.length === 0) {
       continue;
     }
     if (write) {
-      fs.writeFileSync(filePath, root.toString());
+      fs.writeFileSync(filePath, syntax ? root.toString(syntax) : root.toString());
     }
     results.push({ changes, file: formatPath(filePath) });
   }

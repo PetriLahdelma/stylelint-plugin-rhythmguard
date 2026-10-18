@@ -69,3 +69,133 @@ test('fix refuses an unparsable value or a missing target', () => {
   assert.equal(missing.status, 1);
   assert.match(missing.stderr, /--to/);
 });
+
+function emptyFixture() {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-fix-'));
+  fs.mkdirSync(path.join(dir, 'src'));
+  return dir;
+}
+
+test('fix leaves SCSS // comments byte-identical and rewrites only real declarations (#229)', () => {
+  const dir = emptyFixture();
+  fs.writeFileSync(path.join(dir, 'src', 'a.scss'), '// old: .card { padding: 10px; }\n.card { padding: 10px; }\n');
+
+  const dry = runFix(dir, 'src', '--value', '10px', '--to', '8px');
+  assert.equal(dry.status, 0, dry.stderr);
+  assert.doesNotMatch(dry.stdout, /a\.scss:1:/, 'nothing on the comment line is listed');
+  assert.match(dry.stdout, /src\/a\.scss:2:18\s+padding: 10px -> 8px/);
+  assert.match(dry.stdout, /1 replacement in 1 file \(dry run/);
+
+  const write = runFix(dir, 'src', '--value', '10px', '--to', '8px', '--write');
+  assert.equal(write.status, 0, write.stderr);
+  assert.match(write.stdout, /src\/a\.scss:2:18\s+padding: 10px -> 8px/);
+  assert.match(write.stdout, /1 replacement in 1 file\n/);
+  assert.equal(
+    fs.readFileSync(path.join(dir, 'src', 'a.scss'), 'utf8'),
+    '// old: .card { padding: 10px; }\n.card { padding: 8px; }\n',
+  );
+});
+
+test('fix rewrites valid SCSS with a // comment inside a rule instead of skipping it (#229)', () => {
+  const dir = emptyFixture();
+  fs.writeFileSync(path.join(dir, 'src', 'b.scss'), '.a {\n  // note\n  padding: 10px;\n  .b { margin: 10px; }\n}\n');
+
+  const dry = runFix(dir, 'src', '--value', '10px', '--to', '8px');
+  assert.equal(dry.status, 0, dry.stderr);
+  assert.doesNotMatch(dry.stdout, /skipped/);
+  assert.match(dry.stdout, /src\/b\.scss:3:12\s+padding: 10px -> 8px/);
+  assert.match(dry.stdout, /src\/b\.scss:4:16\s+margin: 10px -> 8px/);
+  assert.match(dry.stdout, /2 replacements in 1 file \(dry run/);
+
+  const write = runFix(dir, 'src', '--value', '10px', '--to', '8px', '--write');
+  assert.equal(write.status, 0, write.stderr);
+  assert.doesNotMatch(write.stdout, /skipped/);
+  assert.equal(
+    fs.readFileSync(path.join(dir, 'src', 'b.scss'), 'utf8'),
+    '.a {\n  // note\n  padding: 8px;\n  .b { margin: 8px; }\n}\n',
+  );
+});
+
+test('fix skips SCSS with a clear message when postcss-scss cannot be resolved, never parsing it as CSS (#229)', () => {
+  const dir = emptyFixture();
+  const scss = '// old: .card { padding: 10px; }\n.card { padding: 10px; }\n';
+  fs.writeFileSync(path.join(dir, 'src', 'a.scss'), scss);
+  fs.writeFileSync(path.join(dir, 'src', 'c.css'), '.c { padding: 10px; }\n');
+  const hide = path.join(dir, 'hide-postcss-scss.js');
+  fs.writeFileSync(hide, [
+    "const Module = require('node:module');",
+    'const original = Module._resolveFilename;',
+    'Module._resolveFilename = function (request, ...rest) {',
+    "  if (request === 'postcss-scss') { const error = new Error('Cannot find module postcss-scss'); error.code = 'MODULE_NOT_FOUND'; throw error; }",
+    '  return original.call(this, request, ...rest);',
+    '};',
+    '',
+  ].join('\n'));
+
+  for (const write of [[], ['--write']]) {
+    const result = spawnSync(process.execPath, ['--require', hide, cliPath, 'fix', 'src', '--value', '10px', '--to', '8px', ...write], { cwd: dir, encoding: 'utf8' });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /1 replacement in 1 file/);
+    assert.doesNotMatch(result.stdout, /a\.scss:\d/);
+    assert.match(result.stdout, /skipped src\/a\.scss: postcss-scss is not installed; install it to rewrite SCSS/);
+    assert.equal(fs.readFileSync(path.join(dir, 'src', 'a.scss'), 'utf8'), scss);
+  }
+  assert.equal(fs.readFileSync(path.join(dir, 'src', 'c.css'), 'utf8'), '.c { padding: 8px; }\n');
+});
+
+const IGNORE_FIXTURE_FILES = ['src/a.css', 'src/custom/c.css', 'src/legacy/l.css', 'src/vendor/v.css', 'src/generated/g.css', 'src/dist/d.css', 'src/node_modules/pkg/n.css'];
+
+function ignoreFixture() {
+  const dir = emptyFixture();
+  for (const file of IGNORE_FIXTURE_FILES) {
+    fs.mkdirSync(path.dirname(path.join(dir, file)), { recursive: true });
+    fs.writeFileSync(path.join(dir, file), '.x { padding: 10px; }\n');
+  }
+  fs.writeFileSync(path.join(dir, '.rhythmguardignore'), '# hand-written legacy\nlegacy\n');
+  fs.writeFileSync(path.join(dir, '.rhythmguardrc.json'), JSON.stringify({ audit: { ignore: ['vendor/**'] } }));
+  return dir;
+}
+
+for (const write of [false, true]) {
+  test(`fix${write ? ' --write' : ''} skips what the audit ignores: .rhythmguardignore, audit.ignore, --ignore and generated directories (#230)`, () => {
+    const dir = ignoreFixture();
+    const result = runFix(dir, 'src', '--value', '10px', '--to', '8px', '--ignore', 'generated', ...(write ? ['--write'] : []));
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /src\/a\.css:1:/);
+    assert.match(result.stdout, /src\/custom\/c\.css:1:/);
+    assert.doesNotMatch(result.stdout, /legacy|vendor|generated|dist|node_modules/);
+    assert.match(result.stdout, write ? /2 replacements in 2 files\n/ : /2 replacements in 2 files \(dry run/);
+    for (const file of IGNORE_FIXTURE_FILES.slice(2)) {
+      assert.equal(fs.readFileSync(path.join(dir, file), 'utf8'), '.x { padding: 10px; }\n', `${file} is untouched`);
+    }
+    const expected = write ? '.x { padding: 8px; }\n' : '.x { padding: 10px; }\n';
+    assert.equal(fs.readFileSync(path.join(dir, 'src', 'a.css'), 'utf8'), expected);
+    assert.equal(fs.readFileSync(path.join(dir, 'src', 'custom', 'c.css'), 'utf8'), expected);
+  });
+}
+
+test('fix --ignore-path reads another ignore file instead of .rhythmguardignore, as the audit does (#230)', () => {
+  const dir = ignoreFixture();
+  fs.writeFileSync(path.join(dir, 'other-ignore'), 'custom\n');
+  const result = runFix(dir, 'src', '--value', '10px', '--to', '8px', '--ignore-path', 'other-ignore', '--write');
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /src\/legacy\/l\.css:1:/);
+  assert.doesNotMatch(result.stdout, /custom|vendor/);
+  assert.equal(fs.readFileSync(path.join(dir, 'src', 'custom', 'c.css'), 'utf8'), '.x { padding: 10px; }\n');
+  assert.equal(fs.readFileSync(path.join(dir, 'src', 'vendor', 'v.css'), 'utf8'), '.x { padding: 10px; }\n');
+
+  const missing = runFix(dir, 'src', '--value', '10px', '--to', '8px', '--ignore-path', 'nope');
+  assert.equal(missing.status, 1);
+  assert.match(missing.stderr, /Ignore file not found: nope/);
+});
+
+test('fix looks at the same files the audit scans (#230)', () => {
+  const dir = ignoreFixture();
+  const audit = spawnSync(process.execPath, [cliPath, 'audit', 'src', '--json', '--ignore', 'generated'], { cwd: dir, encoding: 'utf8' });
+  assert.equal(audit.status, 0, audit.stderr);
+  const auditFiles = [...new Set(JSON.parse(audit.stdout).findings.css.map((finding) => finding.file))].sort();
+  const fix = runFix(dir, 'src', '--value', '10px', '--to', '8px', '--ignore', 'generated');
+  const fixFiles = Array.from(fix.stdout.matchAll(/^ {2}(\S+?):\d+:\d+/gm), (match) => match[1]).sort();
+  assert.deepEqual(fixFiles, auditFiles);
+  assert.deepEqual(fixFiles, ['src/a.css', 'src/custom/c.css']);
+});
