@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.13.0] - 2026-10-18
+
 ### Fixed
 
 - `checkMathBounds` checks bounds inside translations. `use-scale`, `prefer-token` and `no-offscale-transform` skipped it for `transform`, so `transform: translateX(clamp(13px, 2vw, 17px))` gave no finding while `padding: clamp(13px, 2vw, 17px)` reported both bounds; `no-offscale-transform` accepted the option but ignored it everywhere, the `translate` properties included. The `clamp()` minimum and maximum and the length arguments of `min()` and `max()` are now checked, named and fixed in translate functions and in `translate`, `translate-x`, `translate-y` and `translate-z` as anywhere else. Only configs that set `checkMathBounds: true` see new reports. ([#272](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/272))
