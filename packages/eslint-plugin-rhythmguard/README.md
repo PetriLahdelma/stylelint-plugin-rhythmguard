@@ -39,7 +39,8 @@ import rhythmguard from 'eslint-plugin-rhythmguard';
 
 export default [
   {
-    files: ['**/*.{js,jsx,ts,tsx,vue,svelte,astro}'],
+    files: ['**/*.{js,jsx,mjs,cjs}'],
+    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
     plugins: { 'rhythmguard-tailwind': rhythmguard },
     rules: {
       'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { scale: [0, 4, 8, 12, 16, 24, 32] }],
@@ -48,15 +49,31 @@ export default [
 ];
 ```
 
+`files` and `ecmaFeatures.jsx` are what make ESLint lint `.jsx`: without them a flat config lints only `.js`, `.mjs` and `.cjs`, and JSX is a parsing error.
+
 Or start from the `recommended` config, which turns the spacing rule on as a warning with the default scale:
 
 ```js
 import rhythmguard from 'eslint-plugin-rhythmguard';
 
 export default [
-  { plugins: { 'rhythmguard-tailwind': rhythmguard }, rules: rhythmguard.configs.recommended.rules },
+  {
+    files: ['**/*.{js,jsx,mjs,cjs}'],
+    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
+    plugins: { 'rhythmguard-tailwind': rhythmguard },
+    rules: rhythmguard.configs.recommended.rules,
+  },
 ];
 ```
+
+### Other file types
+
+Espree, ESLint's default parser, reads JavaScript and JSX only. Other files need their parser in `languageOptions.parser`, in a config block whose `files` matches them, with the plugin and rule added to that block:
+
+- TypeScript (`.ts`, `.tsx`): `typescript-eslint`, with `parser: tseslint.parser` and `files: ['**/*.{ts,tsx}']`. JSX in `.tsx` needs no `ecmaFeatures` there.
+- Vue: `vue-eslint-parser`, usually through `eslint-plugin-vue`'s flat configs. The rule checks static `class` attributes in `<template>`, the strings in bound classes (`:class="{ 'p-[13px]': on }"`), and every string in `<script>`.
+- Svelte: `svelte-eslint-parser`, usually through `eslint-plugin-svelte`'s flat configs. The rule checks the static text of `class` attributes (`class="p-[13px] {extra}"`) and every string in expressions and `<script>`.
+- Astro: `astro-eslint-parser`, usually through `eslint-plugin-astro`'s flat configs.
 
 Set `scale` to your design system's spacing steps in px. The rule does not read your Tailwind theme; the Stylelint plugin does that for stylesheets (see below).
 
@@ -88,6 +105,7 @@ Every string literal and template chunk in the file, so there is nothing to conf
 - `className="p-[13px]"`
 - `cn("p-[13px]", condition && "m-[7px]")`, `clsx(...)`, `twMerge(...)`
 - `cva("base", { variants: { size: { sm: "p-[5px]" } } })`
+- `<div class="p-[13px]">` in Vue and Svelte templates, with their parsers (see [Other file types](#other-file-types))
 
 Padding, margin, gap, inset, space and translate utilities, with their axis and side variants and any variant prefix (`md:`, `hover:`, `has-[>button]:`). `rem` and `em` values are converted through `baseFontSize`.
 
@@ -95,11 +113,11 @@ Padding, margin, gap, inset, space and translate utilities, with their axis and 
 
 | Option | Default | What it does |
 | --- | --- | --- |
-| `scale` | `[0, 4, 8, 12, 16, 24, 32]` | Allowed spacing values in px |
+| `scale` | `[0, 4, 8, 12, 16, 24, 32]` | Allowed spacing values in px. This default stops at 32; the Stylelint rules default to the `rhythmic-4` preset, which goes on to 40, 48 and 64, so set `scale` when you use both |
 | `units` | `['px', 'rem', 'em']` | Units the rule checks |
 | `baseFontSize` | `16` | Base for converting `rem` and `em` |
-| `allowNegative` | `true` | Whether negative arbitrary values are allowed |
-| `spacingUnit` | `4` | Px per Tailwind spacing step, used to name and write classes. `false` keeps the fix in arbitrary form (`p-[12px]`) |
+| `allowNegative` | `true` | Whether negative arbitrary values (`m-[-8px]`, `-m-[8px]`) are allowed |
+| `spacingUnit` | `baseFontSize / 4` (`4`) | Px per Tailwind spacing step (`0.25rem`), used to name and write classes. `false` keeps the fix in arbitrary form (`p-[12px]`) |
 | `note` | none | A sentence added to every finding, such as `"See docs/spacing.md for approved exceptions."` Up to 200 characters |
 
 Full reference, including how the fix chooses between `p-3` and `p-[12px]`: [rule docs](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/tailwind-class-use-scale.md).

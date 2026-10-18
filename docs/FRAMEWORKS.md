@@ -22,7 +22,7 @@ This gives you:
 - Expanded enforcement (spacing + radius) on CSS Modules (`*.module.css`)
 - `.next/` and `out/` build directories ignored
 
-Pair with the ESLint companion to check Tailwind class strings in JSX/TSX:
+Pair with the ESLint companion to check Tailwind class strings in JSX:
 
 ```js
 // eslint.config.js
@@ -30,6 +30,8 @@ import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';
 
 export default [
   {
+    files: ['**/*.{js,jsx,mjs,cjs}'],
+    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
     plugins: { 'rhythmguard-tailwind': rhythmguard },
     rules: {
       'rhythmguard-tailwind/tailwind-class-use-scale': [
@@ -40,6 +42,8 @@ export default [
   },
 ];
 ```
+
+For TSX, add `typescript-eslint` and a block with `files: ['**/*.{ts,tsx}']` and `languageOptions: { parser: tseslint.parser }`; Next.js projects usually have it through `eslint-config-next`. Vue, Svelte and Astro templates need their own parser: see [Other file types](../packages/eslint-plugin-rhythmguard/README.md#other-file-types).
 
 ## Vue (config snippet)
 

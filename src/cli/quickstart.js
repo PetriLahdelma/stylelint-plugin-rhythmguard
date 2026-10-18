@@ -77,9 +77,16 @@ function topEntries(counts, limit = MAX_LISTED) {
     .slice(0, limit);
 }
 
-function suggestedStylelintConfig({ nextjs = false, profile, tokenFiles }) {
-  const ruleOptions = { scale: 'auto' };
-  if (tokenFiles.length > 0) {
+/**
+ * The config to paste. With a scale inferred from tokens it is `scale: "auto"`
+ * pointed at the same token files, so Stylelint infers what the audit did.
+ * When the audit fell back to its default scale, that scale is written out:
+ * `scale: "auto"` would fall back to the `rhythmic-4` preset instead, which is
+ * a longer scale, and the pasted config would not reproduce this report (#246).
+ */
+function suggestedStylelintConfig({ fallbackScale = null, nextjs = false, profile, tokenFiles }) {
+  const ruleOptions = Array.isArray(fallbackScale) ? { scale: [...fallbackScale] } : { scale: 'auto' };
+  if (!fallbackScale && tokenFiles.length > 0) {
     ruleOptions.scaleSources = tokenFiles.map(toPosix);
   }
   return {
@@ -99,6 +106,9 @@ function eslintSnippet(scaleValues) {
     '',
     'export default [',
     '  {',
+    // Without `files` and JSX parsing, a flat config lints no .jsx at all (#243).
+    "    files: ['**/*.{js,jsx,mjs,cjs}'],",
+    '    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },',
     "    plugins: { 'rhythmguard-tailwind': rhythmguard },",
     `    rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['warn', { scale: [${scale}] }] },`,
     '  },',
@@ -161,10 +171,10 @@ async function run() {
   out.push(`    Scale           ${scale.values.join(', ')}`);
   out.push(`    Source          ${describeScale(scale)}`);
   if (scale.source === 'fallback' && scale.rejected) {
-    out.push(`    Note            Spacing tokens were found but do not form a scale (${scale.rejected.reasons.join(', ')}); the rhythmic-4 preset is being used.`);
+    out.push(`    Note            Spacing tokens were found but do not form a scale (${scale.rejected.reasons.join(', ')}); the audit's default scale is being used.`);
     out.push('                    Point scaleSources at your real token file, or tighten tokenPattern.');
   } else if (scale.source === 'fallback') {
-    out.push('    Note            No spacing tokens found; the rhythmic-4 preset is being used.');
+    out.push("    Note            No spacing tokens found; the audit's default scale is being used.");
     out.push('                    Add scaleSources or define --space-*/--spacing-* custom properties to lint against your own scale.');
   }
   out.push('');
@@ -192,12 +202,15 @@ async function run() {
 
   const profile = stack.tailwind ? 'tailwind' : 'recommended';
   out.push(`  Paste this into .stylelintrc.json${stack.hasExistingConfig ? ' (merge with your existing config)' : ''}:`, '');
-  out.push(JSON.stringify(suggestedStylelintConfig({ nextjs: stack.nextjs, profile, tokenFiles }), null, 2).replace(/^/gm, '    '));
+  const fallbackScale = scale.source === 'fallback' ? scale.values : null;
+  out.push(JSON.stringify(suggestedStylelintConfig({ fallbackScale, nextjs: stack.nextjs, profile, tokenFiles }), null, 2).replace(/^/gm, '    '));
   out.push('');
 
   if (stack.tailwind) {
     out.push('  Tailwind class strings need the ESLint companion. Paste this into eslint.config.js:', '');
     out.push(eslintSnippet(scale.values).replace(/^/gm, '    '));
+    out.push('', '    TypeScript, Vue, Svelte and Astro files need their parser in a block of their own; see the');
+    out.push('    eslint-plugin-rhythmguard README, "Other file types".');
     out.push('');
   }
 
@@ -211,4 +224,4 @@ async function run() {
   process.stdout.write(`${out.join('\n')}\n`);
 }
 
-module.exports = { findTokenFiles, run, suggestedStylelintConfig, tailwindMajor };
+module.exports = { eslintSnippet, findTokenFiles, run, suggestedStylelintConfig, tailwindMajor };

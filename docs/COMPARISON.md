@@ -136,6 +136,8 @@ import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';
 
 export default [
   {
+    files: ['**/*.{js,jsx,mjs,cjs}'],
+    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
     plugins: {
       'rhythmguard-tailwind': rhythmguard,
     },

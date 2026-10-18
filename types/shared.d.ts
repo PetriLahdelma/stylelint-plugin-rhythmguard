@@ -84,15 +84,33 @@ export interface RhythmguardPresets {
   scales: Record<string, readonly number[]>;
 }
 
+/**
+ * The ESLint plugin types are structural, so they need no `eslint` import, and
+ * they are written to be assignable to ESLint's `ESLint.Plugin` and
+ * `Linter.Config` types (ESLint 9 and 10), so a typed `eslint.config.ts`
+ * compiles with `defineConfig`.
+ */
+export type EslintRuleSeverity = 0 | 1 | 2 | "off" | "warn" | "error";
+
+/** Listener functions keyed by node type or selector, as ESLint's `RuleVisitor`. */
+export type EslintRuleVisitor = Record<string, ((...args: any[]) => void) | undefined>;
+
+export interface EslintRuleMeta {
+  docs?: { description?: string; url?: string };
+  fixable?: "code" | "whitespace";
+  schema?: Array<Record<string, unknown>>;
+  type?: "problem" | "suggestion" | "layout";
+}
+
 export interface EslintRuleModule {
-  meta: Record<string, unknown>;
-  create(context: unknown): Record<string, unknown>;
+  meta: EslintRuleMeta;
+  create(context: any): EslintRuleVisitor;
 }
 
 export interface RhythmguardEslintPlugin {
   configs: {
     recommended: {
-      rules: Record<string, "off" | "warn" | "error" | number>;
+      rules: Record<string, EslintRuleSeverity>;
     };
   };
   rules: {

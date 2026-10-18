@@ -201,3 +201,44 @@ test('a class above the largest step names one class, not the same class twice',
     'Unexpected Tailwind arbitrary spacing value "m-[13px]". Use "m-3" (12px) or "m-4" (16px).',
   ]);
 });
+
+test('allowNegative false reports the negative class form as negative, without a fix (#241)', () => {
+  const { fixed, messages } = lintTailwind("const c = '-m-[13px] -m-[16px] md:-mt-[0.5rem] m-[-16px] m-[13px]';", {
+    allowNegative: false,
+    scale: [0, 4, 8, 12, 16, 24, 32],
+  });
+  assert.deepEqual(messages.map(({ message }) => message), [
+    'Unexpected Tailwind arbitrary spacing value "-m-[13px]". Negative values are disabled for this rule.',
+    'Unexpected Tailwind arbitrary spacing value "-m-[16px]". Negative values are disabled for this rule.',
+    'Unexpected Tailwind arbitrary spacing value "md:-mt-[0.5rem]". Negative values are disabled for this rule.',
+    'Unexpected Tailwind arbitrary spacing value "m-[-16px]". Negative values are disabled for this rule.',
+    'Unexpected Tailwind arbitrary spacing value "m-[13px]". Use "m-3" (12px) or "m-4" (16px).',
+  ]);
+  assert.equal(fixed.output, "const c = '-m-[13px] -m-[16px] md:-mt-[0.5rem] m-[-16px] m-3';");
+});
+
+test('the utility class follows baseFontSize when spacingUnit is not set (#247)', () => {
+  // At a 10px root a Tailwind step is 0.25rem = 2.5px, so p-3 is 7.5px, not 12px.
+  const offStep = lintTailwind("const c = 'p-[1.3rem] m-[13px]';", { baseFontSize: 10, scale: [0, 4, 8, 12, 16, 24, 32] });
+  assert.deepEqual(offStep.messages.map(({ message }) => message), [
+    'Unexpected Tailwind arbitrary spacing value "p-[1.3rem]". Use scale values (nearest: 12px or 16px).',
+    'Unexpected Tailwind arbitrary spacing value "m-[13px]". Use scale values (nearest: 12px or 16px).',
+  ]);
+  assert.equal(offStep.fixed.output, "const c = 'p-[1.2rem] m-[12px]';");
+
+  const onStep = lintTailwind("const c = 'p-[1.3rem]';", { baseFontSize: 10, scale: [0, 5, 10, 15, 20] });
+  assert.equal(onStep.messages[0].message, 'Unexpected Tailwind arbitrary spacing value "p-[1.3rem]". Use "p-4" (10px) or "p-6" (15px).');
+  assert.equal(onStep.fixed.output, "const c = 'p-6';");
+
+  const explicit = lintTailwind("const c = 'p-[1.3rem]';", { baseFontSize: 10, scale: [0, 4, 8, 12, 16], spacingUnit: 4 });
+  assert.equal(explicit.fixed.output, "const c = 'p-3';", 'an explicit spacingUnit is used as given');
+});
+
+test('em values keep the arbitrary form: they follow the element font size, utilities follow the root (#247)', () => {
+  const { fixed, messages } = lintTailwind("const c = 'p-[1.1em] -m-[0.8em]';", { scale: [0, 4, 8, 12, 16, 24, 32] });
+  assert.deepEqual(messages.map(({ message }) => message), [
+    'Unexpected Tailwind arbitrary spacing value "p-[1.1em]". Use scale values (nearest: 16px or 24px).',
+    'Unexpected Tailwind arbitrary spacing value "-m-[0.8em]". Use scale values (nearest: 12px or 16px).',
+  ]);
+  assert.equal(fixed.output, "const c = 'p-[1em] -m-[0.75em]';");
+});

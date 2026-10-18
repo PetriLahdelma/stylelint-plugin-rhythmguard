@@ -173,6 +173,53 @@ function createLiteralTokenFixer(node, sourceCode) {
     return null;
   }
 
+  const isUnsafe = (replacement) => replacement.includes(quote)
+    || replacement.includes('\\')
+    || LINE_TERMINATOR.test(replacement)
+    || (jsx && replacement.includes('&'));
+
+  return spanReplacer(body, node.range[0] + 1, pieces, isUnsafe);
+}
+
+// Characters a replacement may not contain inside a markup attribute value,
+// quoted or not: quotes, entity and tag syntax, Svelte mustaches, whitespace.
+const UNSAFE_IN_MARKUP = /["'`&<>{}=\\\s]/;
+
+/**
+ * Returns `replace(start, token, replacement)` for the static text of a Vue
+ * (`VLiteral`, vue-eslint-parser) or Svelte (`SvelteLiteral`,
+ * svelte-eslint-parser) attribute value, or null when the source text cannot
+ * be aligned with the node's value. The node's range may or may not include
+ * the quotes; both are tried. Entities are kept as written, and a text that
+ * does not align exactly with the value gets no fix rather than a guess (#244).
+ */
+function createMarkupTextFixer(node, sourceCode) {
+  if (typeof node.value !== 'string' || !Array.isArray(node.range) || typeof sourceCode.text !== 'string') {
+    return null;
+  }
+
+  const text = sourceCode.text.slice(node.range[0], node.range[1]);
+  const candidates = [{ body: text, offset: node.range[0] }];
+  const quote = text[0];
+  if ((quote === '"' || quote === "'") && text.length >= 2 && text[text.length - 1] === quote) {
+    candidates.push({ body: text.slice(1, -1), offset: node.range[0] + 1 });
+  }
+
+  for (const { body, offset } of candidates) {
+    const pieces = alignJsxAttributeBody(body, node.value);
+    if (pieces && pieces.map((piece) => piece.text).join('') === node.value) {
+      return spanReplacer(body, offset, pieces, (replacement) => UNSAFE_IN_MARKUP.test(replacement));
+    }
+  }
+
+  return null;
+}
+
+/**
+ * The shared part of the fixers: maps a token at a decoded offset back to its
+ * raw span and replaces it only when that span is exactly the token text.
+ */
+function spanReplacer(body, bodyOffset, pieces, isUnsafe) {
   const rawStarts = [];
   const rawEnds = [];
   for (const piece of pieces) {
@@ -182,18 +229,11 @@ function createLiteralTokenFixer(node, sourceCode) {
     }
   }
 
-  const bodyOffset = node.range[0] + 1;
-
   return function replace(start, token, replacement) {
     if (typeof replacement !== 'string' || replacement === token || token.length === 0) {
       return null;
     }
-    if (
-      replacement.includes(quote)
-      || replacement.includes('\\')
-      || LINE_TERMINATOR.test(replacement)
-      || (jsx && replacement.includes('&'))
-    ) {
+    if (isUnsafe(replacement)) {
       return null;
     }
 
@@ -214,9 +254,48 @@ function createLiteralTokenFixer(node, sourceCode) {
 }
 
 /**
+ * The token fixer for any node a class string rule visits: string literals,
+ * and the static attribute text of Vue and Svelte templates.
+ */
+function createTokenFixer(node, sourceCode) {
+  if (node.type === 'VLiteral' || node.type === 'SvelteLiteral') {
+    return createMarkupTextFixer(node, sourceCode);
+  }
+  return createLiteralTokenFixer(node, sourceCode);
+}
+
+/**
+ * True for the static text of a `class` attribute in a Vue template
+ * (`<div class="p-[13px]">`, a `VLiteral` in a non-directive `VAttribute`) or
+ * a Svelte component (`<div class="p-[13px] {x}">`, a `SvelteLiteral` in a
+ * `SvelteAttribute`). Bound classes (`:class="..."`, `class={...}`) are
+ * expressions, and their strings are ordinary literals.
+ */
+function isClassAttributeText(node) {
+  const attribute = node.parent;
+  if (!attribute || !attribute.key) {
+    return false;
+  }
+  if (node.type === 'VLiteral') {
+    return attribute.type === 'VAttribute'
+      && attribute.directive === false
+      && attribute.value === node
+      && String(attribute.key.name).toLowerCase() === 'class';
+  }
+  if (node.type === 'SvelteLiteral') {
+    return attribute.type === 'SvelteAttribute'
+      && Array.isArray(attribute.value)
+      && attribute.value.includes(node)
+      && attribute.key.name === 'class';
+  }
+  return false;
+}
+
+/**
  * The text a class string rule should analyze: the decoded value of a string
  * Literal, or the cooked value of a TemplateElement (its raw text when the
- * cooked value is null, as in a tagged template with an invalid escape).
+ * cooked value is null, as in a tagged template with an invalid escape), or
+ * the value of a Vue `VLiteral` or Svelte `SvelteLiteral`.
  */
 function classStringValue(node) {
   if (node.type === 'Literal') {
@@ -225,10 +304,16 @@ function classStringValue(node) {
   if (node.type === 'TemplateElement' && node.value) {
     return typeof node.value.cooked === 'string' ? node.value.cooked : node.value.raw;
   }
+  if (node.type === 'VLiteral' || node.type === 'SvelteLiteral') {
+    return typeof node.value === 'string' ? node.value : null;
+  }
   return null;
 }
 
 module.exports = {
   classStringValue,
   createLiteralTokenFixer,
+  createMarkupTextFixer,
+  createTokenFixer,
+  isClassAttributeText,
 };

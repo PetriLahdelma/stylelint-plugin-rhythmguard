@@ -58,6 +58,8 @@ import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';
 
 export default [
   {
+    files: ['**/*.{js,jsx,mjs,cjs}'],
+    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
     plugins: {
       'rhythmguard-tailwind': rhythmguard,
     },
@@ -67,6 +69,8 @@ export default [
   },
 ];
 ```
+
+`files` and `ecmaFeatures.jsx` make ESLint lint `.jsx`. TypeScript, Vue, Svelte and Astro need their parser: see [Other file types](../packages/eslint-plugin-rhythmguard/README.md#other-file-types).
 
 Then layer on:
 
