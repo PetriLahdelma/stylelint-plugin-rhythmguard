@@ -81,8 +81,9 @@ function resolveTokenReplacement(tokenMap, raw, parsedLength, options) {
   if (options.unitStrategy === 'convert') {
     const px = toPx(parsedLength.number, parsedLength.unit, options.baseFontSize);
     if (px !== null) {
-      lookups.push([`${px}px`, false]);
-      if (negative) lookups.push([`${Math.abs(px)}px`, true]);
+      // Formatted, so 1.1rem at a 14px base is "15.4px", not "15.400000000000002px" (issue #275).
+      lookups.push([formatLength(px, 'px'), false]);
+      if (negative) lookups.push([formatLength(Math.abs(px), 'px'), true]);
     }
   }
 
@@ -289,60 +290,44 @@ const ruleFunction = (primary, secondaryOptions) => {
         return true;
       };
 
-      if (prop === 'transform') {
-        walkTransformTranslateNodes(parsed, (node, context) => {
-          if (node.type === 'function') {
-            const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
-            if (skipToken) {
-              return skipToken;
-            }
-
-            if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
-              return true;
-            }
-
-            return false;
+      // The bounds of clamp(), min() and max() are checked in translate
+      // functions as anywhere else (issue #272).
+      const checkedBounds = new Set();
+      const visit = (node, context) => {
+        if (node.type === 'function') {
+          const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
+          if (skipToken) {
+            return skipToken;
           }
 
-          if (node.type !== 'word') {
-            return false;
-          }
-
-          checkWordNode(node, context);
-          return false;
-        });
-      } else {
-        const checkedBounds = new Set();
-        walkRootValueNodes(parsed, (node, context) => {
-          if (node.type === 'function') {
-            const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
-            if (skipToken) {
-              return skipToken;
-            }
-
-            if (options.checkMathBounds && isBoundFunction(node)) {
-              for (const bound of collectMathBounds(node)) {
-                if (!checkedBounds.has(bound.node)) {
-                  checkedBounds.add(bound.node);
-                  checkWordNode(bound.node, context, bound.position);
-                }
+          if (options.checkMathBounds && isBoundFunction(node)) {
+            for (const bound of collectMathBounds(node)) {
+              if (!checkedBounds.has(bound.node)) {
+                checkedBounds.add(bound.node);
+                checkWordNode(bound.node, context, bound.position);
               }
             }
-
-            if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
-              return true;
-            }
-
-            return false;
           }
 
-          if (node.type !== 'word' || checkedBounds.has(node)) {
-            return false;
+          if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
+            return true;
           }
 
-          checkWordNode(node, context);
           return false;
-        });
+        }
+
+        if (node.type !== 'word' || checkedBounds.has(node)) {
+          return false;
+        }
+
+        checkWordNode(node, context);
+        return false;
+      };
+
+      if (prop === 'transform') {
+        walkTransformTranslateNodes(parsed, visit);
+      } else {
+        walkRootValueNodes(parsed, visit);
       }
 
       writeDeclarationValue(decl, source, parsed);

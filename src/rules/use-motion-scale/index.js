@@ -23,7 +23,7 @@ const {
 } = require('../../core/time');
 
 const { reportValueNode } = require('../report');
-const { validatePrimary } = require('../validate');
+const { validatePrimary, validateSecondaryOptionShapes } = require('../validate');
 const { isNote, normalizeNote, withNote } = require('../../core/options');
 
 const ruleName = 'rhythmguard/use-motion-scale';
@@ -69,7 +69,20 @@ function buildOptions(rawOptions) {
   };
 }
 
+// Stylelint checks list options per element, so a scalar or an empty list
+// passed and the defaults were used without a word (issue #273).
+const MOTION_SHAPES = Object.freeze({
+  durationScale: Object.freeze({ expectsArray: true, nonEmpty: true }),
+  durationUnits: Object.freeze({ expectsArray: true, nonEmpty: true }),
+});
+
 function validateSecondaryOptions(result, secondaryOptions) {
+  const validEntries = validateEntries(result, secondaryOptions);
+  const validShapes = validateSecondaryOptionShapes(result, ruleName, secondaryOptions, MOTION_SHAPES);
+  return validEntries && validShapes;
+}
+
+function validateEntries(result, secondaryOptions) {
   return stylelint.utils.validateOptions(result, ruleName, {
     actual: secondaryOptions,
     optional: true,

@@ -33,10 +33,18 @@ function validateSecondaryOptionShapes(result, ruleName, secondaryOptions, schem
       continue;
     }
 
-    const literalAllowed = Array.isArray(descriptor.allowLiterals)
-      && descriptor.allowLiterals.includes(optionValue);
+    const literals = Array.isArray(descriptor.allowLiterals) ? descriptor.allowLiterals : [];
+    const literalAllowed = literals.includes(optionValue);
 
-    if (descriptor.expectsArray && !Array.isArray(optionValue) && !literalAllowed) {
+    // A literal such as "auto" stands for the whole option, so `["auto"]` is
+    // invalid, and an empty list where a scale is expected checks nothing
+    // (issue #273).
+    const invalidArray = Array.isArray(optionValue) && (
+      (descriptor.nonEmpty && optionValue.length === 0)
+      || optionValue.some((entry) => literals.includes(entry))
+    );
+
+    if ((descriptor.expectsArray && !Array.isArray(optionValue) && !literalAllowed) || invalidArray) {
       valid = false;
       result.warn(
         `Invalid value ${stringifyOptionValue(optionValue)} for option "${optionName}" of rule "${ruleName}"`,
@@ -126,6 +134,7 @@ function validatePrimary(result, ruleName, primary) {
 
 module.exports = {
   validatePrimary,
+  validateSecondaryOptionShapes,
   validateNoOffscaleTransformSecondaryOptions,
   validatePreferTokenSecondaryOptions,
   validateUseScaleSecondaryOptions,

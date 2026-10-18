@@ -9,6 +9,7 @@ const {
   nearestText,
   numbersEqual,
   parseLengthToken,
+  pxAside,
   pxOnScale,
   toPx,
 } = require('../../core/length');
@@ -52,17 +53,18 @@ const messages = stylelint.utils.ruleMessages(ruleName, {
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
   rejected: (value, lower, upper, note = '', position = null, aside = '', group = null) =>
     `Unexpected off-scale ${position ? `${position} "${value}"${aside}` : `value "${value}"`}. Use ${group ? `${group} ` : ''}scale values (${nearestText(lower, upper)}).${note ? ` ${note}` : ''}`,
+  // A value the options forbid outright has no nearest scale value to name (issue #274).
+  rejectedNegative: (value, note = '', position = null) =>
+    `Unexpected ${position || 'value'} "${value}". Negative values are disabled for this rule.${note ? ` ${note}` : ''}`,
+  rejectedPercentage: (value, note = '', position = null) =>
+    `Unexpected ${position || 'value'} "${value}". Percentages are disabled for this rule.${note ? ` ${note}` : ''}`,
 });
 
-/** " (16.8px)" after a bound written in rem or em, so the reader sees what was compared. */
-function pxAside(value, baseFontSize) {
-  const parsed = parseLengthToken(value);
-  if (!parsed || !parsed.unit || parsed.unit === 'px' || parsed.unit === '%') {
-    return '';
-  }
-  const px = toPx(Math.abs(parsed.number), parsed.unit, baseFontSize);
-  return px === null ? '' : ` (${formatLength(parsed.number < 0 ? -px : px, 'px')})`;
-}
+// Passed as `nearest` for a value that `allowNegative` or `allowPercentages` forbids.
+const FORBIDDEN_NEGATIVE = Object.freeze({ forbidden: 'negative' });
+const FORBIDDEN_PERCENTAGE = Object.freeze({ forbidden: 'percentage' });
+
+
 
 /** Decisions from .rhythmguardrc.json; an invalid section is reported once and ignored. */
 function readDecisions(options, { result, root }) {
@@ -109,7 +111,7 @@ function checkLengthValue({
       return false;
     }
 
-    report(node.value, decl, node, null, null, '%');
+    report(node.value, decl, node, FORBIDDEN_PERCENTAGE);
     return false;
   }
 
@@ -118,7 +120,7 @@ function checkLengthValue({
   }
 
   if (!options.allowNegative && parsedLength.number < 0) {
-    report(node.value, decl, node, null, null, parsedLength.unit || 'px');
+    report(node.value, decl, node, FORBIDDEN_NEGATIVE);
     return false;
   }
 
@@ -278,12 +280,19 @@ const ruleFunction = (primary, secondaryOptions) => {
     const getScaleStateForProperty = createPropertyScaleResolver(options);
 
     const report = (value, decl, node, nearest, fixedValue = null, nearestUnit = 'px', extraNote = '', position = null) => {
-      const lower = nearest ? formatLength(nearest.lower, nearestUnit) : 'n/a';
-      const upper = nearest ? formatLength(nearest.upper, nearestUnit) : 'n/a';
-      const tokenNote = nearest ? tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit), String(value).trim().startsWith('-')) : '';
+      let message;
+      if (nearest.forbidden) {
+        const note = [fallbackNote, extraNote, options.note].filter(Boolean).join(' ');
+        message = nearest.forbidden === 'negative'
+          ? messages.rejectedNegative(value, note, position)
+          : messages.rejectedPercentage(value, note, position);
+      } else {
+        const tokenNote = tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit), String(value).trim().startsWith('-'));
+        message = messages.rejected(value, formatLength(nearest.lower, nearestUnit), formatLength(nearest.upper, nearestUnit), [fallbackNote, tokenNote, extraNote, options.note].filter(Boolean).join(' '), position, position ? pxAside(value, options.baseFontSize) : '', getScaleStateForProperty(decl.prop.toLowerCase()).group);
+      }
       reportValueNode({
         decl,
-        message: messages.rejected(value, lower, upper, [fallbackNote, tokenNote, extraNote, options.note].filter(Boolean).join(' '), position, position ? pxAside(value, options.baseFontSize) : '', getScaleStateForProperty(decl.prop.toLowerCase()).group),
+        message,
         node,
         replacement: fixedValue,
         result,
@@ -328,106 +337,70 @@ const ruleFunction = (primary, secondaryOptions) => {
       // Operands of a Sass expression that did not resolve are reported, never rewritten (issue #234).
       const sassOperands = sassOperandNodes(parsed, decl.value);
 
-      if (prop === 'transform') {
-        walkTransformTranslateNodes(parsed, (node, context) => {
-
-          if (node.type === 'function') {
-            const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
-            if (skipToken) {
-              return skipToken;
-            }
-
-            if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
-              return true;
-            }
-
-            return false;
+      // The bounds of clamp(), min() and max() are checked in translate
+      // functions as anywhere else (issue #272).
+      const checkedBounds = new Set();
+      const visit = (node, context) => {
+        if (node.type === 'function') {
+          const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
+          if (skipToken) {
+            return skipToken;
           }
 
-          if (node.type !== 'word') {
-            return false;
-          }
-
-          if (isKeyword(node.value, options.ignoreValues)) {
-            return false;
-          }
-
-          if (!shouldLintMathArgument(context, options)) {
-            return false;
-          }
-
-          checkLengthValue({
-            avoidTokens: context.tokenFallbackOf,
-            decl,
-            fixable: !sassOperands.has(node),
-            node,
-            options,
-            report,
-            scaleByUnit,
-            scalePx,
-          });
-
-          return false;
-        });
-      } else {
-        const checkedBounds = new Set();
-        walkRootValueNodes(parsed, (node, context) => {
-
-          if (node.type === 'function') {
-            const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
-            if (skipToken) {
-              return skipToken;
-            }
-
-            if (options.checkMathBounds && isBoundFunction(node)) {
-              for (const bound of collectMathBounds(node)) {
-                if (checkedBounds.has(bound.node)) {
-                  continue;
-                }
-                checkedBounds.add(bound.node);
-                if (isKeyword(bound.node.value, options.ignoreValues)) {
-                  continue;
-                }
-                const boundReport = (value, d, n, nearest, fixed, unit, extra) => report(value, d, n, nearest, fixed, unit, extra, bound.position);
-                checkLengthValue({ avoidTokens: context.tokenFallbackOf, decl, fixable: !sassOperands.has(bound.node), node: bound.node, options, report: boundReport, scaleByUnit, scalePx });
+          if (options.checkMathBounds && isBoundFunction(node)) {
+            for (const bound of collectMathBounds(node)) {
+              if (checkedBounds.has(bound.node)) {
+                continue;
               }
+              checkedBounds.add(bound.node);
+              if (isKeyword(bound.node.value, options.ignoreValues)) {
+                continue;
+              }
+              const boundReport = (value, d, n, nearest, fixed, unit, extra) => report(value, d, n, nearest, fixed, unit, extra, bound.position);
+              checkLengthValue({ avoidTokens: context.tokenFallbackOf, decl, fixable: !sassOperands.has(bound.node), node: bound.node, options, report: boundReport, scaleByUnit, scalePx });
             }
-
-            if (
-              isMathFunction(node.value) &&
-              !options.enforceInsideMathFunctions
-            ) {
-              return true;
-            }
-
-            return false;
           }
 
-          if (node.type !== 'word' || checkedBounds.has(node)) {
-            return false;
+          if (
+            isMathFunction(node.value) &&
+            !options.enforceInsideMathFunctions
+          ) {
+            return true;
           }
-
-          if (isKeyword(node.value, options.ignoreValues)) {
-            return false;
-          }
-
-          if (!shouldLintMathArgument(context, options)) {
-            return false;
-          }
-
-          checkLengthValue({
-            avoidTokens: context.tokenFallbackOf,
-            decl,
-            fixable: !sassOperands.has(node),
-            node,
-            options,
-            report,
-            scaleByUnit,
-            scalePx,
-          });
 
           return false;
+        }
+
+        if (node.type !== 'word' || checkedBounds.has(node)) {
+          return false;
+        }
+
+        if (isKeyword(node.value, options.ignoreValues)) {
+          return false;
+        }
+
+        if (!shouldLintMathArgument(context, options)) {
+          return false;
+        }
+
+        checkLengthValue({
+          avoidTokens: context.tokenFallbackOf,
+          decl,
+          fixable: !sassOperands.has(node),
+          node,
+          options,
+          report,
+          scaleByUnit,
+          scalePx,
         });
+
+        return false;
+      };
+
+      if (prop === 'transform') {
+        walkTransformTranslateNodes(parsed, visit);
+      } else {
+        walkRootValueNodes(parsed, visit);
       }
 
       writeDeclarationValue(decl, source, parsed);

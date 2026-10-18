@@ -9,6 +9,7 @@ const {
   nearestText,
   numbersEqual,
   parseLengthToken,
+  pxAside,
   pxOnScale,
   toPx,
 } = require('../../core/length');
@@ -17,7 +18,9 @@ const {
   createPropertyScaleResolver,
 } = require('../../core/options');
 const {
+  collectMathBounds,
   declarationValueSource,
+  isBoundFunction,
   isMathFunction,
   shouldLintMathArgument,
   skipTokenFunction,
@@ -41,8 +44,13 @@ const ruleName = 'rhythmguard/no-offscale-transform';
 const messages = stylelint.utils.ruleMessages(ruleName, {
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
-  rejected: (value, lower, upper, note = '') =>
-    `Unexpected transform translation value "${value}". Use scale values (${nearestText(lower, upper)}).${note ? ` ${note}` : ''}`,
+  rejected: (value, lower, upper, note = '', position = null, aside = '') =>
+    `Unexpected transform translation ${position ? `${position} "${value}"${aside}` : `value "${value}"`}. Use scale values (${nearestText(lower, upper)}).${note ? ` ${note}` : ''}`,
+  // A value the options forbid outright has no nearest scale value to name (issue #274).
+  rejectedNegative: (value, note = '', position = null) =>
+    `Unexpected transform translation ${position || 'value'} "${value}". Negative values are disabled for this rule.${note ? ` ${note}` : ''}`,
+  rejectedPercentage: (value, note = '', position = null) =>
+    `Unexpected transform translation ${position || 'value'} "${value}". Percentages are disabled for this rule.${note ? ` ${note}` : ''}`,
 });
 
 const ruleFunction = (primary, secondaryOptions) => {
@@ -99,15 +107,17 @@ const ruleFunction = (primary, secondaryOptions) => {
       const { scaleByUnit, scalePx } = getScaleStateForProperty(prop);
       let changed = false;
 
-      // `nearest` is null for a value the options forbid outright, as in use-scale.
-      const report = (node, nearest, nearestUnit, fixedValue = null) => {
+      // `position` names a clamp(), min() or max() bound (issue #272).
+      const report = (node, nearest, nearestUnit, fixedValue = null, position = null) => {
         reportValueNode({
           decl,
           message: messages.rejected(
             node.value,
-            nearest ? formatLength(nearest.lower, nearestUnit) : 'n/a',
-            nearest ? formatLength(nearest.upper, nearestUnit) : 'n/a',
-            [nearest ? tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit), node.value.trim().startsWith('-')) : '', options.note].filter(Boolean).join(' '),
+            formatLength(nearest.lower, nearestUnit),
+            formatLength(nearest.upper, nearestUnit),
+            [tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit), node.value.trim().startsWith('-')), options.note].filter(Boolean).join(' '),
+            position,
+            position ? pxAside(node.value, options.baseFontSize) : '',
           ),
           node,
           replacement: fixedValue,
@@ -116,7 +126,12 @@ const ruleFunction = (primary, secondaryOptions) => {
         });
       };
 
-      const checkNode = (node, avoidTokens = []) => {
+      // A value the options forbid outright says so, with no fix (issue #274).
+      const reportForbidden = (node, message, position) => {
+        reportValueNode({ decl, message: message(node.value, options.note, position), node, result, ruleName });
+      };
+
+      const checkNode = (node, avoidTokens = [], position = null) => {
         const parsedLength = parseLengthToken(node.value);
         if (!parsedLength || parsedLength.number === 0) {
           return;
@@ -128,7 +143,7 @@ const ruleFunction = (primary, secondaryOptions) => {
 
         if (parsedLength.unit === '%') {
           if (!options.allowPercentages) {
-            report(node, null, '%');
+            reportForbidden(node, messages.rejectedPercentage, position);
           }
           return;
         }
@@ -138,7 +153,7 @@ const ruleFunction = (primary, secondaryOptions) => {
         }
 
         if (!options.allowNegative && parsedLength.number < 0) {
-          report(node, null, parsedLength.unit);
+          reportForbidden(node, messages.rejectedNegative, position);
           return;
         }
 
@@ -178,7 +193,7 @@ const ruleFunction = (primary, secondaryOptions) => {
             ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens)
             : null;
 
-          report(node, nearest, unit, fixedValue);
+          report(node, nearest, unit, fixedValue, position);
           changed = true;
           return;
         }
@@ -202,62 +217,52 @@ const ruleFunction = (primary, secondaryOptions) => {
           ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens)
           : null;
 
-        report(node, nearest, 'px', fixedValue);
+        report(node, nearest, 'px', fixedValue, position);
         changed = true;
       };
 
+      // The bounds of clamp(), min() and max() are checked as in use-scale
+      // (issue #272).
+      const checkedBounds = new Set();
+      const visit = (node, context) => {
+        if (node.type === 'function') {
+          const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
+          if (skipToken) {
+            return skipToken;
+          }
+
+          if (options.checkMathBounds && isBoundFunction(node)) {
+            for (const bound of collectMathBounds(node)) {
+              if (!checkedBounds.has(bound.node)) {
+                checkedBounds.add(bound.node);
+                checkNode(bound.node, context.tokenFallbackOf, bound.position);
+              }
+            }
+          }
+
+          if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
+            return true;
+          }
+
+          return false;
+        }
+
+        if (node.type !== 'word' || checkedBounds.has(node)) {
+          return false;
+        }
+
+        if (!shouldLintMathArgument(context, options)) {
+          return false;
+        }
+
+        checkNode(node, context.tokenFallbackOf);
+        return false;
+      };
+
       if (prop === 'transform') {
-        walkTransformTranslateNodes(parsed, (node, context) => {
-          if (node.type === 'function') {
-            const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
-            if (skipToken) {
-              return skipToken;
-            }
-
-            if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
-              return true;
-            }
-
-            return false;
-          }
-
-          if (node.type !== 'word') {
-            return false;
-          }
-
-          if (!shouldLintMathArgument(context, options)) {
-            return false;
-          }
-
-          checkNode(node, context.tokenFallbackOf);
-          return false;
-        });
+        walkTransformTranslateNodes(parsed, visit);
       } else {
-        walkRootValueNodes(parsed, (node, context) => {
-          if (node.type === 'function') {
-            const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
-            if (skipToken) {
-              return skipToken;
-            }
-
-            if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
-              return true;
-            }
-
-            return false;
-          }
-
-          if (node.type !== 'word') {
-            return false;
-          }
-
-          if (!shouldLintMathArgument(context, options)) {
-            return false;
-          }
-
-          checkNode(node, context.tokenFallbackOf);
-          return false;
-        });
+        walkRootValueNodes(parsed, visit);
       }
 
       if (changed) {

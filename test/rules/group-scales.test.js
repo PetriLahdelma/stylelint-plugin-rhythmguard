@@ -69,6 +69,16 @@ test('scales rejects unknown groups and unknown presets', async () => {
   }
 });
 
+test('scales rejects an empty list and an unknown preset object, in the rules and in audit.scales (#273)', async () => {
+  const { isGroupScalesMap } = require('../../src/core/options');
+  for (const scales of [{ spacing: [] }, { spacing: { preset: 'nope' } }, { spacing: { scale: [] } }]) {
+    assert.equal(isGroupScalesMap(scales), false, JSON.stringify(scales));
+    const result = await lintCss({ code: '.a { padding: 13px; }', rules: rule({ scales }) });
+    assert.equal(result.invalidOptionWarnings.length, 1, JSON.stringify(scales));
+  }
+  assert.equal(isGroupScalesMap({ spacing: { preset: '8pt' }, typography: 'auto' }), true);
+});
+
 test('outline-offset follows the spacing scale in scales, not the radius one, though the radius group checks it', async () => {
   const result = await lintCss({
     code: '.a { outline-offset: 3px; border-radius: 3px; }',

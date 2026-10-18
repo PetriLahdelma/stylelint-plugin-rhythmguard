@@ -92,8 +92,14 @@ function isAutoScaleLiteral(value) {
   return value === 'auto';
 }
 
-function isScaleEntryOrAuto(value) {
-  return isAutoScaleLiteral(value) || isScaleEntry(value);
+/** A list of scale values. An empty list checks nothing, so it is not a scale (issue #273). */
+function isScaleList(value) {
+  return Array.isArray(value) && value.length > 0 && value.every((entry) => isScaleEntry(entry));
+}
+
+/** A name `getScalePreset` knows, built-in or community, aliases included. */
+function isKnownPresetName(value) {
+  return typeof value === 'string' && Boolean(getScalePreset(value));
 }
 
 function isScaleSourceEntry(value) {
@@ -213,9 +219,18 @@ function isMathFunctionArgumentMap(value) {
   });
 }
 
+/**
+ * A scale given as values, a preset name, or a { preset | scale | customScale }
+ * object. An empty list or an unknown preset would leave the scale empty or
+ * fall back to the default without a word, so neither is valid (issue #273).
+ */
 function isScaleOverrideEntry(value) {
   if (Array.isArray(value)) {
-    return value.every((entry) => isScaleEntry(entry));
+    return isScaleList(value);
+  }
+
+  if (typeof value === 'string') {
+    return isKnownPresetName(value);
   }
 
   if (!isPlainObject(value)) {
@@ -230,18 +245,15 @@ function isScaleOverrideEntry(value) {
     return false;
   }
 
-  if (hasPreset && !isNonEmptyString(value.preset)) {
+  if (hasPreset && !isKnownPresetName(value.preset)) {
     return false;
   }
 
-  if (hasScale && (!Array.isArray(value.scale) || !value.scale.every((entry) => isScaleEntry(entry)))) {
+  if (hasScale && !isScaleList(value.scale)) {
     return false;
   }
 
-  if (
-    hasCustomScale &&
-    (!Array.isArray(value.customScale) || !value.customScale.every((entry) => isScaleEntry(entry)))
-  ) {
+  if (hasCustomScale && !isScaleList(value.customScale)) {
     return false;
   }
 
@@ -267,13 +279,7 @@ const SCALED_GROUPS = Object.freeze(['spacing', 'radius', 'size', 'typography'])
 
 /** One group's scale: values, a preset name, "auto", or a { preset | scale | customScale } object. */
 function isGroupScaleEntry(value) {
-  if (isAutoScaleLiteral(value)) {
-    return true;
-  }
-  if (typeof value === 'string') {
-    return Boolean(getScalePreset(value));
-  }
-  return isScaleOverrideEntry(value);
+  return isAutoScaleLiteral(value) || isScaleOverrideEntry(value);
 }
 
 function isGroupScalesMap(value) {
@@ -293,7 +299,7 @@ function buildGroupScales(scales) {
     if (isAutoScaleLiteral(entry)) {
       return [group, { auto: true, scale: null }];
     }
-    const scale = typeof entry === 'string' ? getScalePreset(entry) : resolveScaleOverride(entry);
+    const scale = resolveScaleOverride(entry);
     return [group, { auto: false, scale: Array.isArray(scale) ? [...scale] : null }];
   }));
 }
@@ -302,7 +308,9 @@ function buildPossibleOptionMap(schema) {
   return Object.fromEntries(
     Object.entries(schema).map(([optionName, descriptor]) => [
       optionName,
-      [descriptor.entryValidator || VALIDATE_ALWAYS],
+      // A literal such as "auto" stands for the whole option; validateSecondaryOptionShapes
+      // rejects it inside an array (issue #273).
+      [...(descriptor.allowLiterals || []), descriptor.entryValidator || VALIDATE_ALWAYS],
     ]),
   );
 }
@@ -357,6 +365,12 @@ function compilePropertyMatcher(entry) {
 function resolveScaleOverride(override) {
   if (Array.isArray(override)) {
     return override;
+  }
+
+  // A preset name, as `propertyScales: { padding: "rhythmic-8" }` (issue #273).
+  if (typeof override === 'string') {
+    const preset = getScalePreset(override);
+    return preset ? [...preset] : null;
   }
 
   if (!isPlainObject(override)) {
@@ -438,6 +452,7 @@ const SCALE_VALIDATION_SCHEMA = Object.freeze({
   customScale: Object.freeze({
     entryValidator: isScaleEntry,
     expectsArray: true,
+    nonEmpty: true,
   }),
   checkMathBounds: Object.freeze({
     entryValidator: isBoolean,
@@ -467,8 +482,9 @@ const SCALE_VALIDATION_SCHEMA = Object.freeze({
   }),
   scale: Object.freeze({
     allowLiterals: ['auto'],
-    entryValidator: isScaleEntryOrAuto,
+    entryValidator: isScaleEntry,
     expectsArray: true,
+    nonEmpty: true,
   }),
   scaleSources: Object.freeze({
     entryValidator: isScaleSourceEntry,
@@ -536,6 +552,7 @@ const PREFER_TOKEN_VALIDATION_SCHEMA = Object.freeze({
   customScale: Object.freeze({
     entryValidator: isScaleEntry,
     expectsArray: true,
+    nonEmpty: true,
   }),
   checkMathBounds: Object.freeze({
     entryValidator: isBoolean,
@@ -579,8 +596,9 @@ const PREFER_TOKEN_VALIDATION_SCHEMA = Object.freeze({
   }),
   scale: Object.freeze({
     allowLiterals: ['auto'],
-    entryValidator: isScaleEntryOrAuto,
+    entryValidator: isScaleEntry,
     expectsArray: true,
+    nonEmpty: true,
   }),
   scaleSources: Object.freeze({
     entryValidator: isScaleSourceEntry,

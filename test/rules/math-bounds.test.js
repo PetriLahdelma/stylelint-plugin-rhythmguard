@@ -103,3 +103,67 @@ test('checkMathBounds must be a boolean', async () => {
   const result = await lintCss({ code: '.a { padding: 13px; }', rules: useScale({ checkMathBounds: 'yes' }) });
   assert.equal(result.invalidOptionWarnings.length, 1);
 });
+
+// Issue #272: bounds inside translate functions and the translate properties are checked too.
+test('use-scale checks bounds inside transform translate functions and the translate property', async () => {
+  const result = await lintCss({
+    code: '.a { transform: translateX(clamp(13px, 2vw, 17px)) rotate(4deg); translate: min(13px, 5vw) 0; }',
+    rules: useScale({ properties: ['transform', 'translate'] }),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  assert.deepEqual(texts(result), [
+    'Unexpected off-scale clamp() minimum "13px". Use scale values (nearest: 12px or 16px). (rhythmguard/use-scale)',
+    'Unexpected off-scale clamp() maximum "17px". Use scale values (nearest: 16px or 24px). (rhythmguard/use-scale)',
+    'Unexpected off-scale min() argument "13px". Use scale values (nearest: 12px or 16px). (rhythmguard/use-scale)',
+  ]);
+});
+
+test('use-scale --fix snaps a bound inside a translate function, and without checkMathBounds it stays unchecked', async () => {
+  const code = '.a { transform: translateX(clamp(13px, 2vw, 17px)); }';
+  const fixed = await lintCss({ code, fix: true, rules: useScale({ properties: ['transform'] }) });
+  assert.equal(fixed.code, '.a { transform: translateX(clamp(12px, 2vw, 16px)); }');
+
+  const off = await lintCss({ code, rules: useScale({ checkMathBounds: false, properties: ['transform'] }) });
+  assert.deepEqual(texts(off), []);
+});
+
+test('use-scale reports a translate bound once with enforceInsideMathFunctions as well', async () => {
+  const result = await lintCss({
+    code: '.a { transform: translateY(clamp(13px, 2vw, 17px)); }',
+    rules: useScale({ enforceInsideMathFunctions: true, properties: ['transform'] }),
+  });
+
+  assert.equal(result.warnings.length, 2, texts(result).join('\n'));
+});
+
+test('prefer-token checks bounds inside transform translate functions', async () => {
+  const result = await lintCss({
+    code: ':root { --space-4: 16px; }\n.a { transform: translateX(clamp(16px, 2vw, 17px)); }',
+    rules: { 'rhythmguard/prefer-token': [true, { checkMathBounds: true, properties: ['transform'] }] },
+  });
+
+  assert.deepEqual(texts(result), [
+    'Unexpected raw clamp() minimum "16px". Use var(--space-4). (rhythmguard/prefer-token)',
+    'Unexpected raw clamp() maximum "17px". No known token holds this value; use the nearest token or add one. (rhythmguard/prefer-token)',
+  ]);
+});
+
+test('no-offscale-transform checks bounds in transform and the translate properties, and fixes them', async () => {
+  const rules = { 'rhythmguard/no-offscale-transform': [true, { checkMathBounds: true, scale: SCALE }] };
+  const code = '.a { transform: translateX(clamp(13px, 2vw, 1.05rem)); translate: max(13px, 2vw) 0; translate-y: clamp(8px, 1vw, 16px); }';
+  const result = await lintCss({ code, rules });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  assert.deepEqual(texts(result), [
+    'Unexpected transform translation clamp() minimum "13px". Use scale values (nearest: 12px or 16px). (rhythmguard/no-offscale-transform)',
+    'Unexpected transform translation clamp() maximum "1.05rem" (16.8px). Use scale values (nearest: 16px or 24px). (rhythmguard/no-offscale-transform)',
+    'Unexpected transform translation max() argument "13px". Use scale values (nearest: 12px or 16px). (rhythmguard/no-offscale-transform)',
+  ]);
+
+  const fixed = await lintCss({ code, fix: true, rules });
+  assert.equal(fixed.code, '.a { transform: translateX(clamp(12px, 2vw, 1rem)); translate: max(12px, 2vw) 0; translate-y: clamp(8px, 1vw, 16px); }');
+
+  const off = await lintCss({ code, rules: { 'rhythmguard/no-offscale-transform': [true, { scale: SCALE }] } });
+  assert.deepEqual(texts(off), []);
+});

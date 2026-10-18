@@ -176,3 +176,18 @@ test('prefer-token does not ask for a token for hairline offsets unless allowHai
   const strict = await lint({ code, rules: { 'rhythmguard/prefer-token': [true, { allowHairlines: false, tokenMap: { '12px': 'var(--space-3)' } }] } });
   assertStrict.equal(strict.warnings.length, 3, strict.warnings.map((w) => w.text).join('\n'));
 });
+
+// Issue #275: 1.1rem at a 14px base is 15.400000000000002px in floating point; the px key is formatted.
+test('prefer-token finds a px tokenMap key for a converted length despite floating-point noise', async () => {
+  const rules = { 'rhythmguard/prefer-token': [true, { baseFontSize: 14, tokenMap: { '15.4px': 'var(--space-x)', '-15.4px': 'var(--space-neg-x)' } }] };
+  const result = await lintCss({ code: '.a { padding: 1.1rem; margin: -1.1rem; margin-top: 1.1rem; }', fix: true, rules });
+
+  assert.equal(result.code, '.a { padding: var(--space-x); margin: var(--space-neg-x); margin-top: var(--space-x); }');
+
+  const negated = await lintCss({
+    code: '.a { margin: -1.1rem; }',
+    fix: true,
+    rules: { 'rhythmguard/prefer-token': [true, { baseFontSize: 14, tokenMap: { '15.4px': 'var(--space-x)' } }] },
+  });
+  assert.equal(negated.code, '.a { margin: calc(-1 * var(--space-x)); }');
+});
