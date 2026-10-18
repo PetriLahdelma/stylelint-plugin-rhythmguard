@@ -17,7 +17,7 @@ const { renderBadge } = require('../audit/render-badge');
 const { renderHtml } = require('../audit/render-html');
 const { renderMarkdown } = require('../audit/render-markdown');
 const { renderText } = require('../audit/render-text');
-const { createAuditReport } = require('../audit/report');
+const { createAuditReport, normalizeCreateAuditOptions } = require('../audit/report');
 
 const args = process.argv.slice(3);
 
@@ -41,8 +41,12 @@ async function run() {
   }
 
   let report;
+  let options;
   try {
-    report = await createAuditReport(parsed);
+    // Apply .rhythmguardrc.json once, here, so the exit gates (maxFindings,
+    // minCleanliness) read the same merged options the report was built from.
+    options = { ...normalizeCreateAuditOptions(parsed), configApplied: true };
+    report = await createAuditReport(options);
   } catch (err) {
     process.stderr.write(`${err.message}\n`);
     process.exit(1);
@@ -53,7 +57,7 @@ async function run() {
     return;
   }
 
-  const auditFailures = getAuditFailures(report, parsed);
+  const auditFailures = getAuditFailures(report, options);
 
   if (parsed.format === 'json') {
     writeOutput(`${JSON.stringify(toAuditContractReport(report), null, 2)}\n`, parsed.outputPath);

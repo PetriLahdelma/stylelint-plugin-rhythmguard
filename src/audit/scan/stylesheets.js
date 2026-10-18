@@ -113,6 +113,8 @@ async function runStylelintAudit(cssFiles, options) {
     }
   }
 
+  assertNoInvalidOptions(results);
+
   results.scssFiles = scssFiles.length;
   results.scssSkipped = scssSkipped;
   // Stylelint returns no result at all for a file its ignore file excludes, so
@@ -120,6 +122,24 @@ async function runStylelintAudit(cssFiles, options) {
   const linted = plainFiles.length + scssFiles.length - scssSkipped;
   results.stylelintIgnored = Math.max(0, linted - results.length);
   return results;
+}
+
+/**
+ * Stylelint does not run a rule whose options it rejects: it reports an
+ * invalidOptionWarning and no findings for that rule. Read as findings, that is
+ * a clean audit and a passing gate, so any rejected option stops the run.
+ */
+function assertNoInvalidOptions(results) {
+  const texts = new Set();
+  for (const result of results) {
+    for (const warning of result.invalidOptionWarnings || []) {
+      texts.add(warning.text);
+    }
+  }
+
+  if (texts.size > 0) {
+    throw new Error(`Stylelint rejected the audit's rule options, so no findings could be collected: ${Array.from(texts).join('; ')}`);
+  }
 }
 
 function collectCssFindings(fileResults) {

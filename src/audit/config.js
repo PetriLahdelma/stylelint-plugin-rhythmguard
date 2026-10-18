@@ -15,6 +15,7 @@ const {
   parsePercentage,
   parsePositiveInteger,
   parseScale,
+  validateScale,
 } = require('./args');
 const {
   DEFAULT_IGNORE_PATH,
@@ -117,9 +118,9 @@ function applyAuditConfig(parsed, configResult) {
   }
   applyConfigScalar(next, audit, cliOptions, 'scale', 'scale', (value) => {
     if (Array.isArray(value)) {
-      return value;
+      return validateScale(value, 'audit.scale');
     }
-    return parseScale(String(value));
+    return parseScale(String(value), 'audit.scale');
   });
 
   next.decisions = normalizeDecisions(configResult.decisions, { baseFontSize: next.baseFontSize });
