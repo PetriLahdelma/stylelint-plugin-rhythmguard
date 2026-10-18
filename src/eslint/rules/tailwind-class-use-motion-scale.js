@@ -4,24 +4,13 @@ const { MAX_NOTE_LENGTH, normalizeNote, withNote } = require('../../core/options
 const { nearestText } = require('../../core/length');
 const { formatTime } = require('../../core/time');
 const { createTailwindMotionAnalyzer } = require('../../core/tailwind-motion-analysis');
+const { classStringValue, createLiteralTokenFixer } = require('../literal-spans');
 
 const RULE_NAME = 'tailwind-class-use-motion-scale';
 
 function maybeCheckNodeText(node, sourceCode, context, analyzer, allowFix) {
-  const rawText = sourceCode.getText(node);
-  let value = null;
-  let quote = null;
-
-  if (node.type === 'Literal' && typeof node.value === 'string') {
-    value = node.value;
-    quote = rawText[0] === '"' || rawText[0] === "'" ? rawText[0] : '"';
-  }
-
-  if (node.type === 'TemplateElement') {
-    value = node.value.raw;
-  }
-
-  if (!value || typeof value !== 'string') {
+  const value = classStringValue(node);
+  if (!value) {
     return;
   }
 
@@ -30,20 +19,9 @@ function maybeCheckNodeText(node, sourceCode, context, analyzer, allowFix) {
     return;
   }
 
-  let fixedValue = value;
-  let fixedValueOffset = 0;
-
-  for (const { analysis, segment } of findings) {
-    if (allowFix && analysis.reason === 'duration' && node.type === 'Literal') {
-      const replacementStart = segment.start + fixedValueOffset;
-      fixedValue = `${fixedValue.slice(0, replacementStart)}${analysis.fixedToken}${fixedValue.slice(replacementStart + segment.token.length)}`;
-      fixedValueOffset += analysis.fixedToken.length - segment.token.length;
-    }
-  }
-
-  const fixedText = allowFix && node.type === 'Literal' && fixedValue !== value
-    ? `${quote}${fixedValue.replace(new RegExp(quote, 'g'), `\\${quote}`)}${quote}`
-    : null;
+  // Fixes replace only the raw span of the class token, so escapes and JSX
+  // entities elsewhere in the literal are kept as written (#225).
+  const replaceToken = allowFix ? createLiteralTokenFixer(node, sourceCode) : null;
 
   for (const { analysis, segment } of findings) {
     const lower = analysis.nearest
@@ -55,10 +33,9 @@ function maybeCheckNodeText(node, sourceCode, context, analyzer, allowFix) {
     context.report({
       message: withNote(buildMessage(analysis, segment, lower, upper), analyzer.note),
       node,
-      fix:
-        fixedText && analysis.reason === 'duration'
-          ? (fixer) => fixer.replaceText(node, fixedText)
-          : null,
+      fix: replaceToken && analysis.reason === 'duration'
+        ? replaceToken(segment.start, segment.token, analysis.fixedToken)
+        : null,
     });
   }
 }

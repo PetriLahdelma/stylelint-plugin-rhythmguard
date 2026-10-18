@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- ESLint `--fix` on `tailwind-class-use-scale` and `tailwind-class-use-motion-scale` no longer rewrites the rest of the string. The fix was built from the decoded value with only the quote re-escaped, so `'p-[13px]\n'` became a string with a real newline that no longer parsed, `\\201C` became an octal escape, `\\` lost its escape and a JSX `&quot;` became `\"`. A fix now replaces only the class token in the source text, and everything else in the literal stays as written. A class with an escape inside it (`p-[13\x70x]`) is still reported but not fixed. Template literals are checked on their decoded text, so a class next to an escape such as `` `p-[13px]\n` `` is now reported; they are still not fixed. ([#225](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/225))
+
 ## [3.10.2] - 2026-10-15
 
 ### Messages
