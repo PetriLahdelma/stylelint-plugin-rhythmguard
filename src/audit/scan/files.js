@@ -77,34 +77,36 @@ function getScanFiles(rootDir, ignorePatterns, parsed) {
 }
 
 function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
-  const args = parsed.staged
-    ? ['diff', '--name-only', '--cached', '--diff-filter=ACMR', '--']
-    : ['diff', '--name-only', '--diff-filter=ACMR', parsed.since, '--'];
-  let output;
+  // -z prints names raw and NUL-separated: no quoting of spaces or non-ASCII
+  // bytes. diff.relative is pinned off so every name is relative to the
+  // repository top level, whatever the user's git config says.
+  const diffArgs = parsed.staged
+    ? ['diff', '--name-only', '-z', '--cached', '--diff-filter=ACMR', '--']
+    : ['diff', '--name-only', '-z', '--diff-filter=ACMR', parsed.since, '--'];
+  // Git runs in the scanned directory, so the repository is the one that holds
+  // the files, whichever directory the command was started from.
+  const topLevel = runGit(rootDir, ['rev-parse', '--show-toplevel']).replace(/\r?\n$/, '');
+  const output = runGit(rootDir, ['-c', 'diff.relative=false', ...diffArgs]);
 
-  try {
-    output = execFileSync('git', args, {
-      cwd: process.cwd(),
-      encoding: 'utf8',
-      stdio: ['ignore', 'pipe', 'pipe'],
-    });
-  } catch (err) {
-    const stderr = err.stderr ? String(err.stderr).trim() : err.message;
-    throw new Error(`Unable to read changed files from git: ${stderr}`, { cause: err });
+  // git reports the top level with symlinks resolved (/private/var on macOS);
+  // compare in that form, then name files under the directory as it was given.
+  const realRootDir = fs.realpathSync(rootDir);
+  const changedFiles = output.split('\0').filter(Boolean);
+  const changedPaths = [];
+  for (const filePath of changedFiles) {
+    const realPath = path.resolve(topLevel, filePath);
+    if (isPathInside(realRootDir, realPath)) {
+      changedPaths.push(path.join(rootDir, path.relative(realRootDir, realPath)));
+    }
   }
 
   const cssFiles = [];
   const templateFiles = [];
   const ignoreMatchers = createIgnoreMatchers(ignorePatterns);
   const seen = new Set();
-  const changedFiles = output.split(/\r?\n/)
-    .map((filePath) => filePath.trim())
-    .filter(Boolean);
 
-  for (const filePath of changedFiles) {
-    const fullPath = path.resolve(process.cwd(), filePath);
-
-    if (!isPathInside(rootDir, fullPath) || seen.has(fullPath) || !fs.existsSync(fullPath)) {
+  for (const fullPath of changedPaths) {
+    if (seen.has(fullPath) || !fs.existsSync(fullPath)) {
       continue;
     }
 
@@ -135,6 +137,19 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
     },
     templateFiles,
   };
+}
+
+function runGit(cwd, args) {
+  try {
+    return execFileSync('git', args, {
+      cwd,
+      encoding: 'utf8',
+      stdio: ['ignore', 'pipe', 'pipe'],
+    });
+  } catch (err) {
+    const stderr = err.stderr ? String(err.stderr).trim() : err.message;
+    throw new Error(`Unable to read changed files from git: ${stderr}`, { cause: err });
+  }
 }
 
 function isPathInside(rootDir, filePath) {

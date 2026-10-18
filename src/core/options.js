@@ -809,5 +809,6 @@ module.exports = {
   createPropertyScaleResolver,
   isGroupScalesMap,
   isPlainObject,
+  isScaleEntry,
   resolvePropertyScale,
 };

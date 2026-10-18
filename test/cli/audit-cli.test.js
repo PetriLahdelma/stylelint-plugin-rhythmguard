@@ -1117,3 +1117,140 @@ test('audit reports token ladders under contracts.tokens.ladders and in Markdown
   assert.equal(relaxed.summary.tooClose, 0);
   assert.equal(relaxed.summary.minStepPx, 0.5);
 });
+
+test('maxFindings and minCleanliness from .rhythmguardrc.json fail the audit, and CLI flags still win (issue #226)', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-rc-gates-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'a.css'), '.a { padding: 13px; }\n');
+  fs.writeFileSync(
+    path.join(fixtureDir, '.rhythmguardrc.json'),
+    JSON.stringify({ audit: { maxFindings: 0, minCleanliness: 90 } }),
+  );
+
+  const failed = runAuditCommand(fixtureDir, 'src');
+  assert.equal(failed.status, 1, failed.stdout);
+  assert.match(failed.stderr, /Audit failed:/);
+  assert.match(failed.stderr, /total findings 2 exceeds --max-findings 0/);
+  assert.match(failed.stderr, /scale cleanliness 0% is below --min-cleanliness 90%/);
+
+  const json = runAuditCommand(fixtureDir, 'src', '--format', 'json');
+  assert.equal(json.status, 1);
+  assert.match(json.stderr, /exceeds --max-findings 0/);
+
+  const overridden = runAuditCommand(fixtureDir, 'src', '--max-findings', '5', '--min-cleanliness', '0');
+  assert.equal(overridden.status, 0, overridden.stderr);
+  assert.doesNotMatch(overridden.stderr, /Audit failed/);
+
+  const ignored = runAuditCommand(fixtureDir, 'src', '--no-config');
+  assert.equal(ignored.status, 0, ignored.stderr);
+});
+
+for (const scale of ['0;4;8', '4,abc', 'NaN', '-4,4,8', 'Infinity', '4,8px;12']) {
+  test(`an invalid --scale "${scale}" exits non-zero with a clear message instead of silently passing (issue #227)`, () => {
+    const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-bad-scale-'));
+    fs.mkdirSync(path.join(fixtureDir, 'src'));
+    fs.writeFileSync(path.join(fixtureDir, 'src', 'a.css'), '.a { padding: 13px; }\n');
+
+    const result = runAuditCommand(fixtureDir, 'src', '--scale', scale, '--max-findings', '0');
+    assert.notEqual(result.status, 0, result.stdout);
+    assert.match(result.stderr, /Invalid --scale value/);
+    assert.doesNotMatch(result.stdout, /No issues found/);
+  });
+}
+
+test('an invalid audit.scale in .rhythmguardrc.json fails the audit (issue #227)', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-bad-rc-scale-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'a.css'), '.a { padding: 13px; }\n');
+
+  for (const scale of ['0;4;8', [-4, 4, 8], [4, 'abc'], [], 'NaN']) {
+    fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), JSON.stringify({ audit: { scale } }));
+    const result = runAuditCommand(fixtureDir, 'src');
+    assert.equal(result.status, 1, `${JSON.stringify(scale)}: ${result.stdout}`);
+    assert.match(result.stderr, /scale/i, JSON.stringify(scale));
+  }
+
+  fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), JSON.stringify({ audit: { scale: [0, 4, '8px', '0.75rem'] } }));
+  const valid = runAuditCommand(fixtureDir, 'src', '--format', 'json');
+  assert.equal(valid.status, 0, valid.stderr);
+  assert.equal(JSON.parse(valid.stdout).summary.totalFindings, 2);
+});
+
+test('valid --scale values keep working (issue #227)', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-good-scale-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'a.css'), '.a { padding: 13px; }\n');
+
+  for (const scale of ['0,4,8,12,16', '0, 4, 8', '0,4px,0.5rem', 'auto', 'AUTO']) {
+    const result = runAuditCommand(fixtureDir, 'src', '--scale', scale, '--format', 'json');
+    assert.equal(result.status, 0, `${scale}: ${result.stderr}`);
+    assert.equal(JSON.parse(result.stdout).summary.totalFindings, 2, scale);
+  }
+});
+
+test('the audit throws when Stylelint rejects an option instead of reporting a clean run (issue #227)', async () => {
+  const { createAuditReport } = require('../../src/audit');
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-invalid-option-'));
+  fs.writeFileSync(path.join(fixtureDir, 'a.css'), '.a { padding: 13px; }\n');
+
+  await assert.rejects(
+    createAuditReport({ dir: fixtureDir, noConfig: true, scale: ['0;4;8'] }),
+    /Invalid value "0;4;8" for option "scale"/,
+  );
+});
+
+function createGitScopedFixture() {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-git-subdir-'));
+  const srcDir = path.join(fixtureDir, 'pkg', 'src');
+  fs.mkdirSync(srcDir, { recursive: true });
+  runGit(fixtureDir, 'init');
+  runGit(fixtureDir, 'config', 'user.email', 'test@example.com');
+  runGit(fixtureDir, 'config', 'user.name', 'Test User');
+  const names = ['a.css', 'ä b.css', 'sp ace.css'];
+  for (const name of names) {
+    fs.writeFileSync(path.join(srcDir, name), '.a { padding: 16px; }\n');
+  }
+  fs.writeFileSync(path.join(fixtureDir, 'outside.css'), '.o { padding: 16px; }\n');
+  runGit(fixtureDir, 'add', '-A');
+  runGit(fixtureDir, 'commit', '-m', 'init');
+  for (const name of names) {
+    fs.writeFileSync(path.join(srcDir, name), '.a { padding: 13px; }\n');
+  }
+  fs.writeFileSync(path.join(fixtureDir, 'outside.css'), '.o { padding: 13px; }\n');
+  return { fixtureDir, names };
+}
+
+test('--staged scans every changed file, including non-ASCII names and spaces, from the repo root and from a subdirectory (issue #228)', () => {
+  const { fixtureDir, names } = createGitScopedFixture();
+  runGit(fixtureDir, 'add', '-A');
+
+  const fromRoot = runAuditCommand(fixtureDir, 'pkg/src', '--staged', '--format', 'json-v1');
+  assert.equal(fromRoot.status, 0, fromRoot.stderr);
+  const rootReport = JSON.parse(fromRoot.stdout);
+  assert.equal(rootReport.cssFilesScanned, 3);
+  assert.deepEqual(
+    rootReport.findings.css.filter((finding) => finding.type === 'off-scale').map((finding) => finding.file).sort(),
+    names.map((name) => `pkg/src/${name}`).sort(),
+  );
+
+  const fromSubdir = runAuditCommand(path.join(fixtureDir, 'pkg'), './src', '--staged', '--max-findings', '0', '--format', 'json-v1');
+  assert.equal(fromSubdir.status, 1, fromSubdir.stderr);
+  assert.match(fromSubdir.stderr, /total findings 6 exceeds --max-findings 0/);
+  const subdirReport = JSON.parse(fromSubdir.stdout);
+  assert.equal(subdirReport.cssFilesScanned, 3);
+  assert.deepEqual(
+    subdirReport.findings.css.filter((finding) => finding.type === 'off-scale').map((finding) => finding.file).sort(),
+    names.map((name) => `src/${name}`).sort(),
+  );
+});
+
+test('--since scans changed files from a subdirectory of the repo (issue #228)', () => {
+  const { fixtureDir, names } = createGitScopedFixture();
+
+  const result = runAuditCommand(path.join(fixtureDir, 'pkg', 'src'), '.', '--since', 'HEAD', '--format', 'json-v1');
+  assert.equal(result.status, 0, result.stderr);
+  const report = JSON.parse(result.stdout);
+  assert.equal(report.scanScope.mode, 'since');
+  assert.equal(report.cssFilesScanned, 3);
+  assert.deepEqual(report.findings.css.filter((finding) => finding.type === 'off-scale').map((finding) => finding.file).sort(), [...names].sort());
+});

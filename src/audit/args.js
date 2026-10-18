@@ -4,6 +4,7 @@ const {
   normalizeTokenKind,
   normalizeTokenSourceFormat,
 } = require('../core/token-sources');
+const { isScaleEntry } = require('../core/options');
 const { BADGE_METRICS } = require('./render-badge');
 const {
   VALID_FORMATS,
@@ -223,9 +224,9 @@ function parseTokenSourcePaths(raw) {
 }
 
 
-function parseScale(raw) {
+function parseScale(raw, optionName = '--scale') {
   if (!raw) {
-    throw new Error('Missing value for --scale.');
+    throw new Error(`Missing value for ${optionName}.`);
   }
 
   if (raw.trim().toLowerCase() === 'auto') {
@@ -240,8 +241,26 @@ function parseScale(raw) {
       return Number.isFinite(numeric) && !/[a-z%]/i.test(part) ? numeric : part;
     });
 
+  return validateScale(scale, optionName, raw);
+}
+
+/**
+ * A scale reaches Stylelint as the use-scale `scale` option, and Stylelint
+ * answers an invalid entry with an option warning and no findings at all. Check
+ * every entry the way the rule does, so a typo fails here, by name.
+ */
+function validateScale(scale, optionName = '--scale', raw = scale) {
   if (scale.length === 0) {
     throw new Error('Scale must include at least one value.');
+  }
+
+  const invalid = scale.find((entry) => !isScaleEntry(entry));
+  if (invalid !== undefined) {
+    const shown = Array.isArray(raw) ? JSON.stringify(raw) : `"${raw}"`;
+    throw new Error(
+      `Invalid ${optionName} value ${shown}: "${invalid}" is not a non-negative number or length. `
+      + 'Use comma-separated values such as 0,4,8,12,16, or auto.',
+    );
   }
 
   return scale;
@@ -268,4 +287,5 @@ module.exports = {
   parsePositiveInteger,
   parseScale,
   parseTokenSourcePaths,
+  validateScale,
 };
