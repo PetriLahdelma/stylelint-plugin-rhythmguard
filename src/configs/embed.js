@@ -9,6 +9,8 @@
  * No `extends`, no dependency beyond this plugin, and the shape is frozen for
  * the life of a major version so a config that embeds it never changes
  * behaviour on a minor bump.
+ *
+ * @type {import('../../types/shared').RhythmguardStylelintConfig}
  */
 module.exports = {
   plugins: ['stylelint-plugin-rhythmguard'],

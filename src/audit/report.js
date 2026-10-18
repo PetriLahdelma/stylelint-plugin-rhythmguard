@@ -269,7 +269,12 @@ function resolveAuditScale({ baseFontSize, cssFiles, readSource = readSourceFrom
   return { files: [], ...(rejected ? { rejected } : {}), source: 'fallback', tokenCount: 0, values: DEFAULT_SCALE };
 }
 
-function normalizeCreateAuditOptions(options = {}) {
+function normalizeCreateAuditOptions(rawOptions) {
+  // A key set to undefined is an omitted key: it neither replaces a default nor
+  // counts as given, so the config file still applies to it (#284).
+  const options = Object.fromEntries(
+    Object.entries(rawOptions || {}).filter(([, value]) => value !== undefined),
+  );
   const parsed = {
     ...createDefaultAuditOptions(),
     ...options,

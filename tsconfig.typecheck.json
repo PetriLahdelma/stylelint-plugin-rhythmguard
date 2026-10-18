@@ -42,6 +42,7 @@
   "include": [
     "types/**/*.d.ts",
     "types/__checks__/**/*.ts",
+    "src/configs/*.js",
     "examples/**/*.mjs"
   ]
 }

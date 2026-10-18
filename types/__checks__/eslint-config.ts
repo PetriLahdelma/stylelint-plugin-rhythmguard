@@ -31,7 +31,15 @@ const flatConfig: Linter.Config = {
   rules: rhythmguard.configs.recommended.rules,
 };
 
+// configs.recommended registers the plugin, so it stands alone in a config array (#279).
+const standalone = defineConfig([rhythmguard.configs.recommended]);
+const recommendedAsConfig: Linter.Config = companion.configs.recommended;
+const spreadRecommended: Linter.Config = { ...rhythmguard.configs.recommended, files: ['**/*.jsx'] };
+
 void config;
+void standalone;
+void recommendedAsConfig;
+void spreadRecommended;
 void asPlugin;
 void companionAsPlugin;
 void flatConfig;

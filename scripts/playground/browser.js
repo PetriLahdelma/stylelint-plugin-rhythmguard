@@ -18,7 +18,23 @@ const { getScalePreset, listScalePresetNames } = require('../../src/presets/scal
 const sample = require('./sample.css');
 
 const PLUGINS = [useScale, preferToken, noOffscaleTransform, useMotionScale];
-const CONFIGS = { recommended, strict, tailwind };
+const SHIPPED = { recommended, strict, tailwind };
+const SHIPPED_PREFIX = 'stylelint-plugin-rhythmguard/configs/';
+
+/**
+ * A shipped config's rules with what it `extends` merged in first, the way
+ * Stylelint does: a later entry replaces a rule's whole setting (#281). Shared
+ * configs from other packages hold no Rhythmguard rules and add nothing here.
+ */
+function resolveRules(config) {
+  const inherited = [].concat(config.extends || []).reduce((rules, name) => {
+    const shipped = name.startsWith(SHIPPED_PREFIX) ? SHIPPED[name.slice(SHIPPED_PREFIX.length)] : null;
+    return shipped ? { ...rules, ...resolveRules(shipped) } : rules;
+  }, {});
+  return { ...inherited, ...config.rules };
+}
+
+const CONFIGS = Object.fromEntries(Object.entries(SHIPPED).map(([name, config]) => [name, resolveRules(config)]));
 
 function createResult({ fix, severity }) {
   const result = {
@@ -38,7 +54,7 @@ function createResult({ fix, severity }) {
  * @param {{ rules?: object, config?: 'recommended'|'strict'|'tailwind', fix?: boolean, syntax?: 'css'|'scss' }} options
  */
 function lint(css, options = {}) {
-  const rules = options.rules || (CONFIGS[options.config || 'recommended'] || recommended).rules;
+  const rules = options.rules || CONFIGS[options.config || 'recommended'] || CONFIGS.recommended;
   const syntax = options.syntax === 'scss' ? postcssScss : postcss;
   const root = syntax.parse(css, { from: options.syntax === 'scss' ? 'playground.scss' : 'playground.css' });
   const warnings = [];
@@ -71,7 +87,7 @@ function declarations(css, syntax = 'css') {
 }
 
 module.exports = {
-  configs: Object.fromEntries(Object.entries(CONFIGS).map(([name, config]) => [name, config.rules])),
+  configs: CONFIGS,
   declarations,
   getScalePreset,
   lint,

@@ -46,6 +46,13 @@ test('eslint-plugin-rhythmguard re-exports the same plugin object (ESM)', async 
   assert.equal(mod.configs, direct.configs);
 });
 
+test('eslint-plugin-rhythmguard types import the package root, which moduleResolution "node" resolves (#281)', () => {
+  const declarations = fs.readFileSync(path.join(root, 'packages', 'eslint-plugin-rhythmguard', 'index.d.ts'), 'utf8');
+  const specifiers = [...declarations.matchAll(/from\s+["']([^"']+)["']/g)].map((match) => match[1]);
+  assert.ok(specifiers.length > 0);
+  assert.deepEqual([...new Set(specifiers)], ['stylelint-plugin-rhythmguard']);
+});
+
 test('the rhythmguard package runs the same CLI', () => {
   const { execFileSync } = require('node:child_process');
   const dir = linkedProject();

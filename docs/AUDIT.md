@@ -246,6 +246,8 @@ const report = await createAuditReport({ dir: './src', noConfig: true });
 const contract = toAuditContractReport(report);
 ```
 
+`createAuditReport` takes the scan and scale options of `rhythmguard audit` (`dir`, `scale`, `scales`, `baseFontSize`, `tokenSources`, `tokenSourceFormat`, `tokenKind`, `tokenCandidateMinCount`, `includeMotion`, `checkMathBounds`, `ignorePath`, `ignorePatterns`, `since`, `staged`, `sinceBaseline`, `writeBaseline`, `baselinePath`, `configPath`, `noConfig`), and `.rhythmguardrc.json` fills in the ones you leave out. A key set to `undefined` counts as left out. The output and gate options (`format`, `outputPath`, `maxFindings`, `minCleanliness`, `failOnNewDrift`, `badgeMetric`) belong to the CLI and do nothing here: read `report.summary.totalFindings`, `report.summary.scaleCleanliness` and `report.baseline.newFindingsCount` and decide in your own code.
+
 Dependency-free dashboard and Figma-friendly export examples: [`AUDIT_API_EXAMPLES.md`](./AUDIT_API_EXAMPLES.md). Validation history and product rationale: [`AUDIT_2_VALIDATION.md`](./AUDIT_2_VALIDATION.md).
 
 ## Companion commands

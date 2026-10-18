@@ -1,5 +1,6 @@
 'use strict';
 
+/** @type {import('../../types/shared').RhythmguardStylelintConfig} */
 module.exports = {
   extends: [
     'stylelint-config-tailwindcss',

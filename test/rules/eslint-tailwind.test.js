@@ -242,3 +242,67 @@ test('em values keep the arbitrary form: they follow the element font size, util
   ]);
   assert.equal(fixed.output, "const c = 'p-[1em] -m-[0.75em]';");
 });
+
+test('a double negative is a positive value and is fixed to the positive class (#277)', () => {
+  // Tailwind resolves -m-[-13px] to margin: 13px; the two signs cancel.
+  const scale = [0, 4, 8, 12, 16, 24, 32];
+  const { fixed, messages } = lintTailwind("const c = '-m-[-13px] md:-mt-[-0.8rem]';", { scale });
+  assert.deepEqual(messages.map(({ message }) => message), [
+    'Unexpected Tailwind arbitrary spacing value "-m-[-13px]". Use "m-3" (12px) or "m-4" (16px).',
+    'Unexpected Tailwind arbitrary spacing value "md:-mt-[-0.8rem]". Use "mt-3" (12px) or "mt-4" (16px).',
+  ]);
+  assert.equal(fixed.output, "const c = 'm-3 md:mt-3';");
+
+  const arbitrary = lintTailwind("const c = '-m-[-13px]';", { scale, spacingUnit: false });
+  assert.equal(arbitrary.fixed.output, "const c = '-m-[-12px]';", 'the arbitrary form keeps both signs');
+
+  const noNegatives = lintTailwind("const c = '-m-[-16px] -m-[-13px]';", { allowNegative: false, scale });
+  assert.deepEqual(noNegatives.messages.map(({ message }) => message), [
+    'Unexpected Tailwind arbitrary spacing value "-m-[-13px]". Use "m-3" (12px) or "m-4" (16px).',
+  ], 'a double negative is not a negative value');
+});
+
+test('both rules declare meta.type so --fix-type applies their fixes (#278)', async () => {
+  const { ESLint } = require('eslint');
+  for (const [name, rule] of Object.entries(eslintPlugin.rules)) {
+    assert.equal(rule.meta.type, 'suggestion', name);
+  }
+
+  const eslint = new ESLint({
+    fix: true,
+    fixTypes: ['suggestion'],
+    overrideConfig: {
+      plugins: { 'rhythmguard-tailwind': eslintPlugin },
+      rules: {
+        'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { scale: [0, 4, 8, 12, 16, 24, 32] }],
+        'rhythmguard-tailwind/tailwind-class-use-motion-scale': 'error',
+      },
+    },
+    overrideConfigFile: true,
+  });
+  const [result] = await eslint.lintText("const c = 'p-[13px] duration-[175ms]';");
+  assert.equal(result.output, "const c = 'p-3 duration-[150ms]';");
+});
+
+test('configs.recommended works as a flat config on its own and keeps its rules spreadable (#279)', () => {
+  const linter = new Linter();
+  const code = "const c = 'p-[13px]';";
+  const languageOptions = { ecmaVersion: 2022, sourceType: 'module' };
+
+  const alone = linter.verify(code, [{ languageOptions }, eslintPlugin.configs.recommended]);
+  assert.deepEqual(alone.map(({ ruleId, severity }) => [ruleId, severity]), [
+    ['rhythmguard-tailwind/tailwind-class-use-scale', 1],
+  ]);
+
+  const spread = linter.verify(code, [{
+    languageOptions,
+    plugins: { 'rhythmguard-tailwind': eslintPlugin },
+    rules: eslintPlugin.configs.recommended.rules,
+  }]);
+  assert.deepEqual(spread.map(({ ruleId }) => ruleId), ['rhythmguard-tailwind/tailwind-class-use-scale']);
+
+  const withFiles = linter.verify(code, [{ ...eslintPlugin.configs.recommended, files: ['**/*.js'], languageOptions }], 'a.js');
+  assert.equal(withFiles.length, 1);
+
+  assert.equal(eslintPlugin.configs.recommended.plugins['rhythmguard-tailwind'], eslintPlugin);
+});

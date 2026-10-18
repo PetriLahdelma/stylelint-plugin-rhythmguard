@@ -172,8 +172,9 @@ function analyzeClassToken(token, options, scalePx) {
     return null;
   }
 
-  // `-m-[16px]` and `m-[-16px]` are both negative margins (#241).
-  const negative = match.groups.utility.startsWith('-') || parsedLength.number < 0;
+  // `-m-[16px]` and `m-[-16px]` are both negative margins (#241); in
+  // `-m-[-16px]` the two signs cancel and Tailwind writes a positive margin (#277).
+  const negative = match.groups.utility.startsWith('-') !== parsedLength.number < 0;
 
   if (!options.allowNegative && negative) {
     return {

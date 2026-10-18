@@ -18,30 +18,47 @@ export interface AuditTokenSource {
   file?: string;
   format?: AuditTokenSourceFormat;
   path?: string;
+  /** Regex for token names in this file, overriding the kind matcher. */
+  tokenPattern?: string;
 }
 
+/**
+ * Options for `createAuditReport`. A key set to `undefined` counts as omitted.
+ * `.rhythmguardrc.json` fills in what the options leave out, unless `noConfig`.
+ * The gates and output options of `rhythmguard audit` (`format`, `outputPath`,
+ * `maxFindings`, `minCleanliness`, `failOnNewDrift`, `badgeMetric`) belong to
+ * the CLI: `createAuditReport` reads none of them. Check the returned report
+ * instead, for example `report.summary.totalFindings` or `report.baseline`.
+ */
 export interface AuditOptions {
   baseFontSize?: number;
+  /** Baseline file read with `sinceBaseline` and written with `writeBaseline`. Default `.rhythmguard-baseline.json`. */
   baselinePath?: string;
   /** Path to a `.rhythmguardrc.json`-style config. Defaults to `.rhythmguardrc.json` in `cwd`. */
   configPath?: string;
   dir?: string;
+  /** @deprecated CLI only (`--fail-on-new-drift`): `createAuditReport` ignores it. Read `report.baseline.newFindingsCount`. */
   failOnNewDrift?: boolean;
-  /** Badge value when `format` is "badge": drift percent or off-scale count. */
+  /** @deprecated CLI only (`--badge-metric`): `createAuditReport` ignores it. */
   badgeMetric?: "drift" | "findings";
+  /** @deprecated CLI only (`--format`): `createAuditReport` returns the report object, not rendered output. */
   format?: "json" | "json-v1" | "markdown" | "text" | "html" | "github" | "badge";
   ignorePath?: string;
   ignorePatterns?: string[];
   /** Check clamp() bounds and min()/max() arguments against the scale (equivalent to `--check-math-bounds`). */
   checkMathBounds?: boolean;
   includeMotion?: boolean;
+  /** Smallest gap in px between neighbouring steps of a token ladder (`audit.ladders.minStepPx`). Default 2. */
+  ladderMinStepPx?: number;
   /** A scale per property group (`spacing`, `radius`, `size`, `typography`): values, a preset name or "auto". Each group named is also checked. */
   scales?: Partial<Record<"spacing" | "radius" | "size" | "typography", Array<number | string> | string | { preset?: string; scale?: Array<number | string>; customScale?: Array<number | string> }>>;
+  /** @deprecated CLI only (`--max-findings`): `createAuditReport` ignores it. Compare `report.summary.totalFindings`. */
   maxFindings?: number;
+  /** @deprecated CLI only (`--min-cleanliness`): `createAuditReport` ignores it. Compare `report.summary.scaleCleanliness`. */
   minCleanliness?: number;
   /** Skip config discovery entirely (equivalent to `--no-config`). */
   noConfig?: boolean;
-  /** Write rendered output to this file instead of stdout (equivalent to `--output`). */
+  /** @deprecated CLI only (`--output`): `createAuditReport` writes nothing. */
   outputPath?: string;
   /** Explicit scale values, or `"auto"` to infer from token sources, then scanned CSS, then the default. */
   scale?: Array<number | string> | "auto";
@@ -52,20 +69,34 @@ export interface AuditOptions {
   tokenKind?: AuditTokenKind;
   /** Format applied to `tokenSources` entries that do not declare their own. */
   tokenSourceFormat?: AuditTokenSourceFormat | "auto";
-  tokenSources?: AuditTokenSource[];
+  /** Token files: paths, or entries with their own format and base directory. */
+  tokenSources?: Array<string | AuditTokenSource>;
   writeBaseline?: boolean;
 }
 
 export interface AuditSummary {
-  cleanliness: number;
-  filesWithFindings: number;
-  findingCount: number;
-  motionFindingCount?: number;
+  /** Off-scale and token findings in stylesheets. */
+  cssWarnings: number;
+  /** Audited files with at least one finding. */
+  filesWithIssues: number;
+  missingTokens: number;
+  motionFindings: number;
+  /** With `sinceBaseline`: findings not in the baseline. */
+  newFindings?: number;
   /** Stylesheets that could not be parsed. They are not findings and are left out of cleanliness. */
-  parseErrors?: number;
+  parseErrors: number;
+  rawValueCandidates: number;
+  rawValueMatches: number;
+  /** With `sinceBaseline`: baseline findings no longer present. */
+  resolvedFindings?: number;
   /** Share of audited files with no finding, rounded down, so it is never 100 while a file has a finding. */
-  scaleCleanliness?: number;
-  tokenOpportunityCount?: number;
+  scaleCleanliness: number;
+  tailwindArbitrarySpacing: number;
+  tokenOpportunities: number;
+  tokenSources: number;
+  /** Every finding: stylesheets, class strings and motion. */
+  totalFindings: number;
+  unusedTokens: number;
   [key: string]: unknown;
 }
 
@@ -87,26 +118,52 @@ export interface AuditScanned {
 export interface AuditFinding {
   column?: number;
   file: string;
+  /** Class strings: the fixed class, or null when there is no safe fix. */
+  fixedToken?: string | null;
   key?: string;
   line?: number;
-  message: string;
+  /** Class strings: the two nearest scale steps, or null. */
+  nearest?: { lower: string; upper: string } | null;
   /** CSS property of the declaration, recovered from the source. Null when the position is not inside a declaration. CSS findings only. */
   property?: string | null;
+  /** Class strings: the arbitrary value inside the brackets. */
+  rawValue?: string;
   rule?: string;
-  /** "off-scale", "token-opportunity", "motion-duration", "motion-easing", or "parse-error" for a stylesheet that could not be parsed. */
+  /** The finding's message, as the rule reports it. */
+  text: string;
+  /** Class strings: the whole class, with variants. */
+  token?: string;
+  /**
+   * "off-scale", "token-opportunity", "motion-duration", "motion-easing", "tailwind-arbitrary-spacing",
+   * "tailwind-motion-duration", "tailwind-motion-easing", or "parse-error" for a stylesheet that could not be parsed.
+   */
   type: string;
+  /** Class strings: the utility, such as `p` or `-mt`. */
+  utility?: string;
   value?: string | null;
   [key: string]: unknown;
 }
 
 export interface AuditBaselineComparison {
   baselineFindings: number;
+  /** The baseline file, relative to the working directory. */
+  file: string;
   newFindings: AuditFinding[];
   newFindingsCount: number;
-  resolvedFindings: AuditFinding[];
   resolvedFindingsCount: number;
   [key: string]: unknown;
 }
+
+/** What the audit scanned: the whole directory, or files changed since a ref or staged. */
+export interface AuditScanScope {
+  changedFiles?: number;
+  mode: "full" | "since" | "staged";
+  since?: string | null;
+  [key: string]: unknown;
+}
+
+/** The config file the audit read, or null when there was none or `noConfig` was set. */
+export type AuditConfigReference = { file: string } | null;
 
 export type AuditScaleSource = "default" | "explicit" | "fallback" | "scanned-css" | "token-package" | "token-sources";
 
@@ -160,8 +217,11 @@ export interface AuditReport {
   decisionPlan?: AuditDecisionPlanEntry[];
   baseline?: AuditBaselineComparison | null;
   scale?: AuditScale | null;
-  config?: string | null;
+  config: AuditConfigReference;
+  cssFilesScanned: number;
   directory: string;
+  /** Audited files with at least one finding. */
+  filesWithIssues: number;
   findings: {
     css: AuditFinding[];
     motion: AuditFinding[];
@@ -173,15 +233,34 @@ export interface AuditReport {
   offScaleProperties?: Record<string, number>;
   /** Off-scale CSS findings counted by value, top ten. */
   offScaleValues?: Record<string, number>;
+  /** The report format version; it changes when the report shape does. */
+  formatVersion: number;
+  motion: { enabled: boolean; findings: number; values: Record<string, number> };
+  /** Share of audited files with no finding, rounded down. Same as `summary.scaleCleanliness`. */
+  scaleCleanliness: number;
+  scanScope: AuditScanScope;
   scanned: AuditScanned;
   summary: AuditSummary;
+  /** Off-scale arbitrary values in class strings counted by value, top ten. */
+  tailwindArbitraryValues: Record<string, number>;
+  templateFilesScanned: number;
+  /** Defined, used, unused, missing and conflicting tokens, token chains and ladders. */
+  tokenContract: Record<string, unknown>;
+  /** Token-opportunity findings counted by value, top ten. */
+  tokenOpportunities: Record<string, number>;
+  tokenSourceWarnings: string[];
+  /** Files with the most findings, most first. */
+  topAffectedFiles: Array<{ count: number; file: string }>;
+  totalFiles: number;
+  /** Every finding. Same as `summary.totalFindings`. */
+  totalWarnings: number;
   [key: string]: unknown;
 }
 
 export interface AuditContractReport {
   baseline: AuditBaselineComparison | null;
   command: {
-    config?: string | null;
+    config: AuditConfigReference;
     directory: string;
     scanScope: string;
   };
@@ -225,7 +304,13 @@ export const AUDIT_JSON_SCHEMA: Readonly<Record<string, unknown>>;
 
 export function createAuditReport(options?: AuditOptions): Promise<AuditReport>;
 
-export function loadAuditConfig(options?: AuditOptions): Record<string, unknown>;
+/** The parsed `.rhythmguardrc.json`, or null when there is none or `noConfig` is set. Throws on an invalid file. */
+export function loadAuditConfig(options?: AuditOptions): {
+  audit: Record<string, unknown>;
+  decisions: unknown;
+  file: string;
+  rootDir: string;
+} | null;
 
 export function parseTokenSources(options?: {
   baseFontSize?: number;

@@ -9,6 +9,7 @@ import type {
   AuditReport,
   RhythmguardRuleOptions,
   RhythmguardStylelintConfig,
+  ScalePresetMetadata,
 } from 'stylelint-plugin-rhythmguard';
 import { createAuditReport, toAuditContractReport } from 'stylelint-plugin-rhythmguard/audit';
 import eslintPlugin from 'stylelint-plugin-rhythmguard/eslint';
@@ -48,6 +49,9 @@ const name: string = useScaleName;
 
 const presetNames: string[] = listScalePresetNames();
 const preset = getScalePreset('rhythmic-4');
+// Unknown names return null, as the runtime does (#281).
+const missingPreset: readonly number[] | null = getScalePreset('nope');
+const missingMetadata: ScalePresetMetadata | null = presets.getCommunityScaleMetadata('nope');
 const presetsAgain: string[] = presets.listScalePresetNames();
 
 const eslintRule = eslint.rules['tailwind-class-use-scale'];
@@ -55,8 +59,21 @@ const eslintRuleAgain = eslintPlugin.rules['tailwind-class-use-motion-scale'];
 
 async function runAudit(): Promise<AuditContractReport> {
   const report: AuditReport = await createAuditReport({ dir: './src', noConfig: true });
-  const viaPlugin: AuditReport = await audit.createAuditReport({ dir: './src' });
+  const viaPlugin: AuditReport = await audit.createAuditReport({ dir: './src', scale: undefined });
   void viaPlugin;
+  // The fields the runtime report has (#284).
+  const cleanliness: number = report.summary.scaleCleanliness + report.scaleCleanliness;
+  const counts: number = report.summary.totalFindings + report.summary.filesWithIssues + report.filesWithIssues;
+  const configFile: string | undefined = report.config?.file;
+  const firstText: string | undefined = report.findings.css[0]?.text;
+  const resolved: number | undefined = report.baseline?.resolvedFindingsCount;
+  const contractConfig: { file: string } | null = toAuditContractReport(report).command.config;
+  void cleanliness;
+  void counts;
+  void configFile;
+  void firstText;
+  void resolved;
+  void contractConfig;
   return toAuditContractReport(report);
 }
 
@@ -68,6 +85,8 @@ void docUrl;
 void name;
 void presetNames;
 void preset;
+void missingPreset;
+void missingMetadata;
 void presetsAgain;
 void eslintRule;
 void eslintRuleAgain;

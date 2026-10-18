@@ -54,6 +54,7 @@ function buildMessage(analysis, segment, lower, upper) {
 
 module.exports = {
   meta: {
+    type: 'suggestion',
     docs: {
       url: 'https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/tailwind-class-use-motion-scale.md',
       description: 'Enforce duration scale for Tailwind arbitrary motion utilities in class strings',
