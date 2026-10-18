@@ -17,15 +17,20 @@ const {
   createPropertyScaleResolver,
 } = require('../../core/options');
 const {
+  blankBlockComments,
   collectMathBounds,
+  declarationValueSource,
   isBoundFunction,
   isKeyword,
   isMathFunction,
-  isTokenFunction,
   propertyMatches,
+  sassOperandNodes,
   shouldLintMathArgument,
+  skipTokenFunction,
   walkRootValueNodes,
   walkTransformTranslateNodes,
+  writeDeclarationValue,
+  writeValueEdits,
 } = require('../../core/value-nodes');
 
 const {
@@ -73,6 +78,7 @@ function readDecisions(options, { result, root }) {
 }
 
 function checkLengthValue({
+  avoidTokens = [],
   decl,
   evaluated = null,
   fixable = true,
@@ -150,7 +156,7 @@ function checkLengthValue({
     }
 
     const fixedValue = options.fixToScale && fixable
-      ? replacementFor(parsedLength, nearest.nearest, options, decl.prop)
+      ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens)
       : null;
 
     report(node.value, decl, node, nearest, fixedValue, unit, evaluated ? evaluatedNote(evaluated, options) : '');
@@ -174,7 +180,7 @@ function checkLengthValue({
   }
 
   const fixedValue = options.fixToScale && fixable
-    ? replacementFor(parsedLength, nearest.nearest, options, decl.prop)
+    ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens)
     : null;
 
   report(node.value, decl, node, nearest, fixedValue, 'px', evaluated ? evaluatedNote(evaluated, options) : '');
@@ -194,14 +200,17 @@ function evaluatedNote(evaluated, options) {
  * alone, as they always were.
  */
 function checkSassValue({ decl, options, report, resolveVariable, scaleByUnit, scalePx }) {
-  const terms = evaluateScssValueList(decl.value, resolveVariable, new Set());
+  // Offsets are offsets into the value as written, comments included (issue #233).
+  const source = declarationValueSource(decl);
+  const terms = evaluateScssValueList(blankBlockComments(source.parseText), resolveVariable, new Set());
   if (!terms) {
     // Not fully evaluable (an unknown variable, interpolation, a keyword): the
     // literal walk below still checks the plain lengths in the value.
     return false;
   }
-  // Right to left, so a fix spliced into an earlier term never shifts the spans
-  // of the terms still to be checked. Stylelint orders the warnings by position.
+  // Fixes are collected as spans of the written value and written once at the
+  // end. Stylelint orders the warnings by position.
+  const edits = [];
   for (const term of [...terms].reverse()) {
     if (!term.unit || term.number === 0) {
       continue;
@@ -209,9 +218,9 @@ function checkSassValue({ decl, options, report, resolveVariable, scaleByUnit, s
     const node = {
       sourceIndex: term.start,
       type: 'word',
-      get value() { return term.text; },
+      get value() { return source.text.slice(term.start, term.end); },
       // The fix writes into the declaration at the term's span.
-      set value(replacement) { decl.value = `${decl.value.slice(0, term.start)}${replacement}${decl.value.slice(term.end)}`; },
+      set value(replacement) { edits.push({ end: term.end, start: term.start, text: replacement }); },
     };
     checkLengthValue({
       decl,
@@ -225,6 +234,7 @@ function checkSassValue({ decl, options, report, resolveVariable, scaleByUnit, s
       scalePx,
     });
   }
+  writeValueEdits(decl, source, edits);
   return true;
 }
 
@@ -313,15 +323,18 @@ const ruleFunction = (primary, secondaryOptions) => {
         return;
       }
 
-      const parsed = valueParser(decl.value);
-      let changed = false;
+      const source = declarationValueSource(decl);
+      const parsed = valueParser(source.parseText);
+      // Operands of a Sass expression that did not resolve are reported, never rewritten (issue #234).
+      const sassOperands = sassOperandNodes(parsed, decl.value);
 
       if (prop === 'transform') {
         walkTransformTranslateNodes(parsed, (node, context) => {
 
           if (node.type === 'function') {
-            if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
-              return true;
+            const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
+            if (skipToken) {
+              return skipToken;
             }
 
             if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
@@ -343,15 +356,16 @@ const ruleFunction = (primary, secondaryOptions) => {
             return false;
           }
 
-          changed =
-            checkLengthValue({
-              decl,
-              node,
-              options,
-              report,
-              scaleByUnit,
-              scalePx,
-            }) || changed;
+          checkLengthValue({
+            avoidTokens: context.tokenFallbackOf,
+            decl,
+            fixable: !sassOperands.has(node),
+            node,
+            options,
+            report,
+            scaleByUnit,
+            scalePx,
+          });
 
           return false;
         });
@@ -360,8 +374,9 @@ const ruleFunction = (primary, secondaryOptions) => {
         walkRootValueNodes(parsed, (node, context) => {
 
           if (node.type === 'function') {
-            if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
-              return true;
+            const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
+            if (skipToken) {
+              return skipToken;
             }
 
             if (options.checkMathBounds && isBoundFunction(node)) {
@@ -374,7 +389,7 @@ const ruleFunction = (primary, secondaryOptions) => {
                   continue;
                 }
                 const boundReport = (value, d, n, nearest, fixed, unit, extra) => report(value, d, n, nearest, fixed, unit, extra, bound.position);
-                changed = checkLengthValue({ decl, node: bound.node, options, report: boundReport, scaleByUnit, scalePx }) || changed;
+                checkLengthValue({ avoidTokens: context.tokenFallbackOf, decl, fixable: !sassOperands.has(bound.node), node: bound.node, options, report: boundReport, scaleByUnit, scalePx });
               }
             }
 
@@ -400,23 +415,22 @@ const ruleFunction = (primary, secondaryOptions) => {
             return false;
           }
 
-          changed =
-            checkLengthValue({
-              decl,
-              node,
-              options,
-              report,
-              scaleByUnit,
-              scalePx,
-            }) || changed;
+          checkLengthValue({
+            avoidTokens: context.tokenFallbackOf,
+            decl,
+            fixable: !sassOperands.has(node),
+            node,
+            options,
+            report,
+            scaleByUnit,
+            scalePx,
+          });
 
           return false;
         });
       }
 
-      if (changed) {
-        decl.value = parsed.toString();
-      }
+      writeDeclarationValue(decl, source, parsed);
     });
   };
 };

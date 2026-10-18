@@ -16,14 +16,17 @@ const {
 } = require('../../core/options');
 const {
   collectMathBounds,
+  declarationValueSource,
   isBoundFunction,
   isKeyword,
   isMathFunction,
-  isTokenFunction,
   propertyMatches,
+  sassOperandNodes,
   shouldLintMathArgument,
+  skipTokenFunction,
   walkRootValueNodes,
   walkTransformTranslateNodes,
+  writeDeclarationValue,
 } = require('../../core/value-nodes');
 const { buildEffectiveTokenMap } = require('../../core/token-map');
 
@@ -124,6 +127,12 @@ function resolveFromIndex(tokenIndex, parsedLength, prop, options) {
   };
 }
 
+/** The custom property a replacement such as `var(--space-2)` or `calc(-1 * var(--space-2))` writes. */
+function replacementToken(replacement) {
+  const match = typeof replacement === 'string' ? replacement.match(/var\(\s*(--[^\s,)]+)/) : null;
+  return match ? match[1] : null;
+}
+
 const ruleFunction = (primary, secondaryOptions) => {
   return (root, result) => {
     const valid = validatePrimary(result, ruleName, primary);
@@ -178,24 +187,36 @@ const ruleFunction = (primary, secondaryOptions) => {
         return;
       }
 
-      const parsed = valueParser(decl.value);
+      const source = declarationValueSource(decl);
+      const parsed = valueParser(source.parseText);
       const { scaleByUnit, scalePx } = getScaleStateForProperty(prop);
-      let changed = false;
+      // Operands of a Sass expression are reported, never rewritten (issue #234).
+      const sassOperands = sassOperandNodes(parsed, decl.value);
 
-      const reportNode = (node, parsedLength, position = null) => {
+      // `avoidTokens`: the var() names a fallback literal falls back from. A
+      // fallback held by one of them restates that token and passes; it is
+      // never replaced with the token it is the fallback of (issue #240).
+      const reportNode = (node, parsedLength, position = null, avoidTokens = []) => {
+        const fixable = !sassOperands.has(node);
         const mapped = resolveTokenReplacement(tokenMap, node.value, parsedLength, options);
         if (mapped && tokenFitsProperty(mapped.token, prop)) {
+          if (avoidTokens.includes(replacementToken(mapped.token))) {
+            return;
+          }
           const origin = origins[mapped.token] || null;
-          reportValueNode({ decl, message: messages.rejected(node.value, mapped.replacement, origin, options.note, [], position), node, replacement: mapped.replacement, result, ruleName });
+          reportValueNode({ decl, message: messages.rejected(node.value, mapped.replacement, origin, options.note, [], position), node, replacement: fixable ? mapped.replacement : null, result, ruleName });
           return;
         }
         const indexed = resolveFromIndex(tokenIndex, parsedLength, prop, options);
+        if (indexed.candidates.some((candidate) => avoidTokens.includes(candidate))) {
+          return;
+        }
         const named = indexed.replacement || null;
         reportValueNode({
           decl,
           message: messages.rejected(node.value, named, indexed.origin || null, options.note, indexed.candidates, position),
           node,
-          replacement: indexed.fixable ? named : null,
+          replacement: indexed.fixable && fixable ? named : null,
           result,
           ruleName,
         });
@@ -264,15 +285,16 @@ const ruleFunction = (primary, secondaryOptions) => {
           }
         }
 
-        reportNode(node, parsedLength, position);
+        reportNode(node, parsedLength, position, (context && context.tokenFallbackOf) || []);
         return true;
       };
 
       if (prop === 'transform') {
         walkTransformTranslateNodes(parsed, (node, context) => {
           if (node.type === 'function') {
-            if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
-              return true;
+            const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
+            if (skipToken) {
+              return skipToken;
             }
 
             if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
@@ -286,22 +308,23 @@ const ruleFunction = (primary, secondaryOptions) => {
             return false;
           }
 
-          changed = checkWordNode(node, context) || changed;
+          checkWordNode(node, context);
           return false;
         });
       } else {
         const checkedBounds = new Set();
         walkRootValueNodes(parsed, (node, context) => {
           if (node.type === 'function') {
-            if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
-              return true;
+            const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
+            if (skipToken) {
+              return skipToken;
             }
 
             if (options.checkMathBounds && isBoundFunction(node)) {
               for (const bound of collectMathBounds(node)) {
                 if (!checkedBounds.has(bound.node)) {
                   checkedBounds.add(bound.node);
-                  changed = checkWordNode(bound.node, null, bound.position) || changed;
+                  checkWordNode(bound.node, context, bound.position);
                 }
               }
             }
@@ -317,14 +340,12 @@ const ruleFunction = (primary, secondaryOptions) => {
             return false;
           }
 
-          changed = checkWordNode(node, context) || changed;
+          checkWordNode(node, context);
           return false;
         });
       }
 
-      if (changed) {
-        decl.value = parsed.toString();
-      }
+      writeDeclarationValue(decl, source, parsed);
     });
   };
 };

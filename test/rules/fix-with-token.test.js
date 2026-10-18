@@ -143,3 +143,25 @@ test('no-offscale-transform fixWith: "token" with unitStrategy "exact" finds the
   });
   assert.equal(result.code, ':root { --space-a: 0.0625rem; --space-1: 1rem; }\n.a { transform: translateY(var(--space-1)); }');
 });
+
+// Issue #239: font-size and tracking tokens never serve a spacing property.
+test('fixWith: "token" never writes a --text-*, --fs-* or letter-spacing token into a spacing property', async () => {
+  const code = ':root { --space-1: 4px; --space-2: 8px; --text-sm: 14px; --fs-lg: 18px; --font-size-sm: 18px; --letter-spacing-wide: 6px; }\n.a { padding: 13px; margin: 17px; gap: 5.8px; }';
+  const result = await lintCss({
+    code,
+    rules: { 'rhythmguard/use-scale': [true, { scale: [0, 4, 6, 8, 14, 18], fixWith: 'token', tokenPattern: '^--' }] },
+    fix: true,
+  });
+  assert.equal(result.code, code.replace('padding: 13px; margin: 17px; gap: 5.8px;', 'padding: 14px; margin: 18px; gap: 6px;'));
+});
+
+test('prefer-token never offers a --text-* or letter-spacing token for a spacing property', async () => {
+  const code = ':root { --text-sm: 16px; --letter-spacing-wide: 4px; --text-sm--line-height: 20px; }\n.a { padding: 16px; margin: 4px; gap: 20px; font-size: 16px; }';
+  const result = await lintCss({ code, rules: { 'rhythmguard/prefer-token': [true, { tokenPattern: '^--', properties: ['padding', 'margin', 'gap', 'font-size'] }] } });
+  assert.deepEqual(result.warnings.map((w) => w.text), [
+    'Unexpected raw scale value "16px". No known token holds this value; use the nearest token or add one. (rhythmguard/prefer-token)',
+    'Unexpected raw scale value "4px". No known token holds this value; use the nearest token or add one. (rhythmguard/prefer-token)',
+    'Unexpected raw scale value "20px". No known token holds this value; use the nearest token or add one. (rhythmguard/prefer-token)',
+    'Unexpected raw scale value "16px". Use var(--text-sm). (rhythmguard/prefer-token)',
+  ]);
+});

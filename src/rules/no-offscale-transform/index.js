@@ -17,11 +17,13 @@ const {
   createPropertyScaleResolver,
 } = require('../../core/options');
 const {
+  declarationValueSource,
   isMathFunction,
-  isTokenFunction,
   shouldLintMathArgument,
+  skipTokenFunction,
   walkRootValueNodes,
   walkTransformTranslateNodes,
+  writeDeclarationValue,
 } = require('../../core/value-nodes');
 
 const {
@@ -92,7 +94,8 @@ const ruleFunction = (primary, secondaryOptions) => {
         return;
       }
 
-      const parsed = valueParser(decl.value);
+      const source = declarationValueSource(decl);
+      const parsed = valueParser(source.parseText);
       const { scaleByUnit, scalePx } = getScaleStateForProperty(prop);
       let changed = false;
 
@@ -113,7 +116,7 @@ const ruleFunction = (primary, secondaryOptions) => {
         });
       };
 
-      const checkNode = (node) => {
+      const checkNode = (node, avoidTokens = []) => {
         const parsedLength = parseLengthToken(node.value);
         if (!parsedLength || parsedLength.number === 0) {
           return;
@@ -172,7 +175,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           }
 
           const fixedValue = options.fixToScale
-            ? replacementFor(parsedLength, nearest.nearest, options, decl.prop)
+            ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens)
             : null;
 
           report(node, nearest, unit, fixedValue);
@@ -196,7 +199,7 @@ const ruleFunction = (primary, secondaryOptions) => {
         }
 
         const fixedValue = options.fixToScale
-          ? replacementFor(parsedLength, nearest.nearest, options, decl.prop)
+          ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens)
           : null;
 
         report(node, nearest, 'px', fixedValue);
@@ -206,8 +209,9 @@ const ruleFunction = (primary, secondaryOptions) => {
       if (prop === 'transform') {
         walkTransformTranslateNodes(parsed, (node, context) => {
           if (node.type === 'function') {
-            if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
-              return true;
+            const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
+            if (skipToken) {
+              return skipToken;
             }
 
             if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
@@ -225,14 +229,15 @@ const ruleFunction = (primary, secondaryOptions) => {
             return false;
           }
 
-          checkNode(node);
+          checkNode(node, context.tokenFallbackOf);
           return false;
         });
       } else {
         walkRootValueNodes(parsed, (node, context) => {
           if (node.type === 'function') {
-            if (isTokenFunction(node, options.tokenFunctions, tokenRegex)) {
-              return true;
+            const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
+            if (skipToken) {
+              return skipToken;
             }
 
             if (isMathFunction(node.value) && !options.enforceInsideMathFunctions) {
@@ -250,13 +255,13 @@ const ruleFunction = (primary, secondaryOptions) => {
             return false;
           }
 
-          checkNode(node);
+          checkNode(node, context.tokenFallbackOf);
           return false;
         });
       }
 
       if (changed) {
-        decl.value = parsed.toString();
+        writeDeclarationValue(decl, source, parsed);
       }
     });
   };

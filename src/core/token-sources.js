@@ -39,7 +39,9 @@ const TOKEN_KIND_PATTERNS = Object.freeze({
   // (an optional `system-` prefix allowed): $spacer, $spacers.3, $spacing-01, $system-spacing.
   // Component variables such as $dropdown-spacer or $card-spacer-y are not scale tokens.
   spacing: /^(?:\$(?:system-)?(?:space|spacing|spacer)s?(?:-|$|\.)|--(?:[\w-]*-)?(?<!letter-)(?<!word-)(?:space|spacing|spacer)(?:-|$))/,
-  typography: /^--(?:font|font-size|line-height|leading|tracking|typography)-/,
+  // Tailwind's --text-* and the --fs-* shorthand are font sizes, and tracking
+  // tokens (--letter-spacing-*, --tw-word-spacing) are type, never spacing (issue #239).
+  typography: /^--(?:(?:font|font-size|line-height|leading|tracking|typography|text|fs)-|(?:[\w-]*-)?(?:letter|word)-spacing(?:-|$))/,
 });
 
 function isPlainObject(value) {

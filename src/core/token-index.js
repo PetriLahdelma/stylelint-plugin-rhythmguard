@@ -135,15 +135,18 @@ function negateReplacement(replacement) {
  * options ask for one and exactly one qualifies, otherwise the literal. The
  * nearest value is in px, or in the literal's unit with `unitStrategy:
  * "exact"`; tokens are indexed in px, so the lookup converts it (issue #223).
+ * `avoidTokens` are the var() names a fallback literal falls back from; one
+ * of them is never written, the literal is.
  */
-function replacementFor(parsedLength, nearest, options, prop = null) {
+function replacementFor(parsedLength, nearest, options, prop = null, avoidTokens = []) {
   if (options.fixWith === 'token' && options.tokenIndex) {
     const unit = parsedLength.unit || 'px';
     const nearestPx = options.unitStrategy === 'exact' ? toPx(Math.abs(nearest), unit, options.baseFontSize) : Math.abs(nearest);
     if (nearestPx !== null) {
       const signedPx = parsedLength.number < 0 ? -nearestPx : nearestPx;
       const { negate, tokens } = signedTokensForLength(options.tokenIndex, signedPx, unit, { prop });
-      if (tokens.length === 1) {
+      // A var() fallback never falls back to the token it is the fallback of (issue #240).
+      if (tokens.length === 1 && !avoidTokens.includes(tokens[0])) {
         const token = `var(${tokens[0]})`;
         return negate ? negateReplacement(token) : token;
       }
