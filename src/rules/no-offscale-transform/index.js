@@ -9,6 +9,7 @@ const {
   nearestText,
   numbersEqual,
   parseLengthToken,
+  pxOnScale,
   toPx,
 } = require('../../core/length');
 const {
@@ -100,7 +101,7 @@ const ruleFunction = (primary, secondaryOptions) => {
             node.value,
             formatLength(nearest.lower, nearestUnit),
             formatLength(nearest.upper, nearestUnit),
-            [tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit)), options.note].filter(Boolean).join(' '),
+            [tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit), node.value.trim().startsWith('-')), options.note].filter(Boolean).join(' '),
           ),
           node,
           replacement: fixedValue,
@@ -177,7 +178,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           return;
         }
 
-        const isOnScale = scalePx.some((entry) => numbersEqual(entry, pxValue));
+        const isOnScale = pxOnScale(scalePx, pxValue, parsedLength.unit, options.baseFontSize);
         if (isOnScale) {
           return;
         }

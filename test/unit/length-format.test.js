@@ -3,7 +3,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const { formatLength } = require('../../src/core/length');
+const { formatLength, pxOnScale } = require('../../src/core/length');
 const { getNormalizedValueKeys } = require('../../src/core/token-sources');
 const { lintCss } = require('../helpers/lint');
 
@@ -18,6 +18,14 @@ test('formatLength keeps the zeros of whole numbers and trims only fractional ze
   assert.equal(formatLength(12, 'px'), '12px');
   assert.equal(formatLength(0, 'px'), '0px');
   assert.equal(formatLength(0, 'rem'), '0');
+});
+
+test('pxOnScale reads a rem or em value a fix wrote at four decimals as on the scale (issue #224)', () => {
+  assert.equal(pxOnScale([12, 16], 0.6667 * 18, 'rem', 18), true, '0.6667rem at 18px is 12.0006px');
+  assert.equal(pxOnScale([4, 8], 0.2857 * 14, 'rem', 14), true);
+  assert.equal(pxOnScale([4, 8], 0.3333 * 12, 'em', 12), true);
+  assert.equal(pxOnScale([12, 16], 12.0006, 'px', 18), false, 'a px literal is compared as written');
+  assert.equal(pxOnScale([12, 16], 0.7 * 18, 'rem', 18), false);
 });
 
 test('getNormalizedValueKeys does not invent a value by dropping a trailing zero', () => {

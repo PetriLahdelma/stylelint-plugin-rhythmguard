@@ -6,8 +6,8 @@ const {
   nearestScaleValues,
   nearestText,
   normalizeScale,
-  numbersEqual,
   parseLengthToken,
+  pxOnScale,
   toPx,
 } = require('./length');
 
@@ -187,7 +187,7 @@ function analyzeClassToken(token, options, scalePx) {
     return null;
   }
 
-  const isOnScale = scalePx.some((entry) => numbersEqual(entry, pxValue));
+  const isOnScale = pxOnScale(scalePx, pxValue, parsedLength.unit, options.baseFontSize);
   if (isOnScale) {
     return null;
   }
