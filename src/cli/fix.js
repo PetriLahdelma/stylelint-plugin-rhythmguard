@@ -2,10 +2,11 @@
 
 const { loadRcDecisions } = require('../core/decisions');
 const { parseLengthToken, toPx } = require('../core/length');
-const { OPTIONS: AUDIT_OPTIONS } = require('../audit/args');
+const { OPTIONS: AUDIT_OPTIONS, parseBaseFontSize } = require('../audit/args');
 const { runCodemod } = require('../audit/codemod');
 const { resolveIgnorePatterns } = require('../audit/config');
 const { normalizeCreateAuditOptions } = require('../audit/report');
+const { assertDirectory } = require('../audit/scan/files');
 const { DEFAULT_IGNORE_PATH } = require('../audit/shared');
 
 // --ignore and --ignore-path are the audit's own flags, parsed by the audit's table.
@@ -62,13 +63,10 @@ function parseArgs(argv) {
     else if (arg.startsWith('--to=')) parsed.replacement = arg.slice('--to='.length);
     else if (arg === '--properties') parsed.properties = splitList(next());
     else if (arg.startsWith('--properties=')) parsed.properties = splitList(arg.slice('--properties='.length));
-    else if (arg === '--base-font-size') parsed.baseFontSize = Number(next());
-    else if (arg.startsWith('--base-font-size=')) parsed.baseFontSize = Number(arg.slice('--base-font-size='.length));
+    else if (arg === '--base-font-size') parsed.baseFontSize = parseBaseFontSize(next());
+    else if (arg.startsWith('--base-font-size=')) parsed.baseFontSize = parseBaseFontSize(arg.slice('--base-font-size='.length));
     else if (!arg.startsWith('-') && !parsed.dir) parsed.dir = arg;
     else throw new Error(`Unknown option: ${arg}`);
-  }
-  if (!Number.isFinite(parsed.baseFontSize) || parsed.baseFontSize <= 0) {
-    throw new Error('--base-font-size must be a positive number.');
   }
   return parsed;
 }
@@ -138,6 +136,9 @@ function run() {
   let plan;
   let ignorePatterns;
   try {
+    // The same check, and the same message, as the audit: a missing path or a
+    // file reads "Directory not found" or "Not a directory", not a stack trace (#288).
+    assertDirectory(parsed.dir);
     plan = plannedReplacements(parsed);
     ignorePatterns = auditIgnorePatterns(parsed);
   } catch (error) {

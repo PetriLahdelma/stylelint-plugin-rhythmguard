@@ -827,6 +827,7 @@ module.exports = {
   PREFER_TOKEN_VALIDATION_SCHEMA,
   USE_SCALE_POSSIBLE_OPTIONS,
   USE_SCALE_VALIDATION_SCHEMA,
+  buildGroupScales,
   buildScaleOptions,
   buildTokenOptions,
   SCALED_GROUPS,

@@ -15,7 +15,7 @@ Commands:
   doctor        Validate your Rhythmguard setup
 
 Options:
-  --help        Show this help message
+  --help        Show this help message; after a command, that command's help
 
 Examples:
   npx rhythmguard
@@ -45,7 +45,7 @@ function main() {
   } else if (command === 'init') {
     require('./init').run();
   } else if (command === 'doctor') {
-    require('./doctor');
+    require('./doctor').run();
   } else {
     process.stderr.write(`Unknown command: ${command}\n\n`);
     process.stdout.write(HELP);

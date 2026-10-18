@@ -64,10 +64,11 @@ function replaceLength(root, { baseFontSize = 16, properties = null, px, replace
         return false;
       }
       const to = length.number < 0 ? negateReplacement(match.replacement) : match.replacement;
+      const position = positionInDeclaration(decl, declarationValueOffset(decl) + node.sourceIndex);
       changes.push({
-        column: (decl.source && decl.source.start ? decl.source.start.column : 1) + declarationValueOffset(decl) + node.sourceIndex,
+        column: position.column,
         from: node.value,
-        line: decl.source && decl.source.start ? decl.source.start.line : 1,
+        line: position.line,
         property: decl.prop,
         to,
       });
@@ -87,6 +88,22 @@ function declarationValueOffset(decl) {
   const raws = decl.raws || {};
   const between = typeof raws.between === 'string' ? raws.between : ': ';
   return decl.prop.length + between.length;
+}
+
+/**
+ * The line and column of `index`, an offset into the declaration as written
+ * (property, separator, value), counted from where the declaration starts. A
+ * value that spans lines puts later literals on later lines (#288).
+ */
+function positionInDeclaration(decl, index) {
+  const start = decl.source && decl.source.start ? decl.source.start : { column: 1, line: 1 };
+  const raws = decl.raws || {};
+  const text = `${decl.prop}${typeof raws.between === 'string' ? raws.between : ': '}${decl.value}`.slice(0, index);
+  const lastBreak = text.lastIndexOf('\n');
+  const breaks = text.split('\n').length - 1;
+  return breaks === 0
+    ? { column: start.column + index, line: start.line }
+    : { column: index - lastBreak, line: start.line + breaks };
 }
 
 /**

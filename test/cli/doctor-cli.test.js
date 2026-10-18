@@ -79,3 +79,16 @@ test('doctor fails a decisions section the audit rejects even when the audit sec
   // One finding, one issue: the audit section is not reported a second time.
   assert.equal((doctor.stdout.match(/decisions must be an array/g) || []).length, 1);
 });
+
+test('doctor --help prints the usage instead of running the checks; an unknown flag is refused (#286)', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-doctor-'));
+  const help = spawnSync(process.execPath, [cliPath, 'doctor', '--help'], { cwd: fixtureDir, encoding: 'utf8' });
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /^Usage: rhythmguard doctor/);
+  assert.doesNotMatch(help.stdout, /Rhythmguard Doctor/);
+
+  const unknown = spawnSync(process.execPath, [cliPath, 'doctor', '--fix'], { cwd: fixtureDir, encoding: 'utf8' });
+  assert.equal(unknown.status, 1);
+  assert.match(unknown.stderr, /^Unknown option: --fix\n\nUsage: rhythmguard doctor/);
+  assert.equal(unknown.stdout, '');
+});

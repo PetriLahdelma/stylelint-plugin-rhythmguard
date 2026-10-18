@@ -24,6 +24,7 @@ const {
   inferScaleFromDefinitions,
   scaleFromDefinitions,
 } = require('../core/scale-inference');
+const { buildGroupScales } = require('../core/options');
 const { applyDecisions, buildDecisionPlan } = require('./decisions');
 const { collectDeclarations, resolveTokenChains, toChainsContract } = require('./token-chains');
 const { resolveTokenLadders, toLaddersContract } = require('./token-ladders');
@@ -53,11 +54,15 @@ async function createAuditReport(options) {
     ? tokenSourceResult
     : parseTokenSources({ baseFontSize: parsed.baseFontSize, sources: parsed.tokenSources, tokenKind: 'spacing' });
 
+  // A spacing scale in audit.scales is the one use-scale checks spacing
+  // against, so it is the scale the report names and prefer-token reads (#283).
+  const groupScales = buildGroupScales(parsed.scales);
+  const spacingOverride = groupScales.spacing && Array.isArray(groupScales.spacing.scale) ? groupScales.spacing.scale : null;
   const scale = resolveAuditScale({
     baseFontSize: parsed.baseFontSize,
     cssFiles,
     readSource,
-    requested: parsed.scale,
+    requested: spacingOverride || parsed.scale,
     tokenSourceResult: spacingSourceResult,
   });
 
@@ -133,6 +138,7 @@ async function createAuditReport(options) {
   report.decisionPlan = buildDecisionPlan({
     baseFontSize: parsed.baseFontSize,
     decisions: parsed.decisions || [],
+    groupScales,
     offScaleFindings: [
       ...stylelintFindings.filter((finding) => finding.type === 'off-scale'),
       ...collectTailwindFindings(templateFiles, lintOptions),

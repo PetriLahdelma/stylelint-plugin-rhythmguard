@@ -80,7 +80,7 @@ function applyBaselineComparison(report, baselinePath, scopeInput) {
     throw new Error(`Baseline file not found: ${baselinePath}`);
   }
 
-  const baseline = readJsonFile(resolvedPath);
+  const baseline = readBaselineFile(resolvedPath, baselinePath);
   const baselineFindings = Array.isArray(baseline.findings) ? baseline.findings : [];
   const scope = createBaselineScope(report, scopeInput);
   const currentFindings = getAllFindings(report);
@@ -114,6 +114,18 @@ function applyBaselineComparison(report, baselinePath, scopeInput) {
   report.summary.resolvedFindings = resolvedFindings.length;
 }
 
+/**
+ * A baseline file as JSON. A parse error names the file, so a corrupt
+ * baseline is not reported as a bare `JSON.parse` message (#290).
+ */
+function readBaselineFile(resolvedPath, baselinePath) {
+  try {
+    return readJsonFile(resolvedPath);
+  } catch (err) {
+    throw new Error(`Invalid baseline file ${baselinePath}: ${err.message}`, { cause: err });
+  }
+}
+
 function writeBaseline(report, baselinePath, scopeInput) {
   const resolvedPath = path.resolve(process.cwd(), baselinePath);
   const scope = createBaselineScope(report, scopeInput);
@@ -126,7 +138,7 @@ function writeBaseline(report, baselinePath, scopeInput) {
   // entries for the files it audited and keeps every other entry, so a scoped
   // run never shrinks the baseline.
   if (scope.scoped && fs.existsSync(resolvedPath)) {
-    const existing = readJsonFile(resolvedPath);
+    const existing = readBaselineFile(resolvedPath, baselinePath);
     if (!isContentKeyed(existing)) {
       throw new Error(`Cannot update ${baselinePath} from a --staged or --since run: it was written with formatVersion 1, keyed by line. Run --write-baseline once without --staged or --since to upgrade it.`);
     }

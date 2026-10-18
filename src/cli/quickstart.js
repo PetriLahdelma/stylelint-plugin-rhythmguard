@@ -16,6 +16,16 @@ const { createAuditReport } = require('../audit/report');
 const { detect } = require('./init');
 const { discoverTokenPackages } = require('../core/scale-inference');
 
+const HELP = `Usage: rhythmguard [quickstart]
+
+Zero-config first run. Detects the stack and token files, infers the spacing
+scale, audits the current directory, prints a config to paste and the audit
+commands that reproduce its result. Never fails on findings; this is a report.
+
+Options:
+  --help        Show this help message
+`;
+
 const TOKEN_FILE_PATTERN = /(^|[.-])tokens?\.json$/i;
 const TOKEN_DIRS = ['tokens', 'design-tokens', path.join('src', 'tokens'), path.join('dist', 'tokens')];
 const MAX_LISTED = 5;
@@ -116,6 +126,26 @@ function eslintSnippet(scaleValues) {
   ].join('\n');
 }
 
+function shellQuote(value) {
+  return /^[\w./@%+=:,-]+$/.test(value) ? value : `'${value.replace(/'/g, "'\\''")}'`;
+}
+
+/**
+ * The commands to run next. The audit commands pass what quickstart passed,
+ * `--scale auto` and the token files it read, so they report the same scale
+ * and the same findings; `audit .` alone would use the default scale (#287).
+ */
+function nextCommands(tokenSources) {
+  const audit = ['npx rhythmguard audit .', '--scale auto', ...tokenSources.map((file) => `--token-source ${shellQuote(toPosix(file))}`)].join(' ');
+  // Each note on its own line above its command, so a long command copies whole.
+  return [
+    ['Lint with the config above:', 'npx stylelint "**/*.css"'],
+    ['PR-ready report:', `${audit} --format markdown`],
+    ['Then gate only new drift in CI, with the same flags:', `${audit} --write-baseline`],
+    ['Check the setup:', 'npx rhythmguard doctor'],
+  ].flatMap(([note, command]) => [note, `  ${command}`]);
+}
+
 function describeScale(scale) {
   if (!scale) {
     return 'default';
@@ -125,6 +155,17 @@ function describeScale(scale) {
 }
 
 async function run() {
+  // `rhythmguard` alone has no arguments; `rhythmguard quickstart` may have --help (#286).
+  for (const arg of process.argv[2] === 'quickstart' ? process.argv.slice(3) : []) {
+    if (arg === '--help' || arg === '-h') {
+      process.stdout.write(HELP);
+      return;
+    }
+    process.stderr.write(`Unknown option: ${arg}\n\n${HELP}`);
+    process.exitCode = 1;
+    return;
+  }
+
   const cwd = process.cwd();
   const pkg = readPackage(cwd);
   const stack = detect();
@@ -144,14 +185,14 @@ async function run() {
   out.push(`    .rhythmguardrc  ${rcPresent ? 'present (its token sources are used)' : 'none'}`);
   out.push('');
 
+  // With an rc file its token sources are used; otherwise the token files found here.
+  const auditTokenSources = rcPresent ? [] : tokenFiles;
   let report;
   try {
     report = await createAuditReport({
       dir: '.',
       scale: 'auto',
-      ...(tokenFiles.length > 0 && !rcPresent
-        ? { tokenSources: tokenFiles }
-        : {}),
+      ...(auditTokenSources.length > 0 ? { tokenSources: auditTokenSources } : {}),
     });
   } catch (error) {
     process.stderr.write(`Quickstart could not audit ${cwd}: ${error.message}\n`);
@@ -228,13 +269,10 @@ async function run() {
   }
 
   out.push('  Next');
-  out.push('    npx stylelint "**/*.css"                      lint with the config above');
-  out.push('    npx rhythmguard audit . --format markdown     PR-ready report');
-  out.push('    npx rhythmguard audit . --write-baseline      then gate only new drift in CI');
-  out.push('    npx rhythmguard doctor                        check the setup');
+  out.push(...nextCommands(auditTokenSources).map((line) => `    ${line}`));
   out.push('');
 
   process.stdout.write(`${out.join('\n')}\n`);
 }
 
-module.exports = { eslintSnippet, findTokenFiles, run, suggestedStylelintConfig, tailwindMajor };
+module.exports = { HELP, eslintSnippet, findTokenFiles, nextCommands, run, suggestedStylelintConfig, tailwindMajor };

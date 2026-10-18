@@ -107,3 +107,46 @@ test('quickstart keeps --help working and exits 0 with no findings noise on an e
   assert.equal(empty.status, 0, empty.stderr);
   assert.match(empty.stdout, /No CSS files found/);
 });
+
+test('the audit commands quickstart suggests report the scale and findings quickstart reported (#287)', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-quickstart-next-'));
+  fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'fixture' }));
+  fs.writeFileSync(path.join(dir, 'tokens.json'), JSON.stringify({
+    spacing: { 0: { $value: '0px' }, 1: { $value: '4px' }, 2: { $value: '8px' }, 3: { $value: '12px' }, 4: { $value: '20px' } },
+  }));
+  fs.mkdirSync(path.join(dir, 'src'));
+  fs.writeFileSync(path.join(dir, 'src', 'a.css'), '.a { margin: 16px; padding: 20px; }\n');
+
+  const quickstart = run(dir);
+  assert.equal(quickstart.status, 0, quickstart.stderr);
+  assert.match(quickstart.stdout, /Scale\s+0, 4, 8, 12, 20\n/);
+  assert.match(quickstart.stdout, /Top values\s+16px ×1\n/);
+
+  const markdownCommand = quickstart.stdout.match(/^ {6}npx rhythmguard audit (.+) --format markdown$/m);
+  assert.ok(markdownCommand, quickstart.stdout);
+  assert.equal(markdownCommand[1], '. --scale auto --token-source ./tokens.json');
+  assert.match(quickstart.stdout, /^ {6}npx rhythmguard audit \. --scale auto --token-source \.\/tokens\.json --write-baseline$/m);
+
+  const audit = run(dir, 'audit', ...markdownCommand[1].split(' '), '--format', 'json');
+  assert.equal(audit.status, 0, audit.stderr);
+  const report = JSON.parse(audit.stdout);
+  assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12, 20]);
+  assert.deepEqual(report.contracts.scale.offScaleValues, { '16px': 1 });
+
+  // With an rc file quickstart reads the rc's token sources, and says only --scale auto.
+  fs.writeFileSync(path.join(dir, '.rhythmguardrc.json'), JSON.stringify({ audit: { tokenSources: ['tokens.json'] } }));
+  assert.match(run(dir).stdout, /^ {6}npx rhythmguard audit \. --scale auto --format markdown$/m);
+});
+
+test('quickstart --help prints its usage instead of auditing; an unknown flag is refused (#286)', () => {
+  const dir = fixture();
+  const help = run(dir, 'quickstart', '--help');
+  assert.equal(help.status, 0, help.stderr);
+  assert.match(help.stdout, /^Usage: rhythmguard \[quickstart\]/);
+  assert.doesNotMatch(help.stdout, /Rhythmguard quickstart/);
+
+  const unknown = run(dir, 'quickstart', '--scale', 'auto');
+  assert.equal(unknown.status, 1);
+  assert.match(unknown.stderr, /^Unknown option: --scale\n\nUsage: rhythmguard \[quickstart\]/);
+  assert.equal(unknown.stdout, '');
+});
