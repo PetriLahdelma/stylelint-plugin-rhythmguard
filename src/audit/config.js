@@ -4,10 +4,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 const { normalizeDecisions } = require('../core/decisions');
 const { SCALED_GROUPS, isGroupScalesMap } = require('../core/options');
-const {
-  normalizeTokenKind,
-  normalizeTokenSourceFormat,
-} = require('../core/token-sources');
+const { normalizeTokenKind } = require('../core/token-sources');
+const { normalizeTokenSourceEntry } = require('../core/token-source-entries');
 const {
   parseBaseFontSize,
   parseNonNegativeInteger,
@@ -190,33 +188,14 @@ function normalizeConfigTokenSources(sources, baseDir) {
     throw new Error('Invalid Rhythmguard config: audit.tokenSources must be an array.');
   }
 
+  // The lint reads the same entries through the same normaliser, so both see the same files.
   return sources.map((source) => {
-    if (typeof source === 'string') {
-      return {
-        baseDir,
-        format: 'auto',
-        path: source,
-      };
+    const { error, source: normalized } = normalizeTokenSourceEntry(source, baseDir);
+    if (error) {
+      // A bad format already reads "Invalid token source format ..."; structural problems name the config.
+      throw new Error(/^Invalid /.test(error) ? error : `Invalid Rhythmguard config: ${error}`);
     }
-
-    if (!source || typeof source !== 'object' || Array.isArray(source)) {
-      throw new Error('Invalid Rhythmguard config: audit.tokenSources entries must be strings or objects.');
-    }
-
-    if (typeof source.path !== 'string' || source.path.trim().length === 0) {
-      throw new Error('Invalid Rhythmguard config: token source objects must include a path.');
-    }
-
-    if (source.tokenPattern !== undefined && (typeof source.tokenPattern !== 'string' || source.tokenPattern.trim().length === 0)) {
-      throw new Error('Invalid Rhythmguard config: token source tokenPattern must be a non-empty string.');
-    }
-
-    return {
-      baseDir,
-      format: normalizeTokenSourceFormat(source.format || 'auto'),
-      path: source.path,
-      ...(source.tokenPattern ? { tokenPattern: source.tokenPattern } : {}),
-    };
+    return normalized;
   });
 }
 

@@ -46,11 +46,16 @@ async function createAuditReport(options) {
     tokenKind: parsed.tokenKind,
   });
 
+  // The spacing scale always reads spacing tokens; --token-kind shapes the token contract only (issue #260).
+  const spacingSourceResult = parsed.tokenKind === 'spacing'
+    ? tokenSourceResult
+    : parseTokenSources({ baseFontSize: parsed.baseFontSize, sources: parsed.tokenSources, tokenKind: 'spacing' });
+
   const scale = resolveAuditScale({
     baseFontSize: parsed.baseFontSize,
     cssFiles,
     requested: parsed.scale,
-    tokenSourceResult,
+    tokenSourceResult: spacingSourceResult,
   });
 
   const lintOptions = {
@@ -105,6 +110,7 @@ async function createAuditReport(options) {
   report.tokenContract.chains = toChainsContract(resolveTokenChains({
     baseFontSize: parsed.baseFontSize,
     declarations,
+    references: collectDeclarations({ cssFiles: [], externalDefinitions: chainDefinitions(parsed) }),
     scale: scale.values,
   }));
   report.tokenContract.ladders = toLaddersContract(resolveTokenLadders({
@@ -132,6 +138,22 @@ async function createAuditReport(options) {
   }
 
   return report;
+}
+
+/**
+ * Every custom property a chain can end in: all tokens in the token sources,
+ * whatever --token-kind says and whatever name pattern a source sets, plus
+ * installed token packages (issue #259). A chain through `--size-8` or a
+ * package's `--space-2` resolves instead of reading "not declared"; these are
+ * looked up only, never reported as chains of their own.
+ */
+function chainDefinitions(parsed) {
+  const unfiltered = (source) => (source && typeof source === 'object' ? { ...source, tokenPattern: null } : source);
+  return parseTokenSources({
+    baseFontSize: parsed.baseFontSize,
+    sources: [...parsed.tokenSources, ...discoverTokenPackages(process.cwd())].map(unfiltered),
+    tokenKind: 'all',
+  }).definitions;
 }
 
 const NON_AUTHORED_SEGMENT = /(^|\/)(test|tests|__tests__|spec|specs|fixtures?|__fixtures__|__snapshots__|vendor|third[-_]?party|storybook-static)(\/|$)/i;

@@ -12,6 +12,7 @@ const {
   parseTokenSources,
   parseTokenValueLength,
 } = require('./token-sources');
+const { normalizeTokenSourceEntry } = require('./token-source-entries');
 const { getScalePreset } = require('../presets/scales');
 
 // Matches the audit default so lint and audit agree on what a spacing token is.
@@ -28,7 +29,6 @@ const RC_FILE = '.rhythmguardrc.json';
 
 const { cachedByFiles } = require('./fs-cache');
 
-const sourceCache = new Map();
 const TOKEN_PACKAGES = require('./token-packages.json').packages;
 
 /**
@@ -130,59 +130,53 @@ function pxValuesFromKeys(keys, baseFontSize) {
   return Array.from(values).sort((a, b) => a - b);
 }
 
-function normalizeSource(source, baseDir) {
-  if (typeof source === 'string') {
-    return { format: 'auto', path: path.resolve(baseDir, source) };
-  }
-
-  if (source && typeof source === 'object') {
-    const rawPath = source.path || source.file;
-    if (typeof rawPath !== 'string') {
-      return null;
-    }
-
-    return {
-      format: typeof source.format === 'string' ? source.format : 'auto',
-      path: path.resolve(source.baseDir || baseDir, rawPath),
-      ...(source.tokenPattern ? { tokenPattern: source.tokenPattern } : {}),
-    };
-  }
-
-  return null;
-}
-
-function cacheKey(sources) {
-  return sources
-    .map((source) => {
-      let mtime = 'missing';
-      try {
-        mtime = String(fs.statSync(source.path).mtimeMs);
-      } catch {
-        // missing file: key still changes when it appears
-      }
-      return `${source.path}|${source.format}|${source.tokenPattern || ''}|${mtime}`;
-    })
-    .join('\n');
-}
-
-/** Parse token sources once per (sources, base font size, file mtimes). */
+/**
+ * Parse token sources once per (source set, base font size), revalidated by
+ * the mtime of every source file. The entry is keyed by the paths alone and
+ * replaced when a file changes, so an editor that saves a token file a
+ * thousand times keeps one entry, not a thousand (issue #264). Entries that
+ * do not normalise (a bad format, no path) are skipped with a warning; they
+ * never throw out of a lint.
+ */
 function parseSourcesCached(sources, baseFontSize) {
-  const normalized = sources.map((source) => normalizeSource(source, process.cwd())).filter(Boolean);
+  const normalized = [];
+  const warnings = [];
+  for (const entry of sources) {
+    const { error, source } = normalizeTokenSourceEntry(entry, process.cwd());
+    if (error) {
+      warnings.push(error);
+    } else {
+      normalized.push(source);
+    }
+  }
   if (normalized.length === 0) {
-    return null;
+    return warnings.length > 0 ? { definitions: new Map(), sources: [], warnings } : null;
   }
-  const key = `${baseFontSize}\n${cacheKey(normalized)}`;
-  if (!sourceCache.has(key)) {
-    sourceCache.set(key, parseTokenSources({ baseFontSize, sources: normalized, tokenKind: 'spacing' }));
-  }
-  return sourceCache.get(key);
+  const files = normalized.map((source) => path.resolve(source.baseDir, source.path));
+  const key = [
+    `token-sources:${baseFontSize}`,
+    ...normalized.map((source, index) => `${files[index]}|${source.format}|${source.tokenPattern || ''}`),
+  ].join('\n');
+  const parsed = cachedByFiles(key, (consult) => {
+    for (const file of files) {
+      consult(file);
+    }
+    return parseTokenSources({ baseFontSize, sources: normalized, tokenKind: 'spacing' });
+  });
+  return warnings.length > 0 ? { ...parsed, warnings: [...warnings, ...parsed.warnings] } : parsed;
 }
 
-function scaleFromSources(sources, baseFontSize) {
+/**
+ * The scale a list of token sources defines, or null. Warnings from sources
+ * that are missing or do not parse go into `warnings` either way, so a
+ * fallback can say which source failed (issue #270).
+ */
+function scaleFromSources(sources, baseFontSize, warnings = []) {
   const parsed = parseSourcesCached(sources, baseFontSize);
   if (!parsed) {
     return null;
   }
+  warnings.push(...parsed.warnings);
   // scaleFromDefinitions also expands a bare Tailwind --spacing base into its multiples.
   const scale = scaleFromDefinitions(parsed.definitions, baseFontSize);
   return scale
@@ -203,7 +197,7 @@ function scaleFromSources(sources, baseFontSize) {
  */
 function collectTokenDefinitions({ baseFontSize = 16, root, scaleSources = [], tokenPattern = null, tokenRegex }) {
   const definitions = root ? stylesheetDefinitions(root, tokenRegex, baseFontSize) : new Map();
-  const sources = [...scaleSources, ...rcTokenSources(process.cwd()), ...discoverTokenPackages(process.cwd())];
+  const sources = [...scaleSources, ...rcTokenSources(process.cwd()).sources, ...discoverTokenPackages(process.cwd())];
   // A rule's own tokenPattern (`^--space-|^--radius-`) also applies to the
   // files it reads, on top of the spacing names, unless a source sets its own.
   const withPattern = tokenPattern
@@ -342,25 +336,38 @@ function rcTokenSources(cwd) {
   });
 }
 
+/**
+ * Token sources from `audit.tokenSources` in .rhythmguardrc.json, read through
+ * the normaliser the audit uses, so lint and audit read the same files
+ * (issue #271). A file that does not parse or an entry that does not
+ * normalise is a warning, never a throw (issue #265).
+ */
 function rcTokenSourcesUncached(rcPath) {
   if (!fs.existsSync(rcPath)) {
-    return [];
+    return { sources: [], warnings: [] };
   }
 
   let config;
   try {
     config = JSON.parse(fs.readFileSync(rcPath, 'utf8'));
-  } catch {
-    return [];
+  } catch (err) {
+    return { sources: [], warnings: [`${RC_FILE} could not be read: ${err.message}`] };
   }
 
   const audit = config && typeof config === 'object' ? config.audit : null;
-  const sources = audit && Array.isArray(audit.tokenSources) ? audit.tokenSources : [];
+  const entries = audit && Array.isArray(audit.tokenSources) ? audit.tokenSources : [];
   const baseDir = path.dirname(rcPath);
-
-  return sources
-    .map((source) => normalizeSource(source, baseDir))
-    .filter(Boolean);
+  const sources = [];
+  const warnings = [];
+  for (const entry of entries) {
+    const { error, source } = normalizeTokenSourceEntry(entry, baseDir);
+    if (error) {
+      warnings.push(`${RC_FILE}: ${error}`);
+    } else {
+      sources.push(source);
+    }
+  }
+  return { sources, warnings };
 }
 
 /**
@@ -408,12 +415,16 @@ function resolveAutoScale({
   tailwindConfigPath = null,
   tokenPattern = DEFAULT_AUTO_TOKEN_PATTERN,
 } = {}) {
-  const fromOption = scaleFromSources(scaleSources, baseFontSize);
+  // Warnings from every source tried, for the fallback note when none yields a scale.
+  const warnings = [];
+  const fromOption = scaleFromSources(scaleSources, baseFontSize, warnings);
   if (fromOption) {
     return { source: 'scaleSources', ...fromOption };
   }
 
-  const fromRc = scaleFromSources(rcTokenSources(process.cwd()), baseFontSize);
+  const rc = rcTokenSources(process.cwd());
+  warnings.push(...rc.warnings);
+  const fromRc = scaleFromSources(rc.sources, baseFontSize, warnings);
   if (fromRc) {
     return { source: 'rhythmguardrc', ...fromRc };
   }
@@ -454,12 +465,12 @@ function resolveAutoScale({
     }
   }
 
-  const fromPackages = scaleFromSources(discoverTokenPackages(process.cwd()), baseFontSize);
+  const fromPackages = scaleFromSources(discoverTokenPackages(process.cwd()), baseFontSize, warnings);
   if (fromPackages) {
     return { source: 'token-package', ...fromPackages };
   }
 
-  return fallbackInference(rejected);
+  return fallbackInference(rejected, warnings);
 }
 
 const TRUSTED_SCALE_SOURCES = new Set(['scaleSources', 'rhythmguardrc', 'token-sources', 'tailwind', 'token-package', 'explicit', 'default']);
@@ -504,7 +515,7 @@ function assessScale({ files = null, source, values = [] } = {}) {
   return { plausible: reasons.length === 0, reasons };
 }
 
-function fallbackInference(rejected = null) {
+function fallbackInference(rejected = null, warnings = []) {
   return {
     files: [],
     preset: FALLBACK_PRESET,
@@ -512,7 +523,7 @@ function fallbackInference(rejected = null) {
     scale: getScalePreset(FALLBACK_PRESET),
     source: 'fallback',
     tokenCount: 0,
-    warnings: [],
+    warnings,
   };
 }
 
@@ -545,7 +556,8 @@ function withResolvedScale(options, root) {
 const GROUP_TOKEN_PATTERNS = Object.freeze({
   radius: /^--radius-/,
   size: /^--(?:size|width|height|container)-/,
-  typography: /^--(?:font-size|text|fs)-/,
+  // Tailwind's `--text-sm--line-height` is a sub-token of `--text-sm`, not a font size (issue #262).
+  typography: /^--(?:font-size|text|fs)-(?!.*--)/,
 });
 
 /**
@@ -556,13 +568,18 @@ const GROUP_TOKEN_PATTERNS = Object.freeze({
  */
 function inferGroupScale(group, options, root) {
   if (group === 'spacing') {
-    return options.scaleAuto ? options.scale : resolveAutoScale({
+    if (options.scaleAuto) {
+      return options.scale;
+    }
+    const inference = resolveAutoScale({
       baseFontSize: options.baseFontSize,
       root,
       scaleSources: options.scaleSources,
       tailwindConfigPath: options.tailwindConfigPath,
       tokenPattern: DEFAULT_AUTO_TOKEN_PATTERN,
-    }).scale;
+    });
+    // No spacing tokens: the group uses `scale`, like every other group (issue #261).
+    return inference.source === 'fallback' ? null : inference.scale;
   }
   const pattern = GROUP_TOKEN_PATTERNS[group];
   const definitions = collectTokenDefinitions({
@@ -581,10 +598,16 @@ function autoScaleFallbackNote(inference) {
     return '';
   }
   if (inference.rejected) {
-    return `The spacing tokens found do not form a spacing scale (${inference.rejected.reasons.join(', ')}); using preset "${inference.preset}".`;
+    return `The spacing tokens found do not form a spacing scale (${inference.rejected.reasons.join(', ')}); using preset "${inference.preset}".${sourceWarningsNote(inference.warnings)}`;
   }
 
-  return `No spacing tokens were found for scale "auto"; using preset "${inference.preset}".`;
+  return `No spacing tokens were found for scale "auto"; using preset "${inference.preset}".${sourceWarningsNote(inference.warnings)}`;
+}
+
+/** Why the token sources gave nothing: a missing file, a parse error, a bad rc entry (issue #270). */
+function sourceWarningsNote(warnings) {
+  const unique = Array.from(new Set(warnings || []));
+  return unique.map((warning) => ` ${/[.!?]$/.test(warning) ? warning : `${warning}.`}`).join('');
 }
 
 module.exports = {

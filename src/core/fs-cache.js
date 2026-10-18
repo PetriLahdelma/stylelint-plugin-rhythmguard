@@ -31,6 +31,12 @@ function cachedByFiles(cacheKey, compute) {
   return value;
 }
 
+/** Number of cached entries, for tests that check the cache stays bounded. */
+function cacheSize() {
+  return cache.size;
+}
+
 module.exports = {
+  cacheSize,
   cachedByFiles,
 };

@@ -109,7 +109,7 @@ In a token-layered system the stylesheet says `padding: var(--button--padding-x)
 | `computed` | `calc()` or another expression the audit does not evaluate |
 | `non-length` | a shorthand or keyword |
 
-`var(--x, 8px)` uses the fallback when `--x` is not declared. Declarations come from the scanned stylesheets and from token sources and installed token packages, so a scale that lives in a dependency still resolves. The Markdown report prints "6 of 8 spacing tokens resolve to the scale" and lists the tokens that need attention with their chain; the JSON contract carries the counts for every outcome and entries for the attention outcomes only.
+`var(--x, 8px)` uses the fallback when `--x` is not declared. Declarations come from the scanned stylesheets and from token sources and installed token packages, so a scale that lives in a dependency still resolves. A chain may end in any custom property a token source or package declares, whatever `--token-kind` says (`--card-gap: var(--size-8)` resolves through a `--size-8` in a token source); those tokens are looked up, not counted as chains of their own. The Markdown report prints "6 of 8 spacing tokens resolve to the scale" and lists the tokens that need attention with their chain; the JSON contract carries the counts for every outcome and entries for the attention outcomes only.
 
 ## Token ladders
 
@@ -196,7 +196,7 @@ Shared settings go in `.rhythmguardrc.json`, loaded automatically when present. 
 }
 ```
 
-A token source object may also carry `tokenPattern`, a regular expression applied to token names instead of the built-in spacing name matcher, for systems whose scale is not called space or spacing (`{ "path": "./node_modules/@mittwald/flow-design-tokens/dist/css/base.css", "tokenPattern": "^--size-(?:px|rem)--" }`). Token source paths in the config resolve from the config file's directory. CLI `--token-source` paths resolve from the current working directory. Supported source formats: CSS custom properties and Tailwind v4 `@theme`, flat JSON, Style Dictionary JSON, and DTCG JSON. CLI scalar flags override config values.
+A token source object may also carry `tokenPattern`, a regular expression applied to token names instead of the built-in spacing name matcher, for systems whose scale is not called space or spacing (`{ "path": "./node_modules/@mittwald/flow-design-tokens/dist/css/base.css", "tokenPattern": "^--size-(?:px|rem)--" }`). Token source paths in the config resolve from the config file's directory, or from `baseDir` when an entry sets one (itself relative to the config file's directory); `file` is accepted as another name for `path`. The lint reads `audit.tokenSources` through the same code, so `scale: "auto"` and the audit read the same files. CLI `--token-source` paths resolve from the current working directory. Supported source formats: CSS custom properties and Tailwind v4 `@theme`, flat JSON, Style Dictionary JSON, and DTCG JSON. `tokenKind` (`--token-kind`) chooses which tokens the token contract lists; the spacing scale for `--scale auto` always reads the spacing tokens. CLI scalar flags override config values.
 
 ## Baselines and gates
 
