@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+const { readJsonFile } = require('./json');
 const { parseLengthToken, toPx } = require('./length');
 const { buildEffectiveTokenMap } = require('./token-map');
 const {
@@ -18,7 +19,8 @@ const { getScalePreset } = require('../presets/scales');
 // Matches the audit default so lint and audit agree on what a spacing token is.
 const DEFAULT_AUTO_TOKEN_PATTERN = '(^--|-)(?<!letter-)(?<!word-)(space|spacing|spacer)(-|$)';
 // Tailwind v4 defines one base (`--spacing: 0.25rem`) and derives utilities by multiplying it.
-const TAILWIND_BASE_TOKENS = new Set(['--spacing', '--space']);
+// A bare `--space` is not Tailwind's; it is one token like any other (issue #293).
+const TAILWIND_BASE_TOKENS = new Set(['--spacing']);
 const TAILWIND_SPACING_MULTIPLIERS = [
   0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 96,
 ];
@@ -38,7 +40,7 @@ const TOKEN_PACKAGES = require('./token-packages.json').packages;
  */
 function readDirectDependencies(dir) {
   try {
-    const pkg = JSON.parse(fs.readFileSync(path.join(dir, 'package.json'), 'utf8'));
+    const pkg = readJsonFile(path.join(dir, 'package.json'));
     return new Set([
       ...Object.keys(pkg.dependencies || {}),
       ...Object.keys(pkg.devDependencies || {}),
@@ -172,12 +174,37 @@ function parseSourcesCached(sources, baseFontSize) {
 }
 
 /**
+ * Token sources read for the spacing names and, when a rule sets its own
+ * `tokenPattern` (`^--space-|^--radius-`), for that pattern too, on top of the
+ * spacing names, unless a source sets its own. Fixes and scale inference read
+ * the same tokens through this (issue #296).
+ */
+function parseSourcesWithPattern(sources, baseFontSize, tokenPattern = null) {
+  const plain = parseSourcesCached(sources, baseFontSize);
+  if (!tokenPattern || !plain) {
+    return plain;
+  }
+  const withPattern = parseSourcesCached(
+    sources.map((source) => (typeof source === 'string' ? { path: source, tokenPattern } : { tokenPattern, ...source })),
+    baseFontSize,
+  );
+  const definitions = new Map(plain.definitions);
+  for (const [token, definition] of withPattern ? withPattern.definitions : []) {
+    if (!definitions.has(token)) {
+      definitions.set(token, definition);
+    }
+  }
+  const warnings = Array.from(new Set([...plain.warnings, ...(withPattern ? withPattern.warnings : [])]));
+  return { definitions, sources: plain.sources, warnings };
+}
+
+/**
  * The scale a list of token sources defines, or null. Warnings from sources
  * that are missing or do not parse go into `warnings` either way, so a
  * fallback can say which source failed (issue #270).
  */
-function scaleFromSources(sources, baseFontSize, warnings = []) {
-  const parsed = parseSourcesCached(sources, baseFontSize);
+function scaleFromSources(sources, baseFontSize, warnings = [], tokenPattern = null) {
+  const parsed = parseSourcesWithPattern(sources, baseFontSize, tokenPattern);
   if (!parsed) {
     return null;
   }
@@ -203,16 +230,10 @@ function scaleFromSources(sources, baseFontSize, warnings = []) {
 function collectTokenDefinitions({ baseFontSize = 16, root, scaleSources = [], tokenPattern = null, tokenRegex }) {
   const definitions = root ? stylesheetDefinitions(root, tokenRegex, baseFontSize) : new Map();
   const sources = [...scaleSources, ...rcTokenSources(process.cwd()).sources, ...discoverTokenPackages(process.cwd())];
-  // A rule's own tokenPattern (`^--space-|^--radius-`) also applies to the
-  // files it reads, on top of the spacing names, unless a source sets its own.
-  const withPattern = tokenPattern
-    ? sources.map((source) => (typeof source === 'string' ? { path: source, tokenPattern } : { tokenPattern, ...source }))
-    : [];
-  for (const parsed of [parseSourcesCached(sources, baseFontSize), parseSourcesCached(withPattern, baseFontSize)]) {
-    for (const [token, definition] of parsed ? parsed.definitions : []) {
-      if (!definitions.has(token)) {
-        definitions.set(token, definition);
-      }
+  const parsed = parseSourcesWithPattern(sources, baseFontSize, tokenPattern);
+  for (const [token, definition] of parsed ? parsed.definitions : []) {
+    if (!definitions.has(token)) {
+      definitions.set(token, definition);
     }
   }
   return definitions;
@@ -302,8 +323,8 @@ function stylesheetDefinitions(root, tokenRegex, baseFontSize) {
 }
 
 /**
- * Merge Tailwind-style base multiples into a scale when a bare --spacing/--space
- * base is defined. Only the first base found is expanded: a project that ships
+ * Merge Tailwind-style base multiples into a scale when a bare --spacing base
+ * is defined. Only the first base found is expanded: a project that ships
  * several theme files with different bases (shadcn/ui) has one active base at a
  * time, and a union of ladders is a scale nobody designed (issue #89).
  */
@@ -354,7 +375,7 @@ function rcTokenSourcesUncached(rcPath) {
 
   let config;
   try {
-    config = JSON.parse(fs.readFileSync(rcPath, 'utf8'));
+    config = readJsonFile(rcPath);
   } catch (err) {
     return { sources: [], warnings: [`${RC_FILE} could not be read: ${err.message}`] };
   }
@@ -414,25 +435,30 @@ function scaleFromTokenMap(map, baseFontSize, extraKeys = []) {
 
 /**
  * Resolve `scale: "auto"`. First matching source wins; sources are not merged so
- * the provenance is a single file list or the stylesheet.
+ * the provenance is a single file list or the stylesheet. The order, which
+ * docs/rules/use-scale.md documents: `scaleSources`, `.rhythmguardrc.json`
+ * token sources, the linted stylesheet, `tailwindConfigPath`, installed token
+ * packages, the fallback preset. `sourceTokenPattern` is the rule's own
+ * explicit `tokenPattern`, applied to the token files as fixes apply it.
  */
 function resolveAutoScale({
   baseFontSize = 16,
   root,
   scaleSources = [],
+  sourceTokenPattern = null,
   tailwindConfigPath = null,
   tokenPattern = DEFAULT_AUTO_TOKEN_PATTERN,
 } = {}) {
   // Warnings from every source tried, for the fallback note when none yields a scale.
   const warnings = [];
-  const fromOption = scaleFromSources(scaleSources, baseFontSize, warnings);
+  const fromOption = scaleFromSources(scaleSources, baseFontSize, warnings, sourceTokenPattern);
   if (fromOption) {
     return { source: 'scaleSources', ...fromOption };
   }
 
   const rc = rcTokenSources(process.cwd());
   warnings.push(...rc.warnings);
-  const fromRc = scaleFromSources(rc.sources, baseFontSize, warnings);
+  const fromRc = scaleFromSources(rc.sources, baseFontSize, warnings, sourceTokenPattern);
   if (fromRc) {
     return { source: 'rhythmguardrc', ...fromRc };
   }
@@ -473,7 +499,7 @@ function resolveAutoScale({
     }
   }
 
-  const fromPackages = scaleFromSources(discoverTokenPackages(process.cwd()), baseFontSize, warnings);
+  const fromPackages = scaleFromSources(discoverTokenPackages(process.cwd()), baseFontSize, warnings, sourceTokenPattern);
   if (fromPackages) {
     return { source: 'token-package', ...fromPackages };
   }
@@ -546,6 +572,7 @@ function withResolvedScale(options, root) {
       baseFontSize: options.baseFontSize,
       root,
       scaleSources: options.scaleSources,
+      sourceTokenPattern: options.tokenPatternExplicit ? options.tokenPattern : null,
       tailwindConfigPath: options.tailwindConfigPath,
       tokenPattern: options.tokenPatternExplicit ? options.tokenPattern : DEFAULT_AUTO_TOKEN_PATTERN,
     });

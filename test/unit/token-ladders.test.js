@@ -119,3 +119,37 @@ test('the inverted floor of a retuned title ladder is reported at min only', () 
     'inverted min --font-size-title-l --font-size-title-xl',
   ]);
 });
+
+test('a ladder of negative steps is compared by magnitude, not read as inverted (issue #294)', () => {
+  const ladders = resolveTokenLadders({
+    declarations: declarations([
+      ['--space-negative-1', '-4px'],
+      ['--space-negative-2', '-8px'],
+      ['--space-negative-3', '-16px'],
+    ]),
+  });
+  assert.equal(ladders.summary.ladders, 1);
+  assert.deepEqual(ladders.entries[0].problems, []);
+  assert.deepEqual(ladders.entries[0].steps.map(({ min }) => min), ['-4px', '-8px', '-16px'], 'steps keep their sign');
+
+  const broken = resolveTokenLadders({
+    declarations: declarations([
+      ['--space-negative-1', '-4px'],
+      ['--space-negative-2', '-3px'],
+      ['--space-negative-3', '-4px'],
+    ]),
+  });
+  assert.deepEqual(broken.entries[0].problems.map(({ end, tokens, type }) => `${type} ${end} ${tokens.join(' ')}`), [
+    'inverted both --space-negative-1 --space-negative-2',
+    'too-close both --space-negative-2 --space-negative-3',
+  ]);
+
+  const crossing = resolveTokenLadders({
+    declarations: declarations([
+      ['--offset-1', '-4px'],
+      ['--offset-2', '0px'],
+      ['--offset-3', '4px'],
+    ]),
+  });
+  assert.deepEqual(crossing.entries[0].problems, [], 'a ladder that crosses zero keeps its signed order');
+});

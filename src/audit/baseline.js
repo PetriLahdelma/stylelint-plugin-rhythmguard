@@ -2,6 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const { readJsonFile } = require('../core/json');
 const { exactScaleCleanliness } = require('./contract');
 const { findGitTopLevel } = require('./scan/files');
 const { formatPath } = require('./shared');
@@ -79,7 +80,7 @@ function applyBaselineComparison(report, baselinePath, scopeInput) {
     throw new Error(`Baseline file not found: ${baselinePath}`);
   }
 
-  const baseline = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
+  const baseline = readJsonFile(resolvedPath);
   const baselineFindings = Array.isArray(baseline.findings) ? baseline.findings : [];
   const scope = createBaselineScope(report, scopeInput);
   const currentFindings = getAllFindings(report);
@@ -125,7 +126,7 @@ function writeBaseline(report, baselinePath, scopeInput) {
   // entries for the files it audited and keeps every other entry, so a scoped
   // run never shrinks the baseline.
   if (scope.scoped && fs.existsSync(resolvedPath)) {
-    const existing = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
+    const existing = readJsonFile(resolvedPath);
     if (!isContentKeyed(existing)) {
       throw new Error(`Cannot update ${baselinePath} from a --staged or --since run: it was written with formatVersion 1, keyed by line. Run --write-baseline once without --staged or --since to upgrade it.`);
     }

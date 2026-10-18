@@ -489,3 +489,76 @@ test('rules honour decisions from .rhythmguardrc.json: adopt joins the scale, al
   assert.match(texts[0], /"2px"/, 'gap: 2px is outside the allow scope');
   assert.match(texts[1], /"15px"/, 'a snap decision is still reported');
 });
+
+test('scale "auto" reads a .rhythmguardrc.json saved with a UTF-8 byte order mark (issue #291)', async () => {
+  const dir = tempDir('rc-bom');
+  fs.writeFileSync(path.join(dir, 'theme.css'), ':root { --spacing-1: 5px; --spacing-2: 10px; --spacing-3: 15px; --spacing-4: 20px; }');
+  fs.writeFileSync(path.join(dir, '.rhythmguardrc.json'), `\uFEFF${JSON.stringify({ audit: { tokenSources: ['theme.css'] } })}`);
+
+  const previousCwd = process.cwd();
+  process.chdir(dir);
+  let result;
+  try {
+    result = await lintCss({ code: '.a { margin: 12px; padding: 15px; }', rules: useScaleAuto() });
+  } finally {
+    process.chdir(previousCwd);
+  }
+
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 1, texts.join('\n'));
+  assert.match(texts[0], /"12px".*nearest: 10px or 15px/);
+  assert.doesNotMatch(texts[0], /could not be read|No spacing tokens/);
+});
+
+test('a bare --space is one token, not a Tailwind base to multiply (issue #293)', async () => {
+  const result = await lintCss({
+    code: ':root { --space: 1rem; --space-s: .5rem; --space-m: 1rem; --space-l: 2rem; --space-xl: 3rem; }\n.a { margin: 8px; padding: 40px; gap: 12px; }',
+    rules: useScaleAuto(),
+  });
+
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 2, texts.join('\n'));
+  assert.match(texts[0], /"40px".*nearest: 32px or 48px/, '40px is a multiple of 16px but not a token');
+  assert.match(texts[1], /"12px".*nearest: 8px or 16px/);
+});
+
+test('an explicit tokenPattern also selects the tokens scale "auto" reads from scaleSources, as it does for fixes (issue #296)', async () => {
+  const dir = tempDir('scale-sources-pattern');
+  const sizes = path.join(dir, 'sizes.css');
+  fs.writeFileSync(sizes, ':root { --size-1: 4px; --size-2: 8px; --size-3: 16px; --size-4: 24px; }');
+
+  const result = await lintCss({
+    code: '.a { margin: 13px; padding: 12px; gap: var(--size-2); }',
+    rules: useScaleAuto({ scaleSources: [sizes], tokenPattern: '^--size-' }),
+  });
+
+  assert.deepEqual(result.invalidOptionWarnings, []);
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 2, texts.join('\n'));
+  assert.match(texts[0], /"13px".*nearest: 8px or 16px/);
+  assert.match(texts[1], /"12px".*nearest: 8px or 16px/, '12px is on rhythmic-4, so this proves the --size-* scale was used');
+  assert.doesNotMatch(texts[0], /No spacing tokens/);
+});
+
+test('scale "auto" reads tailwindConfigPath before installed token packages, as documented (issue #297)', async () => {
+  const dir = tempDir('tailwind-before-packages');
+  fs.mkdirSync(path.join(dir, 'node_modules', 'tailwindcss'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'package.json'), '{"name":"fixture","devDependencies":{"tailwindcss":"^4.1.0"}}');
+  fs.writeFileSync(path.join(dir, 'node_modules', 'tailwindcss', 'package.json'), '{"name":"tailwindcss","version":"4.1.0"}');
+  fs.writeFileSync(path.join(dir, 'node_modules', 'tailwindcss', 'theme.css'), '@theme default { --spacing: 0.25rem; }\n');
+  const configPath = path.join(dir, 'tailwind.config.cjs');
+  fs.writeFileSync(configPath, 'module.exports = { theme: { spacing: { "1": "5px", "2": "10px", "4": "20px" } } };');
+
+  const previousCwd = process.cwd();
+  process.chdir(dir);
+  let result;
+  try {
+    result = await lintCss({ code: '.a { margin: 12px; padding: 10px; }', rules: useScaleAuto({ tailwindConfigPath: configPath }) });
+  } finally {
+    process.chdir(previousCwd);
+  }
+
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 1, texts.join('\n'));
+  assert.match(texts[0], /"12px".*nearest: 10px or 20px/, '12px is on the package scale, so this proves the Tailwind config won');
+});

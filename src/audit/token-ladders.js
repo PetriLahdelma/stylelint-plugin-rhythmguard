@@ -129,6 +129,26 @@ function sameEnd(a, b) {
   return (a === null && b === null) || (a !== null && b !== null && numbersEqual(a, b));
 }
 
+/**
+ * The ranges adjacent steps are compared on. A ladder whose every step is
+ * negative (`--space-negative-1: -4px` to `-3: -16px`) grows in magnitude, so
+ * it is compared by magnitude, its `min` end being the smaller magnitude
+ * (issue #294). A ladder that crosses zero keeps its signed order.
+ */
+function comparableSteps(steps) {
+  const negative = steps.every((step) => {
+    const ends = [step.min, step.max].filter((end) => end !== null);
+    return ends.length > 0 && ends.every((end) => end < 0);
+  });
+  if (!negative) {
+    return steps;
+  }
+  return steps.map((step) => ({
+    max: step.min === null ? null : -step.min,
+    min: step.max === null ? null : -step.max,
+  }));
+}
+
 function compareEnds(lower, upper, end, minStepPx) {
   const a = lower[end];
   const b = upper[end];
@@ -191,11 +211,12 @@ function resolveTokenLadders({ baseFontSize = 16, declarations, minStepPx = DEFA
   for (const ladder of eligible) {
     if (aliases.has(ladder)) continue;
     const steps = ladder.steps.sort((a, b) => a.rank - b.rank);
+    const compared = comparableSteps(steps);
     const problems = [];
     for (let index = 0; index < steps.length - 1; index += 1) {
       const tokens = [steps[index].token, steps[index + 1].token];
-      const atMin = compareEnds(steps[index], steps[index + 1], 'min', minStepPx);
-      const atMax = compareEnds(steps[index], steps[index + 1], 'max', minStepPx);
+      const atMin = compareEnds(compared[index], compared[index + 1], 'min', minStepPx);
+      const atMax = compareEnds(compared[index], compared[index + 1], 'max', minStepPx);
       // The same problem at both ends (always, for static steps) is one problem.
       if (atMin && atMax && atMin.type === atMax.type && atMin.difference === atMax.difference) {
         problems.push({ end: 'both', tokens, ...atMin });

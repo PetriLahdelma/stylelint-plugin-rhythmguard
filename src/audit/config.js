@@ -3,6 +3,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const { normalizeDecisions } = require('../core/decisions');
+const { readJsonFile } = require('../core/json');
 const { SCALED_GROUPS, isGroupScalesMap } = require('../core/options');
 const { normalizeTokenKind } = require('../core/token-sources');
 const { normalizeTokenSourceEntry } = require('../core/token-source-entries');
@@ -43,7 +44,7 @@ function loadAuditConfig(parsed) {
 
   let config;
   try {
-    config = JSON.parse(fs.readFileSync(resolvedPath, 'utf8'));
+    config = readJsonFile(resolvedPath);
   } catch (err) {
     throw new Error(`Invalid Rhythmguard config ${parsed.configPath}: ${err.message}`, { cause: err });
   }

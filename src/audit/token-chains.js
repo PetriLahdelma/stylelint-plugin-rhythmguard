@@ -28,8 +28,11 @@ const SPACING_TOKEN_NAME = /^--size(?:-|$)|(?:^--|-)(?<!letter-)(?<!word-)(?:spa
 const VAR_REFERENCE = /^var\(\s*(--[\w-]+)\s*(?:,\s*([\s\S]+))?\)$/;
 const OUTCOMES = ['on-scale', 'off-scale', 'unresolved', 'ambiguous', 'computed', 'non-length'];
 
+// Shadows are never spacing, even when `inset` is in the name (Tailwind v4 `--inset-shadow-sm`, issue #295).
+const SHADOW_TOKEN_NAME = /shadow/i;
+
 function isSpacingTokenName(token) {
-  return token.startsWith('--') && SPACING_TOKEN_NAME.test(token);
+  return token.startsWith('--') && SPACING_TOKEN_NAME.test(token) && !SHADOW_TOKEN_NAME.test(token);
 }
 
 /** Every custom property declaration the audit can see: scanned stylesheets plus external token definitions. */

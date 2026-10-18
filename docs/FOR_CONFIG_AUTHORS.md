@@ -49,8 +49,8 @@ You do not know each consumer's scale, and you should not have to. With `"auto"`
 1. `scaleSources` files, if the consumer or your config lists any
 2. `audit.tokenSources` from the consumer's `.rhythmguardrc.json`
 3. spacing custom properties in the linted stylesheet (`--space-*`, `--spacing-*`, prefixed variants like `--acme-spacing-md`, Tailwind v4's `--spacing` base, values written as `calc(4px * var(--scaling))`)
-4. spacing tokens shipped by installed design-token packages (`tailwindcss`, `@radix-ui/themes`, `@mantine/core`, `@primer/primitives`, `@shopify/polaris-tokens`, `@spectrum-css/tokens`, `@carbon/layout`, `bootstrap`, `@patternfly/patternfly`, `@mittwald/flow-design-tokens`, `govuk-frontend`, `nhsuk-frontend`, `@mozilla-protocol/tokens`)
-5. `theme.spacing` from `tailwindConfigPath`
+4. `theme.spacing` from `tailwindConfigPath`
+5. spacing tokens shipped by installed design-token packages (`tailwindcss`, `@radix-ui/themes`, `@mantine/core`, `@primer/primitives`, `@shopify/polaris-tokens`, `@spectrum-css/tokens`, `@carbon/layout`, `bootstrap`, `@patternfly/patternfly`, `@mittwald/flow-design-tokens`, `govuk-frontend`, `nhsuk-frontend`, `@mozilla-protocol/tokens`)
 6. the `rhythmic-4` preset, announced once in the first report of the file
 
 Inference needs at least three distinct token values before it trusts a source; a one-token scale is worse than the default. The [quiet benchmark](./QUIET_BENCHMARK.md) shows how this behaves on Radix Themes, Mantine, shadcn/ui, Primer React and Liveblocks.

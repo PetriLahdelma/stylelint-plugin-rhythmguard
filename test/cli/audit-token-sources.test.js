@@ -79,3 +79,23 @@ test('an rc token source with a bad format is a config error naming the format',
   assert.equal(result.status, 1);
   assert.match(result.stderr, /Invalid token source format "scss"/);
 });
+
+test('the audit reads an rc file, a JSON token source and a baseline saved with a UTF-8 byte order mark (issue #291)', () => {
+  const bom = '\uFEFF';
+  const dir = project({
+    '.rhythmguardrc.json': `${bom}${JSON.stringify({ audit: { tokenSources: ['tokens.json'] } })}`,
+    'src/a.css': '.a { margin: 13px; }\n',
+    'tokens.json': `${bom}${JSON.stringify({ spacing: { 1: '5px', 2: '10px', 3: '15px', 4: '20px' } })}`,
+  });
+
+  const report = audit(dir, '--scale', 'auto');
+  assert.equal(report.command.config.file, '.rhythmguardrc.json');
+  assert.deepEqual(report.contracts.scale.values, [0, 5, 10, 15, 20]);
+  assert.deepEqual(report.contracts.tokens.sources.flatMap((source) => source.warnings), []);
+
+  const baselinePath = path.join(dir, 'baseline.json');
+  audit(dir, '--scale', 'auto', '--write-baseline', baselinePath);
+  fs.writeFileSync(baselinePath, `${bom}${fs.readFileSync(baselinePath, 'utf8')}`);
+  const compared = audit(dir, '--scale', 'auto', '--since-baseline', baselinePath, '--fail-on-new-drift');
+  assert.equal(compared.baseline.newFindingsCount, 0);
+});

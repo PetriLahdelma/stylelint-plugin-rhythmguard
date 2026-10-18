@@ -10,7 +10,7 @@
 const assert = require('node:assert/strict');
 const test = require('node:test');
 
-const { resolveTokenChains } = require('../../src/audit/token-chains');
+const { isSpacingTokenName, resolveTokenChains } = require('../../src/audit/token-chains');
 
 const declarations = (entries) => new Map(Object.entries(entries).map(([token, values]) => [token, new Set([].concat(values))]));
 const scale = [0, 4, 8, 16, 24, 32];
@@ -87,4 +87,24 @@ test('resolveTokenChains reads a non-zero unitless value as a non-length, not as
   assert.equal(byToken['--spacing-scale'].outcome, 'non-length');
   assert.equal(byToken['--gap-ratio'].outcome, 'non-length');
   assert.equal(byToken['--space-none'].outcome, 'on-scale', 'a unitless zero is a length');
+});
+
+test('shadow tokens are not spacing tokens, even when their name contains inset (issue #295)', () => {
+  const chains = resolveTokenChains({
+    baseFontSize: 16,
+    declarations: declarations({
+      '--inset-shadow-2xs': 'inset 0 1px rgb(0 0 0 / 0.05)',
+      '--inset-shadow-sm': 'inset 0 1px 1px rgb(0 0 0 / 0.05)',
+      '--shadow-inset': 'inset 0 1px 2px black',
+      '--card-shadow-spacing': '0 1px 1px black',
+      '--inset-4': '16px',
+      '--space-1': '4px',
+    }),
+    scale,
+  });
+  assert.deepEqual(chains.entries.map((entry) => entry.token), ['--inset-4', '--space-1']);
+  assert.equal(chains.summary.total, 2);
+  assert.equal(chains.summary['non-length'], 0);
+  assert.equal(isSpacingTokenName('--inset-shadow-sm'), false);
+  assert.equal(isSpacingTokenName('--inset-sm'), true);
 });
