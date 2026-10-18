@@ -22,10 +22,21 @@ const { resolveScssSyntax } = require('./scan/stylesheets');
 const TOKEN_FUNCTIONS = ['var', 'theme', 'token'];
 const ANY_TOKEN = /./;
 
-function replaceLength(root, { baseFontSize = 16, properties = null, px, replacement }) {
+/**
+ * Several replacements (`rhythmguard fix --decided`) run in one pass over the
+ * original values: each literal is matched against the list once, and a value
+ * one replacement writes is never matched again, so decisions 10px -> 14px and
+ * 14px -> 16px leave padding: 10px at 14px. The first matching entry wins.
+ */
+function normalizeReplacements({ px, replacement, replacements }) {
+  return Array.isArray(replacements) ? replacements : [{ px, replacement }];
+}
+
+function replaceLength(root, { baseFontSize = 16, properties = null, px, replacement, replacements }) {
   const patterns = properties && properties.length > 0
     ? properties.map((property) => property.toLowerCase())
     : PROPERTY_GROUP_PATTERNS.spacing;
+  const planned = normalizeReplacements({ px, replacement, replacements });
   const changes = [];
 
   root.walkDecls((decl) => {
@@ -48,10 +59,11 @@ function replaceLength(root, { baseFontSize = 16, properties = null, px, replace
         return false;
       }
       const nodePx = toPx(Math.abs(length.number), length.unit, baseFontSize);
-      if (nodePx === null || !numbersEqual(nodePx, px)) {
+      const match = nodePx === null ? null : planned.find((entry) => numbersEqual(nodePx, entry.px));
+      if (!match) {
         return false;
       }
-      const to = length.number < 0 ? negateReplacement(replacement) : replacement;
+      const to = length.number < 0 ? negateReplacement(match.replacement) : match.replacement;
       changes.push({
         column: (decl.source && decl.source.start ? decl.source.start.column : 1) + declarationValueOffset(decl) + node.sourceIndex,
         from: node.value,
@@ -97,13 +109,15 @@ function parseStylesheet(filePath, source) {
 }
 
 /**
- * Apply one replacement across a directory. Dry run unless `write`; returns
+ * Apply one replacement (`px` and `replacement`), or several in one pass
+ * (`replacements: [{ px, replacement }]`), across a directory. Dry run unless
+ * `write`; the dry run reports exactly what a write would write. Returns
  * the per-file changes and which files were skipped (unparseable, or SCSS
  * without postcss-scss). `ignorePatterns` are root-relative paths and globs,
  * as the audit takes them; the audit's generated and vendored directories
  * (node_modules, dist, build and the rest of SKIP_DIRS) are always skipped.
  */
-function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], properties = null, px, replacement, write = false }) {
+function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], properties = null, px, replacement, replacements, write = false }) {
   const rootDir = path.resolve(process.cwd(), dir);
   const files = walkFiles(rootDir, ignorePatterns).cssFiles.filter(isCssFile).sort();
   const results = [];
@@ -122,7 +136,7 @@ function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], properties = 
       continue;
     }
     const { root, syntax } = parsed;
-    const changes = replaceLength(root, { baseFontSize, properties, px, replacement });
+    const changes = replaceLength(root, { baseFontSize, properties, px, replacement, replacements });
     if (changes.length === 0) {
       continue;
     }

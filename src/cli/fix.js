@@ -148,29 +148,26 @@ function run() {
   const lines = [];
   let total = 0;
   const touched = new Set();
-  const skipped = new Map();
-  for (const replacement of plan.replacements) {
-    const outcome = runCodemod({
+  // Every replacement in one pass over the original values: a value one snap
+  // writes is never snapped again, and the dry run lists exactly what --write writes.
+  const outcome = plan.replacements.length === 0
+    ? { results: [], skipped: [] }
+    : runCodemod({
       baseFontSize: parsed.baseFontSize,
       dir: parsed.dir,
       ignorePatterns,
       properties: parsed.properties,
-      px: replacement.px,
-      replacement: replacement.replacement,
+      replacements: plan.replacements,
       write: parsed.write,
     });
-    for (const result of outcome.results) {
-      touched.add(result.file);
-      for (const change of result.changes) {
-        total += 1;
-        lines.push(`  ${result.file}:${change.line}:${change.column}  ${change.property}: ${change.from} -> ${change.to}`);
-      }
-    }
-    // --decided runs once per decision; a file that cannot be read is named once
-    for (const entry of outcome.skipped) {
-      skipped.set(entry.file, entry);
+  for (const result of outcome.results) {
+    touched.add(result.file);
+    for (const change of result.changes) {
+      total += 1;
+      lines.push(`  ${result.file}:${change.line}:${change.column}  ${change.property}: ${change.from} -> ${change.to}`);
     }
   }
+  const skipped = outcome.skipped;
 
   if (lines.length > 0) {
     lines.push('');
@@ -182,7 +179,7 @@ function run() {
     const noun2 = plan.skippedSnaps.length === 1 ? 'snap decision has' : 'snap decisions have';
     lines.push(`${plan.skippedSnaps.length} ${noun2} no "to" and ${plan.skippedSnaps.length === 1 ? 'was' : 'were'} skipped: ${plan.skippedSnaps.join(', ')}`);
   }
-  for (const entry of skipped.values()) {
+  for (const entry of skipped) {
     lines.push(`skipped ${entry.file}: ${entry.reason}`);
   }
   process.stdout.write(`${lines.join('\n')}\n`);
