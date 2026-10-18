@@ -1,6 +1,6 @@
 'use strict';
 
-const fs = require('node:fs');
+const path = require('node:path');
 
 const {
   createTokenKindMatcher,
@@ -27,7 +27,7 @@ const {
 const { applyDecisions, buildDecisionPlan } = require('./decisions');
 const { collectDeclarations, resolveTokenChains, toChainsContract } = require('./token-chains');
 const { resolveTokenLadders, toLaddersContract } = require('./token-ladders');
-const { assertDirectory, getScanFiles } = require('./scan/files');
+const { assertDirectory, getScanFiles, readSourceFromDisk } = require('./scan/files');
 const { collectCssFindings, runStylelintAudit } = require('./scan/stylesheets');
 const { collectTailwindFindings, collectTailwindMotionFindings } = require('./scan/templates');
 
@@ -39,6 +39,8 @@ async function createAuditReport(options) {
   const scanFiles = getScanFiles(resolvedDir, ignorePatterns, parsed);
 
   const { cssFiles, scanScope, templateFiles } = scanFiles;
+  // A --staged run reads each changed file as the index holds it.
+  const readSource = scanFiles.readSource || readSourceFromDisk;
 
   const tokenSourceResult = parseTokenSources({
     baseFontSize: parsed.baseFontSize,
@@ -54,6 +56,7 @@ async function createAuditReport(options) {
   const scale = resolveAuditScale({
     baseFontSize: parsed.baseFontSize,
     cssFiles,
+    readSource,
     requested: parsed.scale,
     tokenSourceResult: spacingSourceResult,
   });
@@ -62,12 +65,17 @@ async function createAuditReport(options) {
     baseFontSize: parsed.baseFontSize,
     checkMathBounds: parsed.checkMathBounds,
     includeMotion: parsed.includeMotion,
+    readSource: scanFiles.readSource,
     scale: scale.values,
     scales: parsed.scales,
   };
 
   const cssResults = await runStylelintAudit(cssFiles, lintOptions);
-  const stylelintFindings = collectCssFindings(cssResults);
+  const collectedCssFindings = collectCssFindings(cssResults, readSource);
+  // A stylesheet that failed to parse was not audited; it is reported apart
+  // and is neither a finding nor a clean file.
+  const parseErrorFindings = collectedCssFindings.filter((finding) => finding.type === 'parse-error');
+  const stylelintFindings = collectedCssFindings.filter((finding) => finding.type !== 'parse-error');
   const decided = applyDecisions({
     baseFontSize: parsed.baseFontSize,
     cssFindings: stylelintFindings.filter((finding) => !finding.type.startsWith('motion-')),
@@ -89,6 +97,8 @@ async function createAuditReport(options) {
     externalTokenDefinitions: tokenSourceResult.definitions,
     includeMotion: parsed.includeMotion,
     motionFindings,
+    parseErrorFindings,
+    readSource,
     scale,
     scanScope,
     scssFiles: cssResults.scssFiles || 0,
@@ -105,6 +115,7 @@ async function createAuditReport(options) {
   const declarations = collectDeclarations({
     cssFiles,
     externalDefinitions: tokenSourceResult.definitions,
+    readSource,
     skipFile: (file) => NON_AUTHORED_SEGMENT.test(file),
   });
   report.tokenContract.chains = toChainsContract(resolveTokenChains({
@@ -129,12 +140,26 @@ async function createAuditReport(options) {
     scale: scale.values,
   });
 
-  if (parsed.sinceBaseline) {
-    applyBaselineComparison(report, parsed.baselinePath);
-  }
+  if (parsed.sinceBaseline || parsed.writeBaseline) {
+    const unauditedFiles = [
+      ...(cssResults.unauditedFiles || []),
+      ...parseErrorFindings.map((finding) => path.resolve(process.cwd(), finding.file)),
+    ];
+    const unaudited = new Set(unauditedFiles);
+    const baselineScope = {
+      auditedFiles: [...cssFiles, ...templateFiles].filter((file) => !unaudited.has(file)),
+      scanRoot: resolvedDir,
+      scoped: scanScope.mode !== 'full',
+      unauditedFiles,
+    };
 
-  if (parsed.writeBaseline) {
-    writeBaseline(report, parsed.baselinePath);
+    if (parsed.sinceBaseline) {
+      applyBaselineComparison(report, parsed.baselinePath, baselineScope);
+    }
+
+    if (parsed.writeBaseline) {
+      writeBaseline(report, parsed.baselinePath, baselineScope);
+    }
   }
 
   return report;
@@ -163,7 +188,7 @@ const NON_AUTHORED_SEGMENT = /(^|\/)(test|tests|__tests__|spec|specs|fixtures?|_
  * "auto": external token sources, then spacing custom properties across the scanned
  * CSS, then the default scale. First source that yields values wins.
  */
-function resolveAuditScale({ baseFontSize, cssFiles, requested, tokenSourceResult }) {
+function resolveAuditScale({ baseFontSize, cssFiles, readSource = readSourceFromDisk, requested, tokenSourceResult }) {
   if (Array.isArray(requested)) {
     return {
       files: [],
@@ -196,7 +221,7 @@ function resolveAuditScale({ baseFontSize, cssFiles, requested, tokenSourceResul
     }
     let text;
     try {
-      text = fs.readFileSync(filePath, 'utf8');
+      text = readSource(filePath);
     } catch {
       continue;
     }

@@ -33,7 +33,7 @@ function isSpacingTokenName(token) {
 }
 
 /** Every custom property declaration the audit can see: scanned stylesheets plus external token definitions. */
-function collectDeclarations({ cssFiles, externalDefinitions, skipFile = () => false }) {
+function collectDeclarations({ cssFiles, externalDefinitions, readSource = (file) => fs.readFileSync(file, 'utf8'), skipFile = () => false }) {
   const declarations = new Map();
   const add = (token, value) => {
     if (!declarations.has(token)) declarations.set(token, new Set());
@@ -43,7 +43,7 @@ function collectDeclarations({ cssFiles, externalDefinitions, skipFile = () => f
     if (skipFile(formatPath(filePath))) continue;
     let source;
     try {
-      source = fs.readFileSync(filePath, 'utf8');
+      source = readSource(filePath);
     } catch {
       continue;
     }

@@ -159,7 +159,9 @@ async function run() {
     return;
   }
 
-  if (report.cssFilesScanned === 0 && report.templateFilesScanned === 0) {
+  const scanned = report.scanned || {};
+  const skippedStylesheets = (scanned.scssSkipped || 0) + (scanned.stylelintIgnored || 0);
+  if (report.cssFilesScanned === 0 && report.templateFilesScanned === 0 && skippedStylesheets === 0) {
     out.push('  No CSS files found here. Run from your project root, or audit a directory directly:');
     out.push('    npx rhythmguard audit ./src', '');
     process.stdout.write(`${out.join('\n')}\n`);
@@ -183,6 +185,17 @@ async function run() {
   out.push('  Findings');
   out.push(`    CSS files       ${report.cssFilesScanned}`);
   out.push(`    Template files  ${report.templateFilesScanned}`);
+  if (skippedStylesheets > 0) {
+    const reasons = [
+      ...(scanned.scssSkipped > 0 ? [`${scanned.scssSkipped} SCSS without postcss-scss`] : []),
+      ...(scanned.stylelintIgnored > 0 ? [`${scanned.stylelintIgnored} in .stylelintignore`] : []),
+    ];
+    out.push(`    Skipped         ${skippedStylesheets} not audited (${reasons.join(', ')})`);
+  }
+  const parseErrors = (report.findings.parseErrors || []).length;
+  if (parseErrors > 0) {
+    out.push(`    Parse errors    ${parseErrors} not audited (the stylesheet could not be parsed)`);
+  }
   out.push(`    Off-scale       ${offScale.length} in CSS, ${report.findings.tailwind.length} in class strings`);
   out.push(`    Token opps      ${report.findings.css.length - offScale.length} raw values that match or deserve a token`);
   out.push(`    Cleanliness     ${report.scaleCleanliness}%`);

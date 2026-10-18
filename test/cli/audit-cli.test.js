@@ -902,7 +902,7 @@ test('baseline keys survive line shifts and still catch an identical new occurre
   const cssPath = path.join(fixtureDir, 'src', 'card.css');
   const baselinePath = path.join(fixtureDir, 'drift.json');
   assert.equal(runAudit(fixtureDir, '--write-baseline', baselinePath).status, 0);
-  assert.equal(JSON.parse(fs.readFileSync(baselinePath, 'utf8')).formatVersion, 2);
+  assert.equal(JSON.parse(fs.readFileSync(baselinePath, 'utf8')).formatVersion, 3);
 
   // Two comment lines at the top move every finding down; nothing changed.
   fs.writeFileSync(cssPath, `/* header */\n/* header */\n${fs.readFileSync(cssPath, 'utf8')}`);

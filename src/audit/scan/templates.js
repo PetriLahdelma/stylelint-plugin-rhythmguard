@@ -20,7 +20,7 @@ function collectTailwindFindings(templateFiles, options) {
   for (const filePath of templateFiles) {
     let source;
     try {
-      source = fs.readFileSync(filePath, 'utf8');
+      source = options.readSource ? options.readSource(filePath) : fs.readFileSync(filePath, 'utf8');
     } catch {
       continue;
     }
@@ -66,7 +66,7 @@ function collectTailwindMotionFindings(templateFiles, options) {
   for (const filePath of templateFiles) {
     let source;
     try {
-      source = fs.readFileSync(filePath, 'utf8');
+      source = options.readSource ? options.readSource(filePath) : fs.readFileSync(filePath, 'utf8');
     } catch {
       continue;
     }

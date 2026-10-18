@@ -33,7 +33,9 @@ function renderHtml(report) {
     metricHtml('Scale cleanliness', `${report.scaleCleanliness}%`),
     metricHtml('CSS files', report.cssFilesScanned),
     metricHtml('Template files', report.templateFilesScanned),
+    ...(parseErrorRows(report).length > 0 ? [metricHtml('Parse errors (not audited)', parseErrorRows(report).length)] : []),
     '</section>',
+    renderHtmlTable('Parse Errors (not audited)', ['File', 'Error'], parseErrorRows(report)),
     renderHtmlTable('CSS Off-Scale Properties', ['Property', 'Count'], Object.entries(report.offScaleProperties || {})),
     renderHtmlTable('Top Affected Files', ['File', 'Findings'], report.topAffectedFiles.map(({ file, count }) => [file, count])),
     renderHtmlTable('Token Contract Sources', ['File', 'Format', 'Tokens'], report.tokenContract.sources.map((source) => [
@@ -50,6 +52,11 @@ function renderHtml(report) {
   ];
 
   return `${lines.join('\n')}\n`;
+}
+
+function parseErrorRows(report) {
+  return ((report.findings && report.findings.parseErrors) || [])
+    .map((finding) => [`${finding.file}:${finding.line}:${finding.column}`, finding.text]);
 }
 
 function metricHtml(label, value) {

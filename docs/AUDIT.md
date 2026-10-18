@@ -49,7 +49,7 @@ Root-level declarations win: when custom properties declared in `:root`, `html` 
 npm install --save-dev postcss-scss
 ```
 
-Without it, SCSS files are counted under `scanned.scssSkipped` and the text and Markdown output say so, rather than failing.
+Without it, SCSS files are counted under `scanned.scssSkipped` and the text and Markdown output say so, rather than failing. A skipped file was not audited, so it is not counted in `scanned.cssFiles` ("CSS files scanned") or in scale cleanliness; the same holds for stylesheets the project's own `.stylelintignore` excludes, counted under `scanned.stylelintIgnored`. The quickstart prints both as `Skipped`.
 
 Literal lengths in SCSS are checked, and so are Sass expressions the evaluator can resolve: `padding: $spacer * .3` is reported as `Unexpected off-scale value "$spacer * .3" ... Evaluates to 4.8px.` when `$spacer` is declared in the same file, a `scaleSources` file, the config's token sources or an installed package, and each term of `padding: $y $x` is checked on its own. Expressions over variables it cannot resolve, and functions other than `math.div()`, are left alone; an expression is never rewritten by `--fix`. For `--scale auto` the same reader supplies the scale from Sass variables and maps as token sources: `$spacer: 1rem`, `$spacing-01: 0.125rem`, and maps such as Bootstrap's `$spacers: (1: $spacer * .25, ...)` including nested maps, variable references, `* / + -` arithmetic and `math.div()`. A map declared through `defaults(...)`, `map.merge(...)` or `map-merge(...)` is read as the merged map, later keys winning, which is how Bootstrap v6 declares `$spacers`. Assignments follow Sass: a later plain assignment replaces an earlier `!default`, a later `!default` does not. Other function calls, strings, keywords and interpolated keys are skipped. Token names appear as `$spacer` or `$spacers.3` in the scale provenance.
 
@@ -94,7 +94,7 @@ The value histogram tells you which numbers drifted; the property table tells yo
 { "schemaVersion": 1, "label": "spacing drift", "message": "3%", "color": "green" }
 ```
 
-`drift` (the default) is 100 minus scale cleanliness, the share of scanned files with at least one finding. `--badge-metric findings` reports the number of off-scale CSS values plus Tailwind class-string findings instead, labelled `off-scale values`. Colours: drift 0 to 2% brightgreen, to 5% green, to 15% yellow, above orange; findings 0 brightgreen, to 10 green, to 50 yellow, above orange. Publish the file somewhere public and embed `https://img.shields.io/endpoint?url=<file url>` in the README; the workflow is in [`CI_ADOPTION.md`](./CI_ADOPTION.md#5-show-a-badge).
+`drift` (the default) is 100 minus scale cleanliness, the share of scanned files with at least one finding; cleanliness is rounded down, so one finding anywhere shows at least 1%. `--badge-metric findings` reports the number of off-scale CSS values plus Tailwind class-string findings instead, labelled `off-scale values`. Colours: drift 0 to 2% brightgreen, to 5% green, to 15% yellow, above orange; findings 0 brightgreen, to 10 green, to 50 yellow, above orange. Publish the file somewhere public and embed `https://img.shields.io/endpoint?url=<file url>` in the README; the workflow is in [`CI_ADOPTION.md`](./CI_ADOPTION.md#5-show-a-badge).
 
 ## Token chains
 
@@ -205,12 +205,21 @@ In a CSS or SCSS token file, a custom property keeps the scope it is declared in
 1. `--write-baseline` records current findings in `.rhythmguard-baseline.json`.
 2. `--since-baseline` reports only findings not in the baseline.
 3. `--fail-on-new-drift` exits 1 when new drift exists. `--max-findings` and `--min-cleanliness` are absolute gates.
-4. `--staged` and `--since <ref>` scan only changed files for pre-commit and PR jobs.
+4. `--staged` and `--since <ref>` scan only changed files for pre-commit and PR jobs. `--staged` audits each file as the index holds it, the content the commit will carry, not the working copy; `--since` audits the working tree.
 
 The step-by-step rollout, including a GitHub Actions job and a PR comment, is in [`CI_ADOPTION.md`](./CI_ADOPTION.md).
 
+`--min-cleanliness` compares the exact share of clean files, and the reported `scaleCleanliness` is rounded down, so a report never shows 100% while a file has a finding: 199 clean files of 200 reads 99% and fails `--min-cleanliness 100`.
 
-A baseline names each finding by what it is, not where it sits: rule, file, property, value, and its occurrence index among identical findings in that file. Moving code, adding a comment above a declaration or reformatting a file does not turn old findings into "new" and "resolved" pairs; a second identical off-scale declaration is still new. Baseline files carry `formatVersion: 2`; files written by earlier versions (`formatVersion: 1`, keyed by line and column) still compare, with the key they were written with, and are upgraded the next time you run `--write-baseline`. Every output leads with the change since the baseline (`Since baseline: 12 resolved, 0 new`), so a pull request shows what it improved before what it left.
+A baseline names each finding by what it is, not where it sits: rule, file, property, value, and its occurrence index among identical findings in that file. Moving code, adding a comment above a declaration or reformatting a file does not turn old findings into "new" and "resolved" pairs; a second identical off-scale declaration is still new. Files are named relative to the repository top level when the scanned directory is in a git repository, otherwise relative to the scanned directory, so `audit web/src` from the repository root and `audit ./src` from `web` compare against the same baseline. Every output leads with the change since the baseline (`Since baseline: 12 resolved, 0 new`), so a pull request shows what it improved before what it left.
+
+Baseline files carry `formatVersion: 3`. Files written by 3.x up to 3.11.0 (`formatVersion: 2`) named files relative to the directory the command ran from; they still compare from that directory, and from another one when the recorded `directory` ends the scanned path (`web/src` written from the root, read as `./src` from `web`). Files written by earlier versions (`formatVersion: 1`, keyed by line and column) still compare, with the key they were written with. Either is upgraded the next time you run `--write-baseline`.
+
+A git-scoped run judges only the files it scanned. With `--staged` or `--since`, `--since-baseline` counts a baseline finding as resolved only when its file was scanned, and `--write-baseline` replaces the entries for the scanned files and keeps every other entry, so a scoped run never shrinks the baseline (a `formatVersion: 1` baseline has to be rewritten by a full run first). In any run, a finding in a stylesheet that was skipped, ignored or failed to parse is neither resolved nor new.
+
+## Parse errors
+
+A stylesheet Stylelint cannot parse (`Unclosed block`) runs no rule, so it was not audited. The audit reports it as a `parse-error` entry in `findings.parseErrors` and counts it in `summary.parseErrors`; it is not a finding, not counted in off-scale values or `totalFindings`, and left out of scale cleanliness. The text and Markdown output list the file and the error, and `--format github` emits an `::error` annotation on its line.
 
 ## JSON 2.0 contract and API
 
@@ -223,7 +232,7 @@ A baseline names each finding by what it is, not where it sits: rule, file, prop
   "summary": { "totalFindings": 12, "scaleCleanliness": 94 },
   "scanned": { "cssFiles": 10, "templateFiles": 20 },
   "contracts": { "scale": {}, "tokens": {}, "motion": {} },
-  "findings": { "css": [], "tailwind": [], "motion": [] },
+  "findings": { "css": [], "tailwind": [], "motion": [], "parseErrors": [] },
   "baseline": null
 }
 ```
