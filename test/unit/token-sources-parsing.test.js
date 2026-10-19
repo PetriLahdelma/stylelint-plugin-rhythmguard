@@ -182,6 +182,68 @@ test('DTCG 2025.10 dimension objects are read, aliases resolve through them, unk
   assert.deepEqual(parsed.sources[0].warnings, parsed.warnings);
 });
 
+test('DTCG $ref tokens resolve through JSON Pointers; a group that carries $ref is still a group (issue #163)', () => {
+  const parsed = parse('tokens.json', {
+    base: { $type: 'dimension', md: { $value: { value: 16, unit: 'px' } } },
+    spacing: {
+      $type: 'dimension',
+      1: { $value: { value: 4, unit: 'px' } },
+      md: { $ref: '#/base/md/$value' },
+      alias: { $value: '{spacing.md}' },
+      gone: { $ref: '#/base/lg/$value' },
+      loop: { $ref: '#/spacing/loop2/$value' },
+      loop2: { $value: '{spacing.loop}' },
+    },
+    layout: {
+      $ref: '#/base',
+      'spacing-2': { $value: { value: 8, unit: 'px' } },
+    },
+  });
+
+  assert.deepEqual(parsed.values, {
+    '--layout-spacing-2': '8px',
+    '--spacing-1': '4px',
+    '--spacing-alias': '16px',
+    '--spacing-loop2': '{spacing.loop}',
+    '--spacing-md': '16px',
+  });
+  assert.equal(parsed.warnings.length, 1, parsed.warnings.join('\n'));
+  assert.match(parsed.warnings[0], /--spacing-gone \(reference "#\/base\/lg\/\$value" does not resolve\)/);
+  assert.match(parsed.warnings[0], /--spacing-loop \(reference cycle through "#\/spacing\/loop2\/\$value"\)/);
+});
+
+test('a configured token source with no tokens of the kind read warns, naming the file and its format, when asked to (issue #163)', () => {
+  const colors = writeSource('colors.json', { color: { $type: 'color', brand: { $value: { colorSpace: 'srgb', components: [0, 0, 1] } } } });
+  const empty = writeSource('empty.css', '.card { padding: 4px; }\n');
+  const spaced = writeSource('tokens.json', { spacing: { 1: { $value: '4px' } } });
+  const missing = path.join(path.dirname(spaced), 'missing.json');
+  const sources = [{ path: colors }, { path: empty }, { path: spaced }, { path: missing }];
+
+  // Off by default: the API reads token files without new warnings.
+  assert.deepEqual(parseTokenSources({ sources }).warnings, [`Token source not found: ${missing}`]);
+
+  const parsed = parseTokenSources({ sources, warnWhenEmpty: true });
+  const hint = 'spacing tokens are read by name (space, spacing or spacer), so set a tokenPattern on this source if its tokens are named otherwise';
+  assert.deepEqual(parsed.sources.map((source) => source.warnings), [
+    [`Token source ${colors} (dtcg) yielded no spacing tokens; ${hint}.`],
+    [`Token source ${empty} (css) yielded no spacing tokens; ${hint}.`],
+    [],
+    [`Token source not found: ${missing}`],
+  ]);
+  assert.deepEqual(parsed.warnings, parsed.sources.flatMap((source) => source.warnings));
+
+  // The warning names what was read: another kind, every token, a tokenPattern.
+  assert.deepEqual(parseTokenSources({ sources: [{ path: colors }], tokenKind: 'radius', warnWhenEmpty: true }).warnings, [`Token source ${colors} (dtcg) yielded no radius tokens.`]);
+  assert.deepEqual(parseTokenSources({ sources: [{ path: empty }], tokenKind: 'all', warnWhenEmpty: true }).warnings, [`Token source ${empty} (css) yielded no tokens.`]);
+  assert.deepEqual(parseTokenSources({ sources: [{ path: colors, tokenPattern: '^--size-' }], warnWhenEmpty: true }).warnings, [`Token source ${colors} (dtcg) yielded no tokens matching tokenPattern "^--size-".`]);
+
+  // A file that does not parse says so, once, and nothing more.
+  const broken = writeSource('broken.json', '{ "spacing": ');
+  const brokenWarnings = parseTokenSources({ sources: [{ path: broken }], warnWhenEmpty: true }).warnings;
+  assert.equal(brokenWarnings.length, 1);
+  assert.match(brokenWarnings[0], /^Unable to parse token source /);
+});
+
 test('non-zero unitless token values are not lengths; zero and flat-JSON numbers still are (issue #268)', () => {
   const css = parse('tokens.css', ':root{--space-1:4px;--space-2:8px;--space-3:16px;--space-ratio:1.5;--spacing-scale:3;--space-0:0}');
   assert.deepEqual(css.scale, [0, 4, 8, 16]);

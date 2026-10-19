@@ -99,3 +99,51 @@ test('the audit reads an rc file, a JSON token source and a baseline saved with 
   const compared = audit(dir, '--scale', 'auto', '--since-baseline', baselinePath, '--fail-on-new-drift');
   assert.equal(compared.baseline.newFindingsCount, 0);
 });
+
+function auditOutput(cwd, format, ...args) {
+  const result = spawnSync(process.execPath, [cliPath, 'audit', 'src', '--format', format, ...args], { cwd, encoding: 'utf8' });
+  assert.equal(result.status, 0, result.stderr);
+  return result.stdout;
+}
+
+const NO_SPACING_HINT = 'spacing tokens are read by name (space, spacing or spacer), so set a tokenPattern on this source if its tokens are named otherwise';
+
+test('a token source with no spacing tokens is a warning in every report format, whatever its format (issue #163)', () => {
+  const dir = project({
+    'colors.json': JSON.stringify({ color: { $type: 'color', brand: { $value: { colorSpace: 'srgb', components: [0, 0, 1] } } } }),
+    'src/a.css': '.a { margin: 6px; }\n',
+  });
+  const warning = `Token source colors.json (dtcg) yielded no spacing tokens; ${NO_SPACING_HINT}.`;
+
+  const report = audit(dir, '--no-config', '--scale', 'auto', '--token-source', 'colors.json');
+  assert.equal(report.contracts.scale.source, 'fallback');
+  assert.deepEqual(report.contracts.tokens.sources.map((source) => [source.file, source.format, source.tokenCount, source.warnings]), [
+    ['colors.json', 'dtcg', 0, [warning]],
+  ]);
+
+  const text = auditOutput(dir, 'text', '--no-config', '--scale', 'auto', '--token-source', 'colors.json');
+  assert.match(text, /colors\.json 0 \(warning\)/);
+  assert.ok(text.includes(`! ${warning}`), text);
+
+  const markdown = auditOutput(dir, 'markdown', '--no-config', '--scale', 'auto', '--token-source', 'colors.json');
+  assert.ok(markdown.includes(`| \`colors.json\` | \`dtcg\` | 0 | \`${warning}\` |`), markdown);
+});
+
+test('an rc token source stylesheet with no custom properties is a warning too; scanned stylesheets are not (issue #163)', () => {
+  const dir = project({
+    '.rhythmguardrc.json': JSON.stringify({ audit: { tokenSources: ['theme.css'] } }),
+    'src/a.css': '.a { margin: 6px; }\n',
+    'theme.css': 'body { margin: 0; }\n',
+  });
+
+  const report = audit(dir, '--scale', 'auto');
+  assert.deepEqual(report.contracts.tokens.sources.map((source) => source.warnings), [
+    [`Token source theme.css (css) yielded no spacing tokens; ${NO_SPACING_HINT}.`],
+  ]);
+
+  // Without configured token sources, a stylesheet with no tokens is just a stylesheet.
+  fs.rmSync(path.join(dir, '.rhythmguardrc.json'));
+  for (const format of ['json', 'text', 'markdown']) {
+    assert.doesNotMatch(auditOutput(dir, format, '--scale', 'auto'), /yielded no/);
+  }
+});

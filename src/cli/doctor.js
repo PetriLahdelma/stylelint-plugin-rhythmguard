@@ -6,7 +6,8 @@ const { applyAuditConfig, loadAuditConfig, resolveIgnorePatterns } = require('..
 const { createDefaultAuditOptions } = require('../audit/shared');
 const { normalizeDecisions } = require('../core/decisions');
 const { readJsonFile } = require('../core/json');
-const { normalizeTokenSourceFormat } = require('../core/token-sources');
+const { normalizeTokenSourceEntry } = require('../core/token-source-entries');
+const { normalizeTokenSourceFormat, parseTokenSources } = require('../core/token-sources');
 
 const HELP = `Usage: rhythmguard doctor
 
@@ -35,6 +36,14 @@ function fail(msg, fix) {
 
 function skip(msg) {
   process.stdout.write(`- ${msg}\n`);
+}
+
+let warnings = 0;
+
+// Worth knowing, but not a failure: the exit code does not change.
+function warn(msg) {
+  warnings++;
+  process.stdout.write(`! ${msg}\n`);
 }
 
 // Check 1: Stylelint installed
@@ -313,9 +322,26 @@ function checkRhythmguardTokenSources(audit, baseDir) {
 
     if (fs.existsSync(path.resolve(baseDir, sourcePath))) {
       pass(`token source found (${sourcePath})`);
+      warnAboutTokenSource(source, baseDir);
     } else {
       fail(`token source not found (${sourcePath})`, 'Update audit.tokenSources or create the token file');
     }
+  }
+}
+
+/**
+ * Read a token source the way the audit reads it for the spacing scale, and
+ * pass on what the audit would warn about: a file that does not parse, skipped
+ * tokens, or no spacing tokens at all (issue #163). Warnings, not failures.
+ */
+function warnAboutTokenSource(entry, baseDir) {
+  const { source } = normalizeTokenSourceEntry(entry, baseDir);
+  if (!source) {
+    return;
+  }
+  const parsed = parseTokenSources({ sources: [source], tokenKind: 'spacing', warnWhenEmpty: true });
+  for (const message of parsed.warnings) {
+    warn(message);
   }
 }
 
@@ -374,11 +400,12 @@ function run() {
 
   process.stdout.write('\n');
 
+  const warningNote = warnings > 0 ? ` (${warnings} warning${warnings === 1 ? '' : 's'})` : '';
   if (issues === 0) {
-    process.stdout.write('All checks passed.\n\n');
+    process.stdout.write(`All checks passed${warningNote}.\n\n`);
   } else {
     process.stdout.write(
-      `${issues} issue${issues === 1 ? '' : 's'} found.\n\n`,
+      `${issues} issue${issues === 1 ? '' : 's'} found${warningNote}.\n\n`,
     );
   }
 

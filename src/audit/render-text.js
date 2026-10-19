@@ -129,6 +129,9 @@ function appendTokenContractText(lines, tokenContract) {
     for (const source of sources.slice(0, 5)) {
       const warningSuffix = source.warnings.length > 0 ? ' (warning)' : '';
       lines.push(`    ${truncate(source.file, 42)} ${source.tokenCount}${warningSuffix}`);
+      for (const warning of source.warnings) {
+        lines.push(`      ! ${warning}`);
+      }
     }
   }
 

@@ -92,3 +92,29 @@ test('doctor --help prints the usage instead of running the checks; an unknown f
   assert.match(unknown.stderr, /^Unknown option: --fix\n\nUsage: rhythmguard doctor/);
   assert.equal(unknown.stdout, '');
 });
+
+test('doctor warns about a token source with no spacing tokens, whatever its format, without failing (issue #163)', () => {
+  function doctor(tokenSources) {
+    const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-doctor-'));
+    fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), JSON.stringify({ audit: { tokenSources } }));
+    fs.writeFileSync(path.join(fixtureDir, 'colors.json'), JSON.stringify({ color: { $type: 'color', brand: { $value: { colorSpace: 'srgb', components: [0, 0, 1] } } } }));
+    fs.writeFileSync(path.join(fixtureDir, 'theme.css'), 'body { margin: 0; }\n');
+    fs.writeFileSync(path.join(fixtureDir, 'tokens.json'), JSON.stringify({ spacing: { 1: { $value: { value: 4, unit: 'px' } } } }));
+    return spawnSync(process.execPath, [cliPath, 'doctor'], { cwd: fixtureDir, encoding: 'utf8' });
+  }
+  const issuesFound = (stdout) => Number((stdout.match(/^(\d+) issues? found/m) || [])[1]);
+  const hint = 'spacing tokens are read by name (space, spacing or spacer), so set a tokenPattern on this source if its tokens are named otherwise';
+
+  const clean = doctor(['tokens.json']);
+  assert.doesNotMatch(clean.stdout, /yielded no|warning/);
+
+  const result = doctor([{ path: 'colors.json', format: 'dtcg' }, 'theme.css', 'tokens.json']);
+  assert.match(result.stdout, /✓ token source found \(colors\.json\)/);
+  assert.ok(result.stdout.includes(`! Token source colors.json (dtcg) yielded no spacing tokens; ${hint}.\n`), result.stdout);
+  assert.ok(result.stdout.includes(`! Token source theme.css (css) yielded no spacing tokens; ${hint}.\n`), result.stdout);
+  assert.doesNotMatch(result.stdout, /tokens\.json \(dtcg\) yielded/);
+  // Warnings, not failures: the issue count is the one a clean token setup gets.
+  assert.equal(issuesFound(result.stdout), issuesFound(clean.stdout));
+  assert.equal(result.status, clean.status);
+  assert.match(result.stdout, /issues? found \(2 warnings\)\./);
+});
