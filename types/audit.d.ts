@@ -316,6 +316,8 @@ export function parseTokenSources(options?: {
   baseFontSize?: number;
   sources?: AuditTokenSource[];
   tokenKind?: AuditTokenKind;
+  /** Warn about a source that parses but yields no token of `tokenKind`, as the audit does. Default false. */
+  warnWhenEmpty?: boolean;
 }): ParsedTokenSources;
 
 export function toAuditContractReport(report: AuditReport): AuditContractReport;

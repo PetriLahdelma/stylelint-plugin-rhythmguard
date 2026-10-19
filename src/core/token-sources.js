@@ -87,15 +87,41 @@ function createTokenKindMatcher(kind) {
   return (token) => pattern.test(token);
 }
 
+/**
+ * Why a source that parsed gave nothing: what was looked for, and for spacing
+ * the naming rule a design-tool export most often misses (issue #163).
+ */
+function emptySourceWarning(source, format, tokenKind) {
+  const prefix = `Token source ${source.displayPath} (${format}) yielded no`;
+  if (source.tokenPattern) {
+    return `${prefix} tokens matching tokenPattern "${source.tokenPattern}".`;
+  }
+  if (tokenKind === 'all') {
+    return `${prefix} tokens.`;
+  }
+  if (tokenKind === 'spacing') {
+    return `${prefix} spacing tokens; spacing tokens are read by name (space, spacing or spacer), so set a tokenPattern on this source if its tokens are named otherwise.`;
+  }
+  return `${prefix} ${tokenKind} tokens.`;
+}
+
+/**
+ * Read token sources into definitions, with one report per source. With
+ * `warnWhenEmpty`, a source that parses but yields no token of the kind read
+ * gets a warning too; the audit and `rhythmguard doctor` ask for that for the
+ * token sources a project configures.
+ */
 function parseTokenSources({
   baseFontSize = 16,
   sources = [],
   tokenKind = 'spacing',
+  warnWhenEmpty = false,
 } = {}) {
   const definitions = new Map();
   const sourceReports = [];
   const warnings = [];
   const matchesKind = createTokenKindMatcher(tokenKind);
+  const kind = normalizeTokenKind(tokenKind);
 
   for (const source of sources) {
     const normalizedSource = normalizeTokenSource(source);
@@ -152,6 +178,12 @@ function parseTokenSources({
 
     if (skipped.length > 0) {
       const warning = `Token source ${normalizedSource.displayPath}: skipped ${skipped.join(', ')}.`;
+      sourceReport.warnings.push(warning);
+      warnings.push(warning);
+    }
+
+    if (warnWhenEmpty && tokens.length === 0) {
+      const warning = emptySourceWarning(normalizedSource, sourceReport.format, kind);
       sourceReport.warnings.push(warning);
       warnings.push(warning);
     }
@@ -972,7 +1004,7 @@ function collectJsonTokens(parsed, matchesKind, onSkip = () => {}) {
   return tokens;
 }
 
-function walkJsonTokenGroup(group, segments, tokens, context) {
+function walkJsonTokenGroup(group, segments, tokens, context, inheritedType = null) {
   const { matchesKind, onSkip } = context;
   for (const [key, value] of Object.entries(group)) {
     if (isMetadataKey(key)) {
@@ -991,7 +1023,9 @@ function walkJsonTokenGroup(group, segments, tokens, context) {
       continue;
     }
 
-    const leaf = leafTokenValue(value, context.root);
+    // DTCG `$type` applies to the node and, on a group, to every token below it.
+    const type = typeof value.$type === 'string' ? value.$type : inheritedType;
+    const leaf = leafTokenValue(value, context.root, type);
     if (leaf !== null) {
       const token = key.startsWith('--')
         ? key
@@ -1006,7 +1040,7 @@ function walkJsonTokenGroup(group, segments, tokens, context) {
       continue;
     }
 
-    walkJsonTokenGroup(value, [...segments, key], tokens, context);
+    walkJsonTokenGroup(value, [...segments, key], tokens, context, type);
   }
 }
 
@@ -1046,6 +1080,9 @@ function tokenFromPrimitive(key, value, segments) {
 const DTCG_DIMENSION_UNITS = new Set(['px', 'rem']);
 const JSON_REFERENCE = /^\{([^{}]+)\}$/;
 const MAX_JSON_REFERENCE_DEPTH = 32;
+// Raw values that are not plain JSON: a `$ref` token and a malformed dimension.
+const JSON_POINTER_REF = Symbol('json pointer reference');
+const INVALID_DIMENSION = Symbol('invalid dimension');
 
 function isDimensionObject(value) {
   return isPlainObject(value)
@@ -1053,9 +1090,30 @@ function isDimensionObject(value) {
     && typeof value.unit === 'string';
 }
 
+/** `{ "value": "16", "unit": "px" }` or `{ "unit": "px" }`: shaped like a dimension, not one. */
+function isMalformedDimension(value) {
+  return isPlainObject(value)
+    && !isDimensionObject(value)
+    && (Object.prototype.hasOwnProperty.call(value, 'value') || Object.prototype.hasOwnProperty.call(value, 'unit'));
+}
+
 /**
- * The raw value a token node holds: `$value` (DTCG, any shape) or a string or
- * number `value` (Style Dictionary). Undefined when the node is a group.
+ * A DTCG 2025.10 `$ref` token: a JSON Pointer into the same file
+ * (`"$ref": "#/base/$value/fontSize"`) in place of `$value`. Only a node with
+ * nothing but `$` keys is one, so a group that happens to carry `$ref` is
+ * still walked as a group.
+ */
+function jsonPointerOf(node) {
+  if (typeof node.$ref !== 'string' || Object.prototype.hasOwnProperty.call(node, '$value')) {
+    return null;
+  }
+  return Object.keys(node).every((key) => key.startsWith('$')) ? node.$ref : null;
+}
+
+/**
+ * The raw value a token node holds: `$value` (DTCG, any shape), a `$ref`
+ * pointer, or a string or number `value` (Style Dictionary). Undefined when
+ * the node is a group or holds something other than a length (a color).
  */
 function rawTokenValue(node) {
   if (!isPlainObject(node)) {
@@ -1066,7 +1124,11 @@ function rawTokenValue(node) {
     if (typeof raw === 'string' || typeof raw === 'number' || isDimensionObject(raw)) {
       return raw;
     }
-    return undefined;
+    return isMalformedDimension(raw) ? { [INVALID_DIMENSION]: true } : undefined;
+  }
+  const pointer = jsonPointerOf(node);
+  if (pointer !== null) {
+    return { [JSON_POINTER_REF]: pointer };
   }
   if (isDimensionObject(node)) {
     // `{ "value": 4, "unit": "rem" }` is one dimension, not a number with metadata.
@@ -1093,15 +1155,81 @@ function lookupJsonReference(root, reference) {
   return isPlainObject(node) ? rawTokenValue(node) : node;
 }
 
+/** The value a same-file JSON Pointer (`#/a/b/0`, RFC 6901) names, or undefined. */
+function lookupJsonPointer(root, pointer) {
+  if (pointer === '#') {
+    return root;
+  }
+  if (!pointer.startsWith('#/')) {
+    return undefined;
+  }
+  let node = root;
+  for (const encoded of pointer.slice(2).split('/')) {
+    let segment;
+    try {
+      segment = decodeURIComponent(encoded).replace(/~1/g, '/').replace(/~0/g, '~');
+    } catch {
+      return undefined;
+    }
+    if (Array.isArray(node)) {
+      if (!/^(?:0|[1-9]\d*)$/.test(segment) || Number(segment) >= node.length) {
+        return undefined;
+      }
+      node = node[Number(segment)];
+    } else if (isPlainObject(node) && Object.prototype.hasOwnProperty.call(node, segment)) {
+      node = node[segment];
+    } else {
+      return undefined;
+    }
+  }
+  return node;
+}
+
+/**
+ * A `$ref` token's value. The pointer names a value inside the file, usually a
+ * `$value` or a part of one. A dimension object or a string is read as any
+ * `$value` is; a number is read too, except for a `dimension` token, which
+ * needs the whole `{ value, unit }` object. A pointer to a color or a
+ * composite is not a length and is left out quietly; one that names nothing is
+ * skipped with a warning.
+ */
+function resolveJsonPointer(pointer, root, stack, type) {
+  if (stack.has(pointer)) {
+    return { skipped: `reference cycle through "${pointer}"`, value: null };
+  }
+  const target = lookupJsonPointer(root, pointer);
+  if (target === undefined) {
+    return { skipped: `reference "${pointer}" does not resolve`, value: null };
+  }
+  if (typeof target === 'number' && type === 'dimension') {
+    return { skipped: `reference "${pointer}" is a number, not a dimension`, value: null };
+  }
+  if (typeof target === 'string' || typeof target === 'number' || isDimensionObject(target) || isMalformedDimension(target)) {
+    stack.add(pointer);
+    const resolved = resolveJsonValue(isMalformedDimension(target) ? { [INVALID_DIMENSION]: true } : target, root, stack, type);
+    stack.delete(pointer);
+    return resolved;
+  }
+  return { value: null };
+}
+
 /**
  * A raw token value as a string: a number as written, a dimension object as
- * `4px` or `0.75rem`, a whole-value reference followed through the file. A
- * reference that cannot be followed (a missing target, a cycle) keeps its text,
- * as before, and reads as a non-length; a dimension in another unit is skipped.
+ * `4px` or `0.75rem`, a reference (`{spacing.2}` or a `$ref` pointer)
+ * followed through the file. A `{}` reference that cannot be followed (a
+ * missing target, a cycle) keeps its text, as before, and reads as a
+ * non-length; a `$ref` that cannot be followed, a dimension in another unit
+ * and a malformed dimension are skipped.
  */
-function resolveJsonValue(raw, root, stack = new Set()) {
+function resolveJsonValue(raw, root, stack = new Set(), type = null) {
   if (typeof raw === 'number') {
     return { value: String(raw) };
+  }
+  if (isPlainObject(raw) && raw[INVALID_DIMENSION]) {
+    return { skipped: 'dimension needs a number "value" and a "unit"', value: null };
+  }
+  if (isPlainObject(raw) && typeof raw[JSON_POINTER_REF] === 'string') {
+    return resolveJsonPointer(raw[JSON_POINTER_REF], root, stack, type);
   }
   if (isDimensionObject(raw)) {
     const unit = raw.unit.trim().toLowerCase();
@@ -1126,7 +1254,7 @@ function resolveJsonValue(raw, root, stack = new Set()) {
     return { value: raw };
   }
   stack.add(target);
-  const resolved = resolveJsonValue(next, root, stack);
+  const resolved = resolveJsonValue(next, root, stack, type);
   stack.delete(target);
   if (resolved.value === null && !resolved.skipped) {
     return { value: raw };
@@ -1135,12 +1263,12 @@ function resolveJsonValue(raw, root, stack = new Set()) {
 }
 
 /** The value of a token node, resolved; null when the node is a group, not a token. */
-function leafTokenValue(node, root = node) {
+function leafTokenValue(node, root = node, type = null) {
   const raw = rawTokenValue(node);
   if (raw === undefined) {
     return null;
   }
-  return resolveJsonValue(raw, root);
+  return resolveJsonValue(raw, root, new Set(), type);
 }
 
 function isMetadataKey(key) {

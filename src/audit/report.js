@@ -43,10 +43,12 @@ async function createAuditReport(options) {
   // A --staged run reads each changed file as the index holds it.
   const readSource = scanFiles.readSource || readSourceFromDisk;
 
+  // A configured source that gives nothing is a warning, not a silent fallback (issue #163).
   const tokenSourceResult = parseTokenSources({
     baseFontSize: parsed.baseFontSize,
     sources: parsed.tokenSources,
     tokenKind: parsed.tokenKind,
+    warnWhenEmpty: true,
   });
 
   // The spacing scale always reads spacing tokens; --token-kind shapes the token contract only (issue #260).

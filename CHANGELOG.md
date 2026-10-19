@@ -6,6 +6,21 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- A configured token source that yields no spacing tokens is a warning, whatever its format. A DTCG file holding only colors, a stylesheet with no custom properties, or a design-tool export whose group is called `dimension` gave `0` tokens and a silent fallback scale. Each `--token-source` and `audit.tokenSources` file that parses but yields nothing now carries `Token source <file> (<format>) yielded no spacing tokens; ...` in the audit's token source report (`contracts.tokens.sources[].warnings` in JSON, the Markdown Token Sources table, and a `!` line under the source in the text output, which now prints every token source warning there), and `rhythmguard doctor` prints the same as a `!` warning line that does not fail the run, along with any parse or skip warning the audit would give for that file. With `--token-kind` the warning names that kind. Stylesheets found by the scan and installed token packages are not configured sources and get no such warning. `parseTokenSources` takes `warnWhenEmpty: true` for the same check; it is off by default. ([#163](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/163))
+- The DTCG group's 2025.10 conformance fixtures for dimensions and dimension references run in the unit tests, vendored under `test/fixtures/dtcg-test-suite/` from design-tokens/community-group at `8e43819` (W3C 3-clause BSD License). They are not part of the npm package. ([#163](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/163))
+
+### Fixed
+
+- DTCG token sources read the rest of the 2025.10 dimension forms the conformance suite covers. A `$ref` token (`"$ref": "#/base/$value/fontSize"`) was dropped without a word; it is now read through its JSON Pointer within the file, so a pointer to a `{ value, unit }` dimension gives that length. A `$ref` that names nothing, or a `dimension` token pointing at a bare number, is skipped with a warning; one pointing at a color or a composite is not a length and is left out as a color `$value` is. A dimension object without a number `value` and a `unit` (`{ "value": "16", "unit": "px" }`, `{ "unit": "px" }`) was dropped silently and is now skipped with a warning naming the token. Only files with such tokens read differently: a `$ref` spacing token can now move an inferred scale. ([#163](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/163))
+
+### Messages
+
+- New token source warning (audit and `rhythmguard doctor`): `Token source <file> (<format>) yielded no spacing tokens; spacing tokens are read by name (space, spacing or spacer), so set a tokenPattern on this source if its tokens are named otherwise.`; with another `--token-kind`, `Token source <file> (<format>) yielded no <kind> tokens.`; with `--token-kind all`, `... yielded no tokens.`; for a source with its own `tokenPattern`, `... yielded no tokens matching tokenPattern "<pattern>".`
+- New skip reasons in `Token source <file>: skipped <token> (<reason>).`: `dimension needs a number "value" and a "unit"`, `reference "<pointer>" does not resolve`, `reference "<pointer>" is a number, not a dimension`, `reference cycle through "<pointer>"`.
+- `rhythmguard doctor` prints warnings as `! <warning>` lines, and its summary reads `All checks passed (N warnings).` or `N issues found (N warnings).` when there are any; without warnings it is unchanged.
+
 ## [3.13.0] - 2026-10-18
 
 ### Fixed
