@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.14.0] - 2026-10-19
+
 ### Added
 
 - A configured token source that yields no spacing tokens is a warning, whatever its format. A DTCG file holding only colors, a stylesheet with no custom properties, or a design-tool export whose group is called `dimension` gave `0` tokens and a silent fallback scale. Each `--token-source` and `audit.tokenSources` file that parses but yields nothing now carries `Token source <file> (<format>) yielded no spacing tokens; ...` in the audit's token source report (`contracts.tokens.sources[].warnings` in JSON, the Markdown Token Sources table, and a `!` line under the source in the text output, which now prints every token source warning there), and `rhythmguard doctor` prints the same as a `!` warning line that does not fail the run, along with any parse or skip warning the audit would give for that file. With `--token-kind` the warning names that kind. Stylesheets found by the scan and installed token packages are not configured sources and get no such warning. `parseTokenSources` takes `warnWhenEmpty: true` for the same check; it is off by default. ([#163](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/163))
