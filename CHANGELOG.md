@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- Ionic Framework is no longer in the quiet benchmark or the State of Spacing 2026-09 edition, at the maintainers' request (ionic-team/ionic-framework#31430). The edition now covers 57 repositories: 7972 off-scale values in 8362 CSS files.
+
 ## [3.14.0] - 2026-10-19
 
 ### Added

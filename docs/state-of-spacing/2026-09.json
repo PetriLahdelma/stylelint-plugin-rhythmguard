@@ -2861,64 +2861,6 @@
       "unmeasured": false
     },
     {
-      "name": "ionic-core",
-      "url": "https://github.com/ionic-team/ionic-framework",
-      "sha": "5874331",
-      "cssFiles": 367,
-      "cleanliness": 99,
-      "drift": 8,
-      "driftPer100Files": 2,
-      "driftDelta": null,
-      "installedPackage": false,
-      "scaleIntent": null,
-      "scalePackage": null,
-      "scaleReliable": false,
-      "scaleReasons": [
-        "fallback"
-      ],
-      "scaleRejected": null,
-      "scaleSource": "fallback",
-      "scaleValues": [
-        0,
-        4,
-        8,
-        12,
-        16,
-        24,
-        32
-      ],
-      "tokenPackages": [],
-      "topProperties": [
-        [
-          "margin-top",
-          5
-        ],
-        [
-          "margin-bottom",
-          1
-        ],
-        [
-          "padding-bottom",
-          1
-        ]
-      ],
-      "topValues": [
-        [
-          "2px",
-          4
-        ],
-        [
-          "-10px",
-          1
-        ],
-        [
-          "10px",
-          1
-        ]
-      ],
-      "unmeasured": false
-    },
-    {
       "name": "spectrum-css",
       "url": "https://github.com/adobe/spectrum-css",
       "sha": "3762086",
@@ -3365,10 +3307,10 @@
     }
   ],
   "totals": {
-    "cssFiles": 8729,
-    "drift": 7980,
-    "repos": 58,
-    "fallbackScales": 31,
+    "cssFiles": 8362,
+    "drift": 7972,
+    "repos": 57,
+    "fallbackScales": 30,
     "inPackage": 2,
     "installedPackages": 5,
     "noScaleByDesign": 2,

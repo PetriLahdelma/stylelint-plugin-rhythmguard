@@ -287,14 +287,6 @@
       "notes": "Angular Material: SCSS with token maps."
     },
     {
-      "name": "ionic-core",
-      "url": "https://github.com/ionic-team/ionic-framework.git",
-      "paths": [
-        "core/src/components"
-      ],
-      "notes": "Ionic core components: SCSS per component."
-    },
-    {
       "name": "daisyui",
       "url": "https://github.com/saadeghi/daisyui.git",
       "paths": [

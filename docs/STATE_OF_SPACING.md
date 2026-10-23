@@ -1,6 +1,6 @@
 # State of Spacing, 2026-09
 
-How consistently 58 public design systems keep their spacing on their own scale, measured by `rhythmguard audit --scale auto` on pinned commits and generated on 2026-09-28. Off-scale means a literal length that is not on the scale the repository itself defines; hairlines, percentages and generated or test paths are excluded. The full method and the false-positive accounting are in [`QUIET_BENCHMARK.md`](./QUIET_BENCHMARK.md).
+How consistently 57 public design systems keep their spacing on their own scale, measured by `rhythmguard audit --scale auto` on pinned commits and generated on 2026-09-28. Off-scale means a literal length that is not on the scale the repository itself defines; hairlines, percentages and generated or test paths are excluded. The full method and the false-positive accounting are in [`QUIET_BENCHMARK.md`](./QUIET_BENCHMARK.md).
 
 This is not a ranking of teams. It is a reading of one signal on a fixed commit, and the row order is drift per 100 CSS files so that large codebases are not penalised for size. Every row reproduces with one command in a checkout of that commit:
 
@@ -8,7 +8,7 @@ This is not a ranking of teams. It is a reading of one signal on a fixed commit,
 npx rhythmguard audit . --scale auto --format markdown
 ```
 
-Across the set: 7980 off-scale values in 8729 CSS files; 31 of 58 repositories had no discoverable spacing tokens and were measured against the audit's default scale (`0, 4, 8, 12, 16, 24, 32`), which says more about token discovery than about their CSS; 5 keep the scale in an npm package their maintainers named, which the benchmark installs at a pinned version and measures against; 2 told us the scale lives in a dependency package that carries no ladder of its own and are listed without a count; 2 told us they have no spacing scale by design and are listed without a count, and 3 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
+Across the set: 7972 off-scale values in 8362 CSS files; 30 of 57 repositories had no discoverable spacing tokens and were measured against the audit's default scale (`0, 4, 8, 12, 16, 24, 32`), which says more about token discovery than about their CSS; 5 keep the scale in an npm package their maintainers named, which the benchmark installs at a pinned version and measures against; 2 told us the scale lives in a dependency package that carries no ladder of its own and are listed without a count; 2 told us they have no spacing scale by design and are listed without a count, and 3 more had an inference the plausibility check rejected (marked `rejected`, or `unreliable` when the bench alone rejects it; usually component-local variables, see issues #54 and #88).
 
 ## Repositories
 
@@ -62,7 +62,6 @@ Across the set: 7980 off-scale values in 8729 CSS files; 31 of 58 repositories h
 | [semi-design](https://github.com/DouyinFE/semi-design) | `8bed560` | fallback (scanned-css rejected) | 10 | 4 | 98% | `2px` ×4, `10px` ×3, `0.8em` ×1 | `transform` ×3, `margin-left` ×2, `margin` ×1 |
 | [coreui](https://github.com/coreui/coreui) | `be40d3f` | scanned-css | 5 | 3 | 96% | `-.375rem` ×2, `.1rem` ×1, `2px` ×1 | `margin-inline-start` ×2, `margin-bottom` ×1, `margin-top` ×1 |
 | [gitlab-ui](https://gitlab.com/gitlab-org/gitlab-ui) | `8660f9f` | fallback | 3 | 3 | 99% | `-2px` ×1, `3px` ×1, `5px` ×1 | `padding` ×2, `margin-bottom` ×1 |
-| [ionic-core](https://github.com/ionic-team/ionic-framework) | `5874331` | fallback | 8 | 2 | 99% | `2px` ×4, `-10px` ×1, `10px` ×1 | `margin-top` ×5, `margin-bottom` ×1, `padding-bottom` ×1 |
 | [spectrum-css](https://github.com/adobe/spectrum-css) | `3762086` | fallback | 5 | 2 | 99% | `-10px` ×3, `20px` ×1, `40px` ×1 | `inset-block-end` ×1, `margin` ×1, `margin-inline-end` ×1 |
 | [mittwald-flow](https://github.com/mittwald/flow) | `17efdf9` | in `@mittwald/flow-design-tokens@1.2.8` (installed) | 0 | 0 | 100% | none | none |
 | [open-props](https://github.com/argyleink/open-props) | `530682d` | fallback | 0 | 0 | 100% | none | none |
