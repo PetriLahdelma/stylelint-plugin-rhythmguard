@@ -13,7 +13,7 @@ Nobody chose 13px. Rhythmguard catches off-scale spacing in CSS and Tailwind cla
 
 Rhythmguard is scale-aware rather than a blanket ban: values on your scale pass, values off it are reported with the two nearest steps, and tokens are only ever suggested from a map you control. It works on CSS and SCSS declarations through Stylelint and on Tailwind class strings through an ESLint companion, and it ships an audit CLI so you can measure drift and ratchet it down before enforcing anything.
 
-What it is not: it does not check colors or hex values, and the Stylelint rules do not see Tailwind class strings (that is the separate ESLint companion below). It reads CSS and SCSS; Less and CSS-in-JS are not read. Pair it with a color linter if you need one; do not expect one tool to do both.
+What it is not: it does not check colors or hex values, and the Stylelint rules do not see Tailwind class strings (that is the separate ESLint companion below). It reads CSS and SCSS; Less and CSS-in-JS are not read. Pair it with a color linter if you need one; do not expect one tool to do both. Nor does it judge type for reading: whether a measure, a fluid heading or a number column works for the reader is the job of [Measured Type](#type-pair-it-with-measured-type).
 
 ## Start here
 
@@ -116,6 +116,27 @@ The audit scans CSS declarations, Tailwind class strings and your token contract
 - [Roadmap](ROADMAP.md): what is planned from October 2026 to June 2027, and the checkpoint that decides the pace
 - [Product analysis, September 2026](docs/STRATEGY_2026-09.md): the market data behind the roadmap
 - Browser playground: [petrilahdelma.github.io/stylelint-plugin-rhythmguard](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/) runs the real rules, bundled for the browser, on CSS or SCSS you paste; `scale: "auto"`, tokens and fixes included, and a test proves it reports what Stylelint reports
+
+## Type: pair it with Measured Type
+
+Rhythmguard keeps every value on the scale; it does not decide whether the scale reads well. [Measured Type](https://github.com/PetriLahdelma/measured-type), a coding-agent skill by the same author, does that part: Bringhurst's rules applied to CSS, with line length, zoom, contrast, tabular figures and font features measured in a real browser. Let it build the type scale and Rhythmguard hold everyone to it:
+
+```bash
+node scripts/type-scale.js --base 1rem:1.125rem --ratio 1.2:1.25 --steps 5 --fluid-from 4 --prefix font-size
+```
+
+That writes `--font-size-*` tokens, which the `typography` group reads with `"auto"`. Add your label and caption sizes to the same file, then list it next to your spacing tokens:
+
+```json
+"rhythmguard/use-scale": [true, {
+  "propertyGroups": ["spacing", "typography"],
+  "scale": "auto",
+  "scaleSources": ["src/space.css", "src/type.css"],
+  "scales": { "typography": "auto" }
+}]
+```
+
+The two do not overlap. Rhythmguard reports the `13px` padding and the `17px` heading nobody chose; Measured Type reports the `3vw` size that cannot grow with zoom (Rhythmguard skips viewport units by design) and the `66ch` measure that sets 81 characters per line in Verdana. The worked example, run with Stylelint 17.16 and Rhythmguard 3.14.0, is in [Measured Type's README](https://github.com/PetriLahdelma/measured-type#pairs-with-rhythmguard).
 
 ## Compatibility
 
