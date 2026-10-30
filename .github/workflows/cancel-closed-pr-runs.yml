@@ -1,0 +1,34 @@
+name: Cancel runs of closed PRs
+
+# A merged or closed pull request's CI runs keep their place in the farm's
+# queue; concurrency only cancels a run that a newer push to the same branch
+# supersedes. After a batch of merges the two self-hosted runners spent their
+# time on branches that no longer existed while the release waited (2026-10-30).
+# This cancels every queued or running workflow run of the PR's head branch.
+# GitHub-hosted, a few seconds, same-repo PRs only (fork runs never reach the farm).
+on:
+  pull_request:
+    types: [closed]
+
+permissions:
+  actions: write
+
+jobs:
+  cancel:
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cancel queued and running runs of the head branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          BRANCH: ${{ github.event.pull_request.head.ref }}
+          SELF: ${{ github.run_id }}
+        run: |
+          for status in queued in_progress waiting pending requested; do
+            gh run list --repo "$REPO" --branch "$BRANCH" --status "$status" --limit 50 \
+              --json databaseId --jq '.[].databaseId'
+          done | sort -u | while read -r id; do
+            [ "$id" = "$SELF" ] && continue
+            gh run cancel "$id" --repo "$REPO" && echo "cancelled run $id on $BRANCH"
+          done
