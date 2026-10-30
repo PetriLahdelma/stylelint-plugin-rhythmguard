@@ -80,7 +80,7 @@ If your shell's npm registry is overridden by a corporate `.npmrc`, add `--regis
 
 ### Pull requests from forks
 
-CI for this repository runs on self-hosted runners for pushes and same-repo branches. For pull requests from forks a separate job runs on GitHub-hosted runners with Node 22 and the Stylelint in the lockfile (17), covering lint, typecheck and the test suite. You will see its result on your PR. The full matrix and the benchmark run after merge.
+CI for this repository runs on self-hosted runners for pushes and same-repo branches. For pull requests from forks a separate job runs on GitHub-hosted runners with Node 22 and the Stylelint in the lockfile (17), covering lint, typecheck and the test suite. You will see its result on your PR. The full matrix runs after merge, and the quiet benchmark runs only on `main`: it clones 57 repositories, so for any change under `src/` run `npm run bench:quiet -- --check` yourself before asking for review. When a pull request is merged or closed, its queued and running workflow runs are cancelled.
 
 ## What is frozen until 4.0
 
