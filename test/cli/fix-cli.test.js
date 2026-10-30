@@ -229,7 +229,7 @@ test('fix --ignore-path reads another ignore file instead of .rhythmguardignore,
   const result = runFix(dir, 'src', '--value', '10px', '--to', '8px', '--ignore-path', 'other-ignore', '--write');
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /src\/legacy\/l\.css:1:/);
-  assert.doesNotMatch(result.stdout, /custom|vendor/);
+  assert.doesNotMatch(result.stdout, /src\/custom|src\/vendor/);
   assert.equal(fs.readFileSync(path.join(dir, 'src', 'custom', 'c.css'), 'utf8'), '.x { padding: 10px; }\n');
   assert.equal(fs.readFileSync(path.join(dir, 'src', 'vendor', 'v.css'), 'utf8'), '.x { padding: 10px; }\n');
 
@@ -247,4 +247,48 @@ test('fix looks at the same files the audit scans (#230)', () => {
   const fixFiles = Array.from(fix.stdout.matchAll(/^ {2}(\S+?):\d+:\d+/gm), (match) => match[1]).sort();
   assert.deepEqual(fixFiles, auditFiles);
   assert.deepEqual(fixFiles, ['src/a.css', 'src/custom/c.css']);
+});
+
+// #331: fix skips what the audit skips, so a --plan decision never rewrites a
+// file the plan did not show.
+function vendoredFixture() {
+  const dir = fixture();
+  fs.mkdirSync(path.join(dir, 'src', 'vendor'));
+  fs.writeFileSync(path.join(dir, 'src', 'vendor', 'cropper.css'), '.cropper { margin: 10px; }\n');
+  fs.writeFileSync(path.join(dir, 'src', 'theme.min.css'), '.t{margin:10px}\n');
+  return dir;
+}
+
+test('fix leaves vendored and minified stylesheets alone by default and says how many (#331)', () => {
+  const dir = vendoredFixture();
+  const result = runFix(dir, 'src', '--value', '10px', '--to', 'var(--space-sm)', '--write');
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /3 replacements in 2 files\n/);
+  assert.doesNotMatch(result.stdout, /vendor\/cropper\.css|theme\.min\.css/);
+  assert.match(result.stdout, /2 non-authored files left alone \(vendored, minified or built CSS; --include-non-authored rewrites them\)/);
+  assert.equal(fs.readFileSync(path.join(dir, 'src', 'vendor', 'cropper.css'), 'utf8'), '.cropper { margin: 10px; }\n');
+  assert.equal(fs.readFileSync(path.join(dir, 'src', 'theme.min.css'), 'utf8'), '.t{margin:10px}\n');
+});
+
+test('fix --include-non-authored rewrites them, as the audit then reports them (#331)', () => {
+  const dir = vendoredFixture();
+  const result = runFix(dir, 'src', '--value', '10px', '--to', 'var(--space-sm)', '--include-non-authored', '--write');
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /5 replacements in 4 files/);
+  assert.doesNotMatch(result.stdout, /non-authored files left alone/);
+  assert.equal(fs.readFileSync(path.join(dir, 'src', 'vendor', 'cropper.css'), 'utf8'), '.cropper { margin: var(--space-sm); }\n');
+});
+
+test('fix reads audit.includeNonAuthored from .rhythmguardrc.json like the audit (#331)', () => {
+  const dir = vendoredFixture();
+  fs.writeFileSync(path.join(dir, '.rhythmguardrc.json'), JSON.stringify({ audit: { includeNonAuthored: true } }));
+  const result = runFix(dir, 'src', '--value', '10px', '--to', 'var(--space-sm)');
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /5 replacements in 4 files/);
+});
+
+test('fix --help lists --include-non-authored (#331)', () => {
+  const result = runFix(os.tmpdir(), '--help');
+  assert.equal(result.status, 0, result.stderr);
+  assert.match(result.stdout, /--include-non-authored/);
 });

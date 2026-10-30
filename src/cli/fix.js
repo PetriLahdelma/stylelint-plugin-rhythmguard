@@ -9,8 +9,10 @@ const { normalizeCreateAuditOptions } = require('../audit/report');
 const { assertDirectory } = require('../audit/scan/files');
 const { DEFAULT_IGNORE_PATH } = require('../audit/shared');
 
-// --ignore and --ignore-path are the audit's own flags, parsed by the audit's table.
-const IGNORE_OPTIONS = AUDIT_OPTIONS.filter((option) => option.flag === '--ignore' || option.flag === '--ignore-path');
+// --ignore, --ignore-path and --include-non-authored are the audit's own flags,
+// parsed by the audit's table, so fix skips exactly what the audit skips (#331).
+const SHARED_FLAGS = new Set(['--ignore', '--ignore-path', '--include-non-authored']);
+const IGNORE_OPTIONS = AUDIT_OPTIONS.filter((option) => SHARED_FLAGS.has(option.flag));
 
 const HELP = `Usage: rhythmguard fix <dir> --value <length> --to <replacement> [options]
        rhythmguard fix <dir> --decided [options]
@@ -20,8 +22,8 @@ execute the snap decisions in .rhythmguardrc.json that name a "to". Matching is
 by px, so --value 10px also rewrites 0.625rem. Token definitions, values inside
 var()/theme()/token(), and non-spacing properties are never touched. Dry run by
 default. Files the audit skips are skipped too: .rhythmguardignore, audit.ignore
-in .rhythmguardrc.json, --ignore, and generated or vendored directories such as
-node_modules and dist.
+in .rhythmguardrc.json, --ignore, generated directories such as node_modules
+and dist, and vendored, test, minified and built stylesheets.
 
 Options:
   --value <length>       The literal to replace, for example 10px or 0.625rem
@@ -31,6 +33,7 @@ Options:
   --base-font-size <px>  Base for rem/em conversion (default: 16)
   --ignore <pattern>     Exclude a root-relative path or glob (repeatable, comma-separated)
   --ignore-path <file>   Load ignore patterns from file (default: .rhythmguardignore when present)
+  --include-non-authored Rewrite vendored, test, minified and built stylesheets too
   --write                Apply the changes; without it, only list them
   --help                 Show this help message
 `;
@@ -44,6 +47,7 @@ function parseArgs(argv) {
     help: false,
     ignorePath: DEFAULT_IGNORE_PATH,
     ignorePatterns: [],
+    includeNonAuthored: false,
     properties: null,
     replacement: null,
     value: null,
@@ -53,7 +57,8 @@ function parseArgs(argv) {
     const arg = argv[index];
     const next = () => argv[++index];
     const ignoreOption = IGNORE_OPTIONS.find((option) => arg === option.flag || arg.startsWith(`${option.flag}=`));
-    if (ignoreOption) ignoreOption.apply(parsed, arg === ignoreOption.flag ? next() : arg.slice(ignoreOption.flag.length + 1));
+    if (ignoreOption && ignoreOption.kind === 'flag' && arg === ignoreOption.flag) ignoreOption.apply(parsed);
+    else if (ignoreOption && ignoreOption.kind !== 'flag') ignoreOption.apply(parsed, arg === ignoreOption.flag ? next() : arg.slice(ignoreOption.flag.length + 1));
     else if (arg === '--help' || arg === '-h') parsed.help = true;
     else if (arg === '--write') parsed.write = true;
     else if (arg === '--decided') parsed.decided = true;
@@ -85,16 +90,19 @@ function lengthToPx(value, baseFontSize) {
 }
 
 /**
- * The ignore list, loaded exactly as the audit loads it: .rhythmguardrc.json's
- * audit.ignore and audit.ignorePath, the ignore file, then --ignore.
+ * What to skip, loaded exactly as the audit loads it: .rhythmguardrc.json's
+ * audit.ignore, audit.ignorePath and audit.includeNonAuthored, the ignore file,
+ * then --ignore and --include-non-authored.
  */
-function auditIgnorePatterns(parsed) {
-  return resolveIgnorePatterns(normalizeCreateAuditOptions({
+function auditSkipOptions(parsed) {
+  const options = normalizeCreateAuditOptions({
     cliOptions: parsed.cliOptions,
     dir: parsed.dir,
     ignorePath: parsed.ignorePath,
     ignorePatterns: parsed.ignorePatterns,
-  }));
+    includeNonAuthored: parsed.includeNonAuthored,
+  });
+  return { ignorePatterns: resolveIgnorePatterns(options), includeNonAuthored: options.includeNonAuthored === true };
 }
 
 /** The replacements to run: one from --value/--to, or every snap decision with a "to". */
@@ -134,13 +142,13 @@ function run() {
   }
 
   let plan;
-  let ignorePatterns;
+  let skipOptions;
   try {
     // The same check, and the same message, as the audit: a missing path or a
     // file reads "Directory not found" or "Not a directory", not a stack trace (#288).
     assertDirectory(parsed.dir);
     plan = plannedReplacements(parsed);
-    ignorePatterns = auditIgnorePatterns(parsed);
+    skipOptions = auditSkipOptions(parsed);
   } catch (error) {
     process.stderr.write(`${error.message}\n`);
     process.exit(1);
@@ -152,11 +160,12 @@ function run() {
   // Every replacement in one pass over the original values: a value one snap
   // writes is never snapped again, and the dry run lists exactly what --write writes.
   const outcome = plan.replacements.length === 0
-    ? { results: [], skipped: [] }
+    ? { nonAuthoredSkipped: 0, results: [], skipped: [] }
     : runCodemod({
       baseFontSize: parsed.baseFontSize,
       dir: parsed.dir,
-      ignorePatterns,
+      ignorePatterns: skipOptions.ignorePatterns,
+      includeNonAuthored: skipOptions.includeNonAuthored,
       properties: parsed.properties,
       replacements: plan.replacements,
       write: parsed.write,
@@ -179,6 +188,10 @@ function run() {
   if (plan.skippedSnaps.length > 0) {
     const noun2 = plan.skippedSnaps.length === 1 ? 'snap decision has' : 'snap decisions have';
     lines.push(`${plan.skippedSnaps.length} ${noun2} no "to" and ${plan.skippedSnaps.length === 1 ? 'was' : 'were'} skipped: ${plan.skippedSnaps.join(', ')}`);
+  }
+  if (outcome.nonAuthoredSkipped > 0) {
+    const noun3 = outcome.nonAuthoredSkipped === 1 ? 'file' : 'files';
+    lines.push(`${outcome.nonAuthoredSkipped} non-authored ${noun3} left alone (vendored, minified or built CSS; --include-non-authored rewrites them)`);
   }
   for (const entry of skipped) {
     lines.push(`skipped ${entry.file}: ${entry.reason}`);
