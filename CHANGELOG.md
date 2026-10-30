@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.15.0] - 2026-10-30
+
 ### Added
 
 - `--include-non-authored` (`includeNonAuthored` in `createAuditReport`, `audit.includeNonAuthored` in `.rhythmguardrc.json`) audits vendored and built stylesheets again; see Changed. ([#161](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/161))
