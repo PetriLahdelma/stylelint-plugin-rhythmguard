@@ -16,6 +16,8 @@ Commands:
 
 Options:
   --help        Show this help message; after a command, that command's help
+  --version     Print the version; -v does the same
+  -v            Alias of --version
 
 Examples:
   npx rhythmguard
@@ -33,6 +35,12 @@ function main() {
 
   if (command === '--help' || command === '-h') {
     process.stdout.write(HELP);
+    process.exit(0);
+  }
+
+  if (command === '--version' || command === '-v') {
+    // Read the version from this package's own manifest, so it cannot drift from package.json.
+    process.stdout.write(`${require('../../package.json').version}\n`);
     process.exit(0);
   }
 
