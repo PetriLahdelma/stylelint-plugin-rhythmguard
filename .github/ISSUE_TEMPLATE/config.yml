@@ -1,8 +1,11 @@
 blank_issues_enabled: true
 contact_links:
+  - name: Questions and ideas
+    url: https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/discussions
+    about: Ask how to configure something, check whether a finding is a bug, or float an idea before it becomes an issue.
   - name: Benchmark results
     url: https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/QUIET_BENCHMARK.md
-    about: What the tool finds on twenty public design systems, regenerated on every change.
+    about: What the tool finds on 57 public design systems at pinned commits, checked on every change.
   - name: Security report
     url: https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/security/advisories/new
     about: Please report vulnerabilities privately through a security advisory.

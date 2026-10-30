@@ -2,6 +2,15 @@
 
 Thank you for being here. Rhythmguard is a small, opinionated tool with one job: keep spacing on a scale. Most of the useful work on it is small too, and a first contribution can land in an afternoon. This page tells you where the useful work is, how the checks run, and what to expect from review.
 
+## Your first contribution
+
+1. Pick an issue labelled [`good first issue`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/labels/good%20first%20issue) and say in a comment that you are taking it, so nobody duplicates the work. Each one names the files to touch and how to know you are done.
+2. Open the repository in a [Codespace](https://codespaces.new/PetriLahdelma/stylelint-plugin-rhythmguard) (dependencies install themselves), or clone it locally as in [Getting set up](#getting-set-up).
+3. Write the failing test, make the change, run `npm run check`.
+4. Open a pull request. CI runs on it, and the maintainer replies within a week.
+
+Questions, ideas and "is this a bug?" belong in [Discussions](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/discussions); issues are for work with a clear "done when".
+
 ## Ways to contribute
 
 **Report a false positive.** A finding your team considers wrong is the most valuable report we get. It is how percentages and hairlines stopped being findings. Open a [false-positive report](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/new?template=false-positive.yml) with the CSS or class string and your config. No fix required.
@@ -29,7 +38,7 @@ npm ci
 npm test
 ```
 
-Node 20.19 or newer. No build step; the source runs as is. Tests use `node --test` through `scripts/test.mjs` and take about fifteen seconds. They are grouped by what they prove:
+Node 20.19 or newer; `.nvmrc` pins 22 for development, so `nvm use` picks it up. A [dev container](./.devcontainer/devcontainer.json) gives the same setup in Codespaces or VS Code. No build step; the source runs as is. Tests use `node --test` through `scripts/test.mjs` and take about fifteen seconds. They are grouped by what they prove:
 
 | Folder | Proves | Run one |
 | --- | --- | --- |
@@ -45,12 +54,12 @@ Put a new test where its subject lives. If it needs the real linter, it is a rul
 
 ## The local gate
 
-Run these before you push. They are what CI runs, so a green local run means a green PR.
+Run these before you push. They are what CI runs, so a green local run means a green PR. `npm run check` runs all three in order.
 
 ```bash
 npm run lint        # eslint
 npm run typecheck   # the published TypeScript declarations against a consumer file and the examples
-npm test            # 300+ tests, on the Stylelint in the lockfile (17)
+npm test            # 600+ tests, on the Stylelint in the lockfile (17)
 ```
 
 Optional, depending on what you touched:
@@ -65,13 +74,24 @@ npm run build:playground       # after changing anything under src/ the rules us
 npm run bench:agents -- --dry-run --limit 4   # the agent eval pipeline, no API key needed
 ```
 
-The local gate runs on whatever Node you have installed; CI runs Node 20 and 22. Node 20.19 is the floor, so avoid features that arrived in Node 21 or later. Glob patterns for `node --test` were one such feature, and they took a release run down.
+The local gate runs on whatever Node you have installed; CI runs Node 20 and 22 against Stylelint 16.0.0, 16 and 17, Node 24 and 26 against Stylelint 17, the ESLint companion rules on ESLint 9, and once a week the full suite against Stylelint `next`. Node 20.19 is the floor, so avoid features that arrived in Node 21 or later. Glob patterns for `node --test` were one such feature, and they took a release run down.
 
 If your shell's npm registry is overridden by a corporate `.npmrc`, add `--registry https://registry.npmjs.org` to `npm ci` and prefix `test:pack-smoke` with `npm_config_registry=https://registry.npmjs.org`.
 
 ### Pull requests from forks
 
 CI for this repository runs on self-hosted runners for pushes and same-repo branches. For pull requests from forks a separate job runs on GitHub-hosted runners with Node 22 and the Stylelint in the lockfile (17), covering lint, typecheck and the test suite. You will see its result on your PR. The full matrix and the benchmark run after merge.
+
+## What is frozen until 4.0
+
+Rhythmguard is in a feature freeze until 4.0, which ships the week Stylelint 18.0.0 is released (plan: [`docs/COUNCIL_2027-2028.md`](./docs/COUNCIL_2027-2028.md)). Please do not start work on these without an issue where the maintainer has agreed to an exception:
+
+- new rule options, property groups, presets, or default scales;
+- motion features and Tailwind class-name features beyond bug fixes;
+- Less support, an MCP server, or a port to `@eslint/css` (#173, #175, #176 say what would reopen them);
+- any change to message text in a patch release.
+
+Always welcome: bug fixes with a failing test, false-positive reports, token-source fixes (Style Dictionary, DTCG, Sass maps, token packages), docs, benchmark rows and drift labels, and compatibility work for new Node, Stylelint and ESLint versions.
 
 ## Where things live
 
@@ -101,7 +121,8 @@ CI for this repository runs on self-hosted runners for pushes and same-repo bran
 
 - Stylelint `^16.0.0 || ^17.0.0`. The 16.0.0 floor has known autofix differences; CI runs the floor suite against it.
 - Node `>=20.19.0` until 4.0, which raises it to 22.22 ([#172](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/172)).
-- ESLint `>=8.0.0` for the companion rules; tested on 9.
+- ESLint `>=8.0.0` for the companion rules; tested on 9 and 10.
+- Stylelint 18: the full suite passes on 18.0.0-next.0 and runs weekly against `next`; the peer range widens in the week 18.0.0 ships.
 - CommonJS and ESM entry points; every export has a declaration under `types/`.
 - Three runtime dependencies: `known-css-properties`, `postcss` and `postcss-value-parser`. `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers and dev dependencies here. `test/contracts/architecture.test.js` fails if a runtime import is not declared.
 

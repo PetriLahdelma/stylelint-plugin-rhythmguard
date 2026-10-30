@@ -1,0 +1,39 @@
+name: Stylelint next
+
+# Weekly early warning for the next Stylelint major (#168). Installs the `next`
+# dist-tag (18.0.0-next.0 at the time of writing) over the lockfile and runs the
+# full suite. A failure here never blocks a merge or a release; it says what to
+# fix on main before the major ships, so the peer range can widen the same week.
+on:
+  schedule:
+    - cron: '17 5 * * 1'   # Mondays 05:17 UTC
+  workflow_dispatch:
+
+concurrency:
+  group: stylelint-next
+  cancel-in-progress: true
+
+jobs:
+  next:
+    name: node-24 stylelint@next
+    if: github.repository == 'PetriLahdelma/stylelint-plugin-rhythmguard'
+    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
+    steps:
+      - uses: actions/checkout@v7
+
+      # Stylelint 18 requires Node ^22.22.2 || ^24.15.0 || >=26.
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: npm
+
+      - run: npm ci
+
+      - name: Install stylelint@next
+        run: |
+          npm install --no-save stylelint@next
+          echo "Testing against stylelint $(node -p "require('stylelint/package.json').version")"
+
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test

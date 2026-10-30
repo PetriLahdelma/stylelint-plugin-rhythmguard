@@ -143,3 +143,27 @@ jobs:
           else
             npm publish --access public --registry https://registry.npmjs.org
           fi
+
+      # A release is done only when all three packages are on npm at the same version.
+      # The companions sat at 3.8.0 through six releases because a skipped or refused
+      # companion publish never failed anything; this step fails the run instead.
+      - name: Every package is on npm at this version
+        if: always()
+        run: |
+          version="$(node -p "require('./package.json').version")"
+          missing=""
+          for pkg in stylelint-plugin-rhythmguard rhythmguard eslint-plugin-rhythmguard; do
+            found=""
+            for attempt in $(seq 1 20); do
+              if curl -fsS "https://registry.npmjs.org/$pkg?t=$(date +%s)" \
+                  | node -e 'let d="";process.stdin.on("data",c=>d+=c).on("end",()=>process.exit(JSON.parse(d).versions[process.argv[1]]?0:1))' "$version"; then
+                found=yes; break
+              fi
+              sleep 15
+            done
+            if [ -n "$found" ]; then echo "$pkg@$version is on npm"; else missing="$missing $pkg"; fi
+          done
+          if [ -n "$missing" ]; then
+            echo "::error::Not on npm at $version:$missing. See docs/RELEASE_CHECKLIST.md (trusted publisher needs the publish permission)."
+            exit 1
+          fi

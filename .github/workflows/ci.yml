@@ -26,6 +26,14 @@ jobs:
       matrix:
         node-version: ['20.x', '22.x']
         stylelint-version: ['16.0.0', '16', '17']
+        # Node 24 (active LTS) and 26 (LTS from 2026-10-28) on the current Stylelint only:
+        # the Stylelint 16 rows prove the floor, and running them on every Node would
+        # double the farm's queue for no extra coverage (#164).
+        include:
+          - node-version: '24.x'
+            stylelint-version: '17'
+          - node-version: '26.x'
+            stylelint-version: '17'
 
     steps:
       - name: Checkout
@@ -76,6 +84,24 @@ jobs:
           CI_REPORT_NODE: ${{ runner.name }}
           JOB_STATUS: ${{ job.status }}
         run: bash .github/scripts/report-ci.sh
+
+  # The ESLint companion is developed on ESLint 10 (the lockfile). Its peer range is
+  # >=8, so the rule tests also run on ESLint 9, the version most projects still pin.
+  eslint-9:
+    name: eslint-9 companion rules (node-22)
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: npm
+      - run: npm ci
+      - name: Pin ESLint 9
+        run: npm install --no-save eslint@9 @eslint/js@9
+      - name: ESLint rule tests
+        run: node --test test/rules/eslint-tailwind.test.js test/rules/eslint-tailwind-templates.test.js test/rules/eslint-tailwind-escapes.test.js test/rules/note-option.test.js test/unit/eslint-utility-functions.test.js test/contracts/eslint-samples.test.js
 
   # Fork PRs cannot use the self-hosted farm (public repo, untrusted code), so
   # contributors get feedback from one GitHub-hosted job: lint, typecheck, tests.

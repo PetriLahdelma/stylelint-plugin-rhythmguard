@@ -4,6 +4,26 @@ Written 2026-09-24 from a review of the repository at 3.8.0, the outreach record
 
 Every item links to an issue with a "done when" line. Milestones: [2026 Q4](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/milestone/1), [2027 Q1](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/milestone/2), [2027 Q2](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/milestone/3). This page is revised at the end of each quarter, and the checkpoint on 2027-03-31 can change everything after it.
 
+## Update, 2026-10-30
+
+The 2026-10-18 council report, [`docs/COUNCIL_2027-2028.md`](./docs/COUNCIL_2027-2028.md), is now the plan of record for what comes after this roadmap. Its thesis: Rhythmguard 4.0 is a small, stable, token-file-native scale ratchet whose findings never change within a major, and new capability comes from a named external user. Sections 1 to 3 below are kept as written on 2026-09-24.
+
+**Feature freeze until 4.0.** No new rule options, property groups, presets or scale research; no motion features; patch releases never change message text. Bug fixes, docs, token-source fixes and compatibility work are welcome. The full list is in [`CONTRIBUTING.md`](./CONTRIBUTING.md#what-is-frozen-until-40).
+
+**Where the next 30 days stand** (council plan, due 2026-11-17):
+
+| Item | Status |
+| --- | --- |
+| Companion packages publish from `release.yml` (#61) | Done 2026-10-23; all three packages at 3.14.0 with provenance |
+| A release fails while any package lags | Done (`release.yml`, last publish step) |
+| Node 24 and 26 in CI, ESLint 9 and 10 for the companion (#164) | Done; Oxlint is open as a separate issue |
+| Weekly run against Stylelint `next` (#168) | Done; 18.0.0-next.0 passes the full suite |
+| #159 hairlines in class strings, #161 vendored CSS in the audit | In review |
+| Freeze declared | Done (above) |
+| Primer config draft, one message to doctor-school | Drafted, waiting for the maintainer |
+
+**4.0** ships the week Stylelint 18.0.0 is released, no later than 2027-02-28: Node `^22.22.2 || ^24.15.0 || >=26` (Stylelint 18's floor), peer `^17 || ^18`, `fixWith: "token"` and one default scale, structured findings, contract tests for messages. Tracked in #172.
+
 ## 1. Where we are
 
 | | 2026-09-24 |
