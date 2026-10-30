@@ -1,0 +1,13 @@
+{
+  "name": "Rhythmguard",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "postCreateCommand": "npm ci",
+  "customizations": {
+    "vscode": {
+      "extensions": ["dbaeumer.vscode-eslint", "stylelint.vscode-stylelint", "editorconfig.editorconfig"]
+    },
+    "codespaces": {
+      "openFiles": ["CONTRIBUTING.md"]
+    }
+  }
+}

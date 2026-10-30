@@ -8,6 +8,9 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Changed
 
+- Tested on Node 24 and 26 (with Stylelint 17) in addition to Node 20 and 22, and the ESLint companion rules on ESLint 9 as well as 10. A weekly job runs the full suite against Stylelint `next`; 18.0.0-next.0 passes. Peer ranges are unchanged.
+- A release run now fails unless all three packages (`stylelint-plugin-rhythmguard`, `rhythmguard`, `eslint-plugin-rhythmguard`) are on npm at the release version.
+- Feature freeze until 4.0, recorded in `CONTRIBUTING.md` and `ROADMAP.md`; the 2026-10-18 council report is in `docs/COUNCIL_2027-2028.md`. Contributors get `npm run check`, an `.nvmrc`, a dev container for Codespaces, and Discussions for questions.
 - Ionic Framework is no longer in the quiet benchmark or the State of Spacing 2026-09 edition, at the maintainers' request (ionic-team/ionic-framework#31430). The edition now covers 57 repositories: 7972 off-scale values in 8362 CSS files.
 
 ## [3.14.0] - 2026-10-19
