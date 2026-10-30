@@ -8,8 +8,9 @@ const { PROPERTY_GROUP_PATTERNS } = require('../core/css-vocabulary');
 const { numbersEqual, parseLengthToken, toPx } = require('../core/length');
 const { negateReplacement } = require('../core/token-index');
 const { isTokenFunction, propertyMatches, walkRootValueNodes } = require('../core/value-nodes');
+const { nonAuthoredReason } = require('./non-authored');
 const { formatPath } = require('./shared');
-const { isCssFile, isPathInside, isScssFile, isTemplateFile, walkFiles } = require('./scan/files');
+const { isCssFile, isPathInside, isScssFile, isTemplateFile, toPosixRelativePath, walkFiles } = require('./scan/files');
 const { resolveScssSyntax } = require('./scan/stylesheets');
 
 /**
@@ -134,7 +135,7 @@ function parseStylesheet(filePath, source) {
  * as the audit takes them; the audit's generated and vendored directories
  * (node_modules, dist, build and the rest of SKIP_DIRS) are always skipped.
  */
-function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], properties = null, px, replacement, replacements, write = false }) {
+function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], includeNonAuthored = false, properties = null, px, replacement, replacements, write = false }) {
   const rootDir = path.resolve(process.cwd(), dir);
   const walked = walkFiles(rootDir, ignorePatterns);
   const files = walked.cssFiles.filter(isCssFile).sort();
@@ -144,7 +145,14 @@ function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], properties = 
     .map((link) => ({ file: formatPath(path.join(rootDir, link)), reason: 'symbolic link to a path outside the directory; not followed' }));
   const realRoot = fs.realpathSync(rootDir);
   const rewritten = new Set();
+  let nonAuthoredSkipped = 0;
   for (const filePath of files) {
+    // The audit's non-authored check, judged relative to the same root, so a
+    // decision from --plan never rewrites a file the plan did not show (#331).
+    if (!includeNonAuthored && nonAuthoredReason(toPosixRelativePath(rootDir, filePath), () => fs.readFileSync(filePath, 'utf8'))) {
+      nonAuthoredSkipped += 1;
+      continue;
+    }
     // Never write through a symbolic link: a file is rewritten only at its own
     // path inside the directory, and only once (#289).
     const realPath = writableRealPath(filePath, rootDir, realRoot);
@@ -178,7 +186,7 @@ function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], properties = 
     }
     results.push({ changes, file: formatPath(filePath) });
   }
-  return { results, skipped };
+  return { nonAuthoredSkipped, results, skipped };
 }
 
 /**
