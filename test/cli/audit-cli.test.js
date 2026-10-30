@@ -89,6 +89,29 @@ test('audit CLI JSON reports CSS and Tailwind design-system drift', () => {
   assert.ok(report.topAffectedFiles.some(({ file }) => file.endsWith('Button.tsx')));
 });
 
+test('audit CLI exempts hairlines in class strings as it does in CSS (#159)', () => {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-hairlines-'));
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'icon.css'), '.icon { top: 0.5px; margin-top: -1px; padding: 13px; }\n');
+  fs.writeFileSync(
+    path.join(fixtureDir, 'src', 'Button.tsx'),
+    [
+      'export function Button() {',
+      '  return <button className="group-[:not(div):active]:translate-y-[0.5px] -mt-[1px] p-[0.0625rem] m-[13px]" />;',
+      '}',
+      '',
+    ].join('\n'),
+  );
+
+  const result = runAudit(fixtureDir, '--format', 'json-v1');
+  assert.equal(result.status, 0, result.stderr);
+
+  const report = JSON.parse(result.stdout);
+  assert.deepEqual([...new Set(report.findings.css.map((finding) => finding.value))], ['13px']);
+  assert.deepEqual(report.findings.tailwind.map((finding) => finding.token), ['m-[13px]']);
+  assert.equal(report.summary.tailwindArbitrarySpacing, 1);
+});
+
 test('audit CLI JSON emits the 2.0 contract shape by default', () => {
   const fixtureDir = createAuditFixture();
   const result = runAudit(fixtureDir, '--format', 'json');

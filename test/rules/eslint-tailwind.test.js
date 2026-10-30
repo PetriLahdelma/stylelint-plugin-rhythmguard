@@ -1,6 +1,8 @@
 'use strict';
 
 const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const path = require('node:path');
 const test = require('node:test');
 const { Linter } = require('eslint');
 
@@ -215,6 +217,59 @@ test('allowNegative false reports the negative class form as negative, without a
     'Unexpected Tailwind arbitrary spacing value "m-[13px]". Use "m-3" (12px) or "m-4" (16px).',
   ]);
   assert.equal(fixed.output, "const c = '-m-[13px] -m-[16px] md:-mt-[0.5rem] m-[-16px] m-3';");
+});
+
+test('hairlines are exempt by default, as in use-scale: one CSS pixel or less (#159)', () => {
+  const scale = [0, 4, 8, 12, 16, 24, 32];
+  // From calcom/cal.com packages/ui/components/button/Button.tsx.
+  const code = "const c = 'group-[:not(div):active]:translate-y-[0.5px] -mt-[1px] m-[-1px] p-[0.0625rem] top-[0.05em] gap-[1.5px] m-[13px]';";
+  const { fixed, messages } = lintTailwind(code, { scale });
+  assert.deepEqual(messages.map(({ message }) => message), [
+    'Unexpected Tailwind arbitrary spacing value "gap-[1.5px]". Use "gap-0" (0px) or "gap-1" (4px).',
+    'Unexpected Tailwind arbitrary spacing value "m-[13px]". Use "m-3" (12px) or "m-4" (16px).',
+  ]);
+  assert.equal(
+    fixed.output,
+    "const c = 'group-[:not(div):active]:translate-y-[0.5px] -mt-[1px] m-[-1px] p-[0.0625rem] top-[0.05em] gap-0 m-3';",
+  );
+
+  const tenPxRoot = lintTailwind("const c = 'p-[0.1rem] p-[0.15rem]';", { baseFontSize: 10, scale });
+  assert.deepEqual(
+    tenPxRoot.messages.map(({ message }) => message),
+    ['Unexpected Tailwind arbitrary spacing value "p-[0.15rem]". Use scale values (nearest: 0px or 4px).'],
+    'rem hairlines resolve against baseFontSize',
+  );
+});
+
+test('hairlines are exempt before allowNegative, as in use-scale (#159)', () => {
+  const { messages } = lintTailwind("const c = '-mt-[1px] m-[-0.5px] -mt-[2px]';", {
+    allowNegative: false,
+    scale: [0, 4, 8, 12, 16, 24, 32],
+  });
+  assert.deepEqual(messages.map(({ message }) => message), [
+    'Unexpected Tailwind arbitrary spacing value "-mt-[2px]". Negative values are disabled for this rule.',
+  ]);
+});
+
+test('allowHairlines false reports hairlines as off-scale values (#159)', () => {
+  const { fixed, messages } = lintTailwind("const c = 'translate-y-[0.5px] -mt-[1px]';", {
+    allowHairlines: false,
+    scale: [0, 4, 8, 12, 16, 24, 32],
+  });
+  assert.deepEqual(messages.map(({ message }) => message), [
+    'Unexpected Tailwind arbitrary spacing value "translate-y-[0.5px]". Use "translate-y-0" (0px) or "translate-y-1" (4px).',
+    'Unexpected Tailwind arbitrary spacing value "-mt-[1px]". Use "mt-0" (0px) or "-mt-1" (4px).',
+  ]);
+  assert.equal(fixed.output, "const c = 'translate-y-0 mt-0';");
+});
+
+test('the declared tailwind-class-use-scale option types match the rule schema (#159)', () => {
+  const source = fs.readFileSync(path.join(__dirname, '..', '..', 'types', 'shared.d.ts'), 'utf8');
+  const body = source.match(/export interface RhythmguardTailwindClassOptions \{\n([\s\S]*?)\n\}/);
+  assert.ok(body, 'RhythmguardTailwindClassOptions is declared');
+  const declared = [...body[1].matchAll(/^ {2}(\w+)\?:/gm)].map((member) => member[1]).sort();
+  const schema = Object.keys(eslintPlugin.rules['tailwind-class-use-scale'].meta.schema[0].properties).sort();
+  assert.deepEqual(declared, schema);
 });
 
 test('the utility class follows baseFontSize when spacingUnit is not set (#247)', () => {

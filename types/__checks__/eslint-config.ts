@@ -7,6 +7,13 @@ import type { ESLint, Linter } from 'eslint';
 import { defineConfig } from 'eslint/config';
 import rhythmguard from 'eslint-plugin-rhythmguard';
 import companion from 'stylelint-plugin-rhythmguard/eslint';
+import type { RhythmguardTailwindClassOptions } from 'stylelint-plugin-rhythmguard/eslint';
+
+const classOptions: RhythmguardTailwindClassOptions = {
+  allowHairlines: false,
+  scale: [0, 4, 8, 12, 16, 24, 32],
+  spacingUnit: false,
+};
 
 const config = defineConfig([
   {
@@ -16,6 +23,11 @@ const config = defineConfig([
     rules: {
       'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { scale: [0, 4, 8, 12, 16, 24, 32] }],
     },
+  },
+  {
+    files: ['**/*.tsx'],
+    plugins: { 'rhythmguard-tailwind': rhythmguard },
+    rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['error', classOptions] },
   },
   {
     files: ['**/*.jsx'],

@@ -37,6 +37,20 @@ Every string literal and template chunk in the file, so it needs no callee confi
 
 Variant prefixes are handled (`md:p-[13px]`, `has-[>button]:ml-[-0.3rem]`). Spacing utilities covered: padding, margin, gap, inset, space, translate and their axis and side variants. Arbitrary values in `rem` and `em` are converted through `baseFontSize`.
 
+Hairlines are not reported: see [Hairlines](#hairlines).
+
+## Hairlines
+
+A hairline is a non-zero length that resolves to one CSS pixel or less: `1px`, `-1px`, `0.5px`, `0.0625rem`. The definition is the one [`use-scale`](./use-scale.md#hairlines) uses, and the rule exempts them by default for the same reason: these values compensate for something else, they are not spacing decisions.
+
+- `-mt-[1px]` or `m-[-1px]` pulls a border over the neighbouring border so two 1px lines do not stack.
+- `top-[1px]` or `inset-[1px]` nudges a focus ring or an icon into optical alignment.
+- `active:translate-y-[0.5px]` is a pressed-state nudge.
+
+Reporting them as "use `translate-y-0` or `translate-y-1`" is technically true and practically wrong, and the same `0.5px` is already quiet in CSS under `use-scale`. Set `allowHairlines: false` to report them; a team that renders hairlines through a token or a dedicated utility may want exactly that.
+
+The exemption is by resolved size, not by literal: `p-[0.0625rem]` at a 16px base is a hairline, `gap-[1.5px]` is not, and `0` is never reported anyway. `rem` and `em` resolve through `baseFontSize`, so `p-[0.1rem]` is a hairline at a 10px root. A hairline is exempt before `allowNegative` is checked, as in `use-scale`: `-mt-[1px]` is not reported even when negative values are disabled. `rhythmguard audit` applies the same default to class strings.
+
 ## Examples
 
 ```tsx
@@ -73,6 +87,7 @@ Template literal chunks are reported but not fixed. Negative values, written eit
 | `scale` | `Array<number\|string>` | `[0,4,8,12,16,24,32]` | Allowed spacing values. This default is not the `rhythmic-4` preset the Stylelint rules default to (which goes on to 40, 48 and 64); set `scale` explicitly when you use both |
 | `units` | `string[]` | `['px','rem','em']` | Units considered |
 | `baseFontSize` | `number` | `16` | `rem` and `em` conversion base |
+| `allowHairlines` | `boolean` | `true` | Skips non-zero lengths of one CSS pixel or less (`translate-y-[0.5px]`, `-mt-[1px]`). See [Hairlines](#hairlines) |
 | `allowNegative` | `boolean` | `true` | Whether negative arbitrary values are allowed |
 | `spacingUnit` | `number \| false` | `baseFontSize / 4` (`4`) | Px per Tailwind spacing step (`--spacing`, `0.25rem`), used to name and write utility classes. `false` keeps the arbitrary-value fix |
 | `note` | `string` | `undefined` | Appended to every finding, after the built-in text. Up to 200 characters. Point agents and reviewers at your own rules: `"See docs/spacing.md for approved exceptions."` |

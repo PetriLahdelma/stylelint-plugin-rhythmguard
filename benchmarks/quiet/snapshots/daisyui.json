@@ -14,8 +14,8 @@
     ]
   },
   "summary": {
-    "total": 37,
-    "drift": 37,
+    "total": 35,
+    "drift": 35,
     "falsePositives": 0
   },
   "findings": [
@@ -53,8 +53,6 @@
     "packages/docs/src/global.css:546:-65px:drift",
     "packages/docs/src/global.css:554:-28px:drift",
     "packages/docs/src/global.css:91:2.5rem:drift",
-    "packages/docs/src/routes/(routes)/+page.svelte:1468:1px:drift",
-    "packages/docs/src/routes/(routes)/+page.svelte:65:0.5px:drift",
     "packages/docs/src/routes/(routes)/blueprint/+page.svelte:1634:6.5rem:drift"
   ],
   "commit": "1435c6598bf6b93bf59c5b99e6669cf2720f5e81"
