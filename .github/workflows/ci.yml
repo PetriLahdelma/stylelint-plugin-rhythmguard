@@ -39,6 +39,16 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
 
+      # Node 26 for linux-arm64 links libatomic.so.1, which the stock actions-runner
+      # image on the Mac mini host lacks: setup-node finds the binary and it exits 127.
+      - name: Install libatomic for Node 26 on arm64
+        if: matrix.node-version == '26.x' && runner.os == 'Linux' && runner.arch == 'ARM64'
+        run: |
+          if ! ldconfig -p | grep -q libatomic.so.1; then
+            sudo apt-get update -qq
+            sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq libatomic1
+          fi
+
       - name: Setup Node.js
         uses: actions/setup-node@v7
         with:
