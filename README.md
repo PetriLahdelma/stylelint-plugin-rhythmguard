@@ -140,11 +140,11 @@ The two do not overlap. Rhythmguard reports the `13px` padding and the `17px` he
 
 ## Compatibility
 
-Stylelint 16 and 17. Node 20.19 or newer; Node 20 itself is end of life, and 4.0 raises the floor to 22.22 ([#172](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/172)). The ESLint companion needs ESLint 8 or newer, is tested on ESLint 9, and has been checked by hand on ESLint 10 and Oxlint 1.85. Three runtime dependencies (`known-css-properties`, `postcss`, `postcss-value-parser`); `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers. CommonJS and ESM entry points, TypeScript declarations for every export. The CI matrix runs Node 20 and 22 against Stylelint 16.0.0, 16.x and 17.x. Upgrading from 2.x: [docs/MIGRATING_TO_3.md](docs/MIGRATING_TO_3.md).
+Stylelint 16 and 17. Node 20.19 or newer; Node 20 itself is end of life, and 4.0 raises the floor to 22.22 ([#172](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/172)). The ESLint companion needs ESLint 8 or newer, is tested on ESLint 9 and 10, and has been checked by hand on Oxlint 1.85. Three runtime dependencies (`known-css-properties`, `postcss`, `postcss-value-parser`); `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers. CommonJS and ESM entry points, TypeScript declarations for every export. The CI matrix runs Node 20 and 22 against Stylelint 16.0.0, 16.x and 17.x, and Node 24 and 26 against 17.x; a weekly job runs the suite against Stylelint `next` (18.0.0-next.0 passes). Upgrading from 2.x: [docs/MIGRATING_TO_3.md](docs/MIGRATING_TO_3.md).
 
 ## Contributing and support
 
-Development setup, semver policy, benchmarking and the release process are in [CONTRIBUTING.md](CONTRIBUTING.md). Bugs and feature requests: [GitHub issues](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/issues). Security: see [SECURITY.md](SECURITY.md).
+Questions and ideas: [Discussions](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/discussions). Bugs and false positives: [GitHub issues](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues). Want to help? Issues labelled [good first issue](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/labels/good%20first%20issue) name the files to touch and how to know you are done, and [CONTRIBUTING.md](CONTRIBUTING.md) gets you from clone (or a [Codespace](https://codespaces.new/PetriLahdelma/stylelint-plugin-rhythmguard)) to a passing `npm run check`. Development setup, semver policy, the feature freeze until 4.0 and the release process are there too. Security: see [SECURITY.md](SECURITY.md).
 
 ## License
 
