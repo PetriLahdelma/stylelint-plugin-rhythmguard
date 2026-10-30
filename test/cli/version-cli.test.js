@@ -25,6 +25,6 @@ test('`--version` and `-v` print the package version and exit 0 (#326)', () => {
 test('the version flag is listed in the help text (#326)', () => {
   const help = run('--help');
   assert.equal(help.status, 0, help.stderr);
-  assert.match(help.stdout, /^ {2}--version {2,}/m);
-  assert.match(help.stdout, /^ {2}-v {2,}/m);
+  assert.match(help.stdout, /^ {2}--version {2,}.*-v does the same$/m);
+  assert.doesNotMatch(help.stdout, /^ {2}-v {2,}/m, '-v is named once, on the --version line');
 });
