@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- `rhythmguard --version` and `-v` print the version from `package.json` and exit 0. Before this, both were treated as unknown commands: the CLI printed the help text and exited 1. Both flags are listed under Options in `rhythmguard --help`. ([#326](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/326))
+
 ## [3.15.0] - 2026-10-30
 
 ### Added
