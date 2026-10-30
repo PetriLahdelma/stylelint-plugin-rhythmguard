@@ -1,6 +1,6 @@
 # Draft: doctor-school/ds-platform, the `spacingScalePx` glue and the 3.6.0 pin
 
-Status: draft, not posted. Researched 2026-10-30 against `doctor-school/ds-platform` at [`4811a17`](https://github.com/doctor-school/ds-platform/commit/4811a1729adb686931e3e8dcbf333d350952810b). Council plan item 5 ([`docs/COUNCIL_2027-2028.md`](../../COUNCIL_2027-2028.md)). They were never contacted, so this does not break the no-follow-up rule.
+Status: posted 2026-10-30 as [doctor-school/ds-platform#3591](https://github.com/doctor-school/ds-platform/issues/3591), body as below (the "last updated 2026-10-07" aside dropped). Citations re-checked against `30bad64` before posting: the token files and both lint configs are unchanged since `4811a17`. Researched 2026-10-30 against `doctor-school/ds-platform` at [`4811a17`](https://github.com/doctor-school/ds-platform/commit/4811a1729adb686931e3e8dcbf333d350952810b). Council plan item 5 ([`docs/COUNCIL_2027-2028.md`](../../COUNCIL_2027-2028.md)). They were never contacted, so this does not break the no-follow-up rule.
 
 ## Channel
 

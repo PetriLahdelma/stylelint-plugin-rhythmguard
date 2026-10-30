@@ -1,6 +1,6 @@
 # Draft: primer/stylelint-config, refreshed 2026-10-30
 
-Status: draft, not posted. Replaces the ask in [`../embed/primer-stylelint-config.md`](../embed/primer-stylelint-config.md) (2026-09-23), which should not be sent as written: its central claim is wrong. Checked against `primer/stylelint-config` `main` at [`4e94c60`](https://github.com/primer/stylelint-config/commit/4e94c602795f04c77568f07dfb0330f690b48af8) (2026-10-21), `@primer/stylelint-config` 13.6.0 and `@primer/primitives` 11.10.0.
+Status: posted 2026-10-30 as [primer/stylelint-config#782](https://github.com/primer/stylelint-config/issues/782), the `gap` and `inset` observation only (title "primer/spacing: gap and inset are not checked"). The second observation and the README question were not sent: the council plan stops cold outreach that mentions the tool. Replaces the ask in [`../embed/primer-stylelint-config.md`](../embed/primer-stylelint-config.md) (2026-09-23), which should not be sent as written: its central claim is wrong. Checked against `primer/stylelint-config` `main` at [`4e94c60`](https://github.com/primer/stylelint-config/commit/4e94c602795f04c77568f07dfb0330f690b48af8) (2026-10-21), `@primer/stylelint-config` 13.6.0 and `@primer/primitives` 11.10.0.
 
 ## What changed from the September draft
 
