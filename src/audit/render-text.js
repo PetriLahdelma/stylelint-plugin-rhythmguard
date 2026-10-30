@@ -22,6 +22,7 @@ function renderText(report) {
     ...(report.scanned && report.scanned.scssFiles > 0 ? [`  SCSS files scanned       ${String(report.scanned.scssFiles - report.scanned.scssSkipped).padStart(4)}`] : []),
     ...(report.scanned && report.scanned.scssSkipped > 0 ? [`  SCSS files skipped       ${String(report.scanned.scssSkipped).padStart(4)}  (install postcss-scss to audit them)`] : []),
     ...(report.scanned && report.scanned.stylelintIgnored > 0 ? [`  Ignored by .stylelintignore ${String(report.scanned.stylelintIgnored).padStart(4)}  (not audited)`] : []),
+    ...(report.scanned && report.scanned.nonAuthoredSkipped > 0 ? [`  Non-authored skipped     ${String(report.scanned.nonAuthoredSkipped).padStart(4)}  (vendored, minified or built CSS; --include-non-authored audits them)`] : []),
     ...(report.scanned && report.scanned.linksOutsideRoot > 0 ? [`  Links not followed       ${String(report.scanned.linksOutsideRoot).padStart(4)}  (they point outside the scanned directory)`] : []),
     ...(parseErrors(report).length > 0 ? [`  Parse errors             ${String(parseErrors(report).length).padStart(4)}  (not audited)`] : []),
     `  Files with issues        ${String(report.filesWithIssues).padStart(4)}`,

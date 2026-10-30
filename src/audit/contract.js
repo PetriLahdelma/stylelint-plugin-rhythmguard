@@ -234,6 +234,7 @@ function buildReport({
   includeMotion,
   linksOutsideRoot = [],
   motionFindings,
+  nonAuthoredFiles = [],
   parseErrorFindings = [],
   readSource,
   scale,
@@ -322,6 +323,9 @@ function buildReport({
       scssFiles,
       scssSkipped,
       stylelintIgnored,
+      // Vendored, minified or built stylesheets left out of the audit (#161).
+      nonAuthoredSkipped: nonAuthoredFiles.length,
+      nonAuthoredFiles,
       templateFiles: templateFiles.length,
       totalFiles,
       // Symbolic links that resolve outside the scanned directory: not followed (#289).
@@ -466,7 +470,30 @@ const AUDIT_JSON_SCHEMA = Object.freeze({
       },
       type: 'object',
     },
-    scanned: { type: 'object' },
+    scanned: {
+      additionalProperties: true,
+      properties: {
+        nonAuthoredFiles: {
+          description: 'Stylesheets not audited because they look vendored, generated, test-only, minified or built. Empty with --include-non-authored.',
+          items: {
+            additionalProperties: false,
+            properties: {
+              file: { type: 'string' },
+              reason: { enum: ['path', 'minified', 'bundle'] },
+            },
+            required: ['file', 'reason'],
+            type: 'object',
+          },
+          type: 'array',
+        },
+        nonAuthoredSkipped: {
+          description: 'Number of stylesheets in nonAuthoredFiles.',
+          minimum: 0,
+          type: 'integer',
+        },
+      },
+      type: 'object',
+    },
     schemaVersion: { const: '2.0' },
     summary: {
       additionalProperties: true,

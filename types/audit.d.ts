@@ -48,6 +48,11 @@ export interface AuditOptions {
   /** Check clamp() bounds and min()/max() arguments against the scale (equivalent to `--check-math-bounds`). */
   checkMathBounds?: boolean;
   includeMotion?: boolean;
+  /**
+   * Audit vendored, test, generated, minified and built stylesheets too (equivalent to `--include-non-authored`).
+   * Off by default: they are listed in `scanned.nonAuthoredFiles` and not audited.
+   */
+  includeNonAuthored?: boolean;
   /** Smallest gap in px between neighbouring steps of a token ladder (`audit.ladders.minStepPx`). Default 2. */
   ladderMinStepPx?: number;
   /** A scale per property group (`spacing`, `radius`, `size`, `typography`): values, a preset name or "auto". Each group named is also checked. */
@@ -109,10 +114,21 @@ export interface AuditScanned {
   scssSkipped?: number;
   /** Stylesheets Stylelint skipped because the project's own .stylelintignore excludes them. */
   stylelintIgnored?: number;
+  /** Stylesheets not audited because they look vendored, generated, test-only, minified or built. 0 with `includeNonAuthored`. */
+  nonAuthoredSkipped?: number;
+  /** The stylesheets counted in `nonAuthoredSkipped`, with why each was skipped. */
+  nonAuthoredFiles?: AuditNonAuthoredFile[];
   templateFiles: number;
   /** Audited stylesheets plus template files. Stylesheets that failed to parse are taken out of this for cleanliness. */
   totalFiles?: number;
   [key: string]: unknown;
+}
+
+export interface AuditNonAuthoredFile {
+  /** Path as findings name files. */
+  file: string;
+  /** `path`: a vendor, lib, test, fixture or generated directory; `minified`: `*.min.css`; `bundle`: one line of CSS over 5 KB. */
+  reason: "bundle" | "minified" | "path";
 }
 
 export interface AuditFinding {

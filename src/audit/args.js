@@ -59,6 +59,8 @@ const OPTIONS = [
     apply: (p) => { p.checkMathBounds = true; setFrom(p, 'checkMathBounds'); } },
   { flag: '--include-motion', kind: 'flag', help: 'Include opt-in motion duration/easing drift',
     apply: (p) => { p.includeMotion = true; setFrom(p, 'includeMotion'); } },
+  { flag: '--include-non-authored', kind: 'flag', help: ['Audit vendored, test, generated, minified and built stylesheets', '(skipped by default: vendor/, tests/, generated/, *.min.css, one-line CSS over 5 KB)'],
+    apply: (p) => { p.includeNonAuthored = true; setFrom(p, 'includeNonAuthored'); } },
   { flag: '--token-source', kind: 'value', value: '<file>', help: 'External token source (repeatable, comma-separated)',
     apply: (p, raw) => { p.tokenSources.push(...parseTokenSourcePaths(raw)); setFrom(p, 'tokenSources'); } },
   { flag: '--token-source-format', kind: 'value', value: '<format>', help: 'Token source format: auto, css, flat-json, style-dictionary, dtcg (default: auto)',

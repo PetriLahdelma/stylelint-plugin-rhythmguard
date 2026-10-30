@@ -41,9 +41,9 @@
     ]
   },
   "summary": {
-    "total": 575,
+    "total": 570,
     "drift": 570,
-    "falsePositives": 5
+    "falsePositives": 0
   },
   "findings": [
     "app/assets/stylesheets/admin/admin_base.scss:1016:5px:drift",
@@ -615,12 +615,7 @@
     "app/assets/stylesheets/embed.scss:55:5px:drift",
     "app/assets/stylesheets/embed.scss:66:65px:drift",
     "app/assets/stylesheets/embed.scss:84:0.2em:drift",
-    "app/assets/stylesheets/publish.scss:92:0.1em:drift",
-    "app/assets/stylesheets/vendor/normalize.scss:229:0.35em:noise:non-authored",
-    "app/assets/stylesheets/vendor/normalize.scss:42:0.67em:noise:non-authored",
-    "app/assets/stylesheets/vendor/pikaday.scss:187:5px:noise:non-authored",
-    "app/assets/stylesheets/vendor/pikaday.scss:95:3px:noise:non-authored",
-    "app/assets/stylesheets/vendor/pikaday.scss:95:5px:noise:non-authored"
+    "app/assets/stylesheets/publish.scss:92:0.1em:drift"
   ],
   "commit": "c7b7a0b12517a916f93f7fcd85006673d8c6ee10"
 }

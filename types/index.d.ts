@@ -36,6 +36,7 @@ export type {
   AuditConfigReference,
   AuditContractReport,
   AuditFinding,
+  AuditNonAuthoredFile,
   AuditOptions,
   AuditReport,
   AuditScale,

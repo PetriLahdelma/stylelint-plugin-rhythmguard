@@ -14,15 +14,11 @@
     ]
   },
   "summary": {
-    "total": 75,
-    "drift": 58,
-    "falsePositives": 17
+    "total": 57,
+    "drift": 57,
+    "falsePositives": 0
   },
   "findings": [
-    ".storybook/scss/ui/index.scss:21:1.25rem:noise:non-authored",
-    ".storybook/scss/ui/index.scss:33:0.375rem:noise:non-authored",
-    ".storybook/scss/ui/index.scss:34:0.375rem:noise:non-authored",
-    "__fixtures__/ui/components/data-tables/inline-edit/_index.scss:29:-2.25rem:drift",
     "ui/components/color-picker/base/_index.scss:54:0.3rem:drift",
     "ui/components/combobox/base/_index.scss:585:3.75rem:drift",
     "ui/components/data-tables/inline-edit/_index.scss:29:-2.25rem:drift",
@@ -79,21 +75,7 @@
     "ui/components/spinners/base/_index.scss:450:-0.375rem:drift",
     "ui/components/spinners/base/_index.scss:471:0.375rem:drift",
     "ui/components/tabs/base/_index.scss:169:-0.35rem:drift",
-    "ui/components/tabs/scrolling/_index.scss:6:4.7rem:drift",
-    "ui/vendor/_normalize-reset.scss:182:40px:noise:non-authored",
-    "ui/vendor/_normalize-reset.scss:360:2px:noise:non-authored",
-    "ui/vendor/_normalize-reset.scss:361:0.35em:noise:non-authored",
-    "ui/vendor/_normalize-reset.scss:361:0.625em:noise:non-authored",
-    "ui/vendor/_normalize-sanitized.scss:114:0.67em:noise:non-authored",
-    "ui/vendor/_normalize-sanitized.scss:173:40px:noise:non-authored",
-    "ui/vendor/_normalize-sanitized.scss:350:2px:noise:non-authored",
-    "ui/vendor/_normalize-sanitized.scss:351:0.35em:noise:non-authored",
-    "ui/vendor/_normalize-sanitized.scss:351:0.625em:noise:non-authored",
-    "ui/vendor/_normalize.scss:135:0.67em:noise:non-authored",
-    "ui/vendor/_normalize.scss:202:40px:noise:non-authored",
-    "ui/vendor/_normalize.scss:379:2px:noise:non-authored",
-    "ui/vendor/_normalize.scss:380:0.35em:noise:non-authored",
-    "ui/vendor/_normalize.scss:380:0.625em:noise:non-authored"
+    "ui/components/tabs/scrolling/_index.scss:6:4.7rem:drift"
   ],
   "commit": "9bc6a4046d10d95b4f3fb9cee7c7dc036bf43ad2"
 }

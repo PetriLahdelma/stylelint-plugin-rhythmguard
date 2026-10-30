@@ -13,19 +13,13 @@
     ]
   },
   "summary": {
-    "total": 59,
+    "total": 53,
     "drift": 53,
-    "falsePositives": 6
+    "falsePositives": 0
   },
   "findings": [
     "scss/_reboot.scss:161:2rem:drift",
     "scss/mixins/_forms.scss:43:.1rem:drift",
-    "scss/tests/mixins/_utilities.test.scss:108:2rem:noise:non-authored",
-    "scss/tests/mixins/_utilities.test.scss:32:2rem:noise:non-authored",
-    "scss/tests/mixins/_utilities.test.scss:366:2rem:noise:non-authored",
-    "scss/tests/mixins/_utilities.test.scss:52:2rem:noise:non-authored",
-    "scss/tests/mixins/_utilities.test.scss:78:2rem:noise:non-authored",
-    "scss/tests/mixins/_utilities.test.scss:91:2rem:noise:non-authored",
     "site/src/scss/_ads.scss:10:15px:drift",
     "site/src/scss/_ads.scss:10:15px:drift",
     "site/src/scss/_ads.scss:10:15px:drift",

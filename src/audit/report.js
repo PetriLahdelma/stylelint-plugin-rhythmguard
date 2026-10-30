@@ -28,7 +28,8 @@ const { buildGroupScales } = require('../core/options');
 const { applyDecisions, buildDecisionPlan } = require('./decisions');
 const { collectDeclarations, resolveTokenChains, toChainsContract } = require('./token-chains');
 const { resolveTokenLadders, toLaddersContract } = require('./token-ladders');
-const { assertDirectory, getScanFiles, readSourceFromDisk } = require('./scan/files');
+const { assertDirectory, getScanFiles, readSourceFromDisk, toPosixRelativePath } = require('./scan/files');
+const { nonAuthoredReason } = require('./non-authored');
 const { collectCssFindings, runStylelintAudit } = require('./scan/stylesheets');
 const { collectTailwindFindings, collectTailwindMotionFindings } = require('./scan/templates');
 
@@ -39,9 +40,20 @@ async function createAuditReport(options) {
 
   const scanFiles = getScanFiles(resolvedDir, ignorePatterns, parsed);
 
-  const { cssFiles, scanScope, templateFiles } = scanFiles;
+  const { scanScope, templateFiles } = scanFiles;
   // A --staged run reads each changed file as the index holds it.
   const readSource = scanFiles.readSource || readSourceFromDisk;
+
+  // Vendored, test, generated and built stylesheets (#161). They never shape
+  // the scale or the token chains; unless --include-non-authored, they are
+  // not audited either, like a file in a skipped directory.
+  const nonAuthored = classifyNonAuthored(scanFiles.cssFiles, resolvedDir, readSource);
+  const nonAuthoredSkipped = parsed.includeNonAuthored
+    ? []
+    : scanFiles.cssFiles.filter((file) => nonAuthored.has(file));
+  const cssFiles = parsed.includeNonAuthored
+    ? scanFiles.cssFiles
+    : scanFiles.cssFiles.filter((file) => !nonAuthored.has(file));
 
   // A configured source that gives nothing is a warning, not a silent fallback (issue #163).
   const tokenSourceResult = parseTokenSources({
@@ -63,6 +75,7 @@ async function createAuditReport(options) {
   const scale = resolveAuditScale({
     baseFontSize: parsed.baseFontSize,
     cssFiles,
+    isNonAuthored: (file) => nonAuthored.has(file),
     readSource,
     requested: spacingOverride || parsed.scale,
     tokenSourceResult: spacingSourceResult,
@@ -105,6 +118,7 @@ async function createAuditReport(options) {
     includeMotion: parsed.includeMotion,
     linksOutsideRoot: scanFiles.linksOutsideRoot || [],
     motionFindings,
+    nonAuthoredFiles: nonAuthoredSkipped.map((file) => ({ file: formatPath(file), reason: nonAuthored.get(file) })),
     parseErrorFindings,
     readSource,
     scale,
@@ -124,7 +138,7 @@ async function createAuditReport(options) {
     cssFiles,
     externalDefinitions: tokenSourceResult.definitions,
     readSource,
-    skipFile: (file) => NON_AUTHORED_SEGMENT.test(file),
+    skipFile: (file) => nonAuthored.has(path.resolve(file)),
   });
   report.tokenContract.chains = toChainsContract(resolveTokenChains({
     baseFontSize: parsed.baseFontSize,
@@ -152,6 +166,8 @@ async function createAuditReport(options) {
   if (parsed.sinceBaseline || parsed.writeBaseline) {
     const unauditedFiles = [
       ...(cssResults.unauditedFiles || []),
+      // A skipped non-authored stylesheet was not audited: its baseline findings are neither resolved nor new.
+      ...nonAuthoredSkipped,
       ...parseErrorFindings.map((finding) => path.resolve(process.cwd(), finding.file)),
     ];
     const unaudited = new Set(unauditedFiles);
@@ -190,14 +206,30 @@ function chainDefinitions(parsed) {
   }).definitions;
 }
 
-const NON_AUTHORED_SEGMENT = /(^|\/)(test|tests|__tests__|spec|specs|fixtures?|__fixtures__|__snapshots__|vendor|third[-_]?party|storybook-static)(\/|$)/i;
+/**
+ * The non-authored stylesheets among `cssFiles` (absolute paths), each with
+ * its reason (`path`, `minified` or `bundle`), judged by the path relative to
+ * the audited directory: auditing `dist` itself still skips the built bundles
+ * in it, by name or by shape, and a project checked out under a `vendor`
+ * directory is not skipped as a whole.
+ */
+function classifyNonAuthored(cssFiles, rootDir, readSource) {
+  const classified = new Map();
+  for (const file of cssFiles) {
+    const reason = nonAuthoredReason(toPosixRelativePath(rootDir, file), () => readSource(file));
+    if (reason) {
+      classified.set(file, reason);
+    }
+  }
+  return classified;
+}
 
 /**
  * One project-level scale for the whole audit, with provenance.
  * "auto": external token sources, then spacing custom properties across the scanned
  * CSS, then the default scale. First source that yields values wins.
  */
-function resolveAuditScale({ baseFontSize, cssFiles, readSource = readSourceFromDisk, requested, tokenSourceResult }) {
+function resolveAuditScale({ baseFontSize, cssFiles, isNonAuthored = () => false, readSource = readSourceFromDisk, requested, tokenSourceResult }) {
   if (Array.isArray(requested)) {
     return {
       files: [],
@@ -224,8 +256,8 @@ function resolveAuditScale({ baseFontSize, cssFiles, readSource = readSourceFrom
   const matchesKind = createTokenKindMatcher('spacing');
   for (const filePath of cssFiles) {
     // Test, fixture and vendored stylesheets often redefine tokens to exercise
-    // overrides; they are findings noise and must not shape the inferred scale.
-    if (NON_AUTHORED_SEGMENT.test(formatPath(filePath))) {
+    // overrides; they must not shape the inferred scale, even when audited.
+    if (isNonAuthored(filePath)) {
       continue;
     }
     let text;
