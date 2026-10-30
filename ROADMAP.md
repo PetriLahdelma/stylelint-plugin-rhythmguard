@@ -18,9 +18,10 @@ The 2026-10-18 council report, [`docs/COUNCIL_2027-2028.md`](./docs/COUNCIL_2027
 | A release fails while any package lags | Done (`release.yml`, last publish step) |
 | Node 24 and 26 in CI, ESLint 9 and 10 for the companion (#164) | Done; Oxlint is open as a separate issue |
 | Weekly run against Stylelint `next` (#168) | Done; 18.0.0-next.0 passes the full suite |
-| #159 hairlines in class strings, #161 vendored CSS in the audit | In review |
+| #159 hairlines in class strings, #161 vendored CSS in the audit | Done in 3.15.0, with #331 (`fix` skips what the audit skips) |
 | Freeze declared | Done (above) |
-| Primer config draft, one message to doctor-school | Drafted, waiting for the maintainer |
+| Contributors: `npm run check`, dev container, Discussions, first-contribution path, good first issues (#326, #327) | Done |
+| Primer config draft, one message to doctor-school | Drafted, waiting for the maintainer. Research for the doctor-school draft found its Stylelint glue was never needed (`scaleSources` reads their DTCG files on 3.6.0); only the ESLint rule needs the array. The September Primer draft was withdrawn: `primer/spacing` already checks spacing |
 
 **4.0** ships the week Stylelint 18.0.0 is released, no later than 2027-02-28: Node `^22.22.2 || ^24.15.0 || >=26` (Stylelint 18's floor), peer `^17 || ^18`, `fixWith: "token"` and one default scale, structured findings, contract tests for messages. Tracked in #172.
 
