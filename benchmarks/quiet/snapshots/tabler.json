@@ -21,9 +21,9 @@
     ]
   },
   "summary": {
-    "total": 19,
+    "total": 12,
     "drift": 12,
-    "falsePositives": 7
+    "falsePositives": 0
   },
   "findings": [
     "core/scss/marketing/_hero.scss:7:6.5rem:drift",
@@ -36,15 +36,8 @@
     "core/scss/marketing/_sections.scss:9:-90px:drift",
     "core/scss/mixins/bootstrap/_caret.scss:48:0.1em:drift",
     "core/scss/mixins/bootstrap/_forms.scss:41:0.1rem:drift",
-    "core/scss/tests/_caret.test.scss:105:0.1em:noise:non-authored",
-    "core/scss/tests/_caret.test.scss:106:0.306em:noise:non-authored",
-    "core/scss/tests/_caret.test.scss:81:0.1em:noise:non-authored",
-    "core/scss/tests/_caret.test.scss:82:0.306em:noise:non-authored",
     "core/scss/ui/_cards.scss:282:-2px:drift",
-    "core/scss/ui/_type.scss:146:2px:drift",
-    "core/scss/vendor/_apexcharts.scss:58:2px:noise:non-authored",
-    "core/scss/vendor/_coloris.scss:27:2px:noise:non-authored",
-    "core/scss/vendor/_coloris.scss:56:6px:noise:non-authored"
+    "core/scss/ui/_type.scss:146:2px:drift"
   ],
   "commit": "ac001f81d459bd01f9c7d7ad9d9314238d72eb04"
 }

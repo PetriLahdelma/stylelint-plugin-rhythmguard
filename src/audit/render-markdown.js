@@ -28,6 +28,7 @@ function renderMarkdown(report) {
     ...(report.scanned && report.scanned.scssFiles > 0 ? [`| SCSS files scanned | ${report.scanned.scssFiles - report.scanned.scssSkipped} |`] : []),
     ...(report.scanned && report.scanned.scssSkipped > 0 ? [`| SCSS files skipped (install postcss-scss) | ${report.scanned.scssSkipped} |`] : []),
     ...(report.scanned && report.scanned.stylelintIgnored > 0 ? [`| Stylesheets ignored by .stylelintignore (not audited) | ${report.scanned.stylelintIgnored} |`] : []),
+    ...(report.scanned && report.scanned.nonAuthoredSkipped > 0 ? [`| Non-authored stylesheets skipped (vendored, minified or built; --include-non-authored audits them) | ${report.scanned.nonAuthoredSkipped} |`] : []),
     ...(report.scanned && report.scanned.linksOutsideRoot > 0 ? [`| Symbolic links not followed (they point outside the scanned directory) | ${report.scanned.linksOutsideRoot} |`] : []),
     ...(parseErrors(report).length > 0 ? [`| Stylesheets that failed to parse (not audited) | ${parseErrors(report).length} |`] : []),
     `| Files with issues | ${report.filesWithIssues} |`,

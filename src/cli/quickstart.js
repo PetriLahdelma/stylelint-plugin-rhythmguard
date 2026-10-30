@@ -201,7 +201,7 @@ async function run() {
   }
 
   const scanned = report.scanned || {};
-  const skippedStylesheets = (scanned.scssSkipped || 0) + (scanned.stylelintIgnored || 0);
+  const skippedStylesheets = (scanned.scssSkipped || 0) + (scanned.stylelintIgnored || 0) + (scanned.nonAuthoredSkipped || 0);
   if (report.cssFilesScanned === 0 && report.templateFilesScanned === 0 && skippedStylesheets === 0) {
     out.push('  No CSS files found here. Run from your project root, or audit a directory directly:');
     out.push('    npx rhythmguard audit ./src', '');
@@ -230,6 +230,7 @@ async function run() {
     const reasons = [
       ...(scanned.scssSkipped > 0 ? [`${scanned.scssSkipped} SCSS without postcss-scss`] : []),
       ...(scanned.stylelintIgnored > 0 ? [`${scanned.stylelintIgnored} in .stylelintignore`] : []),
+      ...(scanned.nonAuthoredSkipped > 0 ? [`${scanned.nonAuthoredSkipped} vendored, minified or built`] : []),
     ];
     out.push(`    Skipped         ${skippedStylesheets} not audited (${reasons.join(', ')})`);
   }

@@ -26,6 +26,7 @@ npx rhythmguard audit ./src --token-source ./tokens.json
 npx rhythmguard audit ./src --token-source ./theme.css --token-source-format css
 npx rhythmguard audit ./src --include-motion
 npx rhythmguard audit ./src --check-math-bounds
+npx rhythmguard audit ./src --include-non-authored     # audit vendored and built CSS too
 npx rhythmguard audit --schema
 ```
 
@@ -33,7 +34,21 @@ npx rhythmguard audit --schema
 
 `--check-math-bounds` checks the static bounds of fluid values, the `clamp()` minimum and maximum and the length arguments of `min()` and `max()`, which are skipped by default in 3.x. See [Fluid values](./rules/use-scale.md#fluid-values).
 
-Scan paths are scoped to the directory argument. Symbolic links to files and directories are followed when they resolve inside that directory; a file reached by more than one path is scanned once, under its own path when the walk reaches it directly, and a link back up the tree is not walked again. A link that resolves outside the directory is never followed, so the audit does not read and `rhythmguard fix` does not rewrite anything outside it; text and Markdown output count such links as `Links not followed`, and the report carries the count in `scanned.linksOutsideRoot`. Common generated directories are skipped by default. Use `--ignore`, a `.rhythmguardignore` file, or `--ignore-path` for legacy subtrees. `--help` prints every flag.
+Scan paths are scoped to the directory argument. Symbolic links to files and directories are followed when they resolve inside that directory; a file reached by more than one path is scanned once, under its own path when the walk reaches it directly, and a link back up the tree is not walked again. A link that resolves outside the directory is never followed, so the audit does not read and `rhythmguard fix` does not rewrite anything outside it; text and Markdown output count such links as `Links not followed`, and the report carries the count in `scanned.linksOutsideRoot`. Common generated directories are skipped by default, and so are vendored and built stylesheets (see [Non-authored stylesheets](#non-authored-stylesheets)). Use `--ignore`, a `.rhythmguardignore` file, or `--ignore-path` for legacy subtrees. `--help` prints every flag.
+
+## Non-authored stylesheets
+
+Vendored, test and compiled CSS is not the project's spacing decisions, and one such file can bury a report: a vendored Cropper.js or jQuery UI theme, a `font-awesome/` copy, a built bundle. The audit leaves these stylesheets out by default:
+
+- a path segment, relative to the audited directory, of `vendor`, `vendors`, `third-party` (`third_party`, `thirdparty`), `jquery-ui`, `font-awesome`, `fontawesome`, `generated`, `test`, `tests`, `__tests__`, `spec`, `specs`, `fixture`, `fixtures`, `__fixtures__`, `__snapshots__`, `e2e`, `storybook-static` or `.storybook` (whole segments only: `src/vendorize.css` is audited);
+- any `*.min.css`;
+- a built bundle: a stylesheet whose code, comments aside, is a single line over 5 KB (5,120 bytes). A license banner above it or a source map comment below it does not count as another line. No one writes 5 KB of CSS on one line by hand, and app and framework bundles run to tens of KB, so the threshold sits well clear of both.
+
+`lib` and `libs` are deliberately not on the list: Discourse keeps its own Sass library in `stylesheets/lib/`, SvelteKit apps keep components in `src/lib/`, and Nx monorepos keep packages in `libs/`. Add `--ignore` for a vendored `lib/`.
+
+The path is judged relative to the audited directory, so auditing a compiled `dist` folder directly still skips the minified files and one-line bundles in it, and a project that happens to sit under a directory named `vendor` is not skipped as a whole.
+
+A skipped stylesheet is not audited: it adds no findings, it is not counted in `scanned.cssFiles` or in scale cleanliness, and a baseline finding in it is neither resolved nor new. The report counts the files in `scanned.nonAuthoredSkipped` and lists each one in `scanned.nonAuthoredFiles` with its reason, `path`, `minified` or `bundle`; the text and Markdown summaries print the count as `Non-authored skipped`, and the quickstart lists it under `Skipped`. `--include-non-authored` (`includeNonAuthored: true` in the API, `"includeNonAuthored": true` under `audit` in `.rhythmguardrc.json`) audits them again. Either way they never shape a `--scale auto` scale or the token chains, which skipped test, fixture and vendored stylesheets before this check existed. The skip is the audit's only: the Stylelint and ESLint rules lint whatever files they are given, and `rhythmguard fix` skips the directories in the paragraph above but not these files, so pass `--ignore` to keep it out of them.
 
 ## Scale
 
@@ -49,7 +64,7 @@ Root-level declarations win: when custom properties declared in `:root`, `html` 
 npm install --save-dev postcss-scss
 ```
 
-Without it, SCSS files are counted under `scanned.scssSkipped` and the text and Markdown output say so, rather than failing. A skipped file was not audited, so it is not counted in `scanned.cssFiles` ("CSS files scanned") or in scale cleanliness; the same holds for stylesheets the project's own `.stylelintignore` excludes, counted under `scanned.stylelintIgnored`. The quickstart prints both as `Skipped`.
+Without it, SCSS files are counted under `scanned.scssSkipped` and the text and Markdown output say so, rather than failing. A skipped file was not audited, so it is not counted in `scanned.cssFiles` ("CSS files scanned") or in scale cleanliness; the same holds for stylesheets the project's own `.stylelintignore` excludes, counted under `scanned.stylelintIgnored`, and for [non-authored stylesheets](#non-authored-stylesheets), counted under `scanned.nonAuthoredSkipped`. The quickstart prints all three as `Skipped`.
 
 Literal lengths in SCSS are checked, and so are Sass expressions the evaluator can resolve: `padding: $spacer * .3` is reported as `Unexpected off-scale value "$spacer * .3" ... Evaluates to 4.8px.` when `$spacer` is declared in the same file, a `scaleSources` file, the config's token sources or an installed package, and each term of `padding: $y $x` is checked on its own. Expressions over variables it cannot resolve, and functions other than `math.div()`, are left alone; an expression is never rewritten by `--fix`. For `--scale auto` the same reader supplies the scale from Sass variables and maps as token sources: `$spacer: 1rem`, `$spacing-01: 0.125rem`, and maps such as Bootstrap's `$spacers: (1: $spacer * .25, ...)` including nested maps, variable references, `* / + -` arithmetic and `math.div()`. A map declared through `defaults(...)`, `map.merge(...)` or `map-merge(...)` is read as the merged map, later keys winning, which is how Bootstrap v6 declares `$spacers`. Assignments follow Sass: a later plain assignment replaces an earlier `!default`, a later `!default` does not. Other function calls, strings, keywords and interpolated keys are skipped. Token names appear as `$spacer` or `$spacers.3` in the scale provenance.
 
@@ -172,7 +187,7 @@ npx rhythmguard fix ./src --value 10px --to "var(--space-sm)" --write  # apply i
 npx rhythmguard fix ./src --decided --write                            # every snap decision with a "to"
 ```
 
-`rhythmguard fix` replaces one value with one replacement on spacing properties (or the ones you pass with `--properties`), matching by px so `0.625rem` is rewritten when you ask for `10px`, keeping the sign (`-10px` becomes `calc(-1 * var(--space-sm))`), and never touching token definitions, values inside `var()`, `theme()` or `token()`, or other properties. It is a dry run until `--write`, it rewrites only files it changed, and running it twice changes nothing. `--decided` applies every snap in one pass over the original values, so with `10px -> 14px` and `14px -> 16px` a `padding: 10px` ends at `14px`, not `16px`, and the dry run lists exactly what `--write` writes. One value per run is deliberate: each run is one reviewable pull request. It skips the files the audit skips: `.rhythmguardignore` (or the file `--ignore-path` names), `audit.ignore` in `.rhythmguardrc.json`, `--ignore`, and generated or vendored directories such as `node_modules` and `dist`. The target must be a directory, as for the audit: a missing path or a file exits 1 with `Directory not found: <path>` or `Not a directory: <path>`. Each change is listed at the line and column of the literal itself, also in a value that spans lines. `fix` never writes through a symbolic link: a stylesheet reached only through a link is listed as skipped, so rewrite the file it points to instead. SCSS files are read and written with `postcss-scss`, so `//` comments are left as they are; without it they are skipped and named in the output, never parsed as CSS. The audit reports the counts in `contracts.decisions` (`adopt`, `allow`, `snap`, `undecided`, and `suppressed` findings) and in the summary table; `--plan` keeps decisions already made, with their current counts, and adds `undecided` entries for new values. A rule with `decisions: false` ignores the section; the audit sets that on its own Stylelint run so decisions are applied once, in the audit.
+`rhythmguard fix` replaces one value with one replacement on spacing properties (or the ones you pass with `--properties`), matching by px so `0.625rem` is rewritten when you ask for `10px`, keeping the sign (`-10px` becomes `calc(-1 * var(--space-sm))`), and never touching token definitions, values inside `var()`, `theme()` or `token()`, or other properties. It is a dry run until `--write`, it rewrites only files it changed, and running it twice changes nothing. `--decided` applies every snap in one pass over the original values, so with `10px -> 14px` and `14px -> 16px` a `padding: 10px` ends at `14px`, not `16px`, and the dry run lists exactly what `--write` writes. One value per run is deliberate: each run is one reviewable pull request. It skips the files the audit's walk skips: `.rhythmguardignore` (or the file `--ignore-path` names), `audit.ignore` in `.rhythmguardrc.json`, `--ignore`, and generated directories such as `node_modules` and `dist`. It does not apply the audit's [non-authored](#non-authored-stylesheets) check, so a `vendor/` stylesheet the audit leaves out is still rewritten unless `--ignore` excludes it. The target must be a directory, as for the audit: a missing path or a file exits 1 with `Directory not found: <path>` or `Not a directory: <path>`. Each change is listed at the line and column of the literal itself, also in a value that spans lines. `fix` never writes through a symbolic link: a stylesheet reached only through a link is listed as skipped, so rewrite the file it points to instead. SCSS files are read and written with `postcss-scss`, so `//` comments are left as they are; without it they are skipped and named in the output, never parsed as CSS. The audit reports the counts in `contracts.decisions` (`adopt`, `allow`, `snap`, `undecided`, and `suppressed` findings) and in the summary table; `--plan` keeps decisions already made, with their current counts, and adds `undecided` entries for new values. A rule with `decisions: false` ignores the section; the audit sets that on its own Stylelint run so decisions are applied once, in the audit.
 
 ## Config file
 
@@ -188,6 +203,7 @@ Shared settings go in `.rhythmguardrc.json`, loaded automatically when present. 
     ],
     "tokenKind": "spacing",
     "includeMotion": false,
+    "includeNonAuthored": false,
     "checkMathBounds": false,
     "scales": { "typography": [14, 16, 18, 20, 24, 32, 40] },
     "tokenCandidateMinCount": 2,
@@ -232,7 +248,7 @@ A stylesheet Stylelint cannot parse (`Unclosed block`) runs no rule, so it was n
   "schemaVersion": "2.0",
   "command": { "directory": "./src", "scanScope": "full" },
   "summary": { "totalFindings": 12, "scaleCleanliness": 94 },
-  "scanned": { "cssFiles": 10, "templateFiles": 20 },
+  "scanned": { "cssFiles": 10, "templateFiles": 20, "nonAuthoredSkipped": 1, "nonAuthoredFiles": [{ "file": "src/vendor/cropper.css", "reason": "path" }] },
   "contracts": { "scale": {}, "tokens": {}, "motion": {} },
   "findings": { "css": [], "tailwind": [], "motion": [], "parseErrors": [] },
   "baseline": null
@@ -248,7 +264,7 @@ const report = await createAuditReport({ dir: './src', noConfig: true });
 const contract = toAuditContractReport(report);
 ```
 
-`createAuditReport` takes the scan and scale options of `rhythmguard audit` (`dir`, `scale`, `scales`, `baseFontSize`, `tokenSources`, `tokenSourceFormat`, `tokenKind`, `tokenCandidateMinCount`, `includeMotion`, `checkMathBounds`, `ignorePath`, `ignorePatterns`, `since`, `staged`, `sinceBaseline`, `writeBaseline`, `baselinePath`, `configPath`, `noConfig`), and `.rhythmguardrc.json` fills in the ones you leave out. A key set to `undefined` counts as left out. The output and gate options (`format`, `outputPath`, `maxFindings`, `minCleanliness`, `failOnNewDrift`, `badgeMetric`) belong to the CLI and do nothing here: read `report.summary.totalFindings`, `report.summary.scaleCleanliness` and `report.baseline.newFindingsCount` and decide in your own code.
+`createAuditReport` takes the scan and scale options of `rhythmguard audit` (`dir`, `scale`, `scales`, `baseFontSize`, `tokenSources`, `tokenSourceFormat`, `tokenKind`, `tokenCandidateMinCount`, `includeMotion`, `includeNonAuthored`, `checkMathBounds`, `ignorePath`, `ignorePatterns`, `since`, `staged`, `sinceBaseline`, `writeBaseline`, `baselinePath`, `configPath`, `noConfig`), and `.rhythmguardrc.json` fills in the ones you leave out. A key set to `undefined` counts as left out. The output and gate options (`format`, `outputPath`, `maxFindings`, `minCleanliness`, `failOnNewDrift`, `badgeMetric`) belong to the CLI and do nothing here: read `report.summary.totalFindings`, `report.summary.scaleCleanliness` and `report.baseline.newFindingsCount` and decide in your own code.
 
 Dependency-free dashboard and Figma-friendly export examples: [`AUDIT_API_EXAMPLES.md`](./AUDIT_API_EXAMPLES.md). Validation history and product rationale: [`AUDIT_2_VALIDATION.md`](./AUDIT_2_VALIDATION.md).
 

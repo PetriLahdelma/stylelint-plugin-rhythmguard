@@ -16,15 +16,11 @@
     ]
   },
   "summary": {
-    "total": 14,
+    "total": 10,
     "drift": 0,
-    "falsePositives": 14
+    "falsePositives": 10
   },
   "findings": [
-    "src/patternfly/assets/fontawesome/_bordered-pulled.scss:19:.3em:noise:vendored",
-    "src/patternfly/assets/fontawesome/_bordered-pulled.scss:20:.3em:noise:vendored",
-    "src/patternfly/assets/fontawesome/_bordered-pulled.scss:8:.15em:noise:vendored",
-    "src/patternfly/assets/fontawesome/_bordered-pulled.scss:8:.2em:noise:vendored",
     "src/patternfly/components/Button/examples/Button.css:2:6px:noise:example",
     "src/patternfly/components/Button/examples/Button.css:3:6px:noise:example",
     "src/patternfly/components/Nav/examples/Navigation.css:12:151px:noise:example",

@@ -68,12 +68,18 @@ async function runAudit(): Promise<AuditContractReport> {
   const firstText: string | undefined = report.findings.css[0]?.text;
   const resolved: number | undefined = report.baseline?.resolvedFindingsCount;
   const contractConfig: { file: string } | null = toAuditContractReport(report).command.config;
+  // Non-authored stylesheets: skipped by default, listed with a reason (#161).
+  const withVendored: AuditReport = await createAuditReport({ dir: './src', includeNonAuthored: true });
+  const skippedFiles: string[] = (report.scanned.nonAuthoredFiles ?? []).map((entry) => `${entry.file} (${entry.reason})`);
+  const skippedCount: number | undefined = withVendored.scanned.nonAuthoredSkipped;
   void cleanliness;
   void counts;
   void configFile;
   void firstText;
   void resolved;
   void contractConfig;
+  void skippedFiles;
+  void skippedCount;
   return toAuditContractReport(report);
 }
 

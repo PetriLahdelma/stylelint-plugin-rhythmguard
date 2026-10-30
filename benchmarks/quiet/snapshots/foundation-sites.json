@@ -14,9 +14,9 @@
     ]
   },
   "summary": {
-    "total": 55,
+    "total": 52,
     "drift": 52,
-    "falsePositives": 3
+    "falsePositives": 0
   },
   "findings": [
     "docs/assets/scss/_accordion-content.scss:4:3rem:drift",
@@ -70,10 +70,7 @@
     "scss/typography/_base.scss:399:$list-side-margin:drift",
     "scss/typography/_base.scss:405:$list-nested-side-margin:drift",
     "scss/typography/_base.scss:415:$defnlist-term-margin-bottom:drift",
-    "scss/typography/_helpers.scss:135:$subheader-margin-top:drift",
-    "scss/vendor/normalize.scss:186:0.35em:noise:non-authored",
-    "scss/vendor/normalize.scss:186:0.625em:noise:non-authored",
-    "scss/vendor/normalize.scss:31:0.67em:noise:non-authored"
+    "scss/typography/_helpers.scss:135:$subheader-margin-top:drift"
   ],
   "commit": "337be7a8d9d20d28f5d27d2d98131a6d3772506c"
 }
