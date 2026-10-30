@@ -21,6 +21,7 @@ export type {
   RhythmguardRuleOptions,
   RhythmguardStylelintConfig,
   RhythmguardStylelintRules,
+  RhythmguardTailwindClassOptions,
   RhythmguardTransformRuleOptions,
   RhythmguardUseScaleOptions,
   ScaleOverride,

@@ -23,11 +23,11 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [bootstrap](https://github.com/twbs/bootstrap.git) | `12cb8b9` | 122 | 3 | 59 | 53 | 6 | 0 | 10% | 126 | scanned-css (7 tokens) |
 | [bootstrap-v6](https://github.com/twbs/bootstrap.git) | `5726523` | 144 | 3 | 19 | 19 | 0 | 0 | 0% | 175 | scanned-css (15 tokens) |
 | [bulma](https://github.com/jgthms/bulma.git) | `741da22` | 75 | 0 | 37 | 37 | 0 | 0 | 0% | 110 | scanned-css (7 tokens) |
-| [calcom](https://github.com/calcom/cal.com.git) | `e91bb0c` | 4 | 203 | 41 | 41 | 0 | 0 | 0% | 61 | fallback (no spacing tokens found) |
+| [calcom](https://github.com/calcom/cal.com.git) | `e91bb0c` | 4 | 203 | 38 | 38 | 0 | 0 | 0% | 61 | fallback (no spacing tokens found) |
 | [carbon-styles](https://github.com/carbon-design-system/carbon.git) | `4cc7900` | 284 | 73 | 212 | 212 | 0 | 0 | 0% | 411 | installed @carbon/layout@11.59.0 (26 tokens) |
 | [cloudscape-components](https://github.com/cloudscape-design/components.git) | `0c1c9fd` | 320 | 2090 | 46 | 46 | 0 | 0 | 0% | 33 | fallback (no spacing tokens found) |
 | [coreui](https://github.com/coreui/coreui.git) | `be40d3f` | 193 | 3 | 11 | 5 | 6 | 0 | 55% | 40 | scanned-css (7 tokens) |
-| [daisyui](https://github.com/saadeghi/daisyui.git) | `1435c65` | 110 | 220 | 37 | 37 | 0 | 0 | 0% | 124 | fallback (no spacing tokens found) |
+| [daisyui](https://github.com/saadeghi/daisyui.git) | `1435c65` | 110 | 220 | 35 | 35 | 0 | 0 | 0% | 124 | fallback (no spacing tokens found) |
 | [directus-app](https://github.com/directus/directus.git) | `3df2ba9` | 29 | 0 | 63 | 63 | 0 | 0 | 0% | 80 | fallback (no spacing tokens found) |
 | [discourse](https://github.com/discourse/discourse.git) | `c7b7a0b` | 374 | 0 | 575 | 570 | 5 | 0 | 1% | 2702 | scanned-css (16 tokens) |
 | [docusaurus-theme-classic](https://github.com/facebook/docusaurus.git) | `a3e5eba` | 76 | 224 | 33 | 33 | 0 | 0 | 0% | 56 | fallback (no spacing tokens found) |
@@ -36,7 +36,7 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [forem](https://github.com/forem/forem.git) | `e8a0729` | 142 | 0 | 590 | 590 | 0 | 0 | 0% | 981 | fallback (no spacing tokens found) |
 | [foundation-sites](https://github.com/foundation/foundation-sites.git) | `337be7a` | 119 | 0 | 55 | 52 | 3 | 0 | 5% | 93 | fallback (no spacing tokens found) |
 | [fundamental-styles](https://github.com/SAP/fundamental-styles.git) | `e31a128` | 343 | 0 | 176 | 176 | 0 | 0 | 0% | 602 | fallback (no spacing tokens found) |
-| [ghost-admin](https://github.com/TryGhost/Ghost.git) | `26746d3` | 119 | 202 | 749 | 749 | 0 | 0 | 0% | 1280 | fallback (no spacing tokens found) |
+| [ghost-admin](https://github.com/TryGhost/Ghost.git) | `26746d3` | 119 | 202 | 747 | 747 | 0 | 0 | 0% | 1280 | fallback (no spacing tokens found) |
 | [gitlab-ui](https://gitlab.com/gitlab-org/gitlab-ui.git) | `8660f9f` | 93 | 373 | 3 | 3 | 0 | 0 | 0% | 4 | fallback (no spacing tokens found) |
 | [govuk-frontend](https://github.com/alphagov/govuk-frontend.git) | `356d461` | 311 | 167 | 25 | 25 | 0 | 0 | 0% | 23 | scanned-css (26 tokens) |
 | [grafana](https://github.com/grafana/grafana.git) | `c6fad86` | 6 | 0 | 77 | 77 | 0 | 0 | 0% | 77 | scanned-css (13 tokens) |
@@ -62,7 +62,7 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [radix-themes](https://github.com/radix-ui/themes.git) | `1faff10` | 150 | 149 | 7 | 7 | 0 | 0 | 0% | 19 | scanned-css (9 tokens) |
 | [salesforce-lightning](https://github.com/salesforce-ux/design-system.git) | `9bc6a40` | 459 | 558 | 75 | 58 | 17 | 0 | 23% | 98 | fallback (no spacing tokens found) |
 | [semi-design](https://github.com/DouyinFE/semi-design.git) | `8bed560` | 277 | 287 | 10 | 10 | 0 | 0 | 0% | 27 | fallback (no spacing tokens found) |
-| [shadcn-ui](https://github.com/shadcn-ui/ui.git) | `7c9eaba` | 13 | 1829 | 61 | 61 | 0 | 0 | 0% | 26 | fallback (no spacing tokens found) |
+| [shadcn-ui](https://github.com/shadcn-ui/ui.git) | `7c9eaba` | 13 | 1829 | 59 | 59 | 0 | 0 | 0% | 26 | fallback (no spacing tokens found) |
 | [skeleton](https://github.com/skeletonlabs/skeleton.git) | `e65535e` | 51 | 0 | 0 | 0 | 0 | 0 | 0% | 0 | scanned-css (14 tokens) |
 | [spectrum-css](https://github.com/adobe/spectrum-css.git) | `3762086` | 236 | 252 | 5 | 5 | 0 | 0 | 0% | 7 | fallback (no spacing tokens found) |
 | [starlight](https://github.com/withastro/starlight.git) | `38149a0` | 8 | 0 | 4 | 4 | 0 | 0 | 0% | 23 | fallback (no spacing tokens found) |
@@ -235,11 +235,11 @@ Top drift values:
 | `10px` | 9 |
 | `2px` | 9 |
 | `6px` | 3 |
-| `0.5px` | 3 |
 | `11px` | 2 |
 | `9px` | 2 |
 | `20px` | 2 |
 | `13px` | 2 |
+| `-30px` | 1 |
 
 Drift examples for maintainer review:
 

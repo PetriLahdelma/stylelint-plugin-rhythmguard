@@ -3,6 +3,7 @@
 const {
   formatLength,
   formatNumber,
+  isHairlineLength,
   nearestScaleValues,
   nearestText,
   normalizeScale,
@@ -31,6 +32,7 @@ function normalizeTailwindClassOptions(option = {}) {
       ? option.baseFontSize
       : 16;
   return {
+    allowHairlines: option.allowHairlines !== false,
     allowNegative: option.allowNegative !== false,
     baseFontSize,
     scale: Array.isArray(option.scale) ? option.scale : DEFAULT_SCALE,
@@ -169,6 +171,12 @@ function analyzeClassToken(token, options, scalePx) {
 
   const parsedLength = parseLengthToken(match.groups.rawValue);
   if (!parsedLength || parsedLength.number === 0 || parsedLength.unit === '') {
+    return null;
+  }
+
+  // The same exemption as use-scale, and in the same order: a hairline is not
+  // reported, not even as a negative value (#159).
+  if (options.allowHairlines && isHairlineLength(parsedLength, options.baseFontSize)) {
     return null;
   }
 

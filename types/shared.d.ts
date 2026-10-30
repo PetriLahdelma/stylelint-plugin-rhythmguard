@@ -211,6 +211,24 @@ export interface EslintRuleModule {
   create(context: any): EslintRuleVisitor;
 }
 
+/** Options for `rhythmguard-tailwind/tailwind-class-use-scale`. */
+export interface RhythmguardTailwindClassOptions {
+  /** Exempt non-zero lengths of one CSS pixel or less (`translate-y-[0.5px]`, `-mt-[1px]`, `p-[0.0625rem]`), as `use-scale` does. Default true. */
+  allowHairlines?: boolean;
+  /** Allow negative values (`-m-[16px]`, `m-[-16px]`). Default true. */
+  allowNegative?: boolean;
+  /** Base for converting `rem` and `em`. Default 16. */
+  baseFontSize?: number;
+  /** A sentence of up to 200 characters appended to every finding, after the built-in text. */
+  note?: string;
+  /** Allowed values. Default `[0, 4, 8, 12, 16, 24, 32]`. */
+  scale?: ScaleValue[];
+  /** px per Tailwind spacing step, used to write utility classes in messages and fixes. Default a quarter of `baseFontSize`; `false` keeps arbitrary values. */
+  spacingUnit?: number | false;
+  /** Units checked. Default `["px", "rem", "em"]`. */
+  units?: string[];
+}
+
 export interface RhythmguardEslintPlugin {
   configs: {
     /** A flat config that registers the plugin itself, so it can stand alone in a config array. */

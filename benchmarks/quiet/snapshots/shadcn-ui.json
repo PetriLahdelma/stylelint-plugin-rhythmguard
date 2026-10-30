@@ -14,8 +14,8 @@
     ]
   },
   "summary": {
-    "total": 61,
-    "drift": 61,
+    "total": 59,
+    "drift": 59,
     "falsePositives": 0
   },
   "findings": [
@@ -31,7 +31,6 @@
     "apps/v4/app/globals.css:447:0.3rem:drift",
     "apps/v4/app/globals.css:448:0.1rem:drift",
     "apps/v4/components/block-viewer.tsx:170:3px:drift",
-    "apps/v4/components/block-viewer.tsx:282:-1px:drift",
     "apps/v4/components/block-viewer.tsx:343:14px:drift",
     "apps/v4/components/component-preview.tsx:78:0.2rem:drift",
     "apps/v4/components/component-preview.tsx:78:0.3rem:drift",
@@ -75,7 +74,6 @@
     "apps/v4/registry/new-york-v4/ui/input-group.tsx:45:-0.45rem:drift",
     "apps/v4/registry/new-york-v4/ui/input-group.tsx:47:-0.35rem:drift",
     "apps/v4/registry/new-york-v4/ui/input-group.tsx:47:-0.45rem:drift",
-    "apps/v4/registry/new-york-v4/ui/navigation-menu.tsx:77:1px:drift",
     "apps/v4/registry/new-york-v4/ui/table.tsx:72:2px:drift",
     "apps/v4/registry/new-york-v4/ui/table.tsx:85:2px:drift",
     "apps/v4/registry/new-york-v4/ui/tabs.tsx:28:3px:drift",

@@ -44,6 +44,7 @@ module.exports = {
       {
         additionalProperties: false,
         properties: {
+          allowHairlines: { type: 'boolean' },
           allowNegative: { type: 'boolean' },
           baseFontSize: { type: 'number' },
           note: { maxLength: MAX_NOTE_LENGTH, minLength: 1, type: 'string' },

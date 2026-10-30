@@ -14,8 +14,8 @@
     ]
   },
   "summary": {
-    "total": 749,
-    "drift": 749,
+    "total": 747,
+    "drift": 747,
     "falsePositives": 0
   },
   "findings": [
@@ -755,7 +755,6 @@
     "apps/ember-admin/app/styles/spirit/_normalize.css:71:40px:drift",
     "apps/shade/src/components/patterns/color-picker.tsx:142:3px:drift",
     "apps/shade/src/components/ui/banner.tsx:17:-2px:drift",
-    "apps/shade/src/components/ui/copy-field.tsx:168:1px:drift",
     "apps/shade/src/components/ui/input-group.tsx:45:-0.35rem:drift",
     "apps/shade/src/components/ui/input-group.tsx:45:-0.45rem:drift",
     "apps/shade/src/components/ui/input-group.tsx:46:-0.35rem:drift",
@@ -766,8 +765,7 @@
     "apps/shade/src/components/ui/table.tsx:100:2px:drift",
     "apps/shade/src/components/ui/table.tsx:57:2px:drift",
     "apps/shade/src/components/ui/tabs.tsx:54:3px:drift",
-    "apps/shade/src/components/ui/tabs.tsx:55:3px:drift",
-    "apps/shade/src/providers/shade-provider.tsx:52:-1px:drift"
+    "apps/shade/src/components/ui/tabs.tsx:55:3px:drift"
   ],
   "commit": "26746d30ce30e3a2a3e69c77f5d460ea6992bfc3"
 }

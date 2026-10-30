@@ -118,6 +118,7 @@ Padding, margin, gap, inset, space and translate utilities, with their axis and 
 | `scale` | `[0, 4, 8, 12, 16, 24, 32]` | Allowed spacing values in px. This default stops at 32; the Stylelint rules default to the `rhythmic-4` preset, which goes on to 40, 48 and 64, so set `scale` when you use both |
 | `units` | `['px', 'rem', 'em']` | Units the rule checks |
 | `baseFontSize` | `16` | Base for converting `rem` and `em` |
+| `allowHairlines` | `true` | Skips non-zero lengths of one CSS pixel or less (`translate-y-[0.5px]`, `-mt-[1px]`, `p-[0.0625rem]`), as the Stylelint rules do. `false` reports them |
 | `allowNegative` | `true` | Whether negative arbitrary values (`m-[-8px]`, `-m-[8px]`) are allowed |
 | `spacingUnit` | `baseFontSize / 4` (`4`) | Px per Tailwind spacing step (`0.25rem`), used to name and write classes. `false` keeps the fix in arbitrary form (`p-[12px]`) |
 | `note` | none | A sentence added to every finding, such as `"See docs/spacing.md for approved exceptions."` Up to 200 characters |
