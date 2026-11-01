@@ -124,6 +124,15 @@ Build phase 1 only if both hold:
 
 If either fails, Tailwind apps do not drift enough to sell a rule on. Ship items 5 to 8 (Oxlint, clean install, docs), leave the ESLint plugin a companion, and record the result here.
 
+**Provisional result, 2026-11-01** ([`benchmarks/tailwind-v4/RESULTS.md`](../benchmarks/tailwind-v4/RESULTS.md); final once the maintainer's ratings replace the agent's):
+
+- **Criterion 1 passes:** 15 of 20 apps have off-scale rhythm values.
+- **Criterion 2 fails:** 4 of 41 reviewed findings are drift, against a bar of 33. The review covers 41 findings, not 50, because of the per-app cap.
+- **Why it fails:** 73% of the 700 findings repeat a value 5 or more times in the same app (5px 99 times, 18px 74 times, 3px 68 times). These are undeclared conventions, not slips.
+- **No team scale to check:** only 1 of the 20 apps declares a spacing token, so the step check as planned would fire nowhere.
+
+Outcome unless the maintainer's ratings reverse it: no phase 1 rule work, and items 5 to 8 only.
+
 ### Demand test on 2027-03-31
 
 Measured with `api.npmjs.org/versions/<pkg>/last-week`, counting only versions published 14 or more days earlier ("aged downloads"), which strips our own release and smoke runs.

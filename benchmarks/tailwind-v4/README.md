@@ -119,4 +119,6 @@ Also reported, though not part of the pass mark: findings per 100 TSX/JSX files 
 
 ## Change log
 
-- 2026-11-01: committed before measurement.
+- 2026-11-01: committed before measurement (#346).
+- 2026-11-01, amendment 1, after the first run: strings that are SVG geometry do not count. That covers `d`, `points`, `viewBox`, `transform` and `path` attributes, and strings made only of path commands and numbers. A step-form finding also needs a class context (a class attribute or a `cn`/`clsx`/`cva`/`tv`/`twMerge`-style call) or a string of two or more tokens. **Why:** `d='M786 2713 c-184 …'` in Sim read as `m-234` and `m-329`, and a branch id `'pr-482'` in Appwrite read as padding. Effect: 704 findings became 700. Apps with findings: 15 of 20 before and after.
+- 2026-11-01, amendment 2: the 3-per-app cap allows only 41 draws: 15 apps have findings, and two of them have one each (13 × 3 + 2). All 41 are reviewed, and the pass mark keeps its 80% ratio: 33 of 41. **Why:** the README promised both a cap and 50 findings, and the sample cannot meet both. Keeping the cap stops Sim and Reactive Resume (58% of findings) from dominating the review.
