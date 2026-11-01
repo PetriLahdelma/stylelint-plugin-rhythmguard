@@ -5,3 +5,5 @@ quiet/outreach.json
 quiet/packages/
 tailwind-v4/repos/
 tailwind-v4/results/
+tailwind-compare/node_modules/
+tailwind-compare/work/

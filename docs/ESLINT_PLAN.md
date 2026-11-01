@@ -35,15 +35,15 @@ Input: `p-[13px] m-[12px] gap-[0.75rem] px-[14px]`, default theme, tested 2026-1
 
 | Tool | What it does with `p-[13px]` |
 | --- | --- |
-| eslint-plugin-better-tailwindcss 4.10.0 | "can be simplified to `p-3.25`": same value, no scale check |
+| eslint-plugin-better-tailwindcss 4.10.0 | no finding for `p-[13px]`; `p-[0.8125rem]` "can be simplified to `p-3.25`": same value, no scale check (corrected 2026-11-01 by the script below) |
 | eslint-plugin-tailwindcss 4.4.0 | no finding (flags only `m-[12px]` and `gap-[0.75rem]`, which have exact equivalents) |
-| @shadcn/lint 0.2.3 | "Use a theme token or scale value"; its docs suggest `p-3.25`. Nearby steps exist for font sizes and radii only |
-| Tailwind CLI 4.3.3 `canonicalize` | `p-[0.8125rem]` becomes `p-3.25` |
+| @shadcn/lint 0.2.3 | "Use `p-3.25` instead (same value, on the scale)". Nearby steps exist for font sizes and radii only |
+| Tailwind CLI 4.3.3 `canonicalize` | `p-[0.8125rem]` becomes `p-3.25`; `p-[13px]` is left as is |
 | Rhythmguard 3.15.0 | "Use `p-3` (12px) or `p-4` (16px)" |
 
-None of the three ESLint plugins reads a DTCG or JSON token file; all three read the Tailwind CSS entry instead.
+None of the three ESLint plugins reads a DTCG or JSON token file; all three read the Tailwind CSS entry instead. Rerun: `node scripts/bench/tailwind-compare.mjs` ([`benchmarks/tailwind-compare/RESULTS.md`](../benchmarks/tailwind-compare/RESULTS.md)).
 
-**Canonicalisation launders drift, and our rule misses the result.** Tailwind v4 accepts any quarter step of `--spacing` as a plain class, so `p-3.25` is a valid 13px padding. better-tailwindcss and @shadcn/lint suggest `p-3.25` for 13px and the Tailwind CLI writes it, after which every "no arbitrary values" rule passes the class. Rhythmguard 3.15.0 passes it too. Probed on 2026-11-01 with `scale: [0,4,8,12,16,24,32]`:
+**Canonicalisation launders drift, and our rule misses the result.** Tailwind v4 accepts any quarter step of `--spacing` as a plain class, so `p-3.25` is a valid 13px padding. @shadcn/lint suggests `p-3.25` for `p-[13px]`, and better-tailwindcss and the Tailwind CLI rewrite the rem form `p-[0.8125rem]` to it, after which every "no arbitrary values" rule passes the class. Rhythmguard 3.15.0 passes it too. Probed on 2026-11-01 with `scale: [0,4,8,12,16,24,32]`:
 
 | Class | Value | Rhythmguard 3.15.0 |
 | --- | --- | --- |

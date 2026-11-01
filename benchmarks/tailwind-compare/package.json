@@ -1,0 +1,14 @@
+{
+  "name": "rhythmguard-tailwind-compare",
+  "private": true,
+  "description": "Pinned tools for scripts/bench/tailwind-compare.mjs. Bump a version deliberately and rerun.",
+  "devDependencies": {
+    "@shadcn/lint": "0.2.3",
+    "@tailwindcss/cli": "4.3.3",
+    "@typescript-eslint/parser": "8.71.2",
+    "eslint": "10.14.0",
+    "eslint-plugin-better-tailwindcss": "4.10.0",
+    "eslint-plugin-tailwindcss": "4.4.0",
+    "tailwindcss": "4.3.3"
+  }
+}
