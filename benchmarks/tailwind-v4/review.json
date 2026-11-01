@@ -1,0 +1,658 @@
+[
+  {
+    "id": "prompts-chat:src/lib/plugins/widgets/textream.tsx:43:gap-[3px]",
+    "app": "prompts-chat",
+    "url": "https://github.com/f/prompts.chat/blob/35def7ab4c3f3d2b33a288ceafbf99375be273c1/src/lib/plugins/widgets/textream.tsx#L43",
+    "token": "gap-[3px]",
+    "px": 3,
+    "nearest": [
+      2,
+      4
+    ],
+    "form": "bracketed",
+    "source": "{/* Waveform */} ⏎ <div className=\"flex items-center justify-center gap-[3px] h-3\"> ⏎ {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (",
+    "agent": "intentional",
+    "agentReason": "Bars of a drawn waveform icon; illustration geometry",
+    "maintainer": null
+  },
+  {
+    "id": "supabase:components/interfaces/LogDrains/OrgAuditLogDrains.tsx:168:py-[5px]",
+    "app": "supabase",
+    "url": "https://github.com/supabase/supabase/blob/a05e7ec1d79e67cba65e3871b7caf105db27f8b1/apps/studio/components/interfaces/LogDrains/OrgAuditLogDrains.tsx#L168",
+    "token": "py-[5px]",
+    "px": 5,
+    "nearest": [
+      4,
+      6
+    ],
+    "form": "bracketed",
+    "source": "aria-label=\"Choose destination type\" ⏎ className=\"shrink-0 rounded-l-none px-[4px] py-[5px] -ml-px focus-visible:z-10 focus-visible:rounded-l-sm\" ⏎ icon={<ChevronDownIcon />}",
+    "agent": "undeclared-token",
+    "agentReason": "5px used 12 times in 12 files",
+    "maintainer": null
+  },
+  {
+    "id": "supabase:components/interfaces/Auth/EmailTemplates/CustomEmailTemplateRestrictionAdmonition.tsx:38:py-[5px]",
+    "app": "supabase",
+    "url": "https://github.com/supabase/supabase/blob/a05e7ec1d79e67cba65e3871b7caf105db27f8b1/apps/studio/components/interfaces/Auth/EmailTemplates/CustomEmailTemplateRestrictionAdmonition.tsx#L38",
+    "token": "py-[5px]",
+    "px": 5,
+    "nearest": [
+      4,
+      6
+    ],
+    "form": "bracketed",
+    "source": "aria-label=\"More email template editing options\" ⏎ className=\"shrink-0 rounded-l-none px-[4px] py-[5px] -ml-px focus-visible:z-10 focus-visible:rounded-l-sm\" ⏎ icon={<ChevronDownIcon />}",
+    "agent": "undeclared-token",
+    "agentReason": "5px used 12 times in 12 files",
+    "maintainer": null
+  },
+  {
+    "id": "supabase:components/interfaces/UnifiedLogs/ServiceFlow/components/GenericLogOverview.tsx:94:pl-9.5",
+    "app": "supabase",
+    "url": "https://github.com/supabase/supabase/blob/a05e7ec1d79e67cba65e3871b7caf105db27f8b1/apps/studio/components/interfaces/UnifiedLogs/ServiceFlow/components/GenericLogOverview.tsx#L94",
+    "token": "pl-9.5",
+    "px": 38,
+    "nearest": [
+      36,
+      40
+    ],
+    "form": "step",
+    "source": "table={table} ⏎ className=\"pl-9.5\" ⏎ >",
+    "agent": "unclear",
+    "agentReason": "Row indent; likely aligns past a column, constraint not visible",
+    "maintainer": null
+  },
+  {
+    "id": "plane:components/exporter/guide.tsx:28:gap-y-13",
+    "app": "plane",
+    "url": "https://github.com/makeplane/plane/blob/b98e1defb0e089d4505712d89ee9e137fd0935cd/apps/web/components/exporter/guide.tsx#L28",
+    "token": "gap-y-13",
+    "px": 52,
+    "nearest": [
+      48,
+      56
+    ],
+    "form": "step",
+    "source": "<> ⏎ <div className=\"flex size-full flex-col gap-y-13\"> ⏎ <ExportForm",
+    "agent": "undeclared-token",
+    "agentReason": "52px used 5 times",
+    "maintainer": null
+  },
+  {
+    "id": "plane:components/pages/editor/ai/menu.tsx:276:pl-[54.8px]",
+    "app": "plane",
+    "url": "https://github.com/makeplane/plane/blob/b98e1defb0e089d4505712d89ee9e137fd0935cd/apps/web/components/pages/editor/ai/menu.tsx#L276",
+    "token": "pl-[54.8px]",
+    "px": 54.8,
+    "nearest": [
+      48,
+      56
+    ],
+    "form": "bracketed",
+    "source": "</div> ⏎ <div className=\"sticky bottom-0 flex w-full items-center gap-2 bg-surface-1 py-2 pl-[54.8px]\"> ⏎ {TONES_LIST.map((tone) => (",
+    "agent": "unclear",
+    "agentReason": "54.8px suggests alignment to a computed column; not visible",
+    "maintainer": null
+  },
+  {
+    "id": "plane:components/automation/auto-archive-automation.tsx:114:ml-13",
+    "app": "plane",
+    "url": "https://github.com/makeplane/plane/blob/b98e1defb0e089d4505712d89ee9e137fd0935cd/apps/web/components/automation/auto-archive-automation.tsx#L114",
+    "token": "ml-13",
+    "px": 52,
+    "nearest": [
+      48,
+      56
+    ],
+    "form": "step",
+    "source": "autoArchiveStatus && ( ⏎ <div className=\"ml-13\"> ⏎ <div className=\"flex w-full items-center justify-between gap-2 rounded-sm border border-subtle bg-surface-2 px-5 py-4\">",
+    "agent": "undeclared-token",
+    "agentReason": "52px used 5 times",
+    "maintainer": null
+  },
+  {
+    "id": "appwrite:src/components/pages/projects/$projectId/videos/_components/player/BufferVisualizer.tsx:479:ms-[68px]",
+    "app": "appwrite",
+    "url": "https://github.com/appwrite/appwrite/blob/25dbe2abfe646cce948d75a70c4a27c2d7f00066/apps/console/src/components/pages/projects/$projectId/videos/_components/player/BufferVisualizer.tsx#L479",
+    "token": "ms-[68px]",
+    "px": 68,
+    "nearest": [
+      64,
+      80
+    ],
+    "form": "bracketed",
+    "source": "return ( ⏎ <div className=\"ms-[68px] space-y-1.5 pt-1 text-[11px] text-muted-foreground\"> ⏎ <div className=\"flex flex-wrap items-center gap-x-4 gap-y-1.5\">",
+    "agent": "unclear",
+    "agentReason": "Legend indent; likely matches the chart label column, not visible",
+    "maintainer": null
+  },
+  {
+    "id": "appwrite:src/components/pages/blocks/BlocksList.tsx:107:ps-7.5",
+    "app": "appwrite",
+    "url": "https://github.com/appwrite/appwrite/blob/25dbe2abfe646cce948d75a70c4a27c2d7f00066/apps/console/src/components/pages/blocks/BlocksList.tsx#L107",
+    "token": "ps-7.5",
+    "px": 30,
+    "nearest": [
+      28,
+      32
+    ],
+    "form": "step",
+    "source": "disabled={!projectId} ⏎ className=\"h-8 w-48 rounded-md border border-border bg-background ps-7.5 pe-7 text-[12px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:border-border disabled:opacity-50\" ⏎ style={{ paddingInlineStart: '1.875rem' }}",
+    "agent": "intentional",
+    "agentReason": "Inset for a search icon; the inline style repeats 1.875rem",
+    "maintainer": null
+  },
+  {
+    "id": "appwrite:src/components/pages/projects/$projectId/videos/_components/player/BufferVisualizer.tsx:442:ms-[68px]",
+    "app": "appwrite",
+    "url": "https://github.com/appwrite/appwrite/blob/25dbe2abfe646cce948d75a70c4a27c2d7f00066/apps/console/src/components/pages/projects/$projectId/videos/_components/player/BufferVisualizer.tsx#L442",
+    "token": "ms-[68px]",
+    "px": 68,
+    "nearest": [
+      64,
+      80
+    ],
+    "form": "bracketed",
+    "source": "return ( ⏎ <div className=\"ms-[68px] relative h-3.5\"> ⏎ {ticks.map((tick) => (",
+    "agent": "unclear",
+    "agentReason": "Same legend indent as #8",
+    "maintainer": null
+  },
+  {
+    "id": "reactive-resume:src/features/homepage/prepare.tsx:457:px-[.45em]",
+    "app": "reactive-resume",
+    "url": "https://github.com/reactive-resume/reactive-resume/blob/bf4bcbcaca42542de4d73d867893bc21f3ef835a/apps/web/src/features/homepage/prepare.tsx#L457",
+    "token": "px-[.45em]",
+    "px": 7.2,
+    "nearest": [
+      6,
+      8
+    ],
+    "form": "bracketed",
+    "source": "<p className=\"flex items-start gap-[.6em] text-ink opacity-(--db2)\"> ⏎ <span className=\"font-martian mt-[.1em] shrink-0 rounded-sm bg-accent-soft px-[.45em] py-[.15em] text-[.74em] text-accent-text\"> ⏎ {t`Supported`}",
+    "agent": "undeclared-token",
+    "agentReason": "7.2px (0.45em) used 5 times; em-based badge padding",
+    "maintainer": null
+  },
+  {
+    "id": "reactive-resume:src/features/homepage/header.tsx:90:px-[11px]",
+    "app": "reactive-resume",
+    "url": "https://github.com/reactive-resume/reactive-resume/blob/bf4bcbcaca42542de4d73d867893bc21f3ef835a/apps/web/src/features/homepage/header.tsx#L90",
+    "token": "px-[11px]",
+    "px": 11,
+    "nearest": [
+      10,
+      12
+    ],
+    "form": "bracketed",
+    "source": "<LanguageDoorway ⏎ className=\"font-martian h-[34px] gap-[7px] rounded-sm px-[11px] text-xs leading-none font-medium font-stretch-[87.5%] opacity-65 transition-opacity duration-300 hover:opacity-100\" ⏎ nameClassName=\"max-[639px]:sr-only\"",
+    "agent": "undeclared-token",
+    "agentReason": "11px used 5 times in 3 files",
+    "maintainer": null
+  },
+  {
+    "id": "reactive-resume:src/features/career/schedule-sheet.tsx:264:pt-[18px]",
+    "app": "reactive-resume",
+    "url": "https://github.com/reactive-resume/reactive-resume/blob/bf4bcbcaca42542de4d73d867893bc21f3ef835a/apps/web/src/features/career/schedule-sheet.tsx#L264",
+    "token": "pt-[18px]",
+    "px": 18,
+    "nearest": [
+      16,
+      20
+    ],
+    "form": "bracketed",
+    "source": "> ⏎ <div className=\"flex items-center gap-3 border-b border-line ps-[22px] pe-3 pt-[18px] pb-3.5\"> ⏎ <SheetTitle className=\"flex-1\">",
+    "agent": "undeclared-token",
+    "agentReason": "18px used 27 times in 17 files",
+    "maintainer": null
+  },
+  {
+    "id": "novu:src/pages/reset-password.tsx:20:gap-[18px]",
+    "app": "novu",
+    "url": "https://github.com/novuhq/novu/blob/f9b78b8f7a111242deb5dd436ac85ba079a05901/apps/dashboard/src/pages/reset-password.tsx#L20",
+    "token": "gap-[18px]",
+    "px": 18,
+    "nearest": [
+      16,
+      20
+    ],
+    "form": "bracketed",
+    "source": "<div className=\"flex flex-1 justify-end px-4 py-8 md:items-center md:px-0 md:py-0\"> ⏎ <div className=\"flex w-full max-w-[400px] flex-col items-start justify-start gap-[18px]\"> ⏎ <ResetPassword />",
+    "agent": "undeclared-token",
+    "agentReason": "18px used 9 times in 9 files",
+    "maintainer": null
+  },
+  {
+    "id": "novu:src/components/workflow-editor/steps/chat/preview/shells/slack-shell.tsx:35:px-0.75",
+    "app": "novu",
+    "url": "https://github.com/novuhq/novu/blob/f9b78b8f7a111242deb5dd436ac85ba079a05901/apps/dashboard/src/components/workflow-editor/steps/chat/preview/shells/slack-shell.tsx#L35",
+    "token": "px-0.75",
+    "px": 3,
+    "nearest": [
+      2,
+      4
+    ],
+    "form": "step",
+    "source": "<span className=\"leading-5.5 mr-1.25 text-[15px] font-black text-[#1d1c1d]\">Novu</span> ⏎ <span className=\"mr-1.25 rounded-xs bg-[rgba(29,28,29,0.06)] px-0.75 py-px text-[10px] font-bold leading-[12.5px] text-[#454447]\"> ⏎ APP",
+    "agent": "undeclared-token",
+    "agentReason": "3px used 18 times in 14 files",
+    "maintainer": null
+  },
+  {
+    "id": "novu:src/pages/verify-email.tsx:20:gap-[18px]",
+    "app": "novu",
+    "url": "https://github.com/novuhq/novu/blob/f9b78b8f7a111242deb5dd436ac85ba079a05901/apps/dashboard/src/pages/verify-email.tsx#L20",
+    "token": "gap-[18px]",
+    "px": 18,
+    "nearest": [
+      16,
+      20
+    ],
+    "form": "bracketed",
+    "source": "<div className=\"flex flex-1 justify-end px-4 py-8 md:items-center md:px-0 md:py-0\"> ⏎ <div className=\"flex w-full max-w-[400px] flex-col items-start justify-start gap-[18px]\"> ⏎ <VerifyEmail />",
+    "agent": "undeclared-token",
+    "agentReason": "18px used 9 times in 9 files",
+    "maintainer": null
+  },
+  {
+    "id": "langfuse:src/features/v4-migration/V4MigrationContent.tsx:198:pl-4.25",
+    "app": "langfuse",
+    "url": "https://github.com/langfuse/langfuse/blob/be69f6bddba4e148133db7d76305224de01a6cb5/web/src/features/v4-migration/V4MigrationContent.tsx#L198",
+    "token": "pl-4.25",
+    "px": 17,
+    "nearest": [
+      16,
+      20
+    ],
+    "form": "step",
+    "source": "<CollapsibleContent> ⏎ <div className=\"pt-0.5 pb-4 pl-4.25\">{children}</div> ⏎ </CollapsibleContent>",
+    "agent": "intentional",
+    "agentReason": "Indents content to the text after a 16px chevron",
+    "maintainer": null
+  },
+  {
+    "id": "langfuse:src/components/EntityTitle.tsx:47:pb-0.75",
+    "app": "langfuse",
+    "url": "https://github.com/langfuse/langfuse/blob/be69f6bddba4e148133db7d76305224de01a6cb5/web/src/components/EntityTitle.tsx#L47",
+    "token": "pb-0.75",
+    "px": 3,
+    "nearest": [
+      2,
+      4
+    ],
+    "form": "step",
+    "source": "// Explicit colour: titles are the emphasis tier and never inherit a container tint. ⏎ \"text-primary min-w-0 truncate pt-px pb-0.75 text-lg leading-6 font-bold\", ⏎ isFocusable && \"focus:outline-hidden\",",
+    "agent": "undeclared-token",
+    "agentReason": "3px used 5 times in 5 files",
+    "maintainer": null
+  },
+  {
+    "id": "langfuse:src/features/topics/TopicPilesIllustration.tsx:45:gap-1.75",
+    "app": "langfuse",
+    "url": "https://github.com/langfuse/langfuse/blob/be69f6bddba4e148133db7d76305224de01a6cb5/web/src/features/topics/TopicPilesIllustration.tsx#L45",
+    "token": "gap-1.75",
+    "px": 7,
+    "nearest": [
+      6,
+      8
+    ],
+    "form": "step",
+    "source": "className={cn( ⏎ \"bg-background absolute z-20 flex items-center gap-1.75 rounded-lg border px-2.5 py-1.75 text-xs whitespace-nowrap shadow-md\", ⏎ slip.position,",
+    "agent": "drift",
+    "agentReason": "Tooltip gap and padding with no visible reason",
+    "maintainer": null
+  },
+  {
+    "id": "next-ai-draw-io:app/[lang]/about/page.tsx:140:px-4.5",
+    "app": "next-ai-draw-io",
+    "url": "https://github.com/DayuanJiang/next-ai-draw-io/blob/c9dc5f5cc62e7e5a327a62b39027d80033e1548c/app/[lang]/about/page.tsx#L140",
+    "token": "px-4.5",
+    "px": 18,
+    "nearest": [
+      16,
+      20
+    ],
+    "form": "step",
+    "source": "href={`/${lang}/mcp`} ⏎ className=\"rounded-lg border border-border bg-card px-4.5 py-2.5 text-[14.5px] font-medium hover:bg-muted\" ⏎ >",
+    "agent": "undeclared-token",
+    "agentReason": "18px used 13 times in 5 files",
+    "maintainer": null
+  },
+  {
+    "id": "next-ai-draw-io:components/site/not-found-page.tsx:79:px-4.5",
+    "app": "next-ai-draw-io",
+    "url": "https://github.com/DayuanJiang/next-ai-draw-io/blob/c9dc5f5cc62e7e5a327a62b39027d80033e1548c/components/site/not-found-page.tsx#L79",
+    "token": "px-4.5",
+    "px": 18,
+    "nearest": [
+      16,
+      20
+    ],
+    "form": "step",
+    "source": "href={`/${lang}`} ⏎ className=\"rounded-lg bg-foreground px-4.5 py-2.5 text-[14.5px] font-medium text-background\" ⏎ >",
+    "agent": "undeclared-token",
+    "agentReason": "18px used 13 times in 5 files",
+    "maintainer": null
+  },
+  {
+    "id": "next-ai-draw-io:app/[lang]/mcp/page.tsx:369:px-4.5",
+    "app": "next-ai-draw-io",
+    "url": "https://github.com/DayuanJiang/next-ai-draw-io/blob/c9dc5f5cc62e7e5a327a62b39027d80033e1548c/app/[lang]/mcp/page.tsx#L369",
+    "token": "px-4.5",
+    "px": 18,
+    "nearest": [
+      16,
+      20
+    ],
+    "form": "step",
+    "source": "href={README_URL} ⏎ className=\"rounded-lg border border-border bg-canvas px-4.5 py-2.5 text-[14.5px] font-medium hover:bg-muted\" ⏎ >",
+    "agent": "undeclared-token",
+    "agentReason": "18px used 13 times in 5 files",
+    "maintainer": null
+  },
+  {
+    "id": "recordly:src/components/launch/LaunchWindow.tsx:407:mx-[5px]",
+    "app": "recordly",
+    "url": "https://github.com/webadderallorg/Recordly/blob/109ca3a13c362e969d9add25d1f93406c36dba2a/src/components/launch/LaunchWindow.tsx#L407",
+    "token": "mx-[5px]",
+    "px": 5,
+    "nearest": [
+      4,
+      6
+    ],
+    "form": "bracketed",
+    "source": " ⏎ <Separator orientation=\"vertical\" className=\"mx-[5px] h-6 self-center\" /> ⏎ ",
+    "agent": "drift",
+    "agentReason": "Separator margin; 4px or 6px would do",
+    "maintainer": null
+  },
+  {
+    "id": "recordly:src/components/launch/LaunchWindow.tsx:291:mx-[5px]",
+    "app": "recordly",
+    "url": "https://github.com/webadderallorg/Recordly/blob/109ca3a13c362e969d9add25d1f93406c36dba2a/src/components/launch/LaunchWindow.tsx#L291",
+    "token": "mx-[5px]",
+    "px": 5,
+    "nearest": [
+      4,
+      6
+    ],
+    "form": "bracketed",
+    "source": "</Button> ⏎ <Separator orientation=\"vertical\" className=\"mx-[5px] h-6 self-center\" /> ⏎ ",
+    "agent": "drift",
+    "agentReason": "Same separator margin as #23",
+    "maintainer": null
+  },
+  {
+    "id": "recordly:src/components/video-editor/VideoEditor.tsx:116:pl-[76px]",
+    "app": "recordly",
+    "url": "https://github.com/webadderallorg/Recordly/blob/109ca3a13c362e969d9add25d1f93406c36dba2a/src/components/video-editor/VideoEditor.tsx#L116",
+    "token": "pl-[76px]",
+    "px": 76,
+    "nearest": [
+      64,
+      80
+    ],
+    "form": "bracketed",
+    "source": "}, []); ⏎ const headerLeftControlsPaddingClass = trafficLightsVisible ? \"pl-[76px]\" : \"\"; ⏎ const { cursorTelemetrySourcePath, autoCaptions, autoCaptionSettings } = timeline;",
+    "agent": "intentional",
+    "agentReason": "Clears the macOS traffic lights when they are visible",
+    "maintainer": null
+  },
+  {
+    "id": "infisical:src/pages/organization/AccessManagementPage/components/OrgIdentityTab/components/IdentitySection/OrgIdentityModal.tsx:272:mt-[27px]",
+    "app": "infisical",
+    "url": "https://github.com/Infisical/infisical/blob/d9799b72730a11dbf54cfa3ff8540e6f7e66c058/frontend/src/pages/organization/AccessManagementPage/components/OrgIdentityTab/components/IdentitySection/OrgIdentityModal.tsx#L272",
+    "token": "mt-[27px]",
+    "px": 27,
+    "nearest": [
+      24,
+      28
+    ],
+    "form": "bracketed",
+    "source": "type=\"button\" ⏎ className={twMerge(i === 0 ? \"mt-[27px]\" : \"mt-[3px]\", \"hover:text-danger\")} ⏎ onClick={() => metadataFormFields.remove(i)}",
+    "agent": "intentional",
+    "agentReason": "Offsets the first row past its field label (later rows use mt-[3px])",
+    "maintainer": null
+  },
+  {
+    "id": "infisical:src/components/pki-syncs/forms/PkiSyncFilterFields.tsx:286:mt-6.5",
+    "app": "infisical",
+    "url": "https://github.com/Infisical/infisical/blob/d9799b72730a11dbf54cfa3ff8540e6f7e66c058/frontend/src/components/pki-syncs/forms/PkiSyncFilterFields.tsx#L286",
+    "token": "mt-6.5",
+    "px": 26,
+    "nearest": [
+      24,
+      28
+    ],
+    "form": "step",
+    "source": "variant=\"ghost\" ⏎ className=\"mt-6.5 hover:text-danger\" ⏎ aria-label={`Remove ${FILTER_LABELS[kind]} filter`}",
+    "agent": "undeclared-token",
+    "agentReason": "26px used 12 times in 9 files; the same label offset",
+    "maintainer": null
+  },
+  {
+    "id": "infisical:src/pages/organization/AccessManagementPage/components/OrgIdentityTab/components/IdentitySection/IdentityJwtAuthForm.tsx:566:mt-[1.625rem]",
+    "app": "infisical",
+    "url": "https://github.com/Infisical/infisical/blob/d9799b72730a11dbf54cfa3ff8540e6f7e66c058/frontend/src/pages/organization/AccessManagementPage/components/OrgIdentityTab/components/IdentitySection/IdentityJwtAuthForm.tsx#L566",
+    "token": "mt-[1.625rem]",
+    "px": 26,
+    "nearest": [
+      24,
+      28
+    ],
+    "form": "bracketed",
+    "source": "aria-label=\"Remove claim\" ⏎ className={index === 0 ? \"mt-[1.625rem]\" : \"mt-0.5\"} ⏎ onClick={() => removeBoundClaimField(index)}",
+    "agent": "undeclared-token",
+    "agentReason": "26px used 12 times in 9 files; the same label offset",
+    "maintainer": null
+  },
+  {
+    "id": "sim:app/workspace/[workspaceId]/tables/[tableId]/components/enrichment-details/enrichment-details.tsx:280:pt-[3px]",
+    "app": "sim",
+    "url": "https://github.com/simstudioai/sim/blob/6ebc04dde09921db796821bab1844306c3d136b0/apps/sim/app/workspace/[workspaceId]/tables/[tableId]/components/enrichment-details/enrichment-details.tsx#L280",
+    "token": "pt-[3px]",
+    "px": 3,
+    "nearest": [
+      2,
+      4
+    ],
+    "form": "bracketed",
+    "source": "</div> ⏎ <div className='px-2 pt-[3px] pb-1.5'> ⏎ <div className='relative h-[3px] w-full overflow-hidden rounded-full bg-[var(--border)]'>",
+    "agent": "undeclared-token",
+    "agentReason": "3px used 17 times in 14 files",
+    "maintainer": null
+  },
+  {
+    "id": "sim:app/workspace/[workspaceId]/w/[workflowId]/components/panel/components/editor/components/sub-block/components/starter/input-format.tsx:392:py-[5px]",
+    "app": "sim",
+    "url": "https://github.com/simstudioai/sim/blob/6ebc04dde09921db796821bab1844306c3d136b0/apps/sim/app/workspace/[workspaceId]/w/[workflowId]/components/panel/components/editor/components/sub-block/components/starter/input-format.tsx#L392",
+    "token": "py-[5px]",
+    "px": 5,
+    "nearest": [
+      4,
+      6
+    ],
+    "form": "bracketed",
+    "source": "aria-label={`${title} ${index + 1}`} ⏎ className='flex cursor-pointer items-center justify-between rounded-t-[3px] bg-[var(--surface-4)] px-2.5 py-[5px]' ⏎ onClick={() => toggleCollapse(field.id)}",
+    "agent": "undeclared-token",
+    "agentReason": "5px used 43 times in 32 files",
+    "maintainer": null
+  },
+  {
+    "id": "sim:app/workspace/[workspaceId]/w/components/sidebar/components/workspace-header/workspace-header.tsx:601:py-[5px]",
+    "app": "sim",
+    "url": "https://github.com/simstudioai/sim/blob/6ebc04dde09921db796821bab1844306c3d136b0/apps/sim/app/workspace/[workspaceId]/w/components/sidebar/components/workspace-header/workspace-header.tsx#L601",
+    "token": "py-[5px]",
+    "px": 5,
+    "nearest": [
+      4,
+      6
+    ],
+    "form": "bracketed",
+    "source": "{filteredWorkspaces.length === 0 && workspaceSearch && ( ⏎ <div className='px-2 py-[5px] text-[var(--text-muted)] text-caption'> ⏎ No results for \"{workspaceSearch}\"",
+    "agent": "undeclared-token",
+    "agentReason": "5px used 43 times in 32 files",
+    "maintainer": null
+  },
+  {
+    "id": "hey-xyz:src/components/Composer/Editor/Editor.tsx:52:mt-[8.5px]",
+    "app": "hey-xyz",
+    "url": "https://github.com/slymnoyann/hey.xyz/blob/44dee0c1223b9202699915fd3e92e670fd8e34e6/src/components/Composer/Editor/Editor.tsx#L52",
+    "token": "mt-[8.5px]",
+    "px": 8.5,
+    "nearest": [
+      8,
+      10
+    ],
+    "form": "bracketed",
+    "source": "<div ⏎ className=\"relative mt-[8.5px] box-border h-full min-h-[80px] flex-1 overflow-auto leading-6 outline-0 sm:leading-[26px]\" ⏎ ref={editor.mount}",
+    "agent": "intentional",
+    "agentReason": "Centres the first text line on a 44px avatar",
+    "maintainer": null
+  },
+  {
+    "id": "onlook:src/app/_components/landing-page/feature-blocks/layers.tsx:98:ml-34",
+    "app": "onlook",
+    "url": "https://github.com/onlook-dev/onlook/blob/423e2e924366419e418ee049093872d535eea41a/apps/web/client/src/app/_components/landing-page/feature-blocks/layers.tsx#L98",
+    "token": "ml-34",
+    "px": 136,
+    "nearest": [
+      128,
+      144
+    ],
+    "form": "step",
+    "source": "<div className=\"w-full h-6 bg-gray-800/80 flex flex-row gap-4 justify-between items-center px-2 absolute top-1.5 left-0\"> ⏎ <Illustrations.LayersLogo className='h-2 ml-34' /> ⏎ <Illustrations.LayersReserve className='h-1' />",
+    "agent": "intentional",
+    "agentReason": "Landing-page illustration geometry",
+    "maintainer": null
+  },
+  {
+    "id": "onlook:src/app/project/[id]/_components/left-panel/design-panel/brand-tab/color-panel/index.tsx:118:py-[18px]",
+    "app": "onlook",
+    "url": "https://github.com/onlook-dev/onlook/blob/423e2e924366419e418ee049093872d535eea41a/apps/web/client/src/app/project/[id]/_components/left-panel/design-panel/brand-tab/color-panel/index.tsx#L118",
+    "token": "py-[18px]",
+    "px": 18,
+    "nearest": [
+      16,
+      20
+    ],
+    "form": "bracketed",
+    "source": "{/* Brand Palette Groups section */} ⏎ <div className=\"border-border flex flex-col gap-4 border-b px-4 py-[18px]\"> ⏎ <div className=\"flex flex-col gap-3\">",
+    "agent": "drift",
+    "agentReason": "Section padding with no visible reason",
+    "maintainer": null
+  },
+  {
+    "id": "onlook:src/app/_components/shared/mockups/components-mockup.tsx:81:gap-[1.5px]",
+    "app": "onlook",
+    "url": "https://github.com/onlook-dev/onlook/blob/423e2e924366419e418ee049093872d535eea41a/apps/web/client/src/app/_components/shared/mockups/components-mockup.tsx#L81",
+    "token": "gap-[1.5px]",
+    "px": 1.5,
+    "nearest": [
+      0,
+      2
+    ],
+    "form": "bracketed",
+    "source": "{item.label === 'Card' && ( ⏎ <div className=\"w-18 h-18 bg-black rounded-[4px] p-1.5 flex flex-col gap-[1.5px] select-none\" style={{ fontSize: '3.5px' }}> ⏎ {/* Header */}",
+    "agent": "intentional",
+    "agentReason": "Miniature card illustration at a 3.5px font size",
+    "maintainer": null
+  },
+  {
+    "id": "readest:src/components/primitives/input-group.tsx:44:has-[>button]:ml-[-0.45rem]",
+    "app": "readest",
+    "url": "https://github.com/readest/readest/blob/f20715e91da8af88ca25da5de9b50c5fd7901da2/apps/readest-app/src/components/primitives/input-group.tsx#L44",
+    "token": "has-[>button]:ml-[-0.45rem]",
+    "px": 7.2,
+    "nearest": [
+      6,
+      8
+    ],
+    "form": "bracketed",
+    "source": "align: { ⏎ 'inline-start': 'order-first pl-3 has-[>button]:ml-[-0.45rem] has-[>kbd]:ml-[-0.35rem]', ⏎ 'inline-end': 'order-last pr-3 has-[>button]:mr-[-0.4rem] has-[>kbd]:mr-[-0.35rem]',",
+    "agent": "intentional",
+    "agentReason": "Optical offset copied from shadcn input-group",
+    "maintainer": null
+  },
+  {
+    "id": "readest:src/app/library/components/BookshelvesDialog.tsx:1033:mt-[1.125rem]",
+    "app": "readest",
+    "url": "https://github.com/readest/readest/blob/f20715e91da8af88ca25da5de9b50c5fd7901da2/apps/readest-app/src/app/library/components/BookshelvesDialog.tsx#L1033",
+    "token": "mt-[1.125rem]",
+    "px": 18,
+    "nearest": [
+      16,
+      20
+    ],
+    "form": "bracketed",
+    "source": "onClick={() => void close()} ⏎ className='bg-base-300/65 btn btn-ghost btn-circle mt-[1.125rem] hidden h-6 min-h-6 w-6 shrink-0 focus:outline-hidden sm:flex' ⏎ >",
+    "agent": "unclear",
+    "agentReason": "Close button offset; probably matches the tab row, not visible",
+    "maintainer": null
+  },
+  {
+    "id": "readest:src/components/primitives/input-group.tsx:45:has-[>kbd]:mr-[-0.35rem]",
+    "app": "readest",
+    "url": "https://github.com/readest/readest/blob/f20715e91da8af88ca25da5de9b50c5fd7901da2/apps/readest-app/src/components/primitives/input-group.tsx#L45",
+    "token": "has-[>kbd]:mr-[-0.35rem]",
+    "px": 5.6,
+    "nearest": [
+      4,
+      6
+    ],
+    "form": "bracketed",
+    "source": "'inline-start': 'order-first pl-3 has-[>button]:ml-[-0.45rem] has-[>kbd]:ml-[-0.35rem]', ⏎ 'inline-end': 'order-last pr-3 has-[>button]:mr-[-0.4rem] has-[>kbd]:mr-[-0.35rem]', ⏎ 'block-start':",
+    "agent": "intentional",
+    "agentReason": "Optical offset copied from shadcn input-group",
+    "maintainer": null
+  },
+  {
+    "id": "responsively:src/renderer/components/AnnouncementCard/index.tsx:118:gap-[5px]",
+    "app": "responsively",
+    "url": "https://github.com/responsively-org/responsively-app/blob/b23488fce1de2a48971624f134f7f0afcec68ecf/desktop-app/src/renderer/components/AnnouncementCard/index.tsx#L118",
+    "token": "gap-[5px]",
+    "px": 5,
+    "nearest": [
+      4,
+      6
+    ],
+    "form": "bracketed",
+    "source": "<> ⏎ <div className=\"mt-[10px] mb-3 flex flex-col gap-[5px]\"> ⏎ {WHATS_NEW_ROWS.map((row) => (",
+    "agent": "undeclared-token",
+    "agentReason": "5px used 5 times in 4 files",
+    "maintainer": null
+  },
+  {
+    "id": "responsively:src/renderer/components/ToolBar/McpPanel/index.tsx:168:gap-[9px]",
+    "app": "responsively",
+    "url": "https://github.com/responsively-org/responsively-app/blob/b23488fce1de2a48971624f134f7f0afcec68ecf/desktop-app/src/renderer/components/ToolBar/McpPanel/index.tsx#L168",
+    "token": "gap-[9px]",
+    "px": 9,
+    "nearest": [
+      8,
+      10
+    ],
+    "form": "bracketed",
+    "source": "data-testid={`mcp-tool-${tool.id}`} ⏎ className=\"flex items-center gap-[9px] rounded-lg px-[10px] py-[5px] hover:bg-hover\" ⏎ >",
+    "agent": "undeclared-token",
+    "agentReason": "9px used 9 times in 6 files",
+    "maintainer": null
+  },
+  {
+    "id": "responsively:src/renderer/components/Previewer/index.tsx:446:pt-[7px]",
+    "app": "responsively",
+    "url": "https://github.com/responsively-org/responsively-app/blob/b23488fce1de2a48971624f134f7f0afcec68ecf/desktop-app/src/renderer/components/Previewer/index.tsx#L446",
+    "token": "pt-[7px]",
+    "px": 7,
+    "nearest": [
+      6,
+      8
+    ],
+    "form": "bracketed",
+    "source": "> ⏎ <div className=\"px-[9px] pt-[7px] pb-[3px] text-[10px] font-bold tracking-[0.07em] text-muted\"> ⏎ SHOW ON CANVAS",
+    "agent": "undeclared-token",
+    "agentReason": "7px used 15 times in 11 files",
+    "maintainer": null
+  }
+]
