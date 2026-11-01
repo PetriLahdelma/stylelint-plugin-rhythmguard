@@ -31,6 +31,8 @@ Most Tailwind lint rules either forbid arbitrary values outright or rewrite them
 npm install --save-dev eslint eslint-plugin-rhythmguard
 ```
 
+You do not need Stylelint. The plugin adds 8 packages to an ESLint install and no peer warnings; 3.15.0 also pulled in Stylelint, 101 packages.
+
 ## Configure
 
 ```js
@@ -93,6 +95,16 @@ The rules run unchanged through Oxlint's JS plugin support (checked with Oxlint 
 }
 ```
 
+## Adopting it on an existing codebase
+
+ESLint's bulk suppressions (ESLint 9.24 or newer) record today's findings so that CI fails only on new ones. You need no Rhythmguard baseline file:
+
+```bash
+npx eslint --suppress-rule rhythmguard-tailwind/tailwind-class-use-scale .
+```
+
+That writes `eslint-suppressions.json` with a count per file and rule. Commit it. Later runs report a finding only when a file has more than its recorded count. When a fix brings a count down, `npx eslint --prune-suppressions .` lowers the record, so the old values cannot come back unnoticed.
+
 ## Rules
 
 | Rule | What it reports | Fix |
@@ -137,7 +149,7 @@ This package re-exports `stylelint-plugin-rhythmguard/eslint`, so the rules, opt
 
 ## Compatibility
 
-ESLint 8 or newer with flat config; tested on ESLint 9 and checked on ESLint 10. Node 20.19 or newer. TypeScript declarations included.
+ESLint 8 or newer with flat config; tested on ESLint 9 and checked on ESLint 10. Node 20.19 or newer. Stylelint is not required. TypeScript declarations included.
 
 ## License
 

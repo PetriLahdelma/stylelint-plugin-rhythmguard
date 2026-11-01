@@ -6,8 +6,14 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- `stylelint` is now an optional peer dependency. An ESLint-only project no longer installs it: `eslint-plugin-rhythmguard` adds 8 packages to an ESLint 10 install, where 3.15.0 added 101, Stylelint among them. Projects that run the Stylelint rules already list `stylelint` themselves, and npm still checks its version range when it is installed. The ESLint rules and `rhythmguard audit` never loaded Stylelint; a contract test now keeps every module outside `src/rules` from importing it.
+- `rhythmguard doctor` recognises an ESLint-only setup. When Stylelint is neither installed nor configured and an ESLint config references Rhythmguard, it checks ESLint and that config instead of failing with "stylelint not installed".
+
 ### Added
 
+- The ESLint package README shows how to adopt the rule on an existing codebase with ESLint's bulk suppressions (`--suppress-rule`, `--prune-suppressions`, ESLint 9.24 or newer), with no Rhythmguard baseline format.
 - `rhythmguard --version` and `-v` print the version from `package.json` and exit 0. Before this, both were treated as unknown commands: the CLI printed the help text and exited 1. Both flags are listed under Options in `rhythmguard --help`. ([#326](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/326))
 
 ## [3.15.0] - 2026-10-30

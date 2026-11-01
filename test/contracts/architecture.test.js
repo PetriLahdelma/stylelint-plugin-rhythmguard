@@ -140,3 +140,15 @@ test('every package imported at runtime is a declared dependency or peer', () =>
   }
   assert.deepEqual([...undeclared], []);
 });
+
+// An ESLint-only project or `npx rhythmguard` must not need Stylelint, so it is
+// an optional peer; only the Stylelint rules themselves may import it.
+test('stylelint is an optional peer that only the Stylelint rules import', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8'));
+  assert.equal(manifest.peerDependenciesMeta?.stylelint?.optional, true);
+  const importers = [...packageImports]
+    .filter(([, packages]) => packages.includes('stylelint'))
+    .map(([file]) => path.relative(srcDir, file))
+    .filter((file) => !file.startsWith(`rules${path.sep}`) && file !== 'index.js');
+  assert.deepEqual(importers, []);
+});

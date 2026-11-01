@@ -118,3 +118,35 @@ test('doctor warns about a token source with no spacing tokens, whatever its for
   assert.equal(result.status, clean.status);
   assert.match(result.stdout, /issues? found \(2 warnings\)\./);
 });
+
+function eslintOnlyFixture({ withEslint }) {
+  const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-doctor-eslint-'));
+  fs.writeFileSync(
+    path.join(fixtureDir, 'eslint.config.mjs'),
+    "import rhythmguard from 'eslint-plugin-rhythmguard';\nexport default [rhythmguard.configs.recommended];\n",
+  );
+  fs.writeFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), JSON.stringify({ audit: { scale: [0, 4, 8, 12, 16] } }));
+  if (withEslint) {
+    fs.mkdirSync(path.join(fixtureDir, 'node_modules', 'eslint'), { recursive: true });
+    fs.writeFileSync(path.join(fixtureDir, 'node_modules', 'eslint', 'package.json'), JSON.stringify({ name: 'eslint', version: '10.0.0' }));
+  }
+  return spawnSync(process.execPath, [cliPath, 'doctor'], { cwd: fixtureDir, encoding: 'utf8' });
+}
+
+test('doctor passes an ESLint-only setup without asking for Stylelint', () => {
+  const result = eslintOnlyFixture({ withEslint: true });
+
+  assert.equal(result.status, 0, result.stdout);
+  assert.match(result.stdout, /✓ eslint installed \(v10\.0\.0\)/);
+  assert.match(result.stdout, /✓ ESLint config references rhythmguard \(eslint\.config\.mjs\)/);
+  assert.match(result.stdout, /- Stylelint checks skipped \(ESLint-only setup\)/);
+  assert.doesNotMatch(result.stdout, /stylelint not installed/);
+});
+
+test('doctor fails an ESLint-only setup when ESLint itself is missing', () => {
+  const result = eslintOnlyFixture({ withEslint: false });
+
+  assert.equal(result.status, 1);
+  assert.match(result.stdout, /✗ eslint not installed/);
+  assert.match(result.stdout, /npm install --save-dev eslint/);
+});

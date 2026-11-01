@@ -168,6 +168,9 @@
     "postcss-scss": {
       "optional": true
     },
+    "stylelint": {
+      "optional": true
+    },
     "stylelint-config-tailwindcss": {
       "optional": true
     },
