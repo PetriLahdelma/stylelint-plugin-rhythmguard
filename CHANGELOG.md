@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.16.0] - 2026-11-01
+
 ### Changed
 
 - `stylelint` is now an optional peer dependency. An ESLint-only project no longer installs it: `eslint-plugin-rhythmguard` adds 8 packages to an ESLint 10 install, where 3.15.0 added 101, Stylelint among them. Projects that run the Stylelint rules already list `stylelint` themselves, and npm still checks its version range when it is installed. The ESLint rules and `rhythmguard audit` never loaded Stylelint; a contract test now keeps every module outside `src/rules` from importing it.
