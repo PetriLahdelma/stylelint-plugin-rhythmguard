@@ -114,6 +114,25 @@ jobs:
       - name: ESLint rule tests
         run: node --test test/rules/eslint-tailwind.test.js test/rules/eslint-tailwind-templates.test.js test/rules/eslint-tailwind-escapes.test.js test/rules/note-option.test.js test/unit/eslint-utility-functions.test.js test/contracts/eslint-samples.test.js
 
+  # The ESLint rules through Oxlint's JS plugins (alpha), on TSX, at a pinned
+  # Oxlint version (#327). The test skips everywhere else, where Oxlint is not
+  # installed. Bump the pin deliberately and update the version in the docs.
+  oxlint:
+    name: oxlint companion rules (oxlint-1.88.0, node-22)
+    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22.x
+          cache: npm
+      - run: npm ci
+      - name: Install Oxlint
+        run: npm install --no-save oxlint@1.88.0
+      - name: Oxlint JS plugin tests
+        run: node --test test/contracts/oxlint-jsplugin.test.js
+
   # Fork PRs cannot use the self-hosted farm (public repo, untrusted code), so
   # contributors get feedback from one GitHub-hosted job: lint, typecheck, tests.
   fork-verify:

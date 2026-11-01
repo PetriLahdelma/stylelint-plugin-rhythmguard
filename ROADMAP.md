@@ -16,7 +16,7 @@ The 2026-10-18 council report, [`docs/COUNCIL_2027-2028.md`](./docs/COUNCIL_2027
 | --- | --- |
 | Companion packages publish from `release.yml` (#61) | Done 2026-10-23; all three packages at 3.14.0 with provenance |
 | A release fails while any package lags | Done (`release.yml`, last publish step) |
-| Node 24 and 26 in CI, ESLint 9 and 10 for the companion (#164) | Done; Oxlint is open as a separate issue |
+| Node 24 and 26 in CI, ESLint 9 and 10 for the companion (#164) | Done; Oxlint 1.88.0 tested in CI since 2026-11-01 (#327) |
 | Weekly run against Stylelint `next` (#168) | Done; 18.0.0-next.0 passes the full suite |
 | #159 hairlines in class strings, #161 vendored CSS in the audit | Done in 3.15.0, with #331 (`fix` skips what the audit skips) |
 | Freeze declared | Done (above) |
