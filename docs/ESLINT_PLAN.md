@@ -108,7 +108,7 @@ Revisit a separate repository only if someone other than the maintainer takes ov
 | Phase | Dates | Work | Exit |
 | --- | --- | --- | --- |
 | 0. Measure | 2026-11-02 to 11-15 | Measure 20 public Tailwind v4 apps, fixed in advance in `benchmarks/tailwind-v4/`; prototype v4 step checking on a branch (no release); commit the competitor comparison script | Go/no-go below |
-| 1. Build | 2026-11-16 to 12-20 | Items 1 to 8 as 3.x minors under the amended freeze; `--preserve` (#166) lands in the same window | Probe table all bold rows flagged; local gate green; Oxlint job green |
+| 1. Build | 2026-11-16 to 12-20 | Items 5 to 8 after the 2026-11-01 no-go (items 1 to 8 had it passed) as 3.x minors under the amended freeze; `--preserve` (#166) lands in the same window | Local gate green; Oxlint job green |
 | 2. Distribute | 2026-12 to 2027-01 | One article built on the laundering finding with the reproducible script; Tailwind Discussions show-and-tell; one awesome-list PR. Each post confirmed by the maintainer before it goes out | Posted and logged in `docs/outreach/` |
 | 3. 4.0 | with Stylelint 18.0.0, no later than 2027-02-28 | v4 step checking on by default; engine split; repository rename; migration notes for doctor-school's config | Upgrade of doctor-school's config and the benchmark rows with zero unexplained new findings |
 | Checkpoint | 2027-03-31 | Demand test below | Decision written into the council plan |
@@ -124,14 +124,14 @@ Build phase 1 only if both hold:
 
 If either fails, Tailwind apps do not drift enough to sell a rule on. Ship items 5 to 8 (Oxlint, clean install, docs), leave the ESLint plugin a companion, and record the result here.
 
-**Provisional result, 2026-11-01** ([`benchmarks/tailwind-v4/RESULTS.md`](../benchmarks/tailwind-v4/RESULTS.md); final once the maintainer's ratings replace the agent's):
+**Result, 2026-11-01** ([`benchmarks/tailwind-v4/RESULTS.md`](../benchmarks/tailwind-v4/RESULTS.md)). Two raters (the agent and a blind second rater) agreed on 33 of 41 findings, with Cohen's kappa 0.69:
 
 - **Criterion 1 passes:** 15 of 20 apps have off-scale rhythm values.
-- **Criterion 2 fails:** 4 of 41 reviewed findings are drift, against a bar of 33. The review covers 41 findings, not 50, because of the per-app cap.
+- **Criterion 2 fails:** 3 of 41 reviewed findings are drift, against a bar of 33. The review covers 41 findings, not 50, because of the per-app cap.
 - **Why it fails:** 73% of the 700 findings repeat a value 5 or more times in the same app (5px 99 times, 18px 74 times, 3px 68 times). These are undeclared conventions, not slips.
 - **No team scale to check:** only 1 of the 20 apps declares a spacing token, so the step check as planned would fire nowhere.
 
-Outcome unless the maintainer's ratings reverse it: no phase 1 rule work, and items 5 to 8 only.
+**No-go.** Phase 1 builds items 5 to 8 only. Items 1 to 4, the scale-aware rule and v4 step checking, are not built, and the ESLint plugin stays a companion. The demand test on 2027-03-31 still runs.
 
 ### Demand test on 2027-03-31
 
