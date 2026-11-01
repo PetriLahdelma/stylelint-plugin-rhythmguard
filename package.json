@@ -203,5 +203,8 @@
   "publishConfig": {
     "access": "public"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "overrides": {
+    "minimatch": "^11.0.3"
+  }
 }
