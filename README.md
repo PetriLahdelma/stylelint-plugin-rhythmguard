@@ -11,9 +11,9 @@ Nobody chose 13px. Rhythmguard catches off-scale spacing in CSS and Tailwind cla
 [![npm downloads](https://img.shields.io/npm/dm/stylelint-plugin-rhythmguard.svg)](https://www.npmjs.com/package/stylelint-plugin-rhythmguard)
 [![License: MIT](https://img.shields.io/badge/license-MIT-white.svg)](./LICENSE)
 
-Rhythmguard is scale-aware rather than a blanket ban: values on your scale pass, values off it are reported with the two nearest steps, and tokens are only ever suggested from a map you control. It works on CSS and SCSS declarations through Stylelint and on Tailwind class strings through an ESLint companion, and it ships an audit CLI so you can measure drift and ratchet it down before enforcing anything.
+Rhythmguard is scale-aware rather than a blanket ban: values on your scale pass, values off it are reported with the two nearest steps, and tokens are only ever suggested from a map you control. It works on CSS and SCSS declarations through Stylelint and on Tailwind class strings through ESLint or Oxlint, and it ships an audit CLI so you can measure drift and ratchet it down before enforcing anything.
 
-What it is not: it does not check colors or hex values, and the Stylelint rules do not see Tailwind class strings (that is the separate ESLint companion below). It reads CSS and SCSS; Less and CSS-in-JS are not read. Pair it with a color linter if you need one; do not expect one tool to do both. Nor does it judge type for reading: whether a measure, a fluid heading or a number column works for the reader is the job of [Measured Type](#type-pair-it-with-measured-type).
+What it is not: it does not check colors or hex values, and the Stylelint rules do not see Tailwind class strings (that is the ESLint plugin below). It reads CSS and SCSS; Less and CSS-in-JS are not read. Pair it with a color linter if you need one; do not expect one tool to do both. Nor does it judge type for reading: whether a measure, a fluid heading or a number column works for the reader is the job of [Measured Type](#type-pair-it-with-measured-type).
 
 ## Start here
 
@@ -27,7 +27,9 @@ No install, no config. It detects your stack and token files, infers your spacin
   <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/quickstart.gif?v=1" width="100%" alt="Terminal recording: npx stylelint-plugin-rhythmguard on Bootstrap v6-dev detects the stack, infers the 13-step spacing scale from scss/_config.scss, reports 20 off-scale values in CSS and prints a .stylelintrc.json to paste" />
 </p>
 
-Then:
+Then add the linter you already run. Most projects need one; a project with both stylesheets and class strings can run both.
+
+### Stylesheets: Stylelint
 
 ```bash
 npm install --save-dev stylelint stylelint-plugin-rhythmguard
@@ -47,7 +49,9 @@ That enables `rhythmguard/use-scale` on spacing properties with the default 4px 
 }
 ```
 
-For class strings in JSX, TSX, Vue, Svelte or Astro, add the ESLint companion, [`eslint-plugin-rhythmguard`](packages/eslint-plugin-rhythmguard#readme). It is the same rules as `stylelint-plugin-rhythmguard/eslint`, so either import works. The rules also run under Oxlint's JS plugins.
+### Class strings: ESLint or Oxlint
+
+For Tailwind class strings in JSX, TSX, Vue, Svelte or Astro, use [`eslint-plugin-rhythmguard`](packages/eslint-plugin-rhythmguard#readme). It needs no Stylelint. It is the same rules as `stylelint-plugin-rhythmguard/eslint`, so either import works, and CI tests them under Oxlint's JS plugins too. How it compares with the other Tailwind lint rules: [the comparison](packages/eslint-plugin-rhythmguard#why-this-and-not-a-ban).
 
 ```bash
 npm install --save-dev eslint eslint-plugin-rhythmguard

@@ -23,7 +23,18 @@ Nobody chose 13px. This plugin catches off-scale Tailwind arbitrary spacing in c
 
 ## Why this and not a ban
 
-Most Tailwind lint rules either forbid arbitrary values outright or rewrite them to an equivalent class. Tailwind's own canonical classes turn `p-[13px]` into `p-3.25` and call it on the scale. This rule asks a different question: is the value one of the steps your design system allows? `p-[12px]` passes on a 4px scale, `p-[13px]` does not, and the finding names the two classes you probably meant.
+Most Tailwind lint rules either forbid arbitrary values outright or rewrite them to an equivalent class, and an equivalent of 13px is still 13px. This rule asks a different question: is the value one of the steps your design system allows? `p-[12px]` passes on a 4px scale, `p-[13px]` does not, and the finding names the two classes you probably meant.
+
+The same TSX file through each tool, default Tailwind theme, scale `[0, 4, 8, 12, 16, 24, 32]` for Rhythmguard:
+
+| Class | better-tailwindcss 4.10.0 | eslint-plugin-tailwindcss 4.4.0 | @shadcn/lint 0.2.3 | Rhythmguard |
+| --- | --- | --- | --- | --- |
+| `p-[13px]` | no finding | no finding | Use `p-3.25` "(same value, on the scale)" | Use `p-3` (12px) or `p-4` (16px) |
+| `p-[0.8125rem]` | Simplify to `p-3.25` | Write as `p-3.25` | Use a theme token or scale value | Use `p-3` (12px) or `p-4` (16px) |
+| `p-[12px]` | no finding | Use `p-3` | Use `p-3` | no finding (on the scale) |
+| `p-3.25` | no finding | no finding | no finding | no finding |
+
+The last row is the gap every tool shares, this one included: Tailwind v4 accepts any quarter step as a plain class, and nothing checks `p-3.25` against a scale. Rhythmguard catches the value before it is rewritten. Rerun the comparison with `node scripts/bench/tailwind-compare.mjs` in the repository; [full table](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/benchmarks/tailwind-compare/RESULTS.md).
 
 ## Install
 

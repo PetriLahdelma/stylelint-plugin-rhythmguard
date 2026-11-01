@@ -13,6 +13,7 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Added
 
+- `scripts/bench/tailwind-compare.mjs` reruns the competitor test: one TSX file of spacing classes through eslint-plugin-better-tailwindcss, eslint-plugin-tailwindcss, @shadcn/lint, the Tailwind CLI `canonicalize` and this rule, at pinned versions. The ESLint package README opens its comparison with the result, including the gap every tool shares: no tool, this one included, checks a v4 step such as `p-3.25` against a scale. The repository README puts Stylelint and ESLint side by side as the two ways in.
 - The ESLint rules are tested under Oxlint. A CI job runs `tailwind-class-use-scale` through Oxlint 1.88.0 JS plugins on TSX, for findings and `--fix`, and runs every `.oxlintrc.json` sample in the docs. The Oxlint config is now in `docs/TAILWIND.md` and the rule docs, next to the ESLint one, with the alpha and no-Vue-or-Svelte caveat. ([#327](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/327))
 - The ESLint package README shows how to adopt the rule on an existing codebase with ESLint's bulk suppressions (`--suppress-rule`, `--prune-suppressions`, ESLint 9.24 or newer), with no Rhythmguard baseline format.
 - `rhythmguard --version` and `-v` print the version from `package.json` and exit 0. Before this, both were treated as unknown commands: the CLI printed the help text and exited 1. Both flags are listed under Options in `rhythmguard --help`. ([#326](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/326))
