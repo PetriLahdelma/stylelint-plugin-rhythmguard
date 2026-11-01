@@ -53,7 +53,7 @@ function layerOf(file) {
 function specifiersOf(file) {
   const source = fs.readFileSync(file, 'utf8');
   const found = [];
-  for (const match of source.matchAll(/require\(\s*['"]([^'"]+)['"]\s*\)|from\s+['"]([^'"]+)['"]/g)) {
+  for (const match of source.matchAll(/(?:require|import)\(\s*['"]([^'"]+)['"]\s*\)|from\s+['"]([^'"]+)['"]/g)) {
     found.push(match[1] || match[2]);
   }
   return found;
@@ -141,14 +141,23 @@ test('every package imported at runtime is a declared dependency or peer', () =>
   assert.deepEqual([...undeclared], []);
 });
 
-// An ESLint-only project or `npx rhythmguard` must not need Stylelint, so it is
-// an optional peer; only the Stylelint rules themselves may import it.
-test('stylelint is an optional peer that only the Stylelint rules import', () => {
+// An ESLint-only project must not need Stylelint, so it is an optional peer.
+// Only the Stylelint rules and the stylesheet audit may import it; the audit
+// runs the rules through Stylelint's API and says what to install without it.
+test('stylelint is an optional peer that only the rules and the stylesheet audit import', () => {
   const manifest = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8'));
   assert.equal(manifest.peerDependenciesMeta?.stylelint?.optional, true);
   const importers = [...packageImports]
     .filter(([, packages]) => packages.includes('stylelint'))
     .map(([file]) => path.relative(srcDir, file))
-    .filter((file) => !file.startsWith(`rules${path.sep}`) && file !== 'index.js');
+    .filter((file) => !file.startsWith(`rules${path.sep}`) && file !== 'index.js' && file !== path.join('audit', 'scan', 'stylesheets.js'));
   assert.deepEqual(importers, []);
+});
+
+// `npx rhythmguard` installs only the rhythmguard package, and the audit needs
+// Stylelint for stylesheets, so that package brings it (3.16.0 did not).
+test('the rhythmguard command package depends on stylelint', () => {
+  const root = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8'));
+  const cli = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'packages', 'rhythmguard', 'package.json'), 'utf8'));
+  assert.equal(cli.dependencies?.stylelint, root.peerDependencies.stylelint);
 });

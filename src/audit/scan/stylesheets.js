@@ -32,6 +32,26 @@ function resolveScssSyntax() {
   return scssSyntaxCache;
 }
 
+/**
+ * Stylelint is an optional peer, so an ESLint-only project can reach this
+ * without it. The `rhythmguard` package depends on it; this package's own
+ * command says what to install instead of failing on a module path.
+ */
+async function loadStylelint() {
+  try {
+    return (await import('stylelint')).default;
+  } catch (error) {
+    if (error && error.code === 'ERR_MODULE_NOT_FOUND' && /'stylelint'/.test(error.message)) {
+      throw new Error(
+        'Auditing stylesheets needs Stylelint, which this project does not have. '
+        + 'Install it with: npm install --save-dev stylelint',
+        { cause: error },
+      );
+    }
+    throw error;
+  }
+}
+
 async function runStylelintAudit(cssFiles, options) {
   if (cssFiles.length === 0) {
     const empty = [];
@@ -42,7 +62,7 @@ async function runStylelintAudit(cssFiles, options) {
     return empty;
   }
 
-  const { default: stylelint } = await import('stylelint');
+  const stylelint = await loadStylelint();
   const rules = {
     'rhythmguard/use-scale': [
       true,
