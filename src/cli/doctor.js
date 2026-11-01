@@ -13,7 +13,8 @@ const HELP = `Usage: rhythmguard doctor
 
 Validate the Rhythmguard setup in the current directory: Stylelint, its config,
 the rules it references, .rhythmguardrc.json, token sources and the baseline.
-Exits 1 when a check fails.
+In a project that uses Rhythmguard through ESLint only (no Stylelint), checks
+ESLint and its config instead of Stylelint's. Exits 1 when a check fails.
 
 Options:
   --help        Show this help message
@@ -46,27 +47,29 @@ function warn(msg) {
   process.stdout.write(`! ${msg}\n`);
 }
 
-// Check 1: Stylelint installed
-function checkStylelint() {
+function installedVersion(name) {
   try {
-    const stylelintPkg = require.resolve('stylelint/package.json', {
-      paths: [cwd],
-    });
-    const version = require(stylelintPkg).version;
-    pass(`stylelint installed (v${version})`);
-    return true;
+    return require(require.resolve(`${name}/package.json`, { paths: [cwd] })).version;
   } catch {
-    fail(
-      'stylelint not installed',
-      'Run: npm install --save-dev stylelint',
-    );
-    return false;
+    return null;
   }
 }
 
-// Check 2: Config found
-function findConfig() {
-  const configFiles = [
+// Check 1: Stylelint installed
+function checkStylelint() {
+  const version = installedVersion('stylelint');
+  if (version) {
+    pass(`stylelint installed (v${version})`);
+    return true;
+  }
+  fail(
+    'stylelint not installed',
+    'Run: npm install --save-dev stylelint',
+  );
+  return false;
+}
+
+const STYLELINT_CONFIG_FILES = [
     '.stylelintrc',
     '.stylelintrc.json',
     '.stylelintrc.js',
@@ -77,28 +80,56 @@ function findConfig() {
     'stylelint.config.js',
     'stylelint.config.cjs',
     'stylelint.config.mjs',
-  ];
+];
 
-  for (const file of configFiles) {
+const ESLINT_CONFIG_FILES = [
+  'eslint.config.js',
+  'eslint.config.mjs',
+  'eslint.config.cjs',
+  'eslint.config.ts',
+  'eslint.config.mts',
+  'eslint.config.cts',
+  '.eslintrc',
+  '.eslintrc.js',
+  '.eslintrc.cjs',
+  '.eslintrc.json',
+  '.eslintrc.yml',
+  '.eslintrc.yaml',
+];
+
+function readPackageJson() {
+  try {
+    return JSON.parse(fs.readFileSync(path.join(cwd, 'package.json'), 'utf8'));
+  } catch {
+    return null;
+  }
+}
+
+// The first config file present, or the package.json key; { label, path, content } or null.
+function locateConfig(files, packageKey) {
+  for (const file of files) {
     const fullPath = path.join(cwd, file);
     if (fs.existsSync(fullPath)) {
-      pass(`config found (${file})`);
-      return fullPath;
+      return { content: fs.readFileSync(fullPath, 'utf8'), label: file, path: fullPath };
     }
   }
+  const pkg = readPackageJson();
+  if (pkg && pkg[packageKey]) {
+    return {
+      content: JSON.stringify(pkg[packageKey]),
+      label: `package.json ${packageKey} key`,
+      path: path.join(cwd, 'package.json'),
+    };
+  }
+  return null;
+}
 
-  // Check package.json
-  const pkgPath = path.join(cwd, 'package.json');
-  if (fs.existsSync(pkgPath)) {
-    try {
-      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
-      if (pkg.stylelint) {
-        pass('config found (package.json stylelint key)');
-        return pkgPath;
-      }
-    } catch {
-      // ignore
-    }
+// Check 2: Config found
+function findConfig() {
+  const found = locateConfig(STYLELINT_CONFIG_FILES, 'stylelint');
+  if (found) {
+    pass(`config found (${found.label})`);
+    return found.path;
   }
 
   fail(
@@ -377,6 +408,26 @@ function checkRhythmguardBaseline(audit) {
   }
 }
 
+// An ESLint-only setup: Rhythmguard's ESLint rules, no Stylelint installed or configured.
+function eslintOnlyConfig() {
+  if (installedVersion('stylelint') || locateConfig(STYLELINT_CONFIG_FILES, 'stylelint')) {
+    return null;
+  }
+  const found = locateConfig(ESLINT_CONFIG_FILES, 'eslintConfig');
+  return found && found.content.includes('rhythmguard') ? found : null;
+}
+
+function checkEslintSetup(config) {
+  const version = installedVersion('eslint');
+  if (version) {
+    pass(`eslint installed (v${version})`);
+  } else {
+    fail('eslint not installed', 'Run: npm install --save-dev eslint');
+  }
+  pass(`ESLint config references rhythmguard (${config.label})`);
+  skip('Stylelint checks skipped (ESLint-only setup)');
+}
+
 function run() {
   // Doctor takes no arguments; --help prints the usage, anything else is refused (#286).
   for (const arg of process.argv.slice(3)) {
@@ -390,12 +441,18 @@ function run() {
 
   process.stdout.write('\nRhythmguard Doctor\n\n');
 
-  const stylelintOk = checkStylelint();
-  const configPath = findConfig();
-  const configContent = checkConfigReferences(configPath);
-  checkTokenPattern(configContent);
-  checkTailwindConfig(configContent);
-  checkCustomSyntax(configContent);
+  const eslintConfig = eslintOnlyConfig();
+  let stylelintOk = true;
+  if (eslintConfig) {
+    checkEslintSetup(eslintConfig);
+  } else {
+    stylelintOk = checkStylelint();
+    const configPath = findConfig();
+    const configContent = checkConfigReferences(configPath);
+    checkTokenPattern(configContent);
+    checkTailwindConfig(configContent);
+    checkCustomSyntax(configContent);
+  }
   checkRhythmguardConfig();
 
   process.stdout.write('\n');
