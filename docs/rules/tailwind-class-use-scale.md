@@ -22,6 +22,20 @@ export default [
 
 `files` and `ecmaFeatures.jsx` are what make ESLint lint `.jsx`. TypeScript, Vue, Svelte and Astro files need their parser: see [Other file types](../../packages/eslint-plugin-rhythmguard/README.md#other-file-types).
 
+Under Oxlint, load the rule as a JS plugin:
+
+```json
+// .oxlintrc.json
+{
+  "jsPlugins": [{ "name": "rhythmguard-tailwind", "specifier": "stylelint-plugin-rhythmguard/eslint" }],
+  "rules": {
+    "rhythmguard-tailwind/tailwind-class-use-scale": ["error", { "scale": [0, 4, 8, 12, 16, 24, 32] }]
+  }
+}
+```
+
+CI runs this config on Oxlint 1.88.0, on TSX, for both findings and `--fix`. Oxlint's JS plugins are alpha, and Oxlint does not lint Vue or Svelte templates, so keep ESLint for those files.
+
 A `recommended` config is exported too: `rhythmguard.configs.recommended` enables this rule at `warn` and the motion rule `off`. It registers the plugin as `rhythmguard-tailwind`, so `export default [rhythmguard.configs.recommended]` works on its own; spreading `rhythmguard.configs.recommended.rules` into a block like the one above works as well.
 
 ## What it checks

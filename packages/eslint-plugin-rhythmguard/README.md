@@ -83,7 +83,7 @@ Set `scale` to your design system's spacing steps in px. The rule does not read 
 
 ### Oxlint
 
-The rules run unchanged through Oxlint's JS plugin support (checked with Oxlint 1.85):
+The rules run unchanged through Oxlint's JS plugin support:
 
 ```json
 // .oxlintrc.json
@@ -94,6 +94,8 @@ The rules run unchanged through Oxlint's JS plugin support (checked with Oxlint 
   }
 }
 ```
+
+CI runs this config on Oxlint 1.88.0, on TSX, for both findings and `--fix`. Oxlint's JS plugins are alpha, and Oxlint does not lint Vue or Svelte templates, so keep ESLint for those files.
 
 ## Adopting it on an existing codebase
 
