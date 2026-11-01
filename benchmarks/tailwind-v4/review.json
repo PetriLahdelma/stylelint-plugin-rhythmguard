@@ -13,7 +13,9 @@
     "source": "{/* Waveform */} ⏎ <div className=\"flex items-center justify-center gap-[3px] h-3\"> ⏎ {[0, 1, 2, 3, 4, 5, 6, 7].map((i) => (",
     "agent": "intentional",
     "agentReason": "Bars of a drawn waveform icon; illustration geometry",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Gap between 3px-wide bars of an animated waveform illustration drawn with divs.",
+    "final": "intentional"
   },
   {
     "id": "supabase:components/interfaces/LogDrains/OrgAuditLogDrains.tsx:168:py-[5px]",
@@ -29,7 +31,9 @@
     "source": "aria-label=\"Choose destination type\" ⏎ className=\"shrink-0 rounded-l-none px-[4px] py-[5px] -ml-px focus-visible:z-10 focus-visible:rounded-l-sm\" ⏎ icon={<ChevronDownIcon />}",
     "agent": "undeclared-token",
     "agentReason": "5px used 12 times in 12 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "5px used 12 times; split-button chevron padding repeated as an undeclared value.",
+    "final": "undeclared-token"
   },
   {
     "id": "supabase:components/interfaces/Auth/EmailTemplates/CustomEmailTemplateRestrictionAdmonition.tsx:38:py-[5px]",
@@ -45,7 +49,9 @@
     "source": "aria-label=\"More email template editing options\" ⏎ className=\"shrink-0 rounded-l-none px-[4px] py-[5px] -ml-px focus-visible:z-10 focus-visible:rounded-l-sm\" ⏎ icon={<ChevronDownIcon />}",
     "agent": "undeclared-token",
     "agentReason": "5px used 12 times in 12 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "Same split-button chevron pattern, 5px used 12 times in the app.",
+    "final": "undeclared-token"
   },
   {
     "id": "supabase:components/interfaces/UnifiedLogs/ServiceFlow/components/GenericLogOverview.tsx:94:pl-9.5",
@@ -61,7 +67,9 @@
     "source": "table={table} ⏎ className=\"pl-9.5\" ⏎ >",
     "agent": "unclear",
     "agentReason": "Row indent; likely aligns past a column, constraint not visible",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "38px = header px-4 (16) + 14px icon + gap-2 (8); indents rows past the section icon (sibling DetailRow comments this).",
+    "final": "intentional"
   },
   {
     "id": "plane:components/exporter/guide.tsx:28:gap-y-13",
@@ -77,7 +85,9 @@
     "source": "<> ⏎ <div className=\"flex size-full flex-col gap-y-13\"> ⏎ <ExportForm",
     "agent": "undeclared-token",
     "agentReason": "52px used 5 times",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "52px used 5 times across 3 files with no visible constraint.",
+    "final": "undeclared-token"
   },
   {
     "id": "plane:components/pages/editor/ai/menu.tsx:276:pl-[54.8px]",
@@ -93,7 +103,9 @@
     "source": "</div> ⏎ <div className=\"sticky bottom-0 flex w-full items-center gap-2 bg-surface-1 py-2 pl-[54.8px]\"> ⏎ {TONES_LIST.map((tone) => (",
     "agent": "unclear",
     "agentReason": "54.8px suggests alignment to a computed column; not visible",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Indents tone buttons to line up with response text past the 28px avatar (px-4 + size-7 + gap-3); value is imprecise but tied to that icon.",
+    "final": "intentional"
   },
   {
     "id": "plane:components/automation/auto-archive-automation.tsx:114:ml-13",
@@ -109,7 +121,9 @@
     "source": "autoArchiveStatus && ( ⏎ <div className=\"ml-13\"> ⏎ <div className=\"flex w-full items-center justify-between gap-2 rounded-sm border border-subtle bg-surface-2 px-5 py-4\">",
     "agent": "undeclared-token",
     "agentReason": "52px used 5 times",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "52px used 5 times across 3 files; acts as an undeclared indent token.",
+    "final": "undeclared-token"
   },
   {
     "id": "appwrite:src/components/pages/projects/$projectId/videos/_components/player/BufferVisualizer.tsx:479:ms-[68px]",
@@ -125,7 +139,9 @@
     "source": "return ( ⏎ <div className=\"ms-[68px] space-y-1.5 pt-1 text-[11px] text-muted-foreground\"> ⏎ <div className=\"flex flex-wrap items-center gap-x-4 gap-y-1.5\">",
     "agent": "unclear",
     "agentReason": "Legend indent; likely matches the chart label column, not visible",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "68px = lane label w-14 (56) + gap-3 (12); aligns legend with the chart lanes.",
+    "final": "intentional"
   },
   {
     "id": "appwrite:src/components/pages/blocks/BlocksList.tsx:107:ps-7.5",
@@ -141,7 +157,9 @@
     "source": "disabled={!projectId} ⏎ className=\"h-8 w-48 rounded-md border border-border bg-background ps-7.5 pe-7 text-[12px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-0 focus:border-border disabled:opacity-50\" ⏎ style={{ paddingInlineStart: '1.875rem' }}",
     "agent": "intentional",
     "agentReason": "Inset for a search icon; the inline style repeats 1.875rem",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Input start padding clears the absolutely positioned 14px search icon at start-2.5.",
+    "final": "intentional"
   },
   {
     "id": "appwrite:src/components/pages/projects/$projectId/videos/_components/player/BufferVisualizer.tsx:442:ms-[68px]",
@@ -157,7 +175,9 @@
     "source": "return ( ⏎ <div className=\"ms-[68px] relative h-3.5\"> ⏎ {ticks.map((tick) => (",
     "agent": "unclear",
     "agentReason": "Same legend indent as #8",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Axis offset = lane label w-14 + gap-3, aligns ticks with the chart lanes.",
+    "final": "intentional"
   },
   {
     "id": "reactive-resume:src/features/homepage/prepare.tsx:457:px-[.45em]",
@@ -173,7 +193,9 @@
     "source": "<p className=\"flex items-start gap-[.6em] text-ink opacity-(--db2)\"> ⏎ <span className=\"font-martian mt-[.1em] shrink-0 rounded-sm bg-accent-soft px-[.45em] py-[.15em] text-[.74em] text-accent-text\"> ⏎ {t`Supported`}",
     "agent": "undeclared-token",
     "agentReason": "7.2px (0.45em) used 5 times; em-based badge padding",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "em-scaled badge inside a marketing-page product mockup; the 5 uses are all in that one illustration file.",
+    "final": "intentional"
   },
   {
     "id": "reactive-resume:src/features/homepage/header.tsx:90:px-[11px]",
@@ -189,7 +211,9 @@
     "source": "<LanguageDoorway ⏎ className=\"font-martian h-[34px] gap-[7px] rounded-sm px-[11px] text-xs leading-none font-medium font-stretch-[87.5%] opacity-65 transition-opacity duration-300 hover:opacity-100\" ⏎ nameClassName=\"max-[639px]:sr-only\"",
     "agent": "undeclared-token",
     "agentReason": "11px used 5 times in 3 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "11px used 5 times across 3 files with no visible constraint.",
+    "final": "undeclared-token"
   },
   {
     "id": "reactive-resume:src/features/career/schedule-sheet.tsx:264:pt-[18px]",
@@ -205,7 +229,9 @@
     "source": "> ⏎ <div className=\"flex items-center gap-3 border-b border-line ps-[22px] pe-3 pt-[18px] pb-3.5\"> ⏎ <SheetTitle className=\"flex-1\">",
     "agent": "undeclared-token",
     "agentReason": "18px used 27 times in 17 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "18px used 27 times across 17 files.",
+    "final": "undeclared-token"
   },
   {
     "id": "novu:src/pages/reset-password.tsx:20:gap-[18px]",
@@ -221,7 +247,9 @@
     "source": "<div className=\"flex flex-1 justify-end px-4 py-8 md:items-center md:px-0 md:py-0\"> ⏎ <div className=\"flex w-full max-w-[400px] flex-col items-start justify-start gap-[18px]\"> ⏎ <ResetPassword />",
     "agent": "undeclared-token",
     "agentReason": "18px used 9 times in 9 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "18px gap used 9 times across 9 files.",
+    "final": "undeclared-token"
   },
   {
     "id": "novu:src/components/workflow-editor/steps/chat/preview/shells/slack-shell.tsx:35:px-0.75",
@@ -237,7 +265,9 @@
     "source": "<span className=\"leading-5.5 mr-1.25 text-[15px] font-black text-[#1d1c1d]\">Novu</span> ⏎ <span className=\"mr-1.25 rounded-xs bg-[rgba(29,28,29,0.06)] px-0.75 py-px text-[10px] font-bold leading-[12.5px] text-[#454447]\"> ⏎ APP",
     "agent": "undeclared-token",
     "agentReason": "3px used 18 times in 14 files",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Pixel-matched Slack message preview (Slack colours, 12.5px leading); APP badge padding copies Slack's UI, which outweighs the count.",
+    "final": "intentional"
   },
   {
     "id": "novu:src/pages/verify-email.tsx:20:gap-[18px]",
@@ -253,7 +283,9 @@
     "source": "<div className=\"flex flex-1 justify-end px-4 py-8 md:items-center md:px-0 md:py-0\"> ⏎ <div className=\"flex w-full max-w-[400px] flex-col items-start justify-start gap-[18px]\"> ⏎ <VerifyEmail />",
     "agent": "undeclared-token",
     "agentReason": "18px used 9 times in 9 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "Same 18px gap as the other auth pages, 9 uses across 9 files.",
+    "final": "undeclared-token"
   },
   {
     "id": "langfuse:src/features/v4-migration/V4MigrationContent.tsx:198:pl-4.25",
@@ -269,7 +301,9 @@
     "source": "<CollapsibleContent> ⏎ <div className=\"pt-0.5 pb-4 pl-4.25\">{children}</div> ⏎ </CollapsibleContent>",
     "agent": "intentional",
     "agentReason": "Indents content to the text after a 16px chevron",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "17px = 7px status dot + gap-2.5 (10px); aligns content with the trigger title text.",
+    "final": "intentional"
   },
   {
     "id": "langfuse:src/components/EntityTitle.tsx:47:pb-0.75",
@@ -285,7 +319,9 @@
     "source": "// Explicit colour: titles are the emphasis tier and never inherit a container tint. ⏎ \"text-primary min-w-0 truncate pt-px pb-0.75 text-lg leading-6 font-bold\", ⏎ isFocusable && \"focus:outline-hidden\",",
     "agent": "undeclared-token",
     "agentReason": "3px used 5 times in 5 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "3px used 5 times across 5 files; asymmetric heading padding repeated without a declared token.",
+    "final": "undeclared-token"
   },
   {
     "id": "langfuse:src/features/topics/TopicPilesIllustration.tsx:45:gap-1.75",
@@ -301,7 +337,9 @@
     "source": "className={cn( ⏎ \"bg-background absolute z-20 flex items-center gap-1.75 rounded-lg border px-2.5 py-1.75 text-xs whitespace-nowrap shadow-md\", ⏎ slip.position,",
     "agent": "drift",
     "agentReason": "Tooltip gap and padding with no visible reason",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Inside TopicPilesIllustration, a decorative illustration drawn with divs.",
+    "final": "intentional"
   },
   {
     "id": "next-ai-draw-io:app/[lang]/about/page.tsx:140:px-4.5",
@@ -317,7 +355,9 @@
     "source": "href={`/${lang}/mcp`} ⏎ className=\"rounded-lg border border-border bg-card px-4.5 py-2.5 text-[14.5px] font-medium hover:bg-muted\" ⏎ >",
     "agent": "undeclared-token",
     "agentReason": "18px used 13 times in 5 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "18px button padding used 13 times across 5 files.",
+    "final": "undeclared-token"
   },
   {
     "id": "next-ai-draw-io:components/site/not-found-page.tsx:79:px-4.5",
@@ -333,7 +373,9 @@
     "source": "href={`/${lang}`} ⏎ className=\"rounded-lg bg-foreground px-4.5 py-2.5 text-[14.5px] font-medium text-background\" ⏎ >",
     "agent": "undeclared-token",
     "agentReason": "18px used 13 times in 5 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "Same 18px button padding, 13 uses across 5 files.",
+    "final": "undeclared-token"
   },
   {
     "id": "next-ai-draw-io:app/[lang]/mcp/page.tsx:369:px-4.5",
@@ -349,7 +391,9 @@
     "source": "href={README_URL} ⏎ className=\"rounded-lg border border-border bg-canvas px-4.5 py-2.5 text-[14.5px] font-medium hover:bg-muted\" ⏎ >",
     "agent": "undeclared-token",
     "agentReason": "18px used 13 times in 5 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "Same 18px button padding, 13 uses across 5 files.",
+    "final": "undeclared-token"
   },
   {
     "id": "recordly:src/components/launch/LaunchWindow.tsx:407:mx-[5px]",
@@ -365,7 +409,9 @@
     "source": " ⏎ <Separator orientation=\"vertical\" className=\"mx-[5px] h-6 self-center\" /> ⏎ ",
     "agent": "drift",
     "agentReason": "Separator margin; 4px or 6px would do",
-    "maintainer": null
+    "blind": "drift",
+    "blindReason": "Toolbar separator margin with no visible reason; mx-1 or mx-1.5 would do.",
+    "final": "drift"
   },
   {
     "id": "recordly:src/components/launch/LaunchWindow.tsx:291:mx-[5px]",
@@ -381,7 +427,9 @@
     "source": "</Button> ⏎ <Separator orientation=\"vertical\" className=\"mx-[5px] h-6 self-center\" /> ⏎ ",
     "agent": "drift",
     "agentReason": "Same separator margin as #23",
-    "maintainer": null
+    "blind": "drift",
+    "blindReason": "Same toolbar separator margin, ordinary value between steps.",
+    "final": "drift"
   },
   {
     "id": "recordly:src/components/video-editor/VideoEditor.tsx:116:pl-[76px]",
@@ -397,7 +445,9 @@
     "source": "}, []); ⏎ const headerLeftControlsPaddingClass = trafficLightsVisible ? \"pl-[76px]\" : \"\"; ⏎ const { cursorTelemetrySourcePath, autoCaptions, autoCaptionSettings } = timeline;",
     "agent": "intentional",
     "agentReason": "Clears the macOS traffic lights when they are visible",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Left padding clears the macOS traffic-light window buttons when they are visible.",
+    "final": "intentional"
   },
   {
     "id": "infisical:src/pages/organization/AccessManagementPage/components/OrgIdentityTab/components/IdentitySection/OrgIdentityModal.tsx:272:mt-[27px]",
@@ -413,7 +463,9 @@
     "source": "type=\"button\" ⏎ className={twMerge(i === 0 ? \"mt-[27px]\" : \"mt-[3px]\", \"hover:text-danger\")} ⏎ onClick={() => metadataFormFields.remove(i)}",
     "agent": "intentional",
     "agentReason": "Offsets the first row past its field label (later rows use mt-[3px])",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "First-row trash button offset to line up with the input under the field label (later rows use 3px).",
+    "final": "intentional"
   },
   {
     "id": "infisical:src/components/pki-syncs/forms/PkiSyncFilterFields.tsx:286:mt-6.5",
@@ -429,7 +481,9 @@
     "source": "variant=\"ghost\" ⏎ className=\"mt-6.5 hover:text-danger\" ⏎ aria-label={`Remove ${FILTER_LABELS[kind]} filter`}",
     "agent": "undeclared-token",
     "agentReason": "26px used 12 times in 9 files; the same label offset",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "26px label-height offset used 12 times across 9 files; a repeated token the theme does not declare.",
+    "final": "undeclared-token"
   },
   {
     "id": "infisical:src/pages/organization/AccessManagementPage/components/OrgIdentityTab/components/IdentitySection/IdentityJwtAuthForm.tsx:566:mt-[1.625rem]",
@@ -445,7 +499,9 @@
     "source": "aria-label=\"Remove claim\" ⏎ className={index === 0 ? \"mt-[1.625rem]\" : \"mt-0.5\"} ⏎ onClick={() => removeBoundClaimField(index)}",
     "agent": "undeclared-token",
     "agentReason": "26px used 12 times in 9 files; the same label offset",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "Same 26px label-offset value, 12 uses across 9 files.",
+    "final": "undeclared-token"
   },
   {
     "id": "sim:app/workspace/[workspaceId]/tables/[tableId]/components/enrichment-details/enrichment-details.tsx:280:pt-[3px]",
@@ -461,7 +517,9 @@
     "source": "</div> ⏎ <div className='px-2 pt-[3px] pb-1.5'> ⏎ <div className='relative h-[3px] w-full overflow-hidden rounded-full bg-[var(--border)]'>",
     "agent": "undeclared-token",
     "agentReason": "3px used 17 times in 14 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "3px used 17 times across 14 files.",
+    "final": "undeclared-token"
   },
   {
     "id": "sim:app/workspace/[workspaceId]/w/[workflowId]/components/panel/components/editor/components/sub-block/components/starter/input-format.tsx:392:py-[5px]",
@@ -477,7 +535,9 @@
     "source": "aria-label={`${title} ${index + 1}`} ⏎ className='flex cursor-pointer items-center justify-between rounded-t-[3px] bg-[var(--surface-4)] px-2.5 py-[5px]' ⏎ onClick={() => toggleCollapse(field.id)}",
     "agent": "undeclared-token",
     "agentReason": "5px used 43 times in 32 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "5px used 43 times across 32 files.",
+    "final": "undeclared-token"
   },
   {
     "id": "sim:app/workspace/[workspaceId]/w/components/sidebar/components/workspace-header/workspace-header.tsx:601:py-[5px]",
@@ -493,7 +553,9 @@
     "source": "{filteredWorkspaces.length === 0 && workspaceSearch && ( ⏎ <div className='px-2 py-[5px] text-[var(--text-muted)] text-caption'> ⏎ No results for \"{workspaceSearch}\"",
     "agent": "undeclared-token",
     "agentReason": "5px used 43 times in 32 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "5px used 43 times across 32 files.",
+    "final": "undeclared-token"
   },
   {
     "id": "hey-xyz:src/components/Composer/Editor/Editor.tsx:52:mt-[8.5px]",
@@ -509,7 +571,9 @@
     "source": "<div ⏎ className=\"relative mt-[8.5px] box-border h-full min-h-[80px] flex-1 overflow-auto leading-6 outline-0 sm:leading-[26px]\" ⏎ ref={editor.mount}",
     "agent": "intentional",
     "agentReason": "Centres the first text line on a 44px avatar",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Fine top offset aligns the editor's first text line with the 44px avatar beside it.",
+    "final": "intentional"
   },
   {
     "id": "onlook:src/app/_components/landing-page/feature-blocks/layers.tsx:98:ml-34",
@@ -525,7 +589,9 @@
     "source": "<div className=\"w-full h-6 bg-gray-800/80 flex flex-row gap-4 justify-between items-center px-2 absolute top-1.5 left-0\"> ⏎ <Illustrations.LayersLogo className='h-2 ml-34' /> ⏎ <Illustrations.LayersReserve className='h-1' />",
     "agent": "intentional",
     "agentReason": "Landing-page illustration geometry",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Positions a logo graphic in an illustration overlaid on a video.",
+    "final": "intentional"
   },
   {
     "id": "onlook:src/app/project/[id]/_components/left-panel/design-panel/brand-tab/color-panel/index.tsx:118:py-[18px]",
@@ -541,7 +607,9 @@
     "source": "{/* Brand Palette Groups section */} ⏎ <div className=\"border-border flex flex-col gap-4 border-b px-4 py-[18px]\"> ⏎ <div className=\"flex flex-col gap-3\">",
     "agent": "drift",
     "agentReason": "Section padding with no visible reason",
-    "maintainer": null
+    "blind": "drift",
+    "blindReason": "Ordinary section padding between py-4 and py-5 with no visible reason.",
+    "final": "drift"
   },
   {
     "id": "onlook:src/app/_components/shared/mockups/components-mockup.tsx:81:gap-[1.5px]",
@@ -557,7 +625,9 @@
     "source": "{item.label === 'Card' && ( ⏎ <div className=\"w-18 h-18 bg-black rounded-[4px] p-1.5 flex flex-col gap-[1.5px] select-none\" style={{ fontSize: '3.5px' }}> ⏎ {/* Header */}",
     "agent": "intentional",
     "agentReason": "Miniature card illustration at a 3.5px font size",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Miniature card mockup drawn with divs at 3.5px font size.",
+    "final": "intentional"
   },
   {
     "id": "readest:src/components/primitives/input-group.tsx:44:has-[>button]:ml-[-0.45rem]",
@@ -573,7 +643,9 @@
     "source": "align: { ⏎ 'inline-start': 'order-first pl-3 has-[>button]:ml-[-0.45rem] has-[>kbd]:ml-[-0.35rem]', ⏎ 'inline-end': 'order-last pr-3 has-[>button]:mr-[-0.4rem] has-[>kbd]:mr-[-0.35rem]',",
     "agent": "intentional",
     "agentReason": "Optical offset copied from shadcn input-group",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Negative margin compensating a nested button's own padding in the input-group addon (shadcn primitive).",
+    "final": "intentional"
   },
   {
     "id": "readest:src/app/library/components/BookshelvesDialog.tsx:1033:mt-[1.125rem]",
@@ -589,7 +661,9 @@
     "source": "onClick={() => void close()} ⏎ className='bg-base-300/65 btn btn-ghost btn-circle mt-[1.125rem] hidden h-6 min-h-6 w-6 shrink-0 focus:outline-hidden sm:flex' ⏎ >",
     "agent": "unclear",
     "agentReason": "Close button offset; probably matches the tab row, not visible",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Comment says the close button is top-aligned beside the wrapping tab row; offset matches the tabs.",
+    "final": "intentional"
   },
   {
     "id": "readest:src/components/primitives/input-group.tsx:45:has-[>kbd]:mr-[-0.35rem]",
@@ -605,7 +679,9 @@
     "source": "'inline-start': 'order-first pl-3 has-[>button]:ml-[-0.45rem] has-[>kbd]:ml-[-0.35rem]', ⏎ 'inline-end': 'order-last pr-3 has-[>button]:mr-[-0.4rem] has-[>kbd]:mr-[-0.35rem]', ⏎ 'block-start':",
     "agent": "intentional",
     "agentReason": "Optical offset copied from shadcn input-group",
-    "maintainer": null
+    "blind": "intentional",
+    "blindReason": "Negative margin compensating kbd padding in the input-group addon.",
+    "final": "intentional"
   },
   {
     "id": "responsively:src/renderer/components/AnnouncementCard/index.tsx:118:gap-[5px]",
@@ -621,7 +697,9 @@
     "source": "<> ⏎ <div className=\"mt-[10px] mb-3 flex flex-col gap-[5px]\"> ⏎ {WHATS_NEW_ROWS.map((row) => (",
     "agent": "undeclared-token",
     "agentReason": "5px used 5 times in 4 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "5px used 5 times across 4 files.",
+    "final": "undeclared-token"
   },
   {
     "id": "responsively:src/renderer/components/ToolBar/McpPanel/index.tsx:168:gap-[9px]",
@@ -637,7 +715,9 @@
     "source": "data-testid={`mcp-tool-${tool.id}`} ⏎ className=\"flex items-center gap-[9px] rounded-lg px-[10px] py-[5px] hover:bg-hover\" ⏎ >",
     "agent": "undeclared-token",
     "agentReason": "9px used 9 times in 6 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "9px gap used 9 times across 6 files.",
+    "final": "undeclared-token"
   },
   {
     "id": "responsively:src/renderer/components/Previewer/index.tsx:446:pt-[7px]",
@@ -653,6 +733,8 @@
     "source": "> ⏎ <div className=\"px-[9px] pt-[7px] pb-[3px] text-[10px] font-bold tracking-[0.07em] text-muted\"> ⏎ SHOW ON CANVAS",
     "agent": "undeclared-token",
     "agentReason": "7px used 15 times in 11 files",
-    "maintainer": null
+    "blind": "undeclared-token",
+    "blindReason": "7px used 15 times across 11 files.",
+    "final": "undeclared-token"
   }
 ]

@@ -2,7 +2,7 @@
 
 Measured 2026-11-01 on the sample and definitions fixed in [README.md](README.md), with the two amendments in its change log.
 
-**Status: provisional.** The ratings are the agent's pre-ratings. The pass mark uses the maintainer's ratings, due by 2026-11-15 ([REVIEW.md](REVIEW.md)). The second criterion fails by a wide margin (4 drift findings against a bar of 33), so only a very different set of ratings would change the outcome.
+**Status: final.** There were two raters: the agent, and a blind second rater who saw only the rubric and the code (amendment 3). They agreed on 33 of 41 (Cohen's kappa 0.69), and the final ratings settle the 8 disagreements on the cited evidence ([REVIEW.md](REVIEW.md)). Either rater's ratings alone fail the bar: 4 and 3 drift findings, against 33 needed.
 
 Reproduce:
 
@@ -19,20 +19,19 @@ node scripts/bench/tailwind-v4/review.mjs
 | Criterion | Bar | Result | Verdict |
 | --- | --- | --- | --- |
 | Apps with one or more off-scale rhythm findings outside `components/ui/` | 10 of 20 | 15 of 20 (15 before amendment 1) | Pass |
-| Reviewed findings rated drift | 33 of 41 (80%, amendment 2) | 4 of 41 (10%) | **Fail** |
+| Reviewed findings rated drift | 33 of 41 (80%, amendment 2) | 3 of 41 (7%) | **Fail** |
 
 The plan's rule for a fail: ship items 5 to 8 (Oxlint job, clean install without Stylelint, bulk-suppression docs, the ESLint front door) and keep the ESLint plugin a companion. Items 1 to 4, the scale-aware rule and v4 step checking, are not built.
 
-The fail does not depend on close calls. Counting every *undeclared token* and every *unclear* rating as drift gives 31 of 41 (76%), still below 80%.
+The fail does not depend on close calls. Even counting every *undeclared token* as drift gives 23 of 41 (56%), well below 80%.
 
 ## The review
 
 | Rating | Count | What it covered |
 | --- | ---: | --- |
-| Undeclared token | 22 | One off-scale value used 5 to 43 times in the same app: 5px in Sim (43 uses) and Supabase (12), 18px in Reactive Resume (27), Next AI Draw.io (13) and Novu (9), 3px in Novu (18) and Sim (17), 26px in Infisical (12) |
-| Intentional | 10 | Clearing the macOS traffic lights, indenting past a 16px chevron, centring text on a 44px avatar, a search-icon inset, illustration geometry, optical offsets copied from shadcn's input group |
-| Unclear | 5 | Indents that likely align to a column the snippet does not show |
-| Drift | 4 | A tooltip's `gap-1.75`, a separator's `mx-[5px]` (twice), a section's `py-[18px]` |
+| Undeclared token | 20 | One off-scale value used 5 to 43 times in the same app: 5px in Sim (43 uses) and Supabase (12), 18px in Reactive Resume (27), Next AI Draw.io (13) and Novu (9), 3px in Sim (17), 26px in Infisical (12) |
+| Intentional | 18 | Clearing the macOS traffic lights, indents that add up a label or icon column (`ms-[68px]` = `w-14` + `gap-3`), centring text on a 44px avatar, a pixel-matched Slack preview, illustrations drawn with divs, optical offsets copied from shadcn's input group |
+| Drift | 3 | A separator's `mx-[5px]` (twice), a section's `py-[18px]` |
 
 ## What the 20 apps look like
 
@@ -55,5 +54,5 @@ That points at a different job for Tailwind apps: show a team the scale it actua
 
 - The sample is the 20 most-starred public Tailwind v4 apps that topic search finds. Private product code, smaller teams and untagged repositories may differ.
 - The default step list stands in for a team scale that none of these apps declares. A team with a declared scale might see more true drift. This sample has no such team.
-- The agent rated these first. The maintainer's ratings replace them for the pass mark.
+- Both raters are models. They read the same code and agreed on 33 of 41, but they could share blind spots that a designer would not.
 - One commit per app, on one day; TSX and JSX only. Marketing pages inside an app directory are included, and some intentional findings come from them.
