@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.16.1] - 2026-11-01
+
 ### Fixed
 
 - `npx rhythmguard` and `rhythmguard audit` work again in a project without Stylelint. 3.16.0 made `stylelint` an optional peer, so npm stopped installing it next to the CLI, and the audit, which runs the rules through Stylelint's API to read stylesheets, failed with `Cannot find package 'stylelint'`. The 3.16.0 entry was wrong to say `rhythmguard audit` never loaded Stylelint: it loads it with a dynamic `import()`, which the contract test did not see. The `rhythmguard` package now depends on `stylelint`, so `npx rhythmguard` brings it. The plugin's own `rhythmguard` command, which an ESLint-only project also gets, now says to run `npm install --save-dev stylelint` instead of printing a module path. The contract test now reads dynamic imports.
