@@ -21,7 +21,9 @@ The 2026-10-18 council report, [`docs/COUNCIL_2027-2028.md`](./docs/COUNCIL_2027
 | #159 hairlines in class strings, #161 vendored CSS in the audit | Done in 3.15.0, with #331 (`fix` skips what the audit skips) |
 | Freeze declared | Done (above) |
 | Contributors: `npm run check`, dev container, Discussions, first-contribution path, good first issues (#326, #327) | Done |
-| Primer config draft, one message to doctor-school | Drafted, waiting for the maintainer. Research for the doctor-school draft found its Stylelint glue was never needed (`scaleSources` reads their DTCG files on 3.6.0); only the ESLint rule needs the array. The September Primer draft was withdrawn: `primer/spacing` already checks spacing |
+| Primer config draft, one message to doctor-school | Posted 2026-10-30 as primer/stylelint-config#782 and doctor-school/ds-platform#3591; no reply yet. Research for the doctor-school draft found its Stylelint glue was never needed (`scaleSources` reads their DTCG files on 3.6.0); only the ESLint rule needs the array. The September Primer draft was withdrawn: `primer/spacing` already checks spacing |
+
+**Amendment 1, 2026-11-01:** the ESLint plugin becomes a first-class product, on a measured bet with a go/no-go on 2026-11-15 and a demand test on 2027-03-31. Plan and evidence: [`docs/ESLINT_PLAN.md`](./docs/ESLINT_PLAN.md); changes to the council plan: [Amendment 1](./docs/COUNCIL_2027-2028.md#amendment-1-2026-11-01-eslint-as-a-first-class-product).
 
 **4.0** ships the week Stylelint 18.0.0 is released, no later than 2027-02-28: Node `^22.22.2 || ^24.15.0 || >=26` (Stylelint 18's floor), peer `^17 || ^18`, `fixWith: "token"` and one default scale, structured findings, contract tests for messages. Tracked in #172.
 
