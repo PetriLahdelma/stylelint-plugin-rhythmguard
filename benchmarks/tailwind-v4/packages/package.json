@@ -3,6 +3,6 @@
   "private": true,
   "description": "The TSX parser for scripts/bench/tailwind-v4/measure.mjs. The repo's own typescript is 7, which has no JS parser API.",
   "devDependencies": {
-    "typescript": "5.9.3"
+    "typescript": "7.0.2"
   }
 }
