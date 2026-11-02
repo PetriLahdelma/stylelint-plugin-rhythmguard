@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- `npm run test:pack-smoke`, which CI and the release run before publishing, now packs `rhythmguard` and `eslint-plugin-rhythmguard` as well as the plugin, and runs on each tarball the same check the post-publish smoke runs from npm (`scripts/ci/smoke-checks.mjs`). Before this it packed only the plugin, so the 3.16.0 CLI failure could reach npm; with the CLI's `stylelint` dependency removed, the pack smoke now fails at `rhythmguard audit`.
+
 ## [3.16.1] - 2026-11-01
 
 ### Fixed

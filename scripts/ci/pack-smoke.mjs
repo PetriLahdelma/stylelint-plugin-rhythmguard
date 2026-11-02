@@ -1,92 +1,57 @@
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
+import { smokeCli, smokeEslintPlugin, smokeStylelintPlugin } from './smoke-checks.mjs';
 
-function run(cmd, args, options = {}) {
-  const result = spawnSync(cmd, args, {
+/**
+ * Packs the three packages as `npm publish` would and runs the registry smoke's
+ * checks on the tarballs, so a broken package fails before the release. Each
+ * companion is installed with the plugin tarball next to it: the version it
+ * depends on is the one in this checkout, which is not on npm yet.
+ */
+const repoRoot = process.cwd();
+const packDir = mkdtempSync(path.join(tmpdir(), 'rhythmguard-pack-'));
+const workDirs = [];
+
+function pack(dir) {
+  const result = spawnSync('npm', ['pack', '--json', '--pack-destination', packDir], {
+    cwd: path.join(repoRoot, dir),
     encoding: 'utf8',
-    stdio: 'pipe',
-    ...options,
   });
-
   if (result.error) {
     throw result.error;
   }
-
-  return result;
+  if (result.status !== 0) {
+    throw new Error(result.stderr || result.stdout || `npm pack failed in ${dir}`);
+  }
+  const filename = JSON.parse(result.stdout || '[]')[0]?.filename;
+  if (!filename) {
+    throw new Error(`Unable to determine tarball filename from npm pack output in ${dir}.`);
+  }
+  return path.join(packDir, filename);
 }
 
-const repoRoot = process.cwd();
-const tempDir = mkdtempSync(path.join(tmpdir(), 'rhythmguard-pack-smoke-'));
-let tarballPath = null;
+function workDir() {
+  const dir = mkdtempSync(path.join(tmpdir(), 'rhythmguard-pack-smoke-'));
+  workDirs.push(dir);
+  return dir;
+}
 
 try {
-  const packResult = run('npm', ['pack', '--json'], { cwd: repoRoot });
+  const { version } = JSON.parse(readFileSync(path.join(repoRoot, 'package.json'), 'utf8'));
+  const plugin = pack('.');
+  const cli = pack('packages/rhythmguard');
+  const eslintPlugin = pack('packages/eslint-plugin-rhythmguard');
 
-  if (packResult.status !== 0) {
-    throw new Error(packResult.stderr || packResult.stdout || 'npm pack failed');
-  }
-
-  const packPayload = JSON.parse(packResult.stdout || '[]');
-  const tarballName = packPayload[0]?.filename;
-
-  if (!tarballName) {
-    throw new Error('Unable to determine tarball filename from npm pack output.');
-  }
-
-  tarballPath = path.join(repoRoot, tarballName);
-
-  const initResult = run('npm', ['init', '-y'], { cwd: tempDir });
-  if (initResult.status !== 0) {
-    throw new Error(initResult.stderr || initResult.stdout || 'npm init failed');
-  }
-
-  const installResult = run(
-    'npm',
-    ['install', '--save-dev', 'stylelint@16', tarballPath],
-    { cwd: tempDir },
-  );
-  if (installResult.status !== 0) {
-    throw new Error(installResult.stderr || installResult.stdout || 'npm install failed');
-  }
-
-  const requireResult = run(
-    'node',
-    [
-      '-e',
-      "require('stylelint-plugin-rhythmguard/configs/recommended'); require('stylelint-plugin-rhythmguard/configs/strict'); require('stylelint-plugin-rhythmguard/configs/tailwind');",
-    ],
-    { cwd: tempDir },
-  );
-  if (requireResult.status !== 0) {
-    throw new Error(
-      requireResult.stderr || requireResult.stdout || 'Config export resolution check failed',
-    );
-  }
-
-  writeFileSync(
-    path.join(tempDir, 'stylelint.config.cjs'),
-    "module.exports = { extends: ['stylelint-plugin-rhythmguard/configs/recommended'] };\n",
-    'utf8',
-  );
-
-  writeFileSync(path.join(tempDir, 'test.css'), '.card { margin: 13px; }\n', 'utf8');
-
-  const lintResult = run(
-    'node',
-    ['./node_modules/stylelint/bin/stylelint.mjs', 'test.css', '--config', 'stylelint.config.cjs'],
-    { cwd: tempDir },
-  );
-
-  if (lintResult.status === 0) {
-    throw new Error('Expected stylelint to fail on off-scale value, but it passed.');
-  }
-
-  console.log('Pack smoke test passed.');
+  smokeStylelintPlugin(workDir(), { packages: [plugin] });
+  console.log('Pack smoke test passed for stylelint-plugin-rhythmguard.');
+  smokeCli(workDir(), { packages: [cli, plugin], version });
+  console.log('Pack smoke test passed for rhythmguard.');
+  smokeEslintPlugin(workDir(), { packages: [eslintPlugin, plugin] });
+  console.log('Pack smoke test passed for eslint-plugin-rhythmguard.');
 } finally {
-  if (tarballPath) {
-    rmSync(tarballPath, { force: true });
+  for (const dir of [packDir, ...workDirs]) {
+    rmSync(dir, { force: true, recursive: true });
   }
-  rmSync(tempDir, { force: true, recursive: true });
 }
