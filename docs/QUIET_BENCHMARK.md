@@ -744,7 +744,7 @@ Drift examples for maintainer review:
 
 ### mantine
 
-Paths: `packages/@mantine/core/src`. CSS Modules. Spacing tokens are --mantine-spacing-*, which the default spacing pattern does not match; a fallback here is a token-discovery to-do.
+Paths: `packages/@mantine/core/src`. CSS Modules. The scale is DEFAULT_THEME.spacing in TypeScript (10, 12, 16, 20, 32), emitted at runtime as --mantine-spacing-*; the audit infers the same values from the stylesheets (confirmed in mantinedev/mantine discussion #9179). Reading the theme itself is #201.
 
 Inferred scale: `0, 10, 12, 16, 20, 32` from scanned-css (packages/@mantine/core/src/core/MantineProvider/default-css-variables.css).
 
