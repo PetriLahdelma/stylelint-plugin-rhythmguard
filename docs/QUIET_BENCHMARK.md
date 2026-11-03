@@ -40,7 +40,7 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [gitlab-ui](https://gitlab.com/gitlab-org/gitlab-ui.git) | `8660f9f` | 93 | 373 | 3 | 3 | 0 | 0 | 0% | 4 | fallback (no spacing tokens found) |
 | [govuk-frontend](https://github.com/alphagov/govuk-frontend.git) | `356d461` | 311 | 167 | 25 | 25 | 0 | 0 | 0% | 23 | scanned-css (26 tokens) |
 | [grafana](https://github.com/grafana/grafana.git) | `c6fad86` | 6 | 0 | 77 | 77 | 0 | 0 | 0% | 77 | scanned-css (13 tokens) |
-| [gutenberg-components](https://github.com/WordPress/gutenberg.git) | `ec62b33` | 79 | 845 | 35 | 35 | 0 | 0 | 0% | 51 | fallback (no spacing tokens found) |
+| [gutenberg-components](https://github.com/WordPress/gutenberg.git) | `ec62b33` | 79 | 845 | 34 | 34 | 0 | 0 | 0% | 51 | installed @wordpress/base-styles@14.0.0, @wordpress/theme@3.0.0 (24 tokens) |
 | [hashicorp-design-system](https://github.com/hashicorp/design-system.git) | `83cac84` | 91 | 0 | 114 | 114 | 0 | 0 | 0% | 319 | fallback (no spacing tokens found) |
 | [liveblocks-react-ui](https://github.com/liveblocks/liveblocks.git) | `98332db` | 6 | 184 | 9 | 9 | 0 | 0 | 0% | 29 | fallback (no spacing tokens found) |
 | [mantine](https://github.com/mantinedev/mantine.git) | `3862b09` | 102 | 849 | 36 | 36 | 0 | 0 | 0% | 36 | scanned-css (5 tokens) |
@@ -663,9 +663,9 @@ Drift examples for maintainer review:
 
 ### gutenberg-components
 
-Paths: `packages/components/src`. Mixed SCSS and CSS; the WordPress spacing scale is $grid-unit-*, so inference is expected to fall back.
+Paths: `packages/components/src`. Mixed SCSS and CSS. The spacing scale is $grid-unit-* in @wordpress/base-styles and --wpds-dimension-gap-*/padding-* in @wordpress/theme (maintainer, WordPress/gutenberg#82502).
 
-Inferred scale: `0, 4, 8, 12, 16, 24, 32` from fallback.
+Inferred scale: `0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 56, 64` from installed @wordpress/base-styles@14.0.0, @wordpress/theme@3.0.0.
 
 Top drift values:
 

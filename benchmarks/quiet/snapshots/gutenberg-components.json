@@ -2,20 +2,25 @@
   "name": "gutenberg-components",
   "sha": "ec62b33",
   "scale": {
-    "source": "fallback",
+    "source": "token-sources",
     "values": [
       0,
       4,
       8,
       12,
       16,
+      20,
       24,
-      32
+      32,
+      40,
+      48,
+      56,
+      64
     ]
   },
   "summary": {
-    "total": 35,
-    "drift": 35,
+    "total": 34,
+    "drift": 34,
     "falsePositives": 0
   },
   "findings": [
@@ -41,7 +46,6 @@
     "packages/components/src/panel/style.scss:130:-2px:drift",
     "packages/components/src/panel/style.scss:130:6px:drift",
     "packages/components/src/panel/style.scss:134:-5px:drift",
-    "packages/components/src/panel/style.scss:167:20px:drift",
     "packages/components/src/panel/style.scss:77:5px:drift",
     "packages/components/src/placeholder/style.scss:98:10px:drift",
     "packages/components/src/placeholder/style.scss:99:10px:drift",

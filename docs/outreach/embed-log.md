@@ -16,6 +16,7 @@ Every audit issue opened from the benchmark, and every response, so the pattern 
 | penpot | 2026-09-06 | opened | https://github.com/penpot/penpot/issues/11522 |
 | mastodon | 2026-09-06 | skipped: blank issues disabled; use their template by hand |  |
 | gutenberg-components | 2026-09-06 | opened | https://github.com/WordPress/gutenberg/issues/82502 |
+| gutenberg-components | 2026-11-03 | maintainer (ellatrix) answered and closed as not planned (not a bug or feature request), inviting the re-run results in the issue: the scale is `$grid-unit-*` (multiples of 8px from 4px) in `packages/base-styles/_variables.scss`, and `--wpds-dimension-gap-*` / `--wpds-dimension-padding-*` from `packages/theme/tokens/dimension.json`, which the editor loads. `scale: "auto"` now reads both from `@wordpress/base-styles` and `@wordpress/theme`; the row re-measured at `ec62b33` against them: 34 off-scale (was 35 on the fallback; 20px is a padding step). Reply not posted yet | https://github.com/WordPress/gutenberg/issues/82502#issuecomment-6616017404 |
 | gitlab-ui | 2026-09-06 | skipped: not on GitHub, post by hand |  |
 | pico | 2026-09-06 | skipped: blank issues disabled; use their template by hand |  |
 | bulma | 2026-09-06 | opened | https://github.com/jgthms/bulma/issues/4061 |
