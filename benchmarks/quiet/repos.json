@@ -139,7 +139,19 @@
       "paths": [
         "packages/components/src"
       ],
-      "notes": "Mixed SCSS and CSS; the WordPress spacing scale is $grid-unit-*, so inference is expected to fall back."
+      "notes": "Mixed SCSS and CSS. The spacing scale is $grid-unit-* in @wordpress/base-styles and --wpds-dimension-gap-*/padding-* in @wordpress/theme (maintainer, WordPress/gutenberg#82502).",
+      "scaleIntent": "package",
+      "scalePackage": "@wordpress/base-styles",
+      "tokenPackages": [
+        {
+          "name": "@wordpress/base-styles",
+          "version": "14.0.0"
+        },
+        {
+          "name": "@wordpress/theme",
+          "version": "3.0.0"
+        }
+      ]
     },
     {
       "name": "gitlab-ui",

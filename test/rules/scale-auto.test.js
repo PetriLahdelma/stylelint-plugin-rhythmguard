@@ -252,6 +252,39 @@ test('token packages with their own naming (Primer --base-size-*) are read throu
   assert.doesNotMatch(texts[0], /No spacing tokens/);
 });
 
+test('WordPress packages are read through their own names: Sass $grid-unit-* and --wpds-dimension-gap/padding-*', async () => {
+  const dir = tempDir('token-packages-wordpress');
+  const baseStyles = path.join(dir, 'node_modules', '@wordpress', 'base-styles');
+  const theme = path.join(dir, 'node_modules', '@wordpress', 'theme');
+  fs.mkdirSync(baseStyles, { recursive: true });
+  fs.mkdirSync(path.join(theme, 'prebuilt', 'css'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'package.json'), '{"name":"fixture","dependencies":{"@wordpress/base-styles":"^14.0.0","@wordpress/theme":"^3.0.0"}}');
+  fs.writeFileSync(path.join(baseStyles, 'package.json'), '{"name":"@wordpress/base-styles","version":"14.0.0"}');
+  fs.writeFileSync(path.join(theme, 'package.json'), '{"name":"@wordpress/theme","version":"3.0.0"}');
+  fs.writeFileSync(
+    path.join(baseStyles, '_variables.scss'),
+    '$grid-unit: 8px;\n$grid-unit-05: 0.5 * $grid-unit;\t// 4px\n$grid-unit-10: 1 * $grid-unit;\n$grid-unit-20: 2 * $grid-unit;\n$grid-unit-50: 5 * $grid-unit;\n$panel-header-height: $grid-unit-60;\n',
+  );
+  fs.writeFileSync(
+    path.join(theme, 'prebuilt', 'css', 'design-tokens.css'),
+    ':root { --wpds-dimension-gap-md: 12px; --wpds-dimension-padding-xl: 20px; --wpds-dimension-size-lg: 36px; }\n',
+  );
+
+  const previousCwd = process.cwd();
+  process.chdir(dir);
+  let result;
+  try {
+    result = await lintCss({ code: '.a { padding: 13px; margin: 20px; gap: 40px; row-gap: 36px; }', rules: useScaleAuto() });
+  } finally {
+    process.chdir(previousCwd);
+  }
+
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 2, texts.join('\n'));
+  assert.match(texts[0], /"13px"/);
+  assert.match(texts[1], /"36px"/, 'a --wpds-dimension-size-* token is a size, not a spacing step');
+});
+
 test('token packages that are only transitive dependencies are ignored', async () => {
   const dir = tempDir('token-packages-transitive');
   fs.mkdirSync(path.join(dir, 'node_modules', 'tailwindcss'), { recursive: true });

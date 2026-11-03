@@ -93,6 +93,22 @@
         "dist/units/units.custom-properties.css"
       ],
       "note": "--spacing-xs..2xl in px; Protocol's Sass $spacing-* come from the same package"
+    },
+    {
+      "name": "@wordpress/base-styles",
+      "files": [
+        "_variables.scss"
+      ],
+      "tokenPattern": "^\\$grid-unit-\\d+$",
+      "note": "WordPress names its spacing scale $grid-unit-05..80 (4 to 64px, multiples of $grid-unit)"
+    },
+    {
+      "name": "@wordpress/theme",
+      "files": [
+        "prebuilt/css/design-tokens.css"
+      ],
+      "tokenPattern": "^--wpds-dimension-(?:gap|padding)-",
+      "note": "--wpds-dimension-gap-* and --wpds-dimension-padding-* in px; size and surface tokens are not spacing"
     }
   ]
 }
