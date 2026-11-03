@@ -66,7 +66,7 @@ Optional, depending on what you touched:
 
 ```bash
 npm run test:compat-floor      # Stylelint 16.0.0, the oldest supported
-npm run test:pack-smoke        # pack the tarball and install it in a temp project
+npm run test:pack-smoke        # pack all three packages and smoke-test each in a temp project
 npm run scales:validate        # community scale JSON
 npm run bench:quiet -- --check # findings on the benchmark repos must match snapshots
 npm run build:agents           # after editing the block in docs/FOR_AGENTS.md

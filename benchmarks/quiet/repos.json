@@ -19,7 +19,7 @@
         "**/*.story.tsx",
         "**/*.test.tsx"
       ],
-      "notes": "CSS Modules. Spacing tokens are --mantine-spacing-*, which the default spacing pattern does not match; a fallback here is a token-discovery to-do."
+      "notes": "CSS Modules. The scale is DEFAULT_THEME.spacing in TypeScript (10, 12, 16, 20, 32), emitted at runtime as --mantine-spacing-*; the audit infers the same values from the stylesheets (confirmed in mantinedev/mantine discussion #9179). Reading the theme itself is #201."
     },
     {
       "name": "primer-react",
