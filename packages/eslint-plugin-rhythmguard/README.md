@@ -27,7 +27,7 @@ Most Tailwind lint rules either forbid arbitrary values outright or rewrite them
 
 The same TSX file through each tool, default Tailwind theme, scale `[0, 4, 8, 12, 16, 24, 32]` for Rhythmguard:
 
-| Class | better-tailwindcss 4.10.0 | eslint-plugin-tailwindcss 4.4.0 | @shadcn/lint 0.2.3 | Rhythmguard |
+| Class | better-tailwindcss 4.10.0 | eslint-plugin-tailwindcss 4.4.0 | @shadcn/lint 0.2.5 | Rhythmguard |
 | --- | --- | --- | --- | --- |
 | `p-[13px]` | no finding | no finding | Use `p-3.25` "(same value, on the scale)" | Use `p-3` (12px) or `p-4` (16px) |
 | `p-[0.8125rem]` | Simplify to `p-3.25` | Write as `p-3.25` | Use a theme token or scale value | Use `p-3` (12px) or `p-4` (16px) |
