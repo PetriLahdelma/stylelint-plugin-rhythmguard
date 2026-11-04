@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.17.0] - 2026-11-04
+
 ### Added
 
 - `scale: "auto"` reads WordPress's spacing scale when `@wordpress/base-styles` or `@wordpress/theme` is installed: the Sass `$grid-unit-05` to `$grid-unit-80` (4 to 64px) from `_variables.scss`, and `--wpds-dimension-gap-*` and `--wpds-dimension-padding-*` (4 to 40px) from `prebuilt/css/design-tokens.css`. The `--wpds-dimension-size-*` and `surface-*` tokens are sizes, not spacing, and are left out. Gutenberg's benchmark row is measured against both packages, as a Gutenberg maintainer pointed out in WordPress/gutenberg#82502: 34 off-scale values on `packages/components/src`, against 35 on the fallback, because 20px is a WordPress padding step.
