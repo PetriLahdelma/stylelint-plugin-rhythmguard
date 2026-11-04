@@ -1,6 +1,6 @@
 # Proposal: a spacing rule in `stylelint-config-wikimedia`, reading Codex design tokens
 
-Target: wikimedia/stylelint-config-wikimedia (issue). Preconditions before posting: add `@wikimedia/codex-design-tokens` (`--spacing-*` in `theme-wikimedia-ui.css`) to the token-package allowlist so consumers are measured against Codex, not a default; and say plainly that the audit reads CSS and SCSS only, since most Wikimedia skins and extensions are Less.
+Target: wikimedia/stylelint-config-wikimedia (issue). Preconditions before posting: re-measure consumers that depend on `@wikimedia/codex-design-tokens`, which inference now reads (`--spacing-0` to `--spacing-400` in `theme-wikimedia-ui.css`), so they are measured against Codex, not a default; and say plainly that the audit reads CSS and SCSS only, since most Wikimedia skins and extensions are Less.
 
 ---
 

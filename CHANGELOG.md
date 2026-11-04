@@ -6,6 +6,15 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- `scale: "auto"` reads GitLab's spacing scale: Sass scalars named `$<namespace>-spacing-scale-<n>` count as a scale when a namespace holds at least four lengths, as `$gl-spacing-scale-1` to `$gl-spacing-scale-88` do in gitlab-ui. Other namespaced scalars, such as `$dropdown-spacer`, stay excluded. gitlab-ui's benchmark row is measured against that scale: 3 off-scale values, as before, but `-2px` is now on it and a 14px margin is found.
+- `scale: "auto"` reads `@wikimedia/codex-design-tokens` when it is installed: the `--spacing-0` to `--spacing-400` ladder (0 to 64px). The named `--spacing-*` tokens are computed component values and are left out. Codex has no benchmark row, because its components and most of its consumers are written in Less, which the audit does not read (#175).
+
+### Changed
+
+- Sass expressions evaluate `px-to-rem(<n>px)` as that length, in token files and in `use-scale` values. A second argument changes the base and is still skipped, as is any other function. A variable defined with it can now produce a finding where it was invisible before.
+
 ## [3.17.0] - 2026-11-04
 
 ### Added

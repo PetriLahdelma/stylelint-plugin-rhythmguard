@@ -109,6 +109,14 @@
       ],
       "tokenPattern": "^--wpds-dimension-(?:gap|padding)-",
       "note": "--wpds-dimension-gap-* and --wpds-dimension-padding-* in px; size and surface tokens are not spacing"
+    },
+    {
+      "name": "@wikimedia/codex-design-tokens",
+      "files": [
+        "dist/theme-wikimedia-ui.css"
+      ],
+      "tokenPattern": "^--spacing-\\d+$",
+      "note": "Codex ladder --spacing-0..400 (0 to 64px); the named --spacing-* tokens are computed component values"
     }
   ]
 }

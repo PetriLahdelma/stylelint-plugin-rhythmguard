@@ -2,15 +2,38 @@
   "name": "gitlab-ui",
   "sha": "8660f9f",
   "scale": {
-    "source": "fallback",
+    "source": "scanned-css",
     "values": [
       0,
+      2,
       4,
       8,
       12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      56,
+      64,
+      72,
+      80,
+      96,
+      120,
+      144,
+      160,
+      208,
+      224,
+      240,
+      248,
+      264,
+      272,
+      296,
+      384,
+      496,
+      600,
+      640,
+      704
     ]
   },
   "summary": {
@@ -19,7 +42,7 @@
     "falsePositives": 0
   },
   "findings": [
-    "src/components/base/form/form_date/form_date.scss:5:-2px:drift",
+    "src/components/base/path/path.scss:67:$path-chevron-right-margin:drift",
     "src/scss/typography.scss:26:3px:drift",
     "src/scss/typography.scss:26:5px:drift"
   ],

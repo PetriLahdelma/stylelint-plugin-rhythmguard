@@ -490,7 +490,7 @@ function customPropertyDeclarations(source, { lineComments = true } = {}) {
 /**
  * Sass variables and maps as token sources. Handles `$spacer: 1rem`, maps such
  * as `$spacers: (1: $spacer * .25, ...)` including nested maps, variable
- * references, `* / + -` arithmetic and `math.div()`. Anything it cannot
+ * references, `* / + -` arithmetic, `math.div()` and `px-to-rem()`. Anything it cannot
  * evaluate (function calls, strings, keywords, interpolated keys, cycles) is
  * skipped rather than guessed. Token names are `$name` or `$name.key.path`.
  */
@@ -530,6 +530,8 @@ function collectScssTokens(source, matchesKind, { lineComments = true } = {}) {
   // Namespaced maps such as GOV.UK's $govuk-spacing-points are only accepted
   // for the spacing kind, and only when they hold a real ladder (issue #86).
   const spacingKind = matchesKind('$spacing-probe');
+  // Scalars such as GitLab's $gl-spacing-scale-1..88 count the same way, per namespace (issue #167).
+  const namespacedScales = spacingKind ? collectNamespacedSpacingScales(declarations, resolveVariable) : new Set();
 
   for (const [name, raw] of declarations) {
     const tokenName = `$${name}`;
@@ -555,10 +557,30 @@ function collectScssTokens(source, matchesKind, { lineComments = true } = {}) {
       });
       continue;
     }
-    push(tokenName, resolveVariable(name, new Set()));
+    push(tokenName, resolveVariable(name, new Set()), namespacedScales.has(name));
   }
 
   return tokens;
+}
+
+/** The `<namespace>-spacing-scale-*` scalars whose namespace holds a real ladder. */
+function collectNamespacedSpacingScales(declarations, resolveVariable) {
+  const byNamespace = new Map();
+  for (const [name, raw] of declarations) {
+    const match = isScssMap(raw) ? null : name.match(NAMESPACED_SPACING_SCALE);
+    const value = match ? resolveVariable(name, new Set()) : null;
+    if (!value) continue;
+    if (!byNamespace.has(match[1])) byNamespace.set(match[1], { lengths: new Set(), names: [] });
+    const entry = byNamespace.get(match[1]);
+    entry.names.push(name);
+    const formatted = formatScssValue(value);
+    if (/^-?\d*\.?\d+(?:px|rem|em)$/.test(formatted) && parseFloat(formatted) !== 0) entry.lengths.add(formatted);
+  }
+  const accepted = new Set();
+  for (const { lengths, names } of byNamespace.values()) {
+    if (lengths.size >= MIN_NAMESPACED_MAP_LENGTHS) names.forEach((name) => accepted.add(name));
+  }
+  return accepted;
 }
 
 /**
@@ -594,6 +616,8 @@ function createScssVariableResolver(source, fallback = () => null) {
 /** `$<namespace>-spacing-points`, `$<ns>-space-scale`: one namespace segment before the anchor. */
 const NAMESPACED_SPACING_MAP = /^\$[a-z0-9]+-(?:space|spacing|spacer)s?(?:-|$)/i;
 const MIN_NAMESPACED_MAP_LENGTHS = 4;
+/** `$gl-spacing-scale-1`, `$gl-spacing-scale-11-5`: one namespace segment, then a numbered step. Names here carry no `$`. */
+const NAMESPACED_SPACING_SCALE = /^([a-z0-9]+)-spacing-scale-\d/i;
 
 /**
  * The value of a Sass variable declaration starting at `start`: the text up to
@@ -915,6 +939,8 @@ function createScssParser(tokens, resolveVariable, stack) {
       const closing = next();
       if (!closing || closing.type !== 'op' || closing.value !== ')') return null;
       if (token.name === 'math.div' && args.length === 2) return combine(args[0], '/', args[1]);
+      // GitLab's $grid-size: px-to-rem(8px). One px length renders as that length; a second argument changes the base.
+      if (token.name === 'px-to-rem' && args.length === 1 && args[0]?.unit === 'px') return args[0];
       return null;
     }
     return null;
