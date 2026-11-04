@@ -3,7 +3,7 @@
   "private": true,
   "description": "Pinned tools for scripts/bench/tailwind-compare.mjs. Bump a version deliberately and rerun.",
   "devDependencies": {
-    "@shadcn/lint": "0.2.3",
+    "@shadcn/lint": "0.2.5",
     "@tailwindcss/cli": "4.3.3",
     "@typescript-eslint/parser": "8.72.1",
     "eslint": "10.14.0",
