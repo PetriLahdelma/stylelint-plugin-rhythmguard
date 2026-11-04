@@ -160,7 +160,7 @@
         "src/scss",
         "src/components"
       ],
-      "notes": "SCSS plus Vue templates. GitLab publishes @gitlab/stylelint-config, an embed target."
+      "notes": "SCSS plus Vue templates. The scale is $gl-spacing-scale-* in src/scss/variables.scss, multiples of $grid-size. GitLab publishes @gitlab/stylelint-config, an embed target."
     },
     {
       "name": "pico",

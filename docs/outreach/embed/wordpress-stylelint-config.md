@@ -1,6 +1,6 @@
 # Proposal: a spacing rule in `@wordpress/stylelint-config`, once the tool reads `$grid-unit-*`
 
-Target: WordPress/gutenberg, `packages/stylelint-config` (issue). Precondition before posting: scale inference must read WordPress's `$grid-unit-05` to `$grid-unit-80` (`packages/base-styles/_variables.scss`); today the consumers below are measured against a default 4px scale, which is not a claim about WordPress. Also a re-contact: WordPress/gutenberg#82502 (the components audit) has no reply.
+Target: WordPress/gutenberg, `packages/stylelint-config` (issue). Precondition before posting: re-measure the consumers below. Inference reads WordPress's scale since 3.17.0 when `@wordpress/base-styles` or `@wordpress/theme` is installed, and these numbers are still on a default 4px scale, which is not a claim about WordPress. Also a re-contact: a maintainer answered WordPress/gutenberg#82502 (the components audit) on 2026-11-03 and closed it because it was neither a bug nor a feature request, so weigh whether this draft should be posted at all.
 
 ---
 

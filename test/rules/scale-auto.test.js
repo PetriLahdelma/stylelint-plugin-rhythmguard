@@ -285,6 +285,31 @@ test('WordPress packages are read through their own names: Sass $grid-unit-* and
   assert.match(texts[1], /"36px"/, 'a --wpds-dimension-size-* token is a size, not a spacing step');
 });
 
+test('Wikimedia Codex is read through its numbered ladder, leaving out computed component tokens', async () => {
+  const dir = tempDir('token-packages-codex');
+  const codex = path.join(dir, 'node_modules', '@wikimedia', 'codex-design-tokens');
+  fs.mkdirSync(path.join(codex, 'dist'), { recursive: true });
+  fs.writeFileSync(path.join(dir, 'package.json'), '{"name":"fixture","dependencies":{"@wikimedia/codex-design-tokens":"^2.0.0"}}');
+  fs.writeFileSync(path.join(codex, 'package.json'), '{"name":"@wikimedia/codex-design-tokens","version":"2.7.0"}');
+  fs.writeFileSync(
+    path.join(codex, 'dist', 'theme-wikimedia-ui.css'),
+    ':root { --spacing-0: 0; --spacing-25: 4px; --spacing-30: 5px; --spacing-50: 8px; --spacing-100: 16px; --spacing-half: 50%; --spacing-custom: 13px; }\n',
+  );
+
+  const previousCwd = process.cwd();
+  process.chdir(dir);
+  let result;
+  try {
+    result = await lintCss({ code: '.a { padding: 5px; margin: 13px; gap: 16px; }', rules: useScaleAuto() });
+  } finally {
+    process.chdir(previousCwd);
+  }
+
+  const texts = result.warnings.map((w) => w.text);
+  assert.equal(texts.length, 1, texts.join('\n'));
+  assert.match(texts[0], /"13px"/, 'a named --spacing-* token is not a ladder step');
+});
+
 test('token packages that are only transitive dependencies are ignored', async () => {
   const dir = tempDir('token-packages-transitive');
   fs.mkdirSync(path.join(dir, 'node_modules', 'tailwindcss'), { recursive: true });

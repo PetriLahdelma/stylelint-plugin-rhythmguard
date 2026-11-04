@@ -145,6 +145,45 @@ test('namespaced maps are only accepted for the spacing kind', () => {
   assert.deepEqual(tokens, []);
 });
 
+test('collectScssTokens reads namespaced spacing-scale scalars with at least four lengths, as GitLab defines them (issue #167)', () => {
+  const tokens = byName(collectScssTokens([
+    '$grid-size: px-to-rem(8px);',
+    '$gl-spacing-scale-1: 0.25 * $grid-size;',
+    '$gl-spacing-scale-2: 0.5 * $grid-size;',
+    '$gl-spacing-scale-3: $grid-size;',
+    '$gl-spacing-scale-11-5: 9 * $grid-size;',
+    '$gl-mb-heading: $gl-spacing-scale-3;',
+    '$widget-spacing-scale-1: 4px;',
+    '$widget-spacing-scale-2: 8px;',
+  ].join('\n'), spacing));
+
+  assert.equal(tokens['$gl-spacing-scale-1'], '2px');
+  assert.equal(tokens['$gl-spacing-scale-3'], '8px');
+  assert.equal(tokens['$gl-spacing-scale-11-5'], '72px');
+  assert.equal(tokens['$gl-mb-heading'], undefined, 'a component variable stays excluded');
+  assert.equal(tokens['$widget-spacing-scale-1'], undefined, 'fewer than four lengths in a namespace stays excluded');
+});
+
+test('namespaced spacing-scale scalars are only accepted for the spacing kind', () => {
+  const radius = createTokenKindMatcher('radius');
+  const source = '$gl-spacing-scale-1: 2px; $gl-spacing-scale-2: 4px; $gl-spacing-scale-3: 8px; $gl-spacing-scale-4: 12px;';
+  assert.deepEqual(collectScssTokens(source, radius), []);
+});
+
+test('px-to-rem() evaluates only with one literal or resolvable length, since a second argument changes the base', () => {
+  const tokens = byName(collectScssTokens([
+    '$spacing-a: px-to-rem(8px);',
+    '$spacing-b: px-to-rem(8px, 10px);',
+    '$spacing-c: other-function(8px);',
+    '$spacing-d: px-to-rem(8);',
+  ].join('\n'), spacing));
+
+  assert.equal(tokens['$spacing-a'], '8px');
+  assert.equal(tokens['$spacing-b'], undefined);
+  assert.equal(tokens['$spacing-c'], undefined);
+  assert.equal(tokens['$spacing-d'], undefined, 'a unitless argument is not a px length');
+});
+
 test('collectScssTokens ignores unitless numbers such as mixin parameter defaults (GOV.UK $spacing-responsive: 6)', () => {
   const tokens = byName(collectScssTokens([
     '@mixin govuk-main-wrapper($spacing-responsive: 6, $spacing-static: 4) {',
