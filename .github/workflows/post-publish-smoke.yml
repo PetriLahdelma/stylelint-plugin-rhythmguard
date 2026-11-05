@@ -18,8 +18,8 @@ on:
 jobs:
   npm-smoke:
     if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
-    # Runs where the release runs: the farm, or GitHub-hosted when RELEASE_ON_HOSTED is "true".
-    runs-on: ${{ vars.RELEASE_ON_HOSTED == 'true' && 'ubuntu-latest' || fromJSON('["self-hosted", "stylelint-plugin-rhythmguard"]') }}
+    # Runs where the release verify runs: GitHub-hosted, or the farm when RELEASE_ON_FARM is "true".
+    runs-on: ${{ vars.RELEASE_ON_FARM == 'true' && fromJSON('["self-hosted", "stylelint-plugin-rhythmguard"]') || 'ubuntu-latest' }}
     steps:
       - name: Checkout published commit
         uses: actions/checkout@v7

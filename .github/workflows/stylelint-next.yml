@@ -1,24 +1,28 @@
-name: Stylelint next
+name: Hosts at latest
 
-# Weekly early warning (#168). Installs the newest Stylelint over the lockfile and
-# runs the full suite: the `next` dist-tag while a major is in prerelease, else
-# `latest` (18.0.0 since 2026-11-03, when `next` was removed). A failure here never
-# blocks a merge or a release; it says what to fix on main before the peer range
-# has to widen.
+# Weekly early warning (#168, eb-10). Each host the rules run in, at its newest
+# release, in its own job so one failure does not hide another:
+#   - Stylelint and ESLint (the companion rules): `next` when it is ahead of
+#     `latest`, else `latest` (scripts/ci/newest-tag.mjs)
+#   - Oxlint: `latest`, whose ESLint-compatible JS plugins are still alpha
+# A failure here never blocks a merge or a release; it says what to fix on main
+# before a peer range has to widen or a pin has to move. GitHub-hosted, so it
+# does not queue behind the farm.
 on:
   schedule:
     - cron: '17 5 * * 1'   # Mondays 05:17 UTC
   workflow_dispatch:
 
 concurrency:
-  group: stylelint-next
+  group: hosts-at-latest
   cancel-in-progress: true
 
 jobs:
-  next:
+  stylelint:
     name: node-24 stylelint next or latest
     if: github.repository == 'PetriLahdelma/stylelint-plugin-rhythmguard'
-    runs-on: [self-hosted, stylelint-plugin-rhythmguard]
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
 
@@ -32,10 +36,49 @@ jobs:
 
       - name: Install the newest Stylelint
         run: |
-          if npm view stylelint@next version --registry https://registry.npmjs.org >/dev/null 2>&1; then tag=next; else tag=latest; fi
+          tag=$(node scripts/ci/newest-tag.mjs stylelint)
           npm install --no-save "stylelint@$tag"
           echo "Testing against stylelint $(node -p "require('stylelint/package.json').version") ($tag)"
 
       - run: npm run lint
       - run: npm run typecheck
       - run: npm test
+
+  eslint:
+    name: node-24 eslint next or latest (companion rules)
+    if: github.repository == 'PetriLahdelma/stylelint-plugin-rhythmguard'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: npm
+      - run: npm ci
+      - name: Install the newest ESLint
+        run: |
+          tag=$(node scripts/ci/newest-tag.mjs eslint)
+          npm install --no-save "eslint@$tag"
+          echo "Testing against eslint $(node -p "require('eslint/package.json').version") ($tag)"
+      - name: ESLint rule tests
+        run: node --test test/rules/eslint-tailwind.test.js test/rules/eslint-tailwind-templates.test.js test/rules/eslint-tailwind-escapes.test.js test/rules/note-option.test.js test/unit/eslint-utility-functions.test.js test/contracts/eslint-samples.test.js
+
+  oxlint:
+    name: node-24 oxlint latest (JS plugins)
+    if: github.repository == 'PetriLahdelma/stylelint-plugin-rhythmguard'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.x
+          cache: npm
+      - run: npm ci
+      - name: Install the latest Oxlint
+        run: |
+          npm install --no-save oxlint@latest
+          echo "Testing against oxlint $(node -p "require('oxlint/package.json').version")"
+      - name: Oxlint JS plugin tests
+        run: node --test test/contracts/oxlint-jsplugin.test.js
