@@ -329,7 +329,7 @@ test('a stylesheet that fails to parse is reported as a parse error, not as drif
 
   const markdown = audit(dir, './src', '--format', 'markdown').stdout;
   assert.match(markdown, /\| Stylesheets that failed to parse \(not audited\) \| 1 \|/);
-  assert.match(markdown, /## Parse Errors[\s\S]*\| `src\/broken\.css:2:1` \| Unclosed block \(CssSyntaxError\) \|/);
+  assert.match(markdown, /## Parse Errors[\s\S]*\| `src\/broken\.css:2:1` \| `Unclosed block \(CssSyntaxError\)` \|/);
 
   const github = audit(dir, './src', '--format', 'github').stdout;
   assert.match(github, /^::error file=src\/broken\.css,line=2,col=1,title=CssSyntaxError::Not audited: Unclosed block \(CssSyntaxError\)$/m);

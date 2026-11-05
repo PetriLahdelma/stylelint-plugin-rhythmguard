@@ -73,7 +73,7 @@ async function run() {
   }
 
   if (parsed.format === 'markdown') {
-    writeOutput(renderMarkdown(report), parsed.outputPath);
+    writeOutput(renderMarkdown(report, { auditCommand: auditCommandFromArgs(parsed) }), parsed.outputPath);
     finish(auditFailures);
     return;
   }
