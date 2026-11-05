@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.18.0] - 2026-11-05
+
 ### Changed
 
 - Stylelint 18 is supported: the peer range is `^16.7.0 || ^17.0.0 || ^18.0.0` in the plugin and in the `rhythmguard` CLI's dependency, so `npm install stylelint@18 stylelint-config-standard@41 stylelint-plugin-rhythmguard` resolves where it failed with ERESOLVE. No code changed; the full suite passes on 18.0.0. On a Node older than Stylelint 18 needs (22.22, 24.15 or 26), npm installs Stylelint 17 for `npx rhythmguard`. The README says how `use-scale` differs from 18's new `value-type-custom-property-required-list` and how to run both. Closes #168.
