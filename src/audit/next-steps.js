@@ -11,6 +11,8 @@ const path = require('node:path');
 
 const { peerDependencies } = require('../../package.json');
 
+const SAFE_DIRECTORY = /^[\w.@+-]+$/;
+
 function shellQuote(value) {
   return /^[\w./@%+=:,-]+$/.test(value) ? value : `'${value.replace(/'/g, "'\\''")}'`;
 }
@@ -43,7 +45,9 @@ function lintGlob(cwd, cssFiles) {
   const pattern = extensions.length > 1 ? `*.{${extensions.join(',')}}` : `*.${extensions[0] || 'css'}`;
   const tops = new Set(relative.map((file) => (file.includes(path.sep) ? file.split(path.sep)[0] : '')));
   const top = tops.size === 1 ? [...tops][0] : '';
-  return top ? `${top}/**/${pattern}` : `**/${pattern}`;
+  // The glob is printed inside double quotes for pasting, where $(...) and
+  // backticks still expand, so a directory name goes in only when it is plain.
+  return top && SAFE_DIRECTORY.test(top) ? `${top}/**/${pattern}` : `**/${pattern}`;
 }
 
 /** `npx rhythmguard audit <dir>` with the scale flags of the run it describes. */
