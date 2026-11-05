@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { spawnSync } from 'node:child_process';
-import { smokeCli, smokeEslintPlugin, smokeStylelintPlugin } from './smoke-checks.mjs';
+import { smokeCli, smokeEslintPlugin, smokeStylelintPlugin, stylelintSmokeInstalls } from './smoke-checks.mjs';
 
 /**
  * Packs the three packages as `npm publish` would and runs the registry smoke's
@@ -44,8 +44,14 @@ try {
   const cli = pack('packages/rhythmguard');
   const eslintPlugin = pack('packages/eslint-plugin-rhythmguard');
 
-  smokeStylelintPlugin(workDir(), { packages: [plugin] });
-  console.log('Pack smoke test passed for stylelint-plugin-rhythmguard.');
+  for (const entry of stylelintSmokeInstalls()) {
+    if (entry.skip) {
+      console.log(`Pack smoke test skipped for stylelint-plugin-rhythmguard on ${entry.label}: ${entry.skip}.`);
+      continue;
+    }
+    smokeStylelintPlugin(workDir(), { packages: [plugin], stylelint: entry.packages });
+    console.log(`Pack smoke test passed for stylelint-plugin-rhythmguard on ${entry.label}.`);
+  }
   smokeCli(workDir(), { packages: [cli, plugin], version });
   console.log('Pack smoke test passed for rhythmguard.');
   smokeEslintPlugin(workDir(), { packages: [eslintPlugin, plugin] });

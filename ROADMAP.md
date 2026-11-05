@@ -4,6 +4,10 @@ Written 2026-09-24 from a review of the repository at 3.8.0, the outreach record
 
 Every item links to an issue with a "done when" line. Milestones: [2026 Q4](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/milestone/1), [2027 Q1](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/milestone/2), [2027 Q2](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/milestone/3). This page is revised at the end of each quarter, and the checkpoint on 2027-03-31 can change everything after it.
 
+## Update, 2026-11-05
+
+A product review against the goal of being the first choice for frontend developers and AI-assisted authors working with scales, [`docs/PRODUCT_REVIEW_2026-11.md`](./docs/PRODUCT_REVIEW_2026-11.md), amends the council plan of record in sixteen places (its section 9) and sets five phases from 2026-11-05 to 2027-07-30. Its first release, 3.18.0 with the Stylelint 18 peer range, ships the week of 2026-11-09. The 160 verified findings behind it are in [`docs/reviews/2026-11-05-findings.md`](./docs/reviews/2026-11-05-findings.md).
+
 ## Update, 2026-10-30
 
 The 2026-10-18 council report, [`docs/COUNCIL_2027-2028.md`](./docs/COUNCIL_2027-2028.md), is now the plan of record for what comes after this roadmap. Its thesis: Rhythmguard 4.0 is a small, stable, token-file-native scale ratchet whose findings never change within a major, and new capability comes from a named external user. Sections 1 to 3 below are kept as written on 2026-09-24.

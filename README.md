@@ -7,7 +7,7 @@
 Nobody chose 13px. Rhythmguard catches off-scale spacing in CSS and Tailwind class strings, tells you the nearest steps on your scale, and snaps to them or to your tokens when you ask.
 
 [![CI](https://img.shields.io/github/actions/workflow/status/petrilahdelma/stylelint-plugin-rhythmguard/ci.yml?branch=main&label=ci)](https://github.com/petrilahdelma/stylelint-plugin-rhythmguard/actions/workflows/ci.yml)
-[![npm version](https://img.shields.io/npm/v/stylelint-plugin-rhythmguard?label=npm&color=1f6feb&r=3170)](https://www.npmjs.com/package/stylelint-plugin-rhythmguard)
+[![npm version](https://img.shields.io/npm/v/stylelint-plugin-rhythmguard?label=npm&color=1f6feb&r=3180)](https://www.npmjs.com/package/stylelint-plugin-rhythmguard)
 [![npm downloads](https://img.shields.io/npm/dm/stylelint-plugin-rhythmguard.svg)](https://www.npmjs.com/package/stylelint-plugin-rhythmguard)
 [![License: MIT](https://img.shields.io/badge/license-MIT-white.svg)](./LICENSE)
 
@@ -144,7 +144,21 @@ The two do not overlap. Rhythmguard reports the `13px` padding and the `17px` he
 
 ## Compatibility
 
-Stylelint 16 and 17. Node 20.19 or newer; Node 20 itself is end of life, and 4.0 raises the floor to 22.22 ([#172](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/172)). The ESLint companion needs ESLint 8 or newer, is tested on ESLint 9 and 10, and is tested in CI on Oxlint 1.88.0. Three runtime dependencies (`known-css-properties`, `postcss`, `postcss-value-parser`); `stylelint` is a peer you need only for the Stylelint rules and the stylesheet audit, so an ESLint-only project installs without it, and `npx rhythmguard` brings its own; `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers. CommonJS and ESM entry points, TypeScript declarations for every export. The CI matrix runs Node 20 and 22 against Stylelint 16.0.0, 16.x and 17.x, and Node 24 and 26 against 17.x; a weekly job runs the suite against Stylelint `next` (18.0.0-next.0 passes). Upgrading from 2.x: [docs/MIGRATING_TO_3.md](docs/MIGRATING_TO_3.md).
+Stylelint 16.7 to 18. The floor is 16.7.0 because Stylelint reads a rule's fix callback from that version on; on 16.0 to 16.6 `--fix` changed nothing. Node 20.19 or newer; Node 20 itself is end of life, and 4.0 raises the floor to 22.22 ([#172](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/172)). Stylelint 18 needs Node 22.22, 24.15 or 26, and on an older Node npm installs Stylelint 17 for `npx rhythmguard`. The ESLint companion needs ESLint 8 or newer, is tested on ESLint 9 and 10, and is tested in CI on Oxlint 1.88.0. Three runtime dependencies (`known-css-properties`, `postcss`, `postcss-value-parser`); `stylelint` is a peer you need only for the Stylelint rules and the stylesheet audit, so an ESLint-only project installs without it, and `npx rhythmguard` brings its own; `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers (`stylelint-plugin-logical-css` itself still peers on Stylelint 17 or older). CommonJS and ESM entry points, TypeScript declarations for every export. The CI matrix runs Node 20 and 22 against Stylelint 16.7.0, 16.x and 17.x, and Node 22, 24 and 26 against 18.x; a weekly job runs the suite against the latest Stylelint. Upgrading from 2.x: [docs/MIGRATING_TO_3.md](docs/MIGRATING_TO_3.md).
+
+### Stylelint 18's custom-property rule
+
+Stylelint 18 added `value-type-custom-property-required-list`. It answers a different question from `use-scale`. The core rule says a length must be a custom property: it reports `16px` and a `1px` hairline the same way as `13px`, names no step, and `--fix` leaves the value alone. `use-scale` says which value is off your scale and which two steps are nearest, and `--fix` writes the nearest step; `prefer-token` names the token that holds the value; both read the scale from your token file. To move every length to a token over time, run both:
+
+```json
+{
+  "plugins": ["stylelint-plugin-rhythmguard"],
+  "rules": {
+    "rhythmguard/use-scale": [true, { "scale": "auto" }],
+    "value-type-custom-property-required-list": [["length"], { "severity": "warning" }]
+  }
+}
+```
 
 ## Contributing and support
 

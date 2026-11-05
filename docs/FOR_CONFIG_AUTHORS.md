@@ -95,7 +95,7 @@ Zero, percentages, and hairlines (non-zero lengths of one CSS pixel or less such
 
 ## Footprint and support
 
-- Stylelint 16 and 17. Node 20.19 or newer.
+- Stylelint 16.7 to 18. Node 20.19 or newer (Stylelint 18 itself needs Node 22.22, 24.15 or 26).
 - Runtime dependencies: `known-css-properties`, `postcss` and `postcss-value-parser`, nothing else. Optional peers: `postcss-scss` to audit SCSS, `stylelint-config-tailwindcss` for the `tailwind` config, `stylelint-plugin-logical-css` if you compose with it. `embed` needs none of them.
 - CommonJS and ESM entry points, TypeScript declarations for every export.
 - The `embed` config's shape and defaults will not change within a major version. Changes to inference sources are additive.
