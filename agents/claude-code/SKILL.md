@@ -2,7 +2,7 @@
 name: rhythmguard
 description: Keep CSS and Tailwind spacing on the project scale. Use when writing or changing CSS, SCSS, CSS Modules or Tailwind class strings, and before finishing any such change.
 when_to_use: Adding or changing padding, margin, gap, inset or other spacing in a stylesheet or a class string; reviewing a diff that does.
-allowed-tools: Bash(npx rhythmguard:*) Bash(npx stylelint:*) Bash(npx eslint:*)
+allowed-tools: Bash(npx rhythmguard audit:*)
 paths:
   - "**/*.css"
   - "**/*.scss"
