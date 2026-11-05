@@ -25,6 +25,7 @@
     "cli"
   ],
   "dependencies": {
+    "postcss-scss": "^4.0.0",
     "stylelint": "^16.7.0 || ^17.0.0 || ^18.0.0",
     "stylelint-plugin-rhythmguard": "^3.18.0"
   },

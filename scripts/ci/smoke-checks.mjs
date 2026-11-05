@@ -48,6 +48,7 @@ function install(cwd, packages, registry) {
 function writeOffScaleSources(cwd) {
   mkdirSync(path.join(cwd, 'src'), { recursive: true });
   writeFileSync(path.join(cwd, 'src', 'card.css'), '.card { margin: 13px; }\n', 'utf8');
+  writeFileSync(path.join(cwd, 'src', 'panel.scss'), '$pad: 18px;\n.panel { padding: $pad; }\n', 'utf8');
   writeFileSync(path.join(cwd, 'src', 'card.jsx'), 'export const Card = () => <div className="p-[13px]" />;\n', 'utf8');
 }
 
@@ -129,6 +130,10 @@ export function smokeCli(cwd, { packages, registry, version }) {
   if (!findings.tailwind.some((finding) => finding.token === 'p-[13px]')) {
     throw new Error('rhythmguard audit did not report p-[13px] in src/card.jsx.');
   }
+  // postcss-scss comes with the rhythmguard package, so SCSS is audited too.
+  if (!findings.css.some((finding) => finding.rule === 'rhythmguard/use-scale' && finding.file.endsWith('panel.scss'))) {
+    throw new Error('rhythmguard audit did not report padding: $pad (18px) in src/panel.scss.');
+  }
 }
 
 // An ESLint-only project: the plugin must lint without Stylelint installed.
@@ -169,8 +174,8 @@ export function smokeEslintPlugin(cwd, { packages, registry }) {
   const bin = path.join('node_modules', '.bin', 'rhythmguard');
   const audit = mustSucceed(run(bin, ['audit', 'src', '--format', 'json'], { cwd }), 'rhythmguard audit without Stylelint');
   const report = JSON.parse(audit.stdout);
-  if (report.scanned.stylelintMissing !== 1 || !report.findings.tailwind.some((finding) => finding.token === 'p-[13px]')) {
-    throw new Error(`Expected the audit to read p-[13px] and count src/card.css as not audited, got ${JSON.stringify(report.scanned)}`);
+  if (report.scanned.stylelintMissing !== 2 || !report.findings.tailwind.some((finding) => finding.token === 'p-[13px]')) {
+    throw new Error(`Expected the audit to read p-[13px] and count both stylesheets as not audited, got ${JSON.stringify(report.scanned)}`);
   }
   const gated = run(bin, ['audit', 'src', '--max-findings', '10'], { cwd });
   if (gated.status !== 1 || !gated.stderr.includes('npm install --save-dev stylelint')) {

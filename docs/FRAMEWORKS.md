@@ -45,6 +45,8 @@ export default [
 
 For TSX, add `typescript-eslint` and a block with `files: ['**/*.{ts,tsx}']` and `languageOptions: { parser: tseslint.parser }`; Next.js projects usually have it through `eslint-config-next`. Vue, Svelte and Astro templates need their own parser: see [Other file types](../packages/eslint-plugin-rhythmguard/README.md#other-file-types).
 
+**Component `<style>` blocks are not tested yet.** The Vue, Svelte and Astro snippets below go through `postcss-html`, which no test in this repository runs, and `rhythmguard audit` and the quickstart read only `.css` and `.scss` files, so a component's `<style>` block is not in their numbers. The rules themselves run on whatever Stylelint parses. Tested support is planned ([review finding css-06](./reviews/2026-11-05-findings.md)).
+
 ## Vue (config snippet)
 
 Vue Single File Components need `postcss-html` to parse `<style>` blocks.

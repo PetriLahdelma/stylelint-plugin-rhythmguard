@@ -12,6 +12,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+const { auditCommand, eslintInstallLine, lintGlob, stylelintInstallLine } = require('../audit/next-steps');
 const { createAuditReport } = require('../audit/report');
 const { detect } = require('./init');
 const { discoverTokenPackages } = require('../core/scale-inference');
@@ -94,13 +95,15 @@ function topEntries(counts, limit = MAX_LISTED) {
  * `scale: "auto"` would fall back to the `rhythmic-4` preset instead, which is
  * a longer scale, and the pasted config would not reproduce this report (#246).
  */
-function suggestedStylelintConfig({ fallbackScale = null, nextjs = false, profile, tokenFiles }) {
+function suggestedStylelintConfig({ fallbackScale = null, nextjs = false, profile, scss = false, tokenFiles }) {
   const ruleOptions = Array.isArray(fallbackScale) ? { scale: [...fallbackScale] } : { scale: 'auto' };
   if (!fallbackScale && tokenFiles.length > 0) {
     ruleOptions.scaleSources = tokenFiles.map(toPosix);
   }
   return {
     extends: [`stylelint-plugin-rhythmguard/configs/${profile}`],
+    // postcss-scss also parses plain CSS, so a mixed project needs only this.
+    ...(scss ? { customSyntax: 'postcss-scss' } : {}),
     ...(nextjs ? { ignoreFiles: ['.next/**', 'out/**', 'node_modules/**'] } : {}),
     rules: {
       'rhythmguard/use-scale': [true, ruleOptions],
@@ -108,17 +111,28 @@ function suggestedStylelintConfig({ fallbackScale = null, nextjs = false, profil
   };
 }
 
-function eslintSnippet(scaleValues) {
+/**
+ * The eslint.config.js block. It imports the package the printed install line
+ * installs. With TypeScript files it lints .ts and .tsx through typescript-eslint's
+ * parser: the default parser reads no TSX, so a JS-only block linted nothing (dx-04).
+ */
+// Written this way so the snippet's import lines are not read as imports of this file.
+const quoted = (name) => `'${name}'`;
+
+function eslintSnippet(scaleValues, { typescript = false } = {}) {
   const scale = scaleValues.filter((value) => typeof value === 'number').join(', ');
   return [
     "// eslint.config.js",
-    "import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';",
+    `import rhythmguard from ${quoted('eslint-plugin-rhythmguard')};`,
+    ...(typescript ? [`import tseslint from ${quoted('typescript-eslint')};`] : []),
     '',
     'export default [',
     '  {',
     // Without `files` and JSX parsing, a flat config lints no .jsx at all (#243).
-    "    files: ['**/*.{js,jsx,mjs,cjs}'],",
-    '    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },',
+    typescript ? "    files: ['**/*.{js,jsx,mjs,cjs,ts,tsx}']," : "    files: ['**/*.{js,jsx,mjs,cjs}'],",
+    typescript
+      ? '    languageOptions: { parser: tseslint.parser, parserOptions: { ecmaFeatures: { jsx: true } } },'
+      : '    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },',
     "    plugins: { 'rhythmguard-tailwind': rhythmguard },",
     `    rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['warn', { scale: [${scale}] }] },`,
     '  },',
@@ -126,20 +140,19 @@ function eslintSnippet(scaleValues) {
   ].join('\n');
 }
 
-function shellQuote(value) {
-  return /^[\w./@%+=:,-]+$/.test(value) ? value : `'${value.replace(/'/g, "'\\''")}'`;
-}
-
 /**
  * The commands to run next. The audit commands pass what quickstart passed,
  * `--scale auto` and the token files it read, so they report the same scale
  * and the same findings; `audit .` alone would use the default scale (#287).
  */
-function nextCommands(tokenSources) {
-  const audit = ['npx rhythmguard audit .', '--scale auto', ...tokenSources.map((file) => `--token-source ${shellQuote(toPosix(file))}`)].join(' ');
+function nextCommands(tokenSources, { eslint = false, glob = '**/*.css', stylelint = true } = {}) {
+  const audit = auditCommand({ dir: '.', scale: 'auto', tokenSources: tokenSources.map(toPosix) });
   // Each note on its own line above its command, so a long command copies whole.
   return [
-    ['Lint with the config above:', 'npx stylelint "**/*.css"'],
+    ...(stylelint ? [['Lint stylesheets with the config above:', `npx stylelint "${glob}"`]] : []),
+    ...(eslint ? [['Lint class strings with the ESLint config above:', 'npx eslint .']] : []),
+    // Snapping a value can move layout: decide per value, then rewrite (dx-11).
+    ['Propose one decision per off-scale value, before changing any:', `${audit} --plan`],
     ['PR-ready report:', `${audit} --format markdown`],
     ['Then gate only new drift in CI, with the same flags:', `${audit} --write-baseline`],
     ['Check the setup:', 'npx rhythmguard doctor'],
@@ -259,23 +272,29 @@ async function run() {
   out.push('');
 
   const profile = stack.tailwind ? 'tailwind' : 'recommended';
+  const files = report.files || { cssFiles: [], templateFiles: [] };
+  const scss = files.cssFiles.some((file) => file.endsWith('.scss'));
+  const templateExtensions = new Set(files.templateFiles.map((file) => path.extname(file)));
+  const typescript = templateExtensions.has('.ts') || templateExtensions.has('.tsx');
+  const otherTemplates = ['.vue', '.svelte', '.astro'].filter((extension) => templateExtensions.has(extension));
+  const glob = lintGlob(cwd, files.cssFiles);
   const printStylelint = () => {
-    if (withoutStylelint) {
-      out.push('  To audit your stylesheets too, install Stylelint and the plugin:', '');
-      out.push('    npm install --save-dev stylelint stylelint-plugin-rhythmguard', '');
-      out.push(`  then paste this into .stylelintrc.json${stack.hasExistingConfig ? ' (merge with your existing config)' : ''}:`, '');
-    } else {
-      out.push(`  Paste this into .stylelintrc.json${stack.hasExistingConfig ? ' (merge with your existing config)' : ''}:`, '');
-    }
+    out.push(withoutStylelint ? '  To audit your stylesheets too, install Stylelint and the plugin:' : '  Install:', '');
+    out.push(`    ${stylelintInstallLine({ scss, tailwindConfig: profile === 'tailwind' })}`, '');
+    out.push(`  ${withoutStylelint ? 'then paste' : 'Then paste'} this into .stylelintrc.json${stack.hasExistingConfig ? ' (merge with your existing config)' : ''}:`, '');
     const fallbackScale = scale.source === 'fallback' ? scale.values : null;
-    out.push(JSON.stringify(suggestedStylelintConfig({ fallbackScale, nextjs: stack.nextjs, profile, tokenFiles }), null, 2).replace(/^/gm, '    '));
+    out.push(JSON.stringify(suggestedStylelintConfig({ fallbackScale, nextjs: stack.nextjs, profile, scss, tokenFiles }), null, 2).replace(/^/gm, '    '));
     out.push('');
   };
   const printEslint = () => {
-    out.push('  Tailwind class strings need the ESLint companion. Paste this into eslint.config.js:', '');
-    out.push(eslintSnippet(scale.values).replace(/^/gm, '    '));
-    out.push('', '    TypeScript, Vue, Svelte and Astro files need their parser in a block of their own; see the');
-    out.push('    eslint-plugin-rhythmguard README, "Other file types".');
+    out.push('  Tailwind class strings need the ESLint companion. Install:', '');
+    out.push(`    ${eslintInstallLine({ typescript })}`, '');
+    out.push('  Then paste this into eslint.config.js:', '');
+    out.push(eslintSnippet(scale.values, { typescript }).replace(/^/gm, '    '));
+    if (otherTemplates.length > 0) {
+      out.push('', `    ${otherTemplates.join(', ')} files need their parser in a block of their own; see the`);
+      out.push('    eslint-plugin-rhythmguard README, "Other file types".');
+    }
     out.push('');
   };
 
@@ -291,7 +310,7 @@ async function run() {
   }
 
   out.push('  Next');
-  out.push(...nextCommands(auditTokenSources).map((line) => `    ${line}`));
+  out.push(...nextCommands(auditTokenSources, { eslint: stack.tailwind, glob, stylelint: !withoutStylelint }).map((line) => `    ${line}`));
   out.push('');
 
   process.stdout.write(`${out.join('\n')}\n`);
