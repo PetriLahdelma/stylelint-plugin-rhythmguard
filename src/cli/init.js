@@ -198,7 +198,7 @@ function selectProfile(stack) {
 const AGENT_TARGETS = {
   claude: { source: 'claude-code/SKILL.md', target: path.join('.claude', 'skills', 'rhythmguard', 'SKILL.md'), mode: 'write' },
   cursor: { source: 'cursor/rhythmguard.mdc', target: path.join('.cursor', 'rules', 'rhythmguard.mdc'), mode: 'write' },
-  copilot: { source: 'copilot/copilot-instructions.md', target: path.join('.github', 'copilot-instructions.md'), mode: 'append' },
+  copilot: { source: 'copilot/rhythmguard.instructions.md', target: path.join('.github', 'instructions', 'rhythmguard.instructions.md'), mode: 'write' },
 };
 const AGENT_BLOCK_START = '<!-- rhythmguard:agents:start -->';
 const AGENT_BLOCK_END = '<!-- rhythmguard:agents:end -->';
@@ -242,10 +242,30 @@ function parseInitArgs(argv) {
 }
 
 /**
+ * Up to 3.18 the Copilot pack was appended to .github/copilot-instructions.md
+ * between markers. It now has its own path-specific file, so the old block,
+ * which this command wrote and owns, is taken out to leave one copy.
+ */
+function removeLegacyCopilotBlock(cwd) {
+  const legacy = path.join('.github', 'copilot-instructions.md');
+  const legacyPath = path.join(cwd, legacy);
+  if (!fs.existsSync(legacyPath)) return null;
+  const existing = fs.readFileSync(legacyPath, 'utf8');
+  const start = existing.indexOf(AGENT_BLOCK_START);
+  const end = existing.indexOf(AGENT_BLOCK_END);
+  if (start === -1 || end === -1 || end < start) return null;
+  const next = `${existing.slice(0, start).trimEnd()}\n${existing.slice(end + AGENT_BLOCK_END.length).replace(/^\n+/, '\n')}`.replace(/^\n+/, '');
+  if (next.trim() === '') {
+    fs.rmSync(legacyPath);
+  } else {
+    fs.writeFileSync(legacyPath, next.endsWith('\n') ? next : `${next}\n`);
+  }
+  return legacy;
+}
+
+/**
  * Copies the generated packs under <package>/agents into the locations each
- * agent reads. Claude Code and Cursor files are owned by Rhythmguard and
- * overwritten; copilot-instructions.md is shared, so the block is appended
- * between markers and replaced in place on later runs.
+ * agent reads. Every target is a file Rhythmguard owns, overwritten on rerun.
  */
 function installAgents(selection, cwd = process.cwd()) {
   const names = selection === 'all' ? Object.keys(AGENT_TARGETS) : [selection];
@@ -257,24 +277,17 @@ function installAgents(selection, cwd = process.cwd()) {
   const packsDir = path.join(__dirname, '..', '..', 'agents');
   const written = [];
   for (const name of names) {
-    const { mode, source, target } = AGENT_TARGETS[name];
+    const { source, target } = AGENT_TARGETS[name];
     const content = fs.readFileSync(path.join(packsDir, source), 'utf8');
     const targetPath = path.join(cwd, target);
     fs.mkdirSync(path.dirname(targetPath), { recursive: true });
 
-    if (mode === 'append' && fs.existsSync(targetPath)) {
-      const existing = fs.readFileSync(targetPath, 'utf8');
-      const block = `${AGENT_BLOCK_START}\n${content.trimEnd()}\n${AGENT_BLOCK_END}\n`;
-      const start = existing.indexOf(AGENT_BLOCK_START);
-      const end = existing.indexOf(AGENT_BLOCK_END);
-      const next = start !== -1 && end !== -1
-        ? `${existing.slice(0, start)}${block}${existing.slice(end + AGENT_BLOCK_END.length).replace(/^\n/, '')}`
-        : `${existing.trimEnd()}\n\n${block}`;
-      fs.writeFileSync(targetPath, next);
-    } else {
-      fs.writeFileSync(targetPath, content);
-    }
+    fs.writeFileSync(targetPath, content);
     written.push(target);
+    if (name === 'copilot') {
+      const moved = removeLegacyCopilotBlock(cwd);
+      if (moved) written.push(`${moved} (the block an older version appended there was removed)`);
+    }
   }
   return written;
 }
