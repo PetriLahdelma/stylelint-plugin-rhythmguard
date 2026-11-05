@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- The release verify matrix and the post-publish smoke run on GitHub-hosted runners by default (`RELEASE_ON_FARM=true` moves them back to the self-hosted farm), and the release verify now runs the typecheck. Pull requests get a GitHub-hosted fast gate when the repository variable `HOSTED_GATE` is set, as a trial; the local gate stays the merge gate. Node 20, end of life since 2026-04-30 but still the engines floor until 4.0, keeps one CI row on the Stylelint floor. A non-blocking Windows job runs on pushes to `main`, and the weekly job checks the newest Stylelint, ESLint and Oxlint separately.
+
 ## [3.18.0] - 2026-11-05
 
 ### Changed

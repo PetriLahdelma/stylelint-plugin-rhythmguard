@@ -17,15 +17,24 @@ concurrency:
 jobs:
   verify:
     name: node-${{ matrix.node-version }} stylelint-${{ matrix.stylelint-version }}
-    # Self-hosted CI farm (owned hardware) instead of metered GitHub-hosted minutes. PUBLIC repo:
-    # fork PRs must NEVER run on our runners, so gate to same-repo PRs (and pushes) only.
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    # Self-hosted CI farm (owned hardware). PUBLIC repo: fork PRs must NEVER run on our
+    # runners, so gate to same-repo PRs (and pushes) only. With the repository variable
+    # HOSTED_GATE set to "true", same-repo PRs get the hosted fast gate below instead and
+    # the farm runs this matrix on pushes to main only (trial, council Amendment 2).
+    if: github.event_name == 'push' || (github.event.pull_request.head.repo.full_name == github.repository && vars.HOSTED_GATE != 'true')
     runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     strategy:
       fail-fast: false
       matrix:
         node-version: ['20.x', '22.x']
         stylelint-version: ['16.7.0', '16', '17']
+        # Node 20 is end of life (2026-04-30) but still the engines floor until 4.0:
+        # one row proves it, on the Stylelint floor.
+        exclude:
+          - node-version: '20.x'
+            stylelint-version: '16'
+          - node-version: '20.x'
+            stylelint-version: '17'
         # Stylelint 18 needs Node ^22.22.2 || ^24.15.0 || >=26, so it runs on Node 22,
         # 24 and 26 only; the Stylelint 16 rows prove the floor, and running every
         # major on every Node would double the farm's queue for no extra coverage (#164).
@@ -82,11 +91,11 @@ jobs:
         run: npm test
 
       - name: Coverage (single reference run)
-        if: matrix.node-version == '20.x' && matrix.stylelint-version == '16'
+        if: matrix.node-version == '22.x' && matrix.stylelint-version == '17'
         run: npm run test:coverage
 
       - name: Pack smoke test (single reference run)
-        if: matrix.node-version == '20.x' && matrix.stylelint-version == '16'
+        if: matrix.node-version == '22.x' && matrix.stylelint-version == '17'
         run: npm run test:pack-smoke
 
       - name: Report CI result to dashboard collector
@@ -102,7 +111,7 @@ jobs:
   # >=8, so the rule tests also run on ESLint 9, the version most projects still pin.
   eslint-9:
     name: eslint-9 companion rules (node-22)
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'push' || (github.event.pull_request.head.repo.full_name == github.repository && vars.HOSTED_GATE != 'true')
     runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     steps:
       - uses: actions/checkout@v7
@@ -121,7 +130,7 @@ jobs:
   # installed. Bump the pin deliberately and update the version in the docs.
   oxlint:
     name: oxlint companion rules (oxlint-1.88.0, node-22)
-    if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name == 'push' || (github.event.pull_request.head.repo.full_name == github.repository && vars.HOSTED_GATE != 'true')
     runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     steps:
       - uses: actions/checkout@v7
@@ -137,10 +146,15 @@ jobs:
 
   # Fork PRs cannot use the self-hosted farm (public repo, untrusted code), so
   # contributors get feedback from one GitHub-hosted job: lint, typecheck, tests.
+  # With HOSTED_GATE set to "true" it also runs for same-repo PRs, as an advisory
+  # fast gate: continue-on-error, no ruleset requires it, and the local gate stays
+  # the merge gate. Two hangs in a month revert the variable (council Amendment 2).
   fork-verify:
-    name: fork PR verify (GitHub-hosted, node-22, Stylelint from the lockfile)
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name != github.repository
+    name: PR fast gate (GitHub-hosted, node-22, Stylelint from the lockfile)
+    if: github.event_name == 'pull_request' && (github.event.pull_request.head.repo.full_name != github.repository || vars.HOSTED_GATE == 'true')
     runs-on: ubuntu-latest
+    continue-on-error: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -150,4 +164,23 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm test
+
+  # Windows, GitHub-hosted, on pushes to main only. Paths are normalised in many
+  # places that no Linux runner exercises (#174). Non-blocking until it is green
+  # for a month; then README's compatibility line names Windows.
+  windows:
+    name: windows (GitHub-hosted, node-22)
+    if: github.event_name == 'push'
+    runs-on: windows-latest
+    continue-on-error: true
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
       - run: npm test

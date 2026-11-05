@@ -74,7 +74,7 @@ npm run build:playground       # after changing anything under src/ the rules us
 npm run bench:agents -- --dry-run --limit 4   # the agent eval pipeline, no API key needed
 ```
 
-The local gate runs on whatever Node you have installed; CI runs Node 20 and 22 against Stylelint 16.7.0, 16 and 17, Node 22, 24 and 26 against Stylelint 18, the ESLint companion rules on ESLint 9, and once a week the full suite against the newest Stylelint (`next` while a major is in prerelease, else `latest`). Node 20.19 is the floor, so avoid features that arrived in Node 21 or later. Glob patterns for `node --test` were one such feature, and they took a release run down.
+The local gate runs on whatever Node you have installed; CI runs Node 22 against Stylelint 16.7.0, 16, 17 and 18, Node 24 and 26 against 18, Node 20 against the 16.7.0 floor only, the ESLint companion rules on ESLint 9, a non-blocking Windows job on pushes to `main`, and once a week the newest Stylelint, ESLint and Oxlint. Pull requests from forks get one GitHub-hosted job (lint, typecheck, tests); with the repository variable `HOSTED_GATE` set, same-repo pull requests get the same job as an advisory fast gate and the farm matrix runs after merge. The local gate is the merge gate either way. Node 20.19 is the floor, so avoid features that arrived in Node 21 or later. Glob patterns for `node --test` were one such feature, and they took a release run down.
 
 If your shell's npm registry is overridden by a corporate `.npmrc`, add `--registry https://registry.npmjs.org` to `npm ci` and prefix `test:pack-smoke` with `npm_config_registry=https://registry.npmjs.org`.
 

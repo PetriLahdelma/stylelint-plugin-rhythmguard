@@ -1,6 +1,6 @@
 # Release checklist
 
-Releases are maintainer-run and take about twenty minutes of attention. The publish itself is automated: a GitHub release triggers `release.yml`, which verifies on the self-hosted matrix (Node 20 and 22 against Stylelint 16.7.0, 16 and 17, plus Node 22, 24 and 26 against Stylelint 18) and publishes from a GitHub-hosted job through npm trusted publishing (OIDC). No npm token exists anywhere. Provenance is attached automatically.
+Releases are maintainer-run and take about twenty minutes of attention. The publish itself is automated: a GitHub release triggers `release.yml`, which verifies on GitHub-hosted runners (Node 22 against Stylelint 16.7.0, 16, 17 and 18, Node 24 and 26 against 18, Node 20 against the 16.7.0 floor) and publishes from a GitHub-hosted job through npm trusted publishing (OIDC). No npm token exists anywhere. Provenance is attached automatically.
 
 ## 1. Decide the version
 
@@ -63,16 +63,16 @@ The steps are gated on the repository variable `PUBLISH_COMPANIONS`. Two one-tim
 
 Then `gh variable set PUBLISH_COMPANIONS --body true`. Until then the steps are skipped and the release is unaffected.
 
-## 7. If the farm is down
+## 7. Where the release runs
 
-Check the runners before cutting: `gh api repos/PetriLahdelma/stylelint-plugin-rhythmguard/actions/runners --jq '.runners[] | "\(.name) \(.status)"'`. No runner listed, or all offline, means the verify jobs will queue for 24 hours and be cancelled. Flip the release onto GitHub-hosted runners for the cut, and back afterwards:
+The verify matrix and the post-publish smoke run on GitHub-hosted runners, so a release no longer waits for the self-hosted farm (it queued for 30 to 68 minutes behind CI, and 24 hours when the farm was down). To run them on the farm instead, for example while GitHub has an outage, set the variable before creating the release and delete it afterwards:
 
 ```bash
-gh variable set RELEASE_ON_HOSTED --body true
-gh variable delete RELEASE_ON_HOSTED
+gh variable set RELEASE_ON_FARM --body true
+gh variable delete RELEASE_ON_FARM
 ```
 
-The variable is read when the run starts, so set it before creating the release. The publish job is always GitHub-hosted (OIDC requires it).
+The variable is read when the run starts. The publish job is always GitHub-hosted (OIDC requires it).
 
 ## 7b. If only the companions failed
 
