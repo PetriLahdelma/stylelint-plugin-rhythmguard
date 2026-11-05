@@ -1,0 +1,11 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["helpers:pinGitHubActionDigests"],
+  "packageRules": [
+    {
+      "description": "The benchmark trees pin their tools on purpose (each manifest says so) and are bumped by hand when the benchmark is rerun. Renovate also cannot write the tailwind-compare lockfile (EALLOWREMOTE on a remote wasm tarball).",
+      "matchFileNames": ["benchmarks/**"],
+      "enabled": false
+    }
+  ]
+}

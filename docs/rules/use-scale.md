@@ -155,7 +155,7 @@ The message names the position: `clamp() minimum`, `clamp() maximum`, `min() arg
 | `customScale` | `Array<number\|string>` | `undefined` | Highest-priority custom scale override. An empty list is an invalid option |
 | `scale` | `Array<number\|string> \| "auto"` | `[0,4,8,12,16,24,32,40,48,64]` | Allowed values, or `"auto"` to infer them from tokens (see above). An empty list, or `"auto"` inside a list, is an invalid option |
 | `scaleSources` | `Array<string \| { path, format? }>` | `[]` | Token files consulted first when `scale` is `"auto"`. `format` is `auto`, `css`, `flat-json`, `style-dictionary` or `dtcg`; any other value is an invalid option |
-| `tailwindConfigPath` | `string` | `null` | Tailwind v3 config whose `theme.spacing` feeds `scale: "auto"` |
+| `tailwindConfigPath` | `string` | `null` | Tailwind v3 config whose `theme.spacing` feeds `scale: "auto"`. Loaded with `require()`, so its code runs; one that uses top-level await is not read |
 | `units` | `string[]` | `['px','rem','em']` | Units considered for scale enforcement |
 | `unitStrategy` | `'convert' \| 'exact'` | `'convert'` | `convert` compares through px conversion. `exact` compares against same-unit scale values (for `vw`, `cqi`, and similar) |
 | `baseFontSize` | `number` | `16` | Used for `rem` and `em` conversion |

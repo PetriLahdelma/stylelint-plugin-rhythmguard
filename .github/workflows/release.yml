@@ -9,6 +9,9 @@ on:
   # below skips a version the registry already lists.
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   verify:
     name: verify node-${{ matrix.node-version }} stylelint-${{ matrix.stylelint-version }}
@@ -37,7 +40,9 @@ jobs:
             stylelint-version: '18'
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # Node 26 for Linux links libatomic.so.1, which the stock actions-runner image
       # lacks on both farm hosts (arm64 Mac mini, x64 gaming PC): setup-node finds
@@ -51,7 +56,7 @@ jobs:
           fi
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
@@ -98,18 +103,22 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Setup Node.js
-        uses: actions/setup-node@v7
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
           node-version: 24
           cache: npm
           registry-url: https://registry.npmjs.org
 
+      # Trusted publishing needs npm 11.5.1 or newer. Pinned to the version the
+      # last green publish ran (3.17.0), so a new npm release cannot change it.
       - name: Ensure npm supports trusted publishing (>= 11.5.1)
         run: |
-          npm install -g npm@latest
+          npm install -g npm@12.2.1
           npm --version
 
       - name: Install dependencies

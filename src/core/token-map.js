@@ -3,7 +3,6 @@
 const { readJsonFile } = require('./json');
 const { parseTokenValueLength } = require('./token-sources');
 
-const { spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
 const {
@@ -288,70 +287,15 @@ function loadTailwindSpacingFromRequire(resolvedPath) {
   }
 }
 
-function loadTailwindSpacingFromDynamicImport(resolvedPath) {
-  const script = [
-    'const { pathToFileURL } = require("node:url");',
-    '(async () => {',
-    '  try {',
-    '    const configPath = process.argv[1];',
-    '    const loaded = await import(pathToFileURL(configPath).href);',
-    '    const config = loaded && typeof loaded.default === "object" ? loaded.default : loaded;',
-    '    if (!config || typeof config !== "object" || Array.isArray(config)) {',
-    '      process.stdout.write("{}");',
-    '      return;',
-    '    }',
-    '    const theme = config.theme && typeof config.theme === "object" && !Array.isArray(config.theme)',
-    '      ? config.theme',
-    '      : null;',
-    '    if (!theme) {',
-    '      process.stdout.write("{}");',
-    '      return;',
-    '    }',
-    '    const spacing = theme.spacing && typeof theme.spacing === "object" && !Array.isArray(theme.spacing)',
-    '      ? theme.spacing',
-    '      : {};',
-    '    const extendSpacing = theme.extend && typeof theme.extend === "object" && !Array.isArray(theme.extend) &&',
-    '      theme.extend.spacing && typeof theme.extend.spacing === "object" && !Array.isArray(theme.extend.spacing)',
-    '      ? theme.extend.spacing',
-    '      : {};',
-    '    process.stdout.write(JSON.stringify({ ...spacing, ...extendSpacing }));',
-    '  } catch {',
-    '    process.exit(1);',
-    '  }',
-    '})();',
-  ].join('\n');
-
-  const child = spawnSync(process.execPath, ['-e', script, resolvedPath], {
-    encoding: 'utf8',
-    timeout: 5000,
-  });
-
-  if (child.error || child.status !== 0) {
-    return null;
-  }
-
-  if (typeof child.stdout !== 'string' || child.stdout.trim() === '') {
-    return null;
-  }
-
-  try {
-    const parsed = JSON.parse(child.stdout);
-    return isPlainObject(parsed)
-      ? parsed
-      : null;
-  } catch {
-    return null;
-  }
-}
-
 function loadTailwindSpacing(resolvedPath) {
   if (tailwindSpacingCache.has(resolvedPath)) {
     return tailwindSpacingCache.get(resolvedPath);
   }
 
-  const spacing =
-    loadTailwindSpacingFromRequire(resolvedPath) ||
-    loadTailwindSpacingFromDynamicImport(resolvedPath);
+  // require() loads CommonJS and ES module configs alike on every supported Node
+  // (require(esm) is on from 20.19). A config that uses top-level await cannot be
+  // required and is not read; point scaleSources at the built CSS instead.
+  const spacing = loadTailwindSpacingFromRequire(resolvedPath);
 
   tailwindSpacingCache.set(resolvedPath, spacing);
   return spacing;
