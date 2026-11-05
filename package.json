@@ -194,7 +194,7 @@
     "stylelint": "^17.0.0",
     "stylelint-config-tailwindcss": "^1.0.1",
     "stylelint-plugin-logical-css": "^2.0.2",
-    "stylelint-scales": "^5.0.0",
+    "stylelint-scales": "^6.0.0",
     "typescript": "^7.0.0"
   },
   "engines": {
