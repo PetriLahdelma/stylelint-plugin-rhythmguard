@@ -219,7 +219,7 @@ async function run() {
   const withoutStylelint = (scanned.stylelintMissing || 0) > 0;
   if (report.cssFilesScanned === 0 && report.templateFilesScanned === 0 && skippedStylesheets === 0) {
     out.push('  No CSS files found here. Run from your project root, or audit a directory directly:');
-    out.push('    npx rhythmguard audit ./src', '');
+    out.push('    npx rhythmguard audit <directory>', '');
     process.stdout.write(`${out.join('\n')}\n`);
     return;
   }

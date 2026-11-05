@@ -2,6 +2,7 @@
 
 const { sortCountMap } = require('./contract');
 const { auditCommand } = require('./next-steps');
+const { nothingAudited, nothingAuditedReasons } = require('./render-text');
 const { escapeMarkdown, markdownCode, tableCode } = require('./render-utils');
 
 function describeScaleSource(scale) {
@@ -27,6 +28,9 @@ function renderMarkdown(report, options = {}) {
     `Directory: ${markdownCode(report.directory)}`,
     '',
   ];
+  if (nothingAudited(report)) {
+    lines.push(`**Nothing was audited:** ${escapeMarkdown(nothingAuditedReasons(report).join('; '))}.`, '');
+  }
   appendNewFindingsMarkdown(lines, report);
   lines.push(
     '## Summary',

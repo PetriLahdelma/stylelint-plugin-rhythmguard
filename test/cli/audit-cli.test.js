@@ -456,7 +456,7 @@ test('audit CLI handles repeated token sources without duplicating token definit
   assert.equal(report.tokenContract.definedTokens.filter(({ token }) => token === '--spacing-4').length, 1);
 });
 
-test('audit CLI reports missing token source warnings without failing', () => {
+test('audit CLI fails with exit 2 when a configured token source does not exist, and still reports', () => {
   const fixtureDir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-missing-source-'));
   fs.mkdirSync(path.join(fixtureDir, 'src'));
   fs.writeFileSync(path.join(fixtureDir, 'src', 'card.css'), '.card { padding: 16px; }\n');
@@ -469,11 +469,30 @@ test('audit CLI reports missing token source warnings without failing', () => {
     'missing.json',
   );
 
-  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.status, 2, 'a missing token source is a configuration error, not a pass');
+  assert.match(result.stderr, /Token source not found: missing\.json/);
+  assert.match(result.stderr, /a configured token source does not exist/);
 
   const report = JSON.parse(result.stdout);
   assert.equal(report.tokenContract.sources[0].warnings.length, 1);
   assert.match(report.tokenSourceWarnings[0], /Token source not found/);
+});
+
+test('audit CLI says nothing was audited, and why, instead of calling an empty run clean', () => {
+  const empty = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-empty-'));
+  const text = runAuditCommand(empty, '.');
+  assert.equal(text.status, 0, text.stderr);
+  assert.match(text.stdout, /! Nothing was audited: no \.css, \.scss or template files under \./);
+  assert.doesNotMatch(text.stdout, /No issues found/);
+
+  const markdown = runAuditCommand(empty, '.', '--format', 'markdown');
+  assert.match(markdown.stdout, /\*\*Nothing was audited:\*\* no \.css, \.scss or template files under/);
+
+  const ignored = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-audit-all-ignored-'));
+  fs.writeFileSync(path.join(ignored, 'a.css'), '.a { margin: 13px; }\n');
+  fs.writeFileSync(path.join(ignored, '.stylelintignore'), '*.css\n');
+  const skipped = runAuditCommand(ignored, '.');
+  assert.match(skipped.stdout, /! Nothing was audited: 1 stylesheets are in \.stylelintignore/);
 });
 
 test('audit CLI fails on invalid rhythmguard config', () => {

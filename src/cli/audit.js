@@ -62,42 +62,42 @@ async function run() {
 
   if (parsed.format === 'json') {
     writeOutput(`${JSON.stringify(toAuditContractReport(report), null, 2)}\n`, parsed.outputPath);
-    finish(auditFailures);
+    finish(auditFailures, report);
     return;
   }
 
   if (parsed.format === 'json-v1') {
     writeOutput(`${JSON.stringify(report, null, 2)}\n`, parsed.outputPath);
-    finish(auditFailures);
+    finish(auditFailures, report);
     return;
   }
 
   if (parsed.format === 'markdown') {
     writeOutput(renderMarkdown(report, { auditCommand: auditCommandFromArgs(parsed) }), parsed.outputPath);
-    finish(auditFailures);
+    finish(auditFailures, report);
     return;
   }
 
   if (parsed.format === 'html') {
     writeOutput(renderHtml(report), parsed.outputPath);
-    finish(auditFailures);
+    finish(auditFailures, report);
     return;
   }
 
   if (parsed.format === 'badge') {
     writeOutput(renderBadge(report, { metric: parsed.badgeMetric }), parsed.outputPath);
-    finish(auditFailures);
+    finish(auditFailures, report);
     return;
   }
 
   if (parsed.format === 'github') {
     writeOutput(renderGithub(report), parsed.outputPath);
-    finish(auditFailures);
+    finish(auditFailures, report);
     return;
   }
 
   writeOutput(renderText(report, { auditCommand: auditCommandFromArgs(parsed) }), parsed.outputPath);
-  finish(auditFailures);
+  finish(auditFailures, report);
 }
 
 function writeOutput(output, outputPath) {
@@ -111,13 +111,21 @@ function writeOutput(output, outputPath) {
   fs.writeFileSync(resolvedPath, output);
 }
 
-function finish(auditFailures) {
+function finish(auditFailures, report) {
+  // A configured token source that does not exist made the run audit against
+  // another scale and pass (ci-02): that is a configuration error, exit 2.
+  const missing = ((report && report.tokenSourceWarnings) || []).filter((warning) => warning.startsWith('Token source not found:'));
+  if (missing.length > 0) {
+    process.stderr.write(`${missing.join('\n')}\nAudit failed: a configured token source does not exist, so the scale above is not the one configured. Fix the path in --token-source or audit.tokenSources.\n`);
+    process.exitCode = 2;
+  }
+
   if (auditFailures.length === 0) {
     return;
   }
 
   process.stderr.write(`Audit failed: ${auditFailures.join('; ')}\n`);
-  process.exitCode = 1;
+  process.exitCode = process.exitCode || 1;
 }
 
 module.exports = {

@@ -78,7 +78,9 @@ function renderText(report, options = {}) {
     lines.push('');
   }
 
-  if (report.totalWarnings === 0 && parseErrors(report).length > 0) {
+  if (nothingAudited(report)) {
+    lines.push(`  ! Nothing was audited: ${nothingAuditedReasons(report).join('; ')}. The cleanliness above counts no files.`);
+  } else if (report.totalWarnings === 0 && parseErrors(report).length > 0) {
     lines.push(`  ! No findings in the stylesheets that parsed; ${parseErrors(report).length} could not be parsed and were not audited.`);
   } else if (report.totalWarnings === 0) {
     lines.push('  ✓ No issues found. Your design-system rhythm is clean.');
@@ -93,6 +95,23 @@ function renderText(report, options = {}) {
   lines.push('');
 
   return `${lines.join('\n')}\n`;
+}
+
+/** No stylesheet and no template file was read, though the run may have found some (dx-09). */
+function nothingAudited(report) {
+  return (report.cssFilesScanned || 0) === 0 && (report.templateFilesScanned || 0) === 0;
+}
+
+function nothingAuditedReasons(report) {
+  const scanned = report.scanned || {};
+  const reasons = [
+    ...(scanned.stylelintMissing > 0 ? [`${scanned.stylelintMissing} stylesheets need Stylelint, which is not installed`] : []),
+    ...(scanned.scssSkipped > 0 ? [`${scanned.scssSkipped} SCSS files need postcss-scss, which is not installed`] : []),
+    ...(scanned.stylelintIgnored > 0 ? [`${scanned.stylelintIgnored} stylesheets are in .stylelintignore`] : []),
+    ...(scanned.nonAuthoredSkipped > 0 ? [`${scanned.nonAuthoredSkipped} stylesheets look vendored, minified or built`] : []),
+    ...(parseErrors(report).length > 0 ? [`${parseErrors(report).length} stylesheets could not be parsed`] : []),
+  ];
+  return reasons.length > 0 ? reasons : [`no .css, .scss or template files under ${report.directory}`];
 }
 
 function parseErrors(report) {
@@ -218,6 +237,8 @@ function appendHistogram(lines, title, counts = {}) {
 }
 
 module.exports = {
+  nothingAudited,
+  nothingAuditedReasons,
   appendBaselineText,
   appendHistogram,
   appendParseErrorsText,

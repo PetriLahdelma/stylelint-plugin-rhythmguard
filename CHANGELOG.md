@@ -8,6 +8,9 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Changed
 
+- A configured token source that does not exist (`--token-source` or `audit.tokenSources`) makes `rhythmguard audit` exit 2, after printing its report, with `Token source not found: <path>` on stderr. Before, it exited 0 against whichever scale came next, so a typo in a CI path passed silently.
+- A run that read no stylesheet and no template file says "Nothing was audited" and why (no matching files, or stylesheets skipped for Stylelint, postcss-scss, `.stylelintignore`, vendored code or parse errors), in the text and Markdown reports, instead of "No issues found". The quickstart's hint for an empty directory no longer names a `./src` that may not exist. Cleanliness, which counts no files in that case, and the exit code under a gate change in 4.0.
+
 - `--format github` puts the summary notice first, and with a baseline it annotates only the new findings, as errors. GitHub shows 10 annotations of each type per step and drops the rest without saying so, so the output stops at 10 per type and adds a notice with the number left out. Before, every finding was a warning, and the one new line in a pull request could be annotation 4,695 of 5,987. Above about 100,000 findings the renderer also overflowed the stack; it no longer does.
 - `--format markdown` starts with the new findings when there is a baseline (up to 25, then a count) and lists at most five files per row. On a 300-stylesheet project the report drops from 64 KB, just under GitHub's 65,536-character comment limit, to 6 KB. Its next actions propose `--plan` and `rhythmguard fix --value` instead of a blanket autofix.
 
