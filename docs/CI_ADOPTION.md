@@ -33,6 +33,8 @@ jobs:
           directory: src
 ```
 
+Once a baseline is committed (step 1 below), add `require-baseline: "true"` so that deleting or renaming it fails the job instead of quietly switching the comparison off. The action runs the `rhythmguard` CLI package at `^3` unless `version` says otherwise; versions of the action before 1.1.0 ran the plugin package, which since 3.16.0 has no Stylelint of its own and cannot read stylesheets there.
+
 The rest of this page is the same workflow written by hand, for teams that want to see and own each step.
 
 

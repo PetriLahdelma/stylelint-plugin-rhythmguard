@@ -20,16 +20,17 @@ test('the agents block is extracted from FOR_AGENTS.md and every pack contains i
   const block = extractAgentsBlock(fs.readFileSync(path.join(repoRoot, 'docs', 'FOR_AGENTS.md'), 'utf8'));
 
   assert.match(block, /^## Spacing scale/);
-  assert.match(block, /npx rhythmguard audit \. --format json/);
+  assert.match(block, /npx rhythmguard audit \. --scale auto --format json/, 'the agent audits against the project scale (ai-01)');
+  assert.match(block, /Never invent a token name/);
 
   const packs = buildPacks(block);
-  assert.deepEqual(Object.keys(packs).sort(), ['claude-code/SKILL.md', 'copilot/copilot-instructions.md', 'cursor/rhythmguard.mdc']);
+  assert.deepEqual(Object.keys(packs).sort(), ['claude-code/SKILL.md', 'copilot/rhythmguard.instructions.md', 'cursor/rhythmguard.mdc']);
   for (const content of Object.values(packs)) {
     assert.ok(content.includes(block.trim()), 'pack embeds the block verbatim');
     assert.match(content, /docs\/FOR_AGENTS\.md/, 'pack links back to the source');
   }
   assert.match(packs['claude-code/SKILL.md'], /^---\nname: rhythmguard\ndescription: /);
-  assert.match(packs['cursor/rhythmguard.mdc'], /^---\n[\s\S]*alwaysApply: true\n---/);
+  assert.match(packs['cursor/rhythmguard.mdc'], /^---\n[\s\S]*alwaysApply: false\n---/);
 });
 
 test('the committed agents/ files are up to date with FOR_AGENTS.md', async () => {
@@ -52,23 +53,71 @@ test('init --agents installs the packs into their conventional locations', () =>
 
   assert.equal(result.status, 0, result.stderr);
   assert.match(fs.readFileSync(path.join(dir, '.claude', 'skills', 'rhythmguard', 'SKILL.md'), 'utf8'), /name: rhythmguard/);
-  assert.match(fs.readFileSync(path.join(dir, '.cursor', 'rules', 'rhythmguard.mdc'), 'utf8'), /alwaysApply: true/);
-  assert.match(fs.readFileSync(path.join(dir, '.github', 'copilot-instructions.md'), 'utf8'), /## Spacing scale/);
+  assert.match(fs.readFileSync(path.join(dir, '.cursor', 'rules', 'rhythmguard.mdc'), 'utf8'), /alwaysApply: false/);
+  assert.match(fs.readFileSync(path.join(dir, '.github', 'instructions', 'rhythmguard.instructions.md'), 'utf8'), /^---\napplyTo: [\s\S]*## Spacing scale/);
+  assert.equal(fs.existsSync(path.join(dir, '.github', 'copilot-instructions.md')), false, 'the shared Copilot file is left alone');
   assert.match(result.stdout, /\.claude\/skills\/rhythmguard\/SKILL\.md/);
   assert.doesNotMatch(result.stdout, /Write \.stylelintrc\.json/, 'agents mode does not run the config flow');
 });
 
-test('init --agents copilot appends to an existing copilot-instructions.md once', () => {
+test('init --agents copilot moves an older appended block out of copilot-instructions.md', () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-agents-'));
   fs.mkdirSync(path.join(dir, '.github'));
-  fs.writeFileSync(path.join(dir, '.github', 'copilot-instructions.md'), '# Team rules\n\nBe kind.\n');
+  const shared = path.join(dir, '.github', 'copilot-instructions.md');
+  fs.writeFileSync(shared, '# Team rules\n\nBe kind.\n\n<!-- rhythmguard:agents:start -->\n## Spacing scale\n\nold text\n<!-- rhythmguard:agents:end -->\n\n## More team rules\n');
 
-  assert.equal(runInit(dir, '--agents', 'copilot').status, 0);
-  assert.equal(runInit(dir, '--agents', 'copilot').status, 0);
+  const result = runInit(dir, '--agents', 'copilot');
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(fs.readFileSync(shared, 'utf8'), '# Team rules\n\nBe kind.\n\n## More team rules\n', 'only the marked block is removed');
+  assert.match(result.stdout, /copilot-instructions\.md \(the block an older version appended there was removed\)/);
+  assert.match(fs.readFileSync(path.join(dir, '.github', 'instructions', 'rhythmguard.instructions.md'), 'utf8'), /## Spacing scale/);
 
-  const content = fs.readFileSync(path.join(dir, '.github', 'copilot-instructions.md'), 'utf8');
-  assert.match(content, /^# Team rules\n\nBe kind\.\n/);
-  assert.equal((content.match(/## Spacing scale/g) || []).length, 1, 'block appended exactly once');
+  assert.equal(runInit(dir, '--agents', 'copilot').status, 0, 'a rerun is a no-op for the shared file');
+  assert.equal(fs.readFileSync(shared, 'utf8'), '# Team rules\n\nBe kind.\n\n## More team rules\n');
+});
+
+// Each tool reads only the frontmatter keys it documents, and two of them read
+// the same key differently: Cursor ignores globs under alwaysApply: true (ai-10).
+const FRONTMATTER = {
+  'claude-code/SKILL.md': ['name', 'description', 'when_to_use', 'argument-hint', 'arguments', 'disable-model-invocation', 'user-invocable', 'allowed-tools', 'disallowed-tools', 'model', 'effort', 'context', 'agent', 'hooks', 'paths', 'shell'],
+  'cursor/rhythmguard.mdc': ['description', 'globs', 'alwaysApply'],
+  'copilot/rhythmguard.instructions.md': ['applyTo', 'excludeAgent'],
+};
+
+function frontmatter(content) {
+  const match = content.match(/^---\n([\s\S]*?)\n---\n/);
+  assert.ok(match, 'the pack starts with frontmatter');
+  const fields = {};
+  let current = null;
+  for (const line of match[1].split('\n')) {
+    const list = line.match(/^ {2}- "(.*)"$/);
+    if (list && current) {
+      fields[current] = [...(Array.isArray(fields[current]) ? fields[current] : []), list[1]];
+      continue;
+    }
+    const pair = line.match(/^([\w-]+):\s?(.*)$/);
+    assert.ok(pair, `frontmatter line is key: value or a list item: ${line}`);
+    current = pair[1];
+    fields[current] = pair[2];
+  }
+  return fields;
+}
+
+test('every pack uses only the frontmatter keys its tool documents, in the form it reads', async () => {
+  const { buildPacks, extractAgentsBlock, PACK_GLOBS } = await loadBuilder();
+  const packs = buildPacks(extractAgentsBlock(fs.readFileSync(path.join(repoRoot, 'docs', 'FOR_AGENTS.md'), 'utf8')));
+  for (const [file, allowed] of Object.entries(FRONTMATTER)) {
+    const fields = frontmatter(packs[file]);
+    assert.deepEqual(Object.keys(fields).filter((key) => !allowed.includes(key)), [], `${file} uses an undocumented key`);
+  }
+  const claude = frontmatter(packs['claude-code/SKILL.md']);
+  assert.deepEqual(claude.paths, PACK_GLOBS);
+  assert.match(claude['allowed-tools'], /^Bash\(npx rhythmguard:\*\)/);
+  const cursor = frontmatter(packs['cursor/rhythmguard.mdc']);
+  assert.equal(cursor.alwaysApply, 'false', 'Cursor ignores globs when alwaysApply is true');
+  assert.equal(cursor.globs, PACK_GLOBS.join(', '), 'Cursor reads globs as one comma-separated string, not a YAML array');
+  const copilot = frontmatter(packs['copilot/rhythmguard.instructions.md']);
+  assert.equal(copilot.applyTo, `"${PACK_GLOBS.join(',')}"`);
 });
 
 test('init --agents rejects an unknown target', () => {

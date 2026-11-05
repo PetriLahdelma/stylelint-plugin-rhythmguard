@@ -22,31 +22,46 @@ export function extractAgentsBlock(markdown) {
   return `${match[1].trim()}\n`;
 }
 
+/** Where spacing is written: stylesheets and the files that carry class strings. */
+export const PACK_GLOBS = ['**/*.css', '**/*.scss', '**/*.jsx', '**/*.tsx', '**/*.vue', '**/*.svelte', '**/*.astro', '**/*.html'];
+
 export function buildPacks(block) {
   const footer = `Source: ${SOURCE} in the stylelint-plugin-rhythmguard repository (${SOURCE_URL}). Regenerate with \`npx rhythmguard init --agents\`.\n`;
   return {
+    // Claude Code skill frontmatter: https://code.claude.com/docs/en/skills
     'claude-code/SKILL.md': [
       '---',
       'name: rhythmguard',
       'description: Keep CSS and Tailwind spacing on the project scale. Use when writing or changing CSS, SCSS, CSS Modules or Tailwind class strings, and before finishing any such change.',
+      'when_to_use: Adding or changing padding, margin, gap, inset or other spacing in a stylesheet or a class string; reviewing a diff that does.',
+      'allowed-tools: Bash(npx rhythmguard:*) Bash(npx stylelint:*) Bash(npx eslint:*)',
+      'paths:',
+      ...PACK_GLOBS.map((glob) => `  - "${glob}"`),
       '---',
       '',
       block.trimEnd(),
       '',
       footer,
     ].join('\n'),
+    // Cursor rule: auto-attached when a matching file is in context. With
+    // alwaysApply true Cursor ignores the globs and loads the rule into every chat.
     'cursor/rhythmguard.mdc': [
       '---',
       'description: Spacing scale rules enforced by stylelint-plugin-rhythmguard',
-      'globs: ["**/*.css", "**/*.scss", "**/*.tsx", "**/*.jsx", "**/*.vue", "**/*.svelte", "**/*.astro", "**/*.html"]',
-      'alwaysApply: true',
+      `globs: ${PACK_GLOBS.join(', ')}`,
+      'alwaysApply: false',
       '---',
       '',
       block.trimEnd(),
       '',
       footer,
     ].join('\n'),
-    'copilot/copilot-instructions.md': [
+    // Copilot path-specific instructions: .github/instructions/*.instructions.md
+    'copilot/rhythmguard.instructions.md': [
+      '---',
+      `applyTo: "${PACK_GLOBS.join(',')}"`,
+      '---',
+      '',
       block.trimEnd(),
       '',
       footer,
