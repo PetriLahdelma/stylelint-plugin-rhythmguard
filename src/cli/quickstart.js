@@ -201,7 +201,9 @@ async function run() {
   }
 
   const scanned = report.scanned || {};
-  const skippedStylesheets = (scanned.scssSkipped || 0) + (scanned.stylelintIgnored || 0) + (scanned.nonAuthoredSkipped || 0);
+  const skippedStylesheets = (scanned.scssSkipped || 0) + (scanned.stylelintIgnored || 0) + (scanned.nonAuthoredSkipped || 0) + (scanned.stylelintMissing || 0);
+  // An ESLint-only project: class strings were audited, stylesheets were not.
+  const withoutStylelint = (scanned.stylelintMissing || 0) > 0;
   if (report.cssFilesScanned === 0 && report.templateFilesScanned === 0 && skippedStylesheets === 0) {
     out.push('  No CSS files found here. Run from your project root, or audit a directory directly:');
     out.push('    npx rhythmguard audit ./src', '');
@@ -228,6 +230,7 @@ async function run() {
   out.push(`    Template files  ${report.templateFilesScanned}`);
   if (skippedStylesheets > 0) {
     const reasons = [
+      ...(withoutStylelint ? [`${scanned.stylelintMissing} because Stylelint is not installed`] : []),
       ...(scanned.scssSkipped > 0 ? [`${scanned.scssSkipped} SCSS without postcss-scss`] : []),
       ...(scanned.stylelintIgnored > 0 ? [`${scanned.stylelintIgnored} in .stylelintignore`] : []),
       ...(scanned.nonAuthoredSkipped > 0 ? [`${scanned.nonAuthoredSkipped} vendored, minified or built`] : []),
@@ -256,17 +259,35 @@ async function run() {
   out.push('');
 
   const profile = stack.tailwind ? 'tailwind' : 'recommended';
-  out.push(`  Paste this into .stylelintrc.json${stack.hasExistingConfig ? ' (merge with your existing config)' : ''}:`, '');
-  const fallbackScale = scale.source === 'fallback' ? scale.values : null;
-  out.push(JSON.stringify(suggestedStylelintConfig({ fallbackScale, nextjs: stack.nextjs, profile, tokenFiles }), null, 2).replace(/^/gm, '    '));
-  out.push('');
-
-  if (stack.tailwind) {
+  const printStylelint = () => {
+    if (withoutStylelint) {
+      out.push('  To audit your stylesheets too, install Stylelint and the plugin:', '');
+      out.push('    npm install --save-dev stylelint stylelint-plugin-rhythmguard', '');
+      out.push(`  then paste this into .stylelintrc.json${stack.hasExistingConfig ? ' (merge with your existing config)' : ''}:`, '');
+    } else {
+      out.push(`  Paste this into .stylelintrc.json${stack.hasExistingConfig ? ' (merge with your existing config)' : ''}:`, '');
+    }
+    const fallbackScale = scale.source === 'fallback' ? scale.values : null;
+    out.push(JSON.stringify(suggestedStylelintConfig({ fallbackScale, nextjs: stack.nextjs, profile, tokenFiles }), null, 2).replace(/^/gm, '    '));
+    out.push('');
+  };
+  const printEslint = () => {
     out.push('  Tailwind class strings need the ESLint companion. Paste this into eslint.config.js:', '');
     out.push(eslintSnippet(scale.values).replace(/^/gm, '    '));
     out.push('', '    TypeScript, Vue, Svelte and Astro files need their parser in a block of their own; see the');
     out.push('    eslint-plugin-rhythmguard README, "Other file types".');
     out.push('');
+  };
+
+  // Without Stylelint the class strings are what was audited, so their config comes first.
+  if (stack.tailwind && withoutStylelint) {
+    printEslint();
+    printStylelint();
+  } else {
+    printStylelint();
+    if (stack.tailwind) {
+      printEslint();
+    }
   }
 
   out.push('  Next');

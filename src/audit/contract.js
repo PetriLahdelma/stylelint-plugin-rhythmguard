@@ -242,6 +242,7 @@ function buildReport({
   scssFiles = 0,
   scssSkipped = 0,
   stylelintIgnored = 0,
+  stylelintMissing = 0,
   templateFiles,
   tailwindFindings,
   tokenCandidateMinCount,
@@ -273,9 +274,10 @@ function buildReport({
     ...tailwindFindings.map((finding) => finding.file),
   ])).slice(0, 10);
 
-  // A stylesheet skipped for want of postcss-scss, or excluded by the project's
-  // .stylelintignore, was not audited: it is neither scanned nor clean.
-  const cssFilesScanned = Math.max(0, cssFiles.length - scssSkipped - stylelintIgnored);
+  // A stylesheet skipped for want of postcss-scss or of Stylelint itself, or
+  // excluded by the project's .stylelintignore, was not audited: it is neither
+  // scanned nor clean.
+  const cssFilesScanned = Math.max(0, cssFiles.length - scssSkipped - stylelintIgnored - stylelintMissing);
   const totalFiles = cssFilesScanned + templateFiles.length;
   const totalWarnings = cssFindings.length + motionFindings.length + tailwindFindings.length;
   const filesWithIssues = issueFiles.size;
@@ -323,6 +325,8 @@ function buildReport({
       scssFiles,
       scssSkipped,
       stylelintIgnored,
+      // Stylesheets found in a project without Stylelint: class strings were audited, these were not.
+      stylelintMissing,
       // Vendored, minified or built stylesheets left out of the audit (#161).
       nonAuthoredSkipped: nonAuthoredFiles.length,
       nonAuthoredFiles,

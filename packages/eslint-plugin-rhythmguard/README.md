@@ -42,7 +42,7 @@ The last row is the gap every tool shares, this one included: Tailwind v4 accept
 npm install --save-dev eslint eslint-plugin-rhythmguard
 ```
 
-You do not need Stylelint. The plugin adds 8 packages to an ESLint install and no peer warnings; 3.15.0 also pulled in Stylelint, 101 packages. The `rhythmguard audit` command does need it for stylesheets: in a project without Stylelint it stops and says to run `npm install --save-dev stylelint`.
+You do not need Stylelint. The plugin adds 8 packages to an ESLint install and no peer warnings; 3.15.0 also pulled in Stylelint, 101 packages. The `rhythmguard audit` command needs it only for stylesheets: in a project without Stylelint it audits your class strings, lists the stylesheets it could not read with `npm install --save-dev stylelint`, and fails any gate flag (`--max-findings`, `--min-cleanliness`, `--fail-on-new-drift`) rather than pass on a partial read.
 
 ## Configure
 

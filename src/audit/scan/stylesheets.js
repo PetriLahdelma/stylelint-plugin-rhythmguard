@@ -35,18 +35,15 @@ function resolveScssSyntax() {
 /**
  * Stylelint is an optional peer, so an ESLint-only project can reach this
  * without it. The `rhythmguard` package depends on it; this package's own
- * command says what to install instead of failing on a module path.
+ * command then audits class strings only and counts the stylesheets as not
+ * audited (null here), instead of failing on a module path.
  */
 async function loadStylelint() {
   try {
     return (await import('stylelint')).default;
   } catch (error) {
     if (error && error.code === 'ERR_MODULE_NOT_FOUND' && /'stylelint'/.test(error.message)) {
-      throw new Error(
-        'Auditing stylesheets needs Stylelint, which this project does not have. '
-        + 'Install it with: npm install --save-dev stylelint',
-        { cause: error },
-      );
+      return null;
     }
     throw error;
   }
@@ -58,11 +55,22 @@ async function runStylelintAudit(cssFiles, options) {
     empty.scssFiles = 0;
     empty.scssSkipped = 0;
     empty.stylelintIgnored = 0;
+    empty.stylelintMissing = 0;
     empty.unauditedFiles = [];
     return empty;
   }
 
   const stylelint = await loadStylelint();
+  if (!stylelint) {
+    // Found but not audited, like SCSS without postcss-scss: neither scanned nor clean.
+    const missing = [];
+    missing.scssFiles = 0;
+    missing.scssSkipped = 0;
+    missing.stylelintIgnored = 0;
+    missing.stylelintMissing = cssFiles.length;
+    missing.unauditedFiles = [...cssFiles];
+    return missing;
+  }
   const rules = {
     'rhythmguard/use-scale': [
       true,
@@ -133,6 +141,7 @@ async function runStylelintAudit(cssFiles, options) {
   results.scssFiles = scssFiles.length;
   results.scssSkipped = skippedScssFiles.length;
   results.stylelintIgnored = ignoredFiles.length;
+  results.stylelintMissing = 0;
   // Neither kind was audited: they count as neither scanned nor clean.
   results.unauditedFiles = [...skippedScssFiles, ...ignoredFiles];
   return results;

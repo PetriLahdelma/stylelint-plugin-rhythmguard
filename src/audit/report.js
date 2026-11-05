@@ -126,6 +126,7 @@ async function createAuditReport(options) {
     scssFiles: cssResults.scssFiles || 0,
     scssSkipped: cssResults.scssSkipped || 0,
     stylelintIgnored: cssResults.stylelintIgnored || 0,
+    stylelintMissing: cssResults.stylelintMissing || 0,
     tailwindFindings: decided.tailwindFindings,
     templateFiles,
     tokenCandidateMinCount: parsed.tokenCandidateMinCount,

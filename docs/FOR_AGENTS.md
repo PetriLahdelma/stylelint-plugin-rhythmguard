@@ -10,6 +10,7 @@ Coding agents write fluent CSS and Tailwind without knowing a project's spacing 
 This project enforces its spacing scale with stylelint-plugin-rhythmguard.
 
 - Before finishing any change to CSS or to Tailwind class strings, run `npx rhythmguard audit . --format json` (or `npx stylelint "**/*.css"` if a config exists) and fix every `off-scale` finding.
+- In a project with ESLint or Oxlint and no Stylelint, the audit reads class strings only and lists the stylesheets it skipped; run `npx eslint .` (or `npx oxlint`) as well, and do not install Stylelint unless the task asks for it.
 - A finding names the value and the two nearest on-scale values. Prefer the design token for that value when one exists; otherwise use the nearest on-scale value. Never invent a new spacing value.
 - Do not use `--fix` on spacing findings unless the task says so. Snapping a value can change layout; choose the value deliberately.
 - Values of one pixel or less (hairlines) and percentages are allowed and are not findings.

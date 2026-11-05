@@ -164,9 +164,16 @@ export function smokeEslintPlugin(cwd, { packages, registry }) {
   }
 
   // The plugin's own rhythmguard command is on the path here too. Without
-  // Stylelint it cannot audit stylesheets, and must say what to install.
-  const audit = run(path.join('node_modules', '.bin', 'rhythmguard'), ['audit', 'src'], { cwd });
-  if (audit.status !== 1 || !audit.stderr.includes('npm install --save-dev stylelint')) {
-    throw new Error(`Expected rhythmguard audit to ask for Stylelint, got exit ${audit.status}:\n${audit.stderr}`);
+  // Stylelint it audits the class strings, lists the stylesheets as not
+  // audited with what to install, and passes no gate on that partial read.
+  const bin = path.join('node_modules', '.bin', 'rhythmguard');
+  const audit = mustSucceed(run(bin, ['audit', 'src', '--format', 'json'], { cwd }), 'rhythmguard audit without Stylelint');
+  const report = JSON.parse(audit.stdout);
+  if (report.scanned.stylelintMissing !== 1 || !report.findings.tailwind.some((finding) => finding.token === 'p-[13px]')) {
+    throw new Error(`Expected the audit to read p-[13px] and count src/card.css as not audited, got ${JSON.stringify(report.scanned)}`);
+  }
+  const gated = run(bin, ['audit', 'src', '--max-findings', '10'], { cwd });
+  if (gated.status !== 1 || !gated.stderr.includes('npm install --save-dev stylelint')) {
+    throw new Error(`Expected a gated audit without Stylelint to fail and say what to install, got exit ${gated.status}:\n${gated.stderr}`);
   }
 }
