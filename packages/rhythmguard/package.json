@@ -25,7 +25,7 @@
     "cli"
   ],
   "dependencies": {
-    "stylelint": "^16.0.0 || ^17.0.0",
+    "stylelint": "^16.7.0 || ^17.0.0 || ^18.0.0",
     "stylelint-plugin-rhythmguard": "^3.17.0"
   },
   "engines": {

@@ -51,8 +51,26 @@ function writeOffScaleSources(cwd) {
   writeFileSync(path.join(cwd, 'src', 'card.jsx'), 'export const Card = () => <div className="p-[13px]" />;\n', 'utf8');
 }
 
-export function smokeStylelintPlugin(cwd, { packages, registry }) {
-  install(cwd, ['stylelint@16', ...packages], registry);
+/**
+ * The Stylelint installs the plugin's smoke runs, one clean project each: the
+ * floor, the last 17, and 18 with the shared config that requires it (an install
+ * npm refused while the peer range stopped at 17). Stylelint 18 needs Node 22.22,
+ * 24.15 or 26, so on an older Node its row is skipped and says so.
+ */
+export function stylelintSmokeInstalls(nodeVersion = process.versions.node) {
+  const [major, minor] = nodeVersion.split('.').map(Number);
+  const nodeRunsStylelint18 = (major === 22 && minor >= 22) || (major === 24 && minor >= 15) || major >= 26;
+  return [
+    { label: 'stylelint 16.7.0', packages: ['stylelint@16.7.0'] },
+    { label: 'stylelint 17', packages: ['stylelint@17'] },
+    nodeRunsStylelint18
+      ? { label: 'stylelint 18 with stylelint-config-standard 41', packages: ['stylelint@18', 'stylelint-config-standard@41'] }
+      : { label: 'stylelint 18', skip: `Node ${nodeVersion} is below what Stylelint 18 requires` },
+  ];
+}
+
+export function smokeStylelintPlugin(cwd, { packages, registry, stylelint = ['stylelint@17'] }) {
+  install(cwd, [...stylelint, ...packages], registry);
 
   mustSucceed(
     run(
@@ -66,9 +84,12 @@ export function smokeStylelintPlugin(cwd, { packages, registry }) {
     'Config export resolution',
   );
 
+  const configs = stylelint.some((entry) => entry.startsWith('stylelint-config-standard@'))
+    ? ['stylelint-config-standard', 'stylelint-plugin-rhythmguard/configs/recommended']
+    : ['stylelint-plugin-rhythmguard/configs/recommended'];
   writeFileSync(
     path.join(cwd, 'stylelint.config.cjs'),
-    "module.exports = { extends: ['stylelint-plugin-rhythmguard/configs/recommended'] };\n",
+    `module.exports = { extends: ${JSON.stringify(configs)} };\n`,
     'utf8',
   );
   writeFileSync(path.join(cwd, 'test.css'), '.card { margin: 13px; }\n', 'utf8');

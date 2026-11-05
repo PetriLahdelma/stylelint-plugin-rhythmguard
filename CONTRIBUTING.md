@@ -47,7 +47,7 @@ Node 20.19 or newer; `.nvmrc` pins 22 for development, so `nvm use` picks it up.
 | `test/cli/` | a command as a user runs it, in a temp directory | `node --test test/cli/audit-cli.test.js` |
 | `test/api/` | the programmatic audit API | |
 | `test/contracts/` | what must stay true for consumers: package exports, CJS/ESM parity, layer rules, rule docs | `node --test test/contracts/architecture.test.js` |
-| `test/compat/` | the Stylelint 16.0.0 floor | `npm run test:compat-floor` |
+| `test/compat/` | the Stylelint 16.7.0 floor | `npm run test:compat-floor` |
 | `test/bench/` | the benchmark and report scripts | |
 
 Put a new test where its subject lives. If it needs the real linter, it is a rule test; if it needs a temp directory and `spawnSync`, it is a CLI test; if it asserts something about the repository itself, it is a contract.
@@ -65,7 +65,7 @@ npm test            # 600+ tests, on the Stylelint in the lockfile (17)
 Optional, depending on what you touched:
 
 ```bash
-npm run test:compat-floor      # Stylelint 16.0.0, the oldest supported
+npm run test:compat-floor      # Stylelint 16.7.0, the oldest supported
 npm run test:pack-smoke        # pack all three packages and smoke-test each in a temp project
 npm run scales:validate        # community scale JSON
 npm run bench:quiet -- --check # findings on the benchmark repos must match snapshots
@@ -74,7 +74,7 @@ npm run build:playground       # after changing anything under src/ the rules us
 npm run bench:agents -- --dry-run --limit 4   # the agent eval pipeline, no API key needed
 ```
 
-The local gate runs on whatever Node you have installed; CI runs Node 20 and 22 against Stylelint 16.0.0, 16 and 17, Node 24 and 26 against Stylelint 17, the ESLint companion rules on ESLint 9, and once a week the full suite against Stylelint `next`. Node 20.19 is the floor, so avoid features that arrived in Node 21 or later. Glob patterns for `node --test` were one such feature, and they took a release run down.
+The local gate runs on whatever Node you have installed; CI runs Node 20 and 22 against Stylelint 16.7.0, 16 and 17, Node 22, 24 and 26 against Stylelint 18, the ESLint companion rules on ESLint 9, and once a week the full suite against the newest Stylelint (`next` while a major is in prerelease, else `latest`). Node 20.19 is the floor, so avoid features that arrived in Node 21 or later. Glob patterns for `node --test` were one such feature, and they took a release run down.
 
 If your shell's npm registry is overridden by a corporate `.npmrc`, add `--registry https://registry.npmjs.org` to `npm ci` and prefix `test:pack-smoke` with `npm_config_registry=https://registry.npmjs.org`.
 
@@ -84,7 +84,7 @@ CI for this repository runs on self-hosted runners for pushes and same-repo bran
 
 ## What is frozen until 4.0
 
-Rhythmguard is in a feature freeze until 4.0, which ships the week Stylelint 18.0.0 is released (plan: [`docs/COUNCIL_2027-2028.md`](./docs/COUNCIL_2027-2028.md)). Please do not start work on these without an issue where the maintainer has agreed to an exception:
+Rhythmguard is in a feature freeze until 4.0 (plan: [`docs/COUNCIL_2027-2028.md`](./docs/COUNCIL_2027-2028.md), with the dates proposed in [`docs/PRODUCT_REVIEW_2026-11.md`](./docs/PRODUCT_REVIEW_2026-11.md)). Stylelint 18 support shipped in 3.18.0 without waiting for it. Please do not start work on these without an issue where the maintainer has agreed to an exception:
 
 - new rule options, property groups, presets, or default scales;
 - motion features and Tailwind class-name features beyond bug fixes;
@@ -119,10 +119,10 @@ Always welcome: bug fixes with a failing test, false-positive reports, token-sou
 
 ## Compatibility
 
-- Stylelint `^16.0.0 || ^17.0.0`. The 16.0.0 floor has known autofix differences; CI runs the floor suite against it.
+- Stylelint `^16.7.0 || ^17.0.0 || ^18.0.0`. 16.7.0 is the first version that applies a rule's fix callback; CI runs the floor suite, fixes included, against it.
 - Node `>=20.19.0` until 4.0, which raises it to 22.22 ([#172](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/issues/172)).
 - ESLint `>=8.0.0` for the companion rules; tested on 9 and 10.
-- Stylelint 18: the full suite passes on 18.0.0-next.0 and runs weekly against `next`; the peer range widens in the week 18.0.0 ships.
+- Stylelint 18 needs Node ^22.22.2, ^24.15.0 or >=26; CI runs it on Node 22, 24 and 26, and `test/contracts/stylelint-18-pairing.test.js` runs the README's pairing with its new core rule there.
 - CommonJS and ESM entry points; every export has a declaration under `types/`.
 - Three runtime dependencies: `known-css-properties`, `postcss` and `postcss-value-parser`. `postcss-scss`, `stylelint-config-tailwindcss` and `stylelint-plugin-logical-css` are optional peers and dev dependencies here. `test/contracts/architecture.test.js` fails if a runtime import is not declared.
 
