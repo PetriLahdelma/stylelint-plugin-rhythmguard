@@ -8,37 +8,27 @@ Releases are maintainer-run and take about twenty minutes of attention. The publ
 - Minor: new options, sources, packages, formats, or behaviour that does not change existing reports.
 - Major: a change to default reports, to autofix output, or to exported entry points. Write `docs/MIGRATING_TO_<n>.md` first.
 
-## 2. Cut it on a branch
+## 2. Cut it on a branch, with the local gate
 
 ```bash
 git checkout -b release/vX.Y.Z origin/main
-npm version X.Y.Z --no-git-tag-version
-npm version X.Y.Z --no-git-tag-version --prefix packages/rhythmguard
-npm version X.Y.Z --no-git-tag-version --prefix packages/eslint-plugin-rhythmguard
+node scripts/release/prepare.mjs X.Y.Z
 ```
 
-Then set `dependencies["stylelint-plugin-rhythmguard"]` to `^X.Y.Z` in both `packages/*/package.json`. A contract test fails if any version or that range disagrees.
+`scripts/release/prepare.mjs` sets the version in `package.json`, both places in `package-lock.json` and both `packages/*/package.json` (with their `^X.Y.Z` range on the plugin), bumps the README badge's `r=` key, moves the `## [Unreleased]` section of `CHANGELOG.md` under `## [X.Y.Z] - <today>` with an empty `## [Unreleased]` above it, and writes that section to `.release-notes.md`. Then it runs the local gate: lint, typecheck, tests, the Stylelint floor, the playground bundle (it must already be committed fresh) and the pack smoke on the public registry. It stops on the first failure.
 
-Rename the `## [Unreleased]` section of `CHANGELOG.md` to `## [X.Y.Z] - YYYY-MM-DD`, leaving an empty `## [Unreleased]` above it.
+It refuses a version that is not above the current one, an empty `[Unreleased]` section, and a release within 24 hours of the last one on npm: seven versions in four days read as churn. `--allow-within-24h` is for a fix to a broken release only. `--no-gate` makes the edits without the gate, `--date` and `--notes <file>` override the defaults. If your change could move benchmark findings, run `npm run bench:quiet -- --check` too.
 
-## 3. Run the local gate
+## 3. Write the notes
 
-```bash
-npm run lint
-npm run typecheck
-npm test
-npm run test:compat-floor
-npm_config_registry=https://registry.npmjs.org npm run test:pack-smoke
-```
-
-All five must exit 0. If your change could move benchmark findings, `npm run bench:quiet -- --check` too.
+Edit `.release-notes.md` into notes for a reader who has not followed the repository, with an upgrade line at the end. It is ignored by git.
 
 ## 4. Merge and release
 
 Open the PR, merge it, then create the release against the merge commit:
 
 ```bash
-gh release create vX.Y.Z --target <merge-sha> --title vX.Y.Z --notes-file notes.md
+gh release create vX.Y.Z --target <merge-sha> --title vX.Y.Z --notes-file .release-notes.md
 ```
 
 The notes are the changelog section rewritten for a reader who has not followed the repository, with an upgrade line at the end.
