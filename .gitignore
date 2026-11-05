@@ -10,3 +10,6 @@ coverage/
 docs/agent-evals/*-dry-run.*
 # interrupted agent eval runs; resumed with --resume, removed when the run completes
 docs/agent-evals/*.partial.json
+
+# Written by scripts/release/prepare.mjs
+.release-notes.md
