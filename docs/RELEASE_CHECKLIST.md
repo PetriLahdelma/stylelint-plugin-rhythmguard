@@ -1,6 +1,6 @@
 # Release checklist
 
-Releases are maintainer-run and take about twenty minutes of attention. The publish itself is automated: a GitHub release triggers `release.yml`, which verifies on GitHub-hosted runners (Node 22 against Stylelint 16.7.0, 16, 17 and 18, Node 24 and 26 against 18, Node 20 against the 16.7.0 floor) and publishes from a GitHub-hosted job through npm trusted publishing (OIDC). No npm token exists anywhere. Provenance is attached automatically.
+Releases are maintainer-run and take about twenty minutes of attention. The publish itself is automated: a GitHub release triggers `release.yml`, which verifies on GitHub-hosted runners (Node 22 against Stylelint 16.7.0, 16, 17 and 18, Node 24 and 26 against 18, Node 20 against Stylelint 17) and publishes from a GitHub-hosted job through npm trusted publishing (OIDC). No npm token exists anywhere. Provenance is attached automatically.
 
 ## 1. Decide the version
 

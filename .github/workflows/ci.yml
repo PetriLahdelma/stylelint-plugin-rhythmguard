@@ -32,12 +32,13 @@ jobs:
         node-version: ['20.x', '22.x']
         stylelint-version: ['16.7.0', '16', '17']
         # Node 20 is end of life (2026-04-30) but still the engines floor until 4.0:
-        # one row proves it, on the Stylelint floor.
+        # one row runs the full suite there, on Stylelint 17. The Stylelint floor
+        # (16.7.0) is proven on Node 22.
         exclude:
           - node-version: '20.x'
-            stylelint-version: '16'
+            stylelint-version: '16.7.0'
           - node-version: '20.x'
-            stylelint-version: '17'
+            stylelint-version: '16'
         # Stylelint 18 needs Node ^22.22.2 || ^24.15.0 || >=26, so it runs on Node 22,
         # 24 and 26 only; the Stylelint 16 rows prove the floor, and running every
         # major on every Node would double the farm's queue for no extra coverage (#164).
