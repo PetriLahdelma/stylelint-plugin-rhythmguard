@@ -135,6 +135,10 @@ async function createAuditReport(options) {
     tokenSourceWarnings: tokenSourceResult.warnings,
   });
 
+  // The files this run scanned, for the CLI's next-step commands (lint globs,
+  // parsers). Not enumerable, so no JSON output carries the lists.
+  Object.defineProperty(report, 'files', { enumerable: false, value: { cssFiles: [...cssFiles], templateFiles: [...templateFiles] } });
+
   const declarations = collectDeclarations({
     cssFiles,
     externalDefinitions: tokenSourceResult.definitions,

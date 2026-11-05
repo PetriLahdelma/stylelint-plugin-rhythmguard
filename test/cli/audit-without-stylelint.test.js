@@ -75,7 +75,7 @@ test('without Stylelint the quickstart prints the ESLint config first, then how 
   const result = run(dir);
   assert.equal(result.status, 0, result.stderr);
   assert.match(result.stdout, /Skipped\s+1 not audited \(1 because Stylelint is not installed\)/);
-  const eslintAt = result.stdout.indexOf('Paste this into eslint.config.js');
-  const stylelintAt = result.stdout.indexOf('npm install --save-dev stylelint stylelint-plugin-rhythmguard');
+  const eslintAt = result.stdout.indexOf('paste this into eslint.config.js');
+  const stylelintAt = result.stdout.search(/npm install --save-dev "stylelint@[^"]+" stylelint-plugin-rhythmguard/);
   assert.ok(eslintAt > 0 && stylelintAt > eslintAt, 'the ESLint snippet comes before the Stylelint install line');
 });

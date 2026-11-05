@@ -8,6 +8,16 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Changed
 
+- The quickstart's and `init`'s next steps work when pasted. Before, four of five first-run stacks failed at the quickstart's own next command. Now:
+  - Above each config the quickstart prints the install line that config needs: Stylelint at the plugin's peer range, `stylelint-config-tailwindcss` for the `tailwind` config, `postcss-scss` when it found SCSS, and `eslint eslint-plugin-rhythmguard`, plus `typescript-eslint` when it found TypeScript.
+  - A project with SCSS gets `"customSyntax": "postcss-scss"`.
+  - In a project with `.ts` or `.tsx` files, the ESLint snippet lints them through typescript-eslint's parser and imports `eslint-plugin-rhythmguard`, the package the install line names. Before, the snippet linted only JavaScript files, so it found nothing in a TypeScript project.
+  - The Stylelint glob comes from where the stylesheets are (`styles/**/*.scss`, not `**/*.css`).
+  - `init` writes the same syntax and prints the same install line and glob.
+- The `rhythmguard` package depends on `postcss-scss`, so `npx rhythmguard` audits SCSS on first contact instead of skipping it.
+- The text report's last lines repeat the run's own directory and scale flags, so the next command uses the same scale. They propose `--plan` (one decision per off-scale value) and `rhythmguard fix --value <px> --to <step or token>` instead of `npx stylelint --fix`, which snaps every value without a review. The quickstart's next steps include `--plan` too.
+- `docs/FRAMEWORKS.md` says that component `<style>` blocks in Vue, Svelte and Astro are not tested yet and are not in the audit's numbers.
+
 - `rhythmguard audit` and the quickstart work in a project without Stylelint. Installing `eslint-plugin-rhythmguard` puts the plugin's `rhythmguard` command on the path without Stylelint, and the audit used to stop at the first stylesheet, so `npx rhythmguard` and the agent pack's audit command failed in every ESLint-only Tailwind app. Now the audit reads the class strings, lists the stylesheets it could not read as "Stylesheets not audited" with `npm install --save-dev stylelint` (`scanned.stylelintMissing` in JSON), and leaves them out of cleanliness and the baseline. It exits 0, except that `--max-findings`, `--min-cleanliness` and `--fail-on-new-drift` fail and say why, since a gate must not pass on a partial read. The quickstart prints the ESLint config first in that case, and the agent packs say to run `npx eslint .` there.
 
 - `tailwindConfigPath` loads the config with `require()` only. The fallback that imported it in a child `node` process with a 5-second timeout is gone: `require()` loads CommonJS and ES module configs alike on every supported Node, so it ran only for a config that uses top-level await, and no test exercised it. Such a config is no longer read; point `scaleSources` at the CSS it builds instead.

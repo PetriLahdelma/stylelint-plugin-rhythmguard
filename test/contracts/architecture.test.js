@@ -161,3 +161,11 @@ test('the rhythmguard command package depends on stylelint', () => {
   const cli = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'packages', 'rhythmguard', 'package.json'), 'utf8'));
   assert.equal(cli.dependencies?.stylelint, root.peerDependencies.stylelint);
 });
+
+// The same for SCSS: without postcss-scss the first run skipped every .scss file
+// and reported the project clean (dx-05).
+test('the rhythmguard command package depends on postcss-scss', () => {
+  const root = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'package.json'), 'utf8'));
+  const cli = JSON.parse(fs.readFileSync(path.join(__dirname, '..', '..', 'packages', 'rhythmguard', 'package.json'), 'utf8'));
+  assert.equal(cli.dependencies?.['postcss-scss'], root.peerDependencies['postcss-scss']);
+});

@@ -16,6 +16,7 @@ const { renderGithub } = require('../audit/render-github');
 const { renderBadge } = require('../audit/render-badge');
 const { renderHtml } = require('../audit/render-html');
 const { renderMarkdown } = require('../audit/render-markdown');
+const { auditCommandFromArgs } = require('../audit/next-steps');
 const { renderText } = require('../audit/render-text');
 const { createAuditReport, normalizeCreateAuditOptions } = require('../audit/report');
 
@@ -95,7 +96,7 @@ async function run() {
     return;
   }
 
-  writeOutput(renderText(report), parsed.outputPath);
+  writeOutput(renderText(report, { auditCommand: auditCommandFromArgs(parsed) }), parsed.outputPath);
   finish(auditFailures);
 }
 

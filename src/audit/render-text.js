@@ -4,13 +4,18 @@ const {
   sortCountMap,
   sumCounts,
 } = require('./contract');
+const { auditCommand, shellQuote } = require('./next-steps');
 const {
   histBar,
   scoreBar,
   truncate,
 } = require('./render-utils');
 
-function renderText(report) {
+/**
+ * `options.auditCommand` is the command that reproduces this run (its directory
+ * and scale flags); the footer builds on it so the next step uses the same scale.
+ */
+function renderText(report, options = {}) {
   const lines = [
     '',
     '  ┌─ RHYTHMGUARD DESIGN-SYSTEM AUDIT ─────────────────────────┐',
@@ -78,8 +83,12 @@ function renderText(report) {
   } else if (report.totalWarnings === 0) {
     lines.push('  ✓ No issues found. Your design-system rhythm is clean.');
   } else {
-    lines.push('  → Run "npx stylelint --fix" for CSS declaration fixes.');
-    lines.push('  → Use "npx rhythmguard audit ./src --format markdown" for PR/design review.');
+    // Snapping a value can move layout, so the footer offers the reviewable
+    // path: one decision per value, then a rewrite of each decided value.
+    const command = options.auditCommand || auditCommand({ dir: report.directory });
+    lines.push(`  → Propose one decision per off-scale value: ${command} --plan`);
+    lines.push(`  → Then rewrite each value you decided on: npx rhythmguard fix ${shellQuote(report.directory)} --value <px> --to <step or token>`);
+    lines.push(`  → PR or design review: ${command} --format markdown`);
   }
   lines.push('');
 

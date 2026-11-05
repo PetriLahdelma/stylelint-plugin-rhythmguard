@@ -2,8 +2,8 @@
 'use strict';
 
 // `npx rhythmguard` resolves the package named rhythmguard. This is that package:
-// one line, and the two dependencies the CLI needs, so the command in the README
+// one line, and the three dependencies the CLI needs, so the command in the README
 // works in a project that has installed nothing. The CLI itself lives in
-// stylelint-plugin-rhythmguard; Stylelint, an optional peer there, audits the
-// stylesheets.
+// stylelint-plugin-rhythmguard; Stylelint and postcss-scss, optional peers there,
+// audit the stylesheets, SCSS included.
 require('stylelint-plugin-rhythmguard/cli').main();

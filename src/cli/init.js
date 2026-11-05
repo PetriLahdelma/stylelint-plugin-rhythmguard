@@ -2,6 +2,9 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+
+const { lintGlob, stylelintInstallLine } = require('../audit/next-steps');
+const { getScanFiles } = require('../audit/scan/files');
 const readline = require('node:readline');
 
 function createPrompter() {
@@ -324,8 +327,12 @@ async function run() {
     }
 
     const profile = selectProfile(stack);
+    // The stylesheets here decide the glob, and whether SCSS needs its syntax (dx-05, dx-10).
+    const stylesheets = getScanFiles(process.cwd(), [], {}).cssFiles;
+    const scss = stylesheets.some((file) => file.endsWith('.scss'));
     const config = {
       extends: [`stylelint-plugin-rhythmguard/configs/${profile}`],
+      ...(scss ? { customSyntax: 'postcss-scss' } : {}),
       // Next.js build output is generated CSS; never lint it.
       ...(stack.nextjs ? { ignoreFiles: ['.next/**', 'out/**', 'node_modules/**'] } : {}),
     };
@@ -372,7 +379,8 @@ async function run() {
 
     process.stdout.write(`\n✓ Wrote ${configPath}\n`);
     process.stdout.write(`\nNext steps:\n`);
-    process.stdout.write(`  npx stylelint "src/**/*.css"\n\n`);
+    process.stdout.write(`  ${stylelintInstallLine({ scss, tailwindConfig: profile === 'tailwind' })}\n`);
+    process.stdout.write(`  npx stylelint "${lintGlob(process.cwd(), stylesheets)}"\n\n`);
   } finally {
     prompter.close();
   }

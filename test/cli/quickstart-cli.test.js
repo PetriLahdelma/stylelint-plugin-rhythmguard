@@ -88,7 +88,7 @@ test('with no tokens, quickstart names the scale it used and suggests a config t
   assert.doesNotMatch(out, /rhythmic-4/, 'the fallback is not the rhythmic-4 preset, so it is not called that');
   assert.match(out, /Off-scale\s+2 in CSS/);
 
-  const pasted = out.split('Paste this into .stylelintrc.json:')[1].split('\n\n')[1];
+  const pasted = out.split('Then paste this into .stylelintrc.json:')[1].split('\n\n')[1];
   const suggested = JSON.parse(pasted);
   assert.deepEqual(suggested.rules['rhythmguard/use-scale'], [true, { scale: [0, 4, 8, 12, 16, 24, 32] }]);
 
