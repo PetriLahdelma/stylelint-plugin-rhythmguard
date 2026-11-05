@@ -297,6 +297,14 @@ function createLegacyFindingKey(finding) {
 
 function getAuditFailures(report, parsed) {
   const failures = [];
+  const gated = parsed.maxFindings !== null || parsed.minCleanliness !== null || parsed.failOnNewDrift;
+  const missing = (report.scanned && report.scanned.stylelintMissing) || 0;
+
+  // Without Stylelint the stylesheets were not audited, so no gate can pass on
+  // what was read: say so and fail, rather than pass on class strings alone.
+  if (gated && missing > 0) {
+    failures.push(`${missing} stylesheet(s) were not audited because Stylelint is not installed (npm install --save-dev stylelint), so the gate cannot pass`);
+  }
 
   if (parsed.maxFindings !== null && report.totalWarnings > parsed.maxFindings) {
     failures.push(`total findings ${report.totalWarnings} exceeds --max-findings ${parsed.maxFindings}`);

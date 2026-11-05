@@ -114,6 +114,8 @@ export interface AuditScanned {
   scssSkipped?: number;
   /** Stylesheets Stylelint skipped because the project's own .stylelintignore excludes them. */
   stylelintIgnored?: number;
+  /** Stylesheets found but not audited because Stylelint is not installed. */
+  stylelintMissing?: number;
   /** Stylesheets not audited because they look vendored, generated, test-only, minified or built. 0 with `includeNonAuthored`. */
   nonAuthoredSkipped?: number;
   /** The stylesheets counted in `nonAuthoredSkipped`, with why each was skipped. */
