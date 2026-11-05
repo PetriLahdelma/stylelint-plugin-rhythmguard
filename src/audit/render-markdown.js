@@ -1,6 +1,7 @@
 'use strict';
 
 const { sortCountMap } = require('./contract');
+const { auditCommand } = require('./next-steps');
 const { escapeMarkdown, markdownCode, tableCode } = require('./render-utils');
 
 function describeScaleSource(scale) {
@@ -12,13 +13,22 @@ function describeScaleSource(scale) {
     : scale.source;
 }
 
-function renderMarkdown(report) {
+/**
+ * The report a pull request comment carries. GitHub rejects a comment over
+ * 65,536 characters, and on 300 stylesheets this reached 64,473 with the new
+ * finding at line 129 (ci-03): new findings now come first, and file lists are
+ * cut to five names.
+ */
+function renderMarkdown(report, options = {}) {
   const lines = [
     '# Rhythmguard Design-System Audit',
     '',
     ...(report.baseline ? [`**Since baseline:** ${report.baseline.resolvedFindingsCount} resolved, ${report.baseline.newFindingsCount} new.`, ''] : []),
     `Directory: ${markdownCode(report.directory)}`,
     '',
+  ];
+  appendNewFindingsMarkdown(lines, report);
+  lines.push(
     '## Summary',
     '',
     '| Metric | Value |',
@@ -35,7 +45,7 @@ function renderMarkdown(report) {
     `| Files with issues | ${report.filesWithIssues} |`,
     `| Total findings | ${report.totalWarnings} |`,
     `| Scale cleanliness | ${report.scaleCleanliness}% |`,
-  ];
+  );
 
   if (report.scale) {
     lines.push(`| Scale | ${report.scale.values.join(', ')} |`);
@@ -93,7 +103,8 @@ function renderMarkdown(report) {
   if (report.totalWarnings === 0) {
     lines.push('- Keep Rhythmguard in CI to prevent new drift.');
   } else {
-    lines.push('- Run deterministic autofix for CSS declarations where appropriate.');
+    const command = options.auditCommand || auditCommand({ dir: report.directory });
+    lines.push(`- Propose one decision per off-scale value with ${markdownCode(`${command} --plan`)}, then rewrite each decided value with ${markdownCode('npx rhythmguard fix <dir> --value <px> --to <step or token>')}. Snapping every value at once can move layout.`);
     lines.push('- Review Tailwind arbitrary spacing values with UX/design-system owners.');
     lines.push('- Convert repeated raw on-scale values into existing design tokens.');
   }
@@ -222,7 +233,7 @@ function appendTokenContractMarkdown(lines, tokenContract) {
     lines.push('| Token | Files |');
     lines.push('| --- | --- |');
     for (const entry of missingTokens.slice(0, 10)) {
-      lines.push(`| ${tableCode(entry.token)} | ${tableCode(entry.files.join(', '))} |`);
+      lines.push(`| ${tableCode(entry.token)} | ${tableCode(fileList(entry.files))} |`);
     }
     lines.push('');
   }
@@ -244,7 +255,7 @@ function appendTokenContractMarkdown(lines, tokenContract) {
     lines.push('| Value | Count | Files |');
     lines.push('| --- | ---: | --- |');
     for (const entry of rawValueCandidates.slice(0, 10)) {
-      lines.push(`| ${tableCode(entry.value)} | ${entry.count} | ${tableCode(entry.files.join(', '))} |`);
+      lines.push(`| ${tableCode(entry.value)} | ${entry.count} | ${tableCode(fileList(entry.files))} |`);
     }
     lines.push('');
   }
@@ -272,6 +283,33 @@ function appendTokenContractMarkdown(lines, tokenContract) {
   }
 }
 
+const NEW_FINDINGS_SHOWN = 25;
+const FILES_SHOWN = 5;
+
+/** Five names and a count: a value repeated in 300 files made one table row of 6,900 characters. */
+function fileList(files) {
+  const shown = files.slice(0, FILES_SHOWN).join(', ');
+  return files.length > FILES_SHOWN ? `${shown}, +${files.length - FILES_SHOWN} more` : shown;
+}
+
+function appendNewFindingsMarkdown(lines, report) {
+  const fresh = (report.baseline && report.baseline.newFindings) || [];
+  if (fresh.length === 0) {
+    return;
+  }
+  lines.push('## New Since the Baseline');
+  lines.push('');
+  lines.push('| Location | Finding |');
+  lines.push('| --- | --- |');
+  for (const finding of fresh.slice(0, NEW_FINDINGS_SHOWN)) {
+    lines.push(`| ${tableCode(`${finding.file}:${finding.line}`)} | ${escapeMarkdown(finding.text || '')} |`);
+  }
+  if (fresh.length > NEW_FINDINGS_SHOWN) {
+    lines.push(`| ${fresh.length - NEW_FINDINGS_SHOWN} more | see \`--format json\` |`);
+  }
+  lines.push('');
+}
+
 function appendBaselineMarkdown(lines, report) {
   if (!report.baseline && !report.baselineWritten) {
     return;
@@ -286,15 +324,6 @@ function appendBaselineMarkdown(lines, report) {
     lines.push(`| Baseline findings | ${report.baseline.baselineFindings} |`);
     lines.push(`| New findings | ${report.baseline.newFindingsCount} |`);
     lines.push(`| Resolved findings | ${report.baseline.resolvedFindingsCount} |`);
-    lines.push('');
-  }
-
-  if (report.baseline && report.baseline.newFindings.length > 0) {
-    lines.push('| New finding | Location |');
-    lines.push('| --- | --- |');
-    for (const finding of report.baseline.newFindings.slice(0, 10)) {
-      lines.push(`| ${tableCode(finding.text)} | ${tableCode(`${finding.file}:${finding.line}`)} |`);
-    }
     lines.push('');
   }
 

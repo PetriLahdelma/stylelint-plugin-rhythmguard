@@ -8,6 +8,9 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Changed
 
+- `--format github` puts the summary notice first, and with a baseline it annotates only the new findings, as errors. GitHub shows 10 annotations of each type per step and drops the rest without saying so, so the output stops at 10 per type and adds a notice with the number left out. Before, every finding was a warning, and the one new line in a pull request could be annotation 4,695 of 5,987. Above about 100,000 findings the renderer also overflowed the stack; it no longer does.
+- `--format markdown` starts with the new findings when there is a baseline (up to 25, then a count) and lists at most five files per row. On a 300-stylesheet project the report drops from 64 KB, just under GitHub's 65,536-character comment limit, to 6 KB. Its next actions propose `--plan` and `rhythmguard fix --value` instead of a blanket autofix.
+
 - The quickstart's and `init`'s next steps work when pasted. Before, four of five first-run stacks failed at the quickstart's own next command. Now:
   - Above each config the quickstart prints the install line that config needs: Stylelint at the plugin's peer range, `stylelint-config-tailwindcss` for the `tailwind` config, `postcss-scss` when it found SCSS, and `eslint eslint-plugin-rhythmguard`, plus `typescript-eslint` when it found TypeScript.
   - A project with SCSS gets `"customSyntax": "postcss-scss"`.
