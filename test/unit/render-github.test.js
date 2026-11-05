@@ -36,3 +36,30 @@ test('200,000 findings render without overflowing the stack', () => {
   const out = lines(renderGithub(report(200000)));
   assert.equal(out.length, 1 + ANNOTATIONS_PER_TYPE + 1);
 });
+
+test('markdown puts finding text from the project in code spans, so it cannot form links or mentions', () => {
+  const { renderMarkdown } = require('../../src/audit/render-markdown');
+  const hostile = { column: 1, file: 'src/a.jsx', line: 1, rule: 'rhythmguard/tailwind', text: 'Unexpected "p-[13px]" [click](https://example.test) @someone ![x](https://example.test/x.png)' };
+  const base = report(0);
+  const md = renderMarkdown({
+    ...base,
+    baseline: { baselineFindings: 0, newFindings: [hostile], newFindingsCount: 1, resolvedFindingsCount: 0 },
+    cssFilesScanned: 1,
+    directory: 'src',
+    findings: { ...base.findings, parseErrors: [{ ...hostile, rule: 'CssSyntaxError' }] },
+    motion: { values: {} },
+    offScaleProperties: {},
+    offScaleValues: {},
+    tailwindArbitraryValues: {},
+    templateFilesScanned: 1,
+    tokenContract: { chains: null, conflictingTokens: [], definedTokens: [], ladders: null, missingTokens: [], rawValueCandidates: [], rawValueMatches: [], sources: [], summary: {}, unusedTokens: [] },
+    tokenOpportunities: {},
+    topAffectedFiles: [],
+    totalWarnings: 1,
+  });
+  const rows = md.split('\n').filter((line) => line.includes('[click]'));
+  assert.equal(rows.length, 2, md);
+  for (const row of rows) {
+    assert.match(row, /`[^`]*\[click\]\(https:\/\/example\.test\)[^`]*`/, `the link stays inside a code span: ${row}`);
+  }
+});

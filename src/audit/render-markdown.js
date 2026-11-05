@@ -129,7 +129,7 @@ function appendParseErrorsMarkdown(lines, report) {
   lines.push('| File | Error |');
   lines.push('| --- | --- |');
   for (const finding of errors) {
-    lines.push(`| ${tableCode(`${finding.file}:${finding.line}:${finding.column}`)} | ${escapeMarkdown(finding.text)} |`);
+    lines.push(`| ${tableCode(`${finding.file}:${finding.line}:${finding.column}`)} | ${tableCode(finding.text || '')} |`);
   }
   lines.push('');
 }
@@ -302,7 +302,8 @@ function appendNewFindingsMarkdown(lines, report) {
   lines.push('| Location | Finding |');
   lines.push('| --- | --- |');
   for (const finding of fresh.slice(0, NEW_FINDINGS_SHOWN)) {
-    lines.push(`| ${tableCode(`${finding.file}:${finding.line}`)} | ${escapeMarkdown(finding.text || '')} |`);
+    // A code span: finding text can carry values from the project's source, and this goes into a PR comment.
+    lines.push(`| ${tableCode(`${finding.file}:${finding.line}`)} | ${tableCode(finding.text || '')} |`);
   }
   if (fresh.length > NEW_FINDINGS_SHOWN) {
     lines.push(`| ${fresh.length - NEW_FINDINGS_SHOWN} more | see \`--format json\` |`);
