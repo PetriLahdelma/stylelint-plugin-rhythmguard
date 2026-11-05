@@ -34,7 +34,10 @@ export function buildPacks(block) {
       'name: rhythmguard',
       'description: Keep CSS and Tailwind spacing on the project scale. Use when writing or changing CSS, SCSS, CSS Modules or Tailwind class strings, and before finishing any such change.',
       'when_to_use: Adding or changing padding, margin, gap, inset or other spacing in a stylesheet or a class string; reviewing a diff that does.',
-      'allowed-tools: Bash(npx rhythmguard:*) Bash(npx stylelint:*) Bash(npx eslint:*)',
+      // Only the read-only audit the block asks for. Stylelint and ESLint load
+      // JavaScript configs and plugins, and rhythmguard fix and init write files,
+      // so those runs stay with the user's own approval.
+      'allowed-tools: Bash(npx rhythmguard audit:*)',
       'paths:',
       ...PACK_GLOBS.map((glob) => `  - "${glob}"`),
       '---',

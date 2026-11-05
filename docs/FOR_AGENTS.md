@@ -32,7 +32,7 @@ npx rhythmguard init --agents all       # or: claude, cursor, copilot
 
 | Target | Written to | Notes |
 | --- | --- | --- |
-| `claude` | `.claude/skills/rhythmguard/SKILL.md` | Claude Code skill that loads for stylesheet and component files (`paths`) and may run `npx rhythmguard`, `npx stylelint` and `npx eslint` without a prompt (`allowed-tools`); overwritten on rerun |
+| `claude` | `.claude/skills/rhythmguard/SKILL.md` | Claude Code skill that loads for stylesheet and component files (`paths`) and may run `npx rhythmguard audit` without a prompt (`allowed-tools`); Stylelint, ESLint, `fix` and `init` runs still ask; overwritten on rerun |
 | `cursor` | `.cursor/rules/rhythmguard.mdc` | Cursor rule attached when a stylesheet or component file is in context (`alwaysApply: false` with `globs`); overwritten on rerun |
 | `copilot` | `.github/instructions/rhythmguard.instructions.md` | Copilot path-specific instructions with `applyTo` globs; overwritten on rerun. A block an older version appended to `.github/copilot-instructions.md` between `<!-- rhythmguard:agents -->` markers is removed |
 

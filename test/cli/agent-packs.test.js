@@ -112,7 +112,7 @@ test('every pack uses only the frontmatter keys its tool documents, in the form 
   }
   const claude = frontmatter(packs['claude-code/SKILL.md']);
   assert.deepEqual(claude.paths, PACK_GLOBS);
-  assert.match(claude['allowed-tools'], /^Bash\(npx rhythmguard:\*\)/);
+  assert.equal(claude['allowed-tools'], 'Bash(npx rhythmguard audit:*)', 'only the read-only audit is pre-approved; linters load JS configs, fix and init write');
   const cursor = frontmatter(packs['cursor/rhythmguard.mdc']);
   assert.equal(cursor.alwaysApply, 'false', 'Cursor ignores globs when alwaysApply is true');
   assert.equal(cursor.globs, PACK_GLOBS.join(', '), 'Cursor reads globs as one comma-separated string, not a YAML array');
