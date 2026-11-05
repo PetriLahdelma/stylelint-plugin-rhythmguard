@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
-import { smokeCli, smokeEslintPlugin, smokeStylelintPlugin } from './smoke-checks.mjs';
+import { smokeCli, smokeEslintPlugin, smokeStylelintPlugin, stylelintSmokeInstalls } from './smoke-checks.mjs';
 
 function parseArgs(argv) {
   const args = {};
@@ -55,11 +55,20 @@ if (!smoke) {
   throw new Error(`No smoke test for ${pkg}. Known packages: ${Object.keys(SMOKES).join(', ')}.`);
 }
 
-const tempDir = mkdtempSync(path.join(tmpdir(), 'rhythmguard-npm-smoke-'));
+// The plugin runs once per supported Stylelint install; the companions once.
+const runs = smoke === smokeStylelintPlugin ? stylelintSmokeInstalls() : [{ label: '' }];
 
-try {
-  smoke(tempDir, { packages: [spec], registry: 'https://registry.npmjs.org', version });
-  console.log(`npm registry smoke test passed for ${spec}.`);
-} finally {
-  rmSync(tempDir, { force: true, recursive: true });
+for (const entry of runs) {
+  const where = entry.label ? ` on ${entry.label}` : '';
+  if (entry.skip) {
+    console.log(`npm registry smoke test skipped for ${spec}${where}: ${entry.skip}.`);
+    continue;
+  }
+  const tempDir = mkdtempSync(path.join(tmpdir(), 'rhythmguard-npm-smoke-'));
+  try {
+    smoke(tempDir, { packages: [spec], registry: 'https://registry.npmjs.org', version, ...(entry.packages ? { stylelint: entry.packages } : {}) });
+    console.log(`npm registry smoke test passed for ${spec}${where}.`);
+  } finally {
+    rmSync(tempDir, { force: true, recursive: true });
+  }
 }

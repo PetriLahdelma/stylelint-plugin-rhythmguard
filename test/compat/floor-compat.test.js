@@ -25,6 +25,21 @@ test('floor-compat: use-scale reports off-scale spacing', async () => {
   assert.equal(result.warnings[0].rule, 'rhythmguard/use-scale');
 });
 
+// The rules fix through the `fix` callback of utils.report(), which Stylelint
+// reads from 16.7.0; on 16.0 to 16.6 --fix kept every warning and changed
+// nothing, so the peer floor is 16.7.0 and the floor run proves fixes apply.
+test('floor-compat: use-scale fixes off-scale spacing', async () => {
+  const result = await lintCss({
+    code: '.card { margin: 13px; }',
+    fix: true,
+    rules: {
+      'rhythmguard/use-scale': [true],
+    },
+  });
+
+  assert.equal(result.code, '.card { margin: 12px; }');
+});
+
 test('floor-compat: prefer-token reports raw spacing literals', async () => {
   const result = await lintCss({
     code: '.stack { gap: 12px; }',

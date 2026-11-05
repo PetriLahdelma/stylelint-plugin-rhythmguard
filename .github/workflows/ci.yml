@@ -25,15 +25,17 @@ jobs:
       fail-fast: false
       matrix:
         node-version: ['20.x', '22.x']
-        stylelint-version: ['16.0.0', '16', '17']
-        # Node 24 (active LTS) and 26 (LTS from 2026-10-28) on the current Stylelint only:
-        # the Stylelint 16 rows prove the floor, and running them on every Node would
-        # double the farm's queue for no extra coverage (#164).
+        stylelint-version: ['16.7.0', '16', '17']
+        # Stylelint 18 needs Node ^22.22.2 || ^24.15.0 || >=26, so it runs on Node 22,
+        # 24 and 26 only; the Stylelint 16 rows prove the floor, and running every
+        # major on every Node would double the farm's queue for no extra coverage (#164).
         include:
+          - node-version: '22.x'
+            stylelint-version: '18'
           - node-version: '24.x'
-            stylelint-version: '17'
+            stylelint-version: '18'
           - node-version: '26.x'
-            stylelint-version: '17'
+            stylelint-version: '18'
 
     steps:
       - name: Checkout
@@ -72,11 +74,11 @@ jobs:
         run: npm run typecheck
 
       - name: Test (Stylelint floor compat)
-        if: matrix.stylelint-version == '16.0.0'
+        if: matrix.stylelint-version == '16.7.0'
         run: npm run test:compat-floor
 
       - name: Test (full suite)
-        if: matrix.stylelint-version != '16.0.0'
+        if: matrix.stylelint-version != '16.7.0'
         run: npm test
 
       - name: Coverage (single reference run)

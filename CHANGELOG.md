@@ -6,6 +6,12 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- Stylelint 18 is supported: the peer range is `^16.7.0 || ^17.0.0 || ^18.0.0` in the plugin and in the `rhythmguard` CLI's dependency, so `npm install stylelint@18 stylelint-config-standard@41 stylelint-plugin-rhythmguard` resolves where it failed with ERESOLVE. No code changed; the full suite passes on 18.0.0. On a Node older than Stylelint 18 needs (22.22, 24.15 or 26), npm installs Stylelint 17 for `npx rhythmguard`. The README says how `use-scale` differs from 18's new `value-type-custom-property-required-list` and how to run both. Closes #168.
+- The Stylelint floor is 16.7.0. On 16.0 to 16.6, Stylelint never read a rule's fix callback, so `--fix` kept every warning and changed nothing. A project on one of those versions gets a peer conflict when it upgrades and resolves it with `npm update stylelint` (any 16.x from 16.7 on). The floor suite now checks that a fix applies.
+- CI and the release verify Stylelint 18 on Node 22, 24 and 26; the floor rows run 16.7.0. The pack and registry smoke tests install the plugin next to Stylelint 16.7.0, 17, and 18 with stylelint-config-standard 41 (18 is skipped on a Node it does not support), and the weekly job tests the newest Stylelint instead of the removed `next` tag.
+
 ### Added
 
 - `scale: "auto"` reads GitLab's spacing scale: Sass scalars named `$<namespace>-spacing-scale-<n>` count as a scale when a namespace holds at least four lengths, as `$gl-spacing-scale-1` to `$gl-spacing-scale-88` do in gitlab-ui. Other namespaced scalars, such as `$dropdown-spacer`, stay excluded. gitlab-ui's benchmark row is measured against that scale: 3 off-scale values, as before, but `-2px` is now on it and a 14px margin is found.
