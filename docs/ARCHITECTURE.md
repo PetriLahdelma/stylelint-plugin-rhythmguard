@@ -83,7 +83,7 @@ Messages are part of the public contract. They name the value, the two nearest s
 | Every audit flag is documented; three spellings parse the same | `test/unit/audit-args.test.js` |
 | A number never loses its trailing zeros in any message or fix | `test/unit/length-format.test.js` |
 | Behaviour on 57 real design systems does not move without review | `npm run bench:quiet -- --check`, Quiet Benchmark workflow |
-| Stylelint 16.0.0 still works | `npm run test:compat-floor`, CI matrix |
+| Stylelint 16.7.0 still reports and fixes | `npm run test:compat-floor`, CI matrix |
 | The published tarball installs and runs | `npm run test:pack-smoke`, post-publish smoke workflow |
 | Agent packs match the docs block they are generated from | `test/cli/agent-packs.test.js` |
 
