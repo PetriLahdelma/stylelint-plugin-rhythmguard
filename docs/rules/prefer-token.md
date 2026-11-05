@@ -126,7 +126,7 @@ The fallback of a token `var()` is a raw value like any other: `padding: var(--b
 | `tokenMapFromCssCustomProperties` | `boolean` | `false` | Build the map from matching custom properties in the same stylesheet |
 | `tokenMapFromTailwindSpacing` | `boolean` | `false` | Build the map from `theme.spacing` in a Tailwind config |
 | `note` | `string` | `undefined` | Appended to every finding, after the built-in text. Up to 200 characters. Point agents and reviewers at your own rules: `"See docs/spacing.md for approved exceptions."` |
-| `tailwindConfigPath` | `string` | `null` | Tailwind config path for `tokenMapFromTailwindSpacing` (`.js`, `.cjs`, `.mjs`) |
+| `tailwindConfigPath` | `string` | `null` | Tailwind config path for `tokenMapFromTailwindSpacing` (`.js`, `.cjs`, `.mjs`). The config is loaded with `require()`, so its code runs; one that uses top-level await is not read |
 | `ignoreValues` | `string[]` | CSS global keywords + `auto` | Keyword literals to skip |
 | `allowHairlines` | `boolean` | `true` | Never asks for a token for non-zero lengths of one CSS pixel or less. See [Hairlines](./use-scale.md#hairlines) |
 | `propertyGroups` | `Array<'spacing' \| 'radius' \| 'typography' \| 'size'>` | `['spacing']` | Built-in property groups, used when `properties` is not set |
