@@ -191,7 +191,7 @@
     "esbuild": "^0.28.0",
     "eslint": "^10.0.0",
     "postcss-scss": "^4.0.9",
-    "stylelint": "^17.0.0",
+    "stylelint": "^18.0.0",
     "stylelint-config-tailwindcss": "^1.0.1",
     "stylelint-plugin-logical-css": "^2.0.2",
     "stylelint-scales": "^6.0.0",
