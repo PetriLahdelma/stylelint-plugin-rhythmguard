@@ -6,6 +6,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+## [3.19.0] - 2026-11-09
+
 ### Changed
 
 - The agent packs follow each tool's format and audit against the project's scale. The audit command in them is `npx rhythmguard audit . --scale auto --format json`; without `--scale auto` it checked a built-in scale, and an agent snapped correct 40px, 48px and 64px values. A new line tells agents never to invent a token name and where defined and missing tokens are listed. The Claude Code skill gains `when_to_use`, `paths` (it loads for stylesheet and component files) and `allowed-tools` for `npx rhythmguard audit` only: Stylelint and ESLint load JavaScript configs and plugins, and `fix` and `init` write files, so those runs keep the user's approval. The Cursor rule is attached by its globs (`alwaysApply: false`; with `true` Cursor ignored the globs and loaded it into every chat). Copilot gets its own `.github/instructions/rhythmguard.instructions.md` with `applyTo` globs, and `init --agents copilot` removes the block that older versions appended to `.github/copilot-instructions.md`. A contract test checks each pack's frontmatter against the keys its tool documents.

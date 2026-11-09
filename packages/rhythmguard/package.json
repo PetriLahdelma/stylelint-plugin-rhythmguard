@@ -1,6 +1,6 @@
 {
   "name": "rhythmguard",
-  "version": "3.18.0",
+  "version": "3.19.0",
   "description": "The rhythmguard command: zero-config spacing-scale audit for CSS, SCSS and Tailwind. `npx rhythmguard` runs the CLI of stylelint-plugin-rhythmguard.",
   "license": "MIT",
   "author": "Petri Lahdelma",
@@ -27,7 +27,7 @@
   "dependencies": {
     "postcss-scss": "^4.0.0",
     "stylelint": "^16.7.0 || ^17.0.0 || ^18.0.0",
-    "stylelint-plugin-rhythmguard": "^3.18.0"
+    "stylelint-plugin-rhythmguard": "^3.19.0"
   },
   "engines": {
     "node": ">=20.19.0"
