@@ -1,11 +1,32 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["helpers:pinGitHubActionDigests"],
+  "extends": [
+    "helpers:pinGitHubActionDigests"
+  ],
   "packageRules": [
     {
       "description": "The benchmark trees pin their tools on purpose (each manifest says so) and are bumped by hand when the benchmark is rerun. Renovate also cannot write the tailwind-compare lockfile (EALLOWREMOTE on a remote wasm tarball).",
-      "matchFileNames": ["benchmarks/**"],
+      "matchFileNames": [
+        "benchmarks/**"
+      ],
       "enabled": false
+    },
+    {
+      "description": "@types/node follows the oldest Node the packages support (engines), not the newest, so the typecheck catches an API older Nodes lack. Raise it with the engines floor (22 at 4.0).",
+      "matchPackageNames": [
+        "@types/node"
+      ],
+      "allowedVersions": "<23"
+    },
+    {
+      "description": "The repository's own Stylelint is the version the local gate runs on: 17, which most users have (46% of weekly downloads on 2026-11-05, 18 at 0.2%). CI covers 16.7, 16, 17 and 18. stylelint-plugin-logical-css, an optional peer tested here, also still caps its peer at 17. Lift this when 18 passes 17's share or 4.0 moves the floor.",
+      "matchPackageNames": [
+        "stylelint"
+      ],
+      "matchDepTypes": [
+        "devDependencies"
+      ],
+      "allowedVersions": "<18"
     }
   ]
 }

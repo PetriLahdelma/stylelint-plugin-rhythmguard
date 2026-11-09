@@ -38,7 +38,7 @@ npm ci
 npm test
 ```
 
-Node 20.19 or newer; `.nvmrc` pins 22 for development, so `nvm use` picks it up. A [dev container](./.devcontainer/devcontainer.json) gives the same setup in Codespaces or VS Code. No build step; the source runs as is. Tests use `node --test` through `scripts/test.mjs` and take about fifteen seconds. They are grouped by what they prove:
+Node 20.19 or newer; `.nvmrc` pins 24 for development, so `nvm use` picks it up. A [dev container](./.devcontainer/devcontainer.json) gives the same setup in Codespaces or VS Code. No build step; the source runs as is. Tests use `node --test` through `scripts/test.mjs` and take about fifteen seconds. They are grouped by what they prove:
 
 | Folder | Proves | Run one |
 | --- | --- | --- |
