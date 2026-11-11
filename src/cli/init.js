@@ -128,6 +128,7 @@ function findActiveStylelintConfig(cwd = process.cwd()) {
     try {
       content = fs.readFileSync(path.join(cwd, file), 'utf8');
     } catch {
+      // Not in this directory: Stylelint skips it too.
       continue;
     }
 
@@ -168,6 +169,7 @@ function configKind(file, content) {
       JSON.parse(content);
       return 'json';
     } catch {
+      // Not JSON: a .stylelintrc holds YAML.
       return 'yaml';
     }
   }

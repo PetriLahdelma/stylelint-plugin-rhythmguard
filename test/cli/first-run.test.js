@@ -154,7 +154,7 @@ test('init writes exactly the config the quickstart pastes, and the rc when aske
   const init = spawnSync(process.execPath, [cliPath, 'init'], { cwd: dir, encoding: 'utf8', input: 'y\ny\n' });
   assert.equal(init.status, 0, init.stderr);
   assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, '.stylelintrc.json'), 'utf8')), stylelint);
-  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, '.rhythmguardrc.json'), 'utf8')), { audit: { scale: 'auto' } });
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, '.rhythmguardrc.json'), 'utf8')), { audit: { scale: 'auto', tokenSources: ['./src/tokens.css'] } });
 
   // A second run shows what it would replace before asking.
   fs.writeFileSync(path.join(dir, '.stylelintrc.json'), '{\n  "extends": ["stylelint-plugin-rhythmguard/configs/recommended"]\n}\n');

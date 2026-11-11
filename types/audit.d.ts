@@ -337,6 +337,8 @@ export interface AuditContractReport {
   scanned: AuditScanned;
   schemaVersion: "2.0";
   summary: AuditSummary;
+  /** Every loader warning of the run: token sources that could not be read or carry no length, a Tailwind config that could not be loaded. */
+  warnings: string[];
 }
 
 export interface TokenSourceReport {

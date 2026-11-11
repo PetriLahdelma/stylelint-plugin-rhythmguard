@@ -184,6 +184,7 @@ function mergeTokenMapFromFile({
   currentMap,
   origins = null,
   tokenMapFile,
+  warnings = [],
 }) {
   if (!tokenMapFile) {
     return currentMap;
@@ -191,13 +192,15 @@ function mergeTokenMapFromFile({
 
   const resolvedPath = path.resolve(process.cwd(), tokenMapFile);
   if (!fs.existsSync(resolvedPath)) {
+    warnings.push(`Token map file not found: ${tokenMapFile}`);
     return currentMap;
   }
 
   let parsed;
   try {
     parsed = readJsonFile(resolvedPath);
-  } catch {
+  } catch (error) {
+    warnings.push(`Unable to parse token map file ${tokenMapFile}: ${error.message}`);
     return currentMap;
   }
 
@@ -356,6 +359,9 @@ function extractTailwindSpacing(config) {
   };
 }
 
+// Why a Tailwind config could not be loaded, by resolved path (cq-05).
+const tailwindLoadErrors = new Map();
+
 function loadTailwindSpacingFromRequire(resolvedPath) {
   try {
     const loaded = require(resolvedPath);
@@ -364,7 +370,8 @@ function loadTailwindSpacingFromRequire(resolvedPath) {
       : loaded;
 
     return extractTailwindSpacing(config);
-  } catch {
+  } catch (error) {
+    tailwindLoadErrors.set(resolvedPath, error && error.message ? error.message.split('\n')[0] : String(error));
     return null;
   }
 }
@@ -388,6 +395,7 @@ function mergeTokenMapFromTailwindSpacing({
   currentMap,
   origins = null,
   tailwindConfigPath,
+  warnings = [],
 }) {
   if (!tailwindConfigPath) {
     return currentMap;
@@ -395,10 +403,16 @@ function mergeTokenMapFromTailwindSpacing({
 
   const resolvedPath = path.resolve(process.cwd(), tailwindConfigPath);
   if (!fs.existsSync(resolvedPath)) {
+    warnings.push(`Tailwind config not found: ${tailwindConfigPath}`);
     return currentMap;
   }
 
   const spacing = loadTailwindSpacing(resolvedPath);
+  if (tailwindLoadErrors.has(resolvedPath)) {
+    // A config that throws used to read as "no known token" (cq-05).
+    warnings.push(`Tailwind config ${tailwindConfigPath} could not be loaded: ${tailwindLoadErrors.get(resolvedPath)}`);
+    return currentMap;
+  }
   if (!isPlainObject(spacing) || Object.keys(spacing).length === 0) {
     return currentMap;
   }
@@ -444,12 +458,14 @@ function buildEffectiveTokenMap({
   origins = null,
   root,
   tokenRegex,
+  warnings = [],
 }) {
   let tokenMap = {};
 
   if (options.tokenMapFile) {
     tokenMap = mergeTokenMapFromFile({
       ambiguous,
+      warnings,
       baseFontSize: options.baseFontSize,
       currentMap: tokenMap,
       origins,
@@ -470,6 +486,7 @@ function buildEffectiveTokenMap({
   if (options.tokenMapFromTailwindSpacing && options.tailwindConfigPath) {
     tokenMap = mergeTokenMapFromTailwindSpacing({
       ambiguous,
+      warnings,
       currentMap: tokenMap,
       origins,
       tailwindConfigPath: options.tailwindConfigPath,

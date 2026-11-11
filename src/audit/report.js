@@ -115,6 +115,8 @@ function prepareAuditRun(parsed) {
     requested: spacingOverride || parsed.scale,
     tailwindConfigPath: parsed.tailwindConfigPath,
     tokenSourceResult: spacingSourceResult,
+    // Loader warnings (a Tailwind config that throws) join the token source warnings (cq-05).
+    warnings: tokenSourceResult.warnings,
   });
 
   // Class strings follow the ESLint rule: with no scale of the project's own
@@ -177,6 +179,7 @@ function tokenScaleSources({ baseFontSize, cssFiles, isNonAuthored, readSource, 
     try {
       text = readSource(filePath);
     } catch {
+      // Unreadable since the scan (deleted, permissions): this pass reads only what it can.
       continue;
     }
     const definitions = new Map();
@@ -353,6 +356,7 @@ function knownTokenNames(knownDefinitions, skippedCssFiles, readSource) {
     try {
       text = readSource(filePath);
     } catch {
+      // Unreadable since the scan (deleted, permissions): this pass reads only what it can.
       continue;
     }
     const definitions = new Map();
@@ -419,7 +423,7 @@ function classStringScale(scale, templateFiles, baseFontSize) {
  * "auto": external token sources, then spacing custom properties across the scanned
  * CSS, then the default scale. First source that yields values wins.
  */
-function resolveAuditScale({ baseFontSize, cssFiles, isNonAuthored = () => false, readSource = readSourceFromDisk, requested, tailwindConfigPath = null, tokenSourceResult }) {
+function resolveAuditScale({ baseFontSize, cssFiles, isNonAuthored = () => false, readSource = readSourceFromDisk, requested, tailwindConfigPath = null, tokenSourceResult, warnings = [] }) {
   if (Array.isArray(requested)) {
     return {
       files: [],
@@ -441,7 +445,18 @@ function resolveAuditScale({ baseFontSize, cssFiles, isNonAuthored = () => false
     }
   }
 
+  // Configured token sources that gave no scale are a rejection with reasons,
+  // as an inferred set is, not a silent fallback (tf-02).
   let rejected = null;
+  if (tokenSourceResult.sources.length > 0) {
+    const reasons = tokenSourceResult.sources.flatMap((source) => source.warnings || []);
+    rejected = {
+      files: tokenSourceResult.sources.map((source) => source.file),
+      reasons: reasons.length > 0 ? reasons : ['no spacing token carries a length'],
+      source: 'token-sources',
+      values: [],
+    };
+  }
   const definitions = new Map();
   const matchesKind = createTokenKindMatcher('spacing');
   for (const filePath of cssFiles) {
@@ -454,6 +469,7 @@ function resolveAuditScale({ baseFontSize, cssFiles, isNonAuthored = () => false
     try {
       text = readSource(filePath);
     } catch {
+      // Unreadable since the scan (deleted, permissions): this pass reads only what it can.
       continue;
     }
     collectTokenDefinitions(text, formatPath(filePath), definitions, matchesKind, baseFontSize);
@@ -479,13 +495,13 @@ function resolveAuditScale({ baseFontSize, cssFiles, isNonAuthored = () => false
           values,
         };
       }
-      rejected = { files: sortedFiles, reasons: assessment.reasons, source: 'scanned-css', values };
+      rejected = rejected || { files: sortedFiles, reasons: assessment.reasons, source: 'scanned-css', values };
     }
   }
 
   // A Tailwind v3 config, only when one is configured: loading it runs it (tf-06).
-  if (tailwindConfigPath) {
-    const values = scaleFromTailwindConfig(path.resolve(process.cwd(), tailwindConfigPath), baseFontSize);
+  if (tailwindConfigPath && fs.existsSync(path.resolve(process.cwd(), tailwindConfigPath))) {
+    const values = scaleFromTailwindConfig(path.resolve(process.cwd(), tailwindConfigPath), baseFontSize, { warnings });
     if (values) {
       return { files: [formatPath(path.resolve(process.cwd(), tailwindConfigPath))], source: 'tailwind', tokenCount: values.length - 1, values };
     }

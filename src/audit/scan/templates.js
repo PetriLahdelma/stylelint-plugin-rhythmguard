@@ -22,6 +22,7 @@ function collectTailwindFindings(templateFiles, options) {
     try {
       source = options.readSource ? options.readSource(filePath) : fs.readFileSync(filePath, 'utf8');
     } catch {
+      // Unreadable since the scan (deleted, permissions): this pass reads only what it can.
       continue;
     }
 
@@ -68,6 +69,7 @@ function collectTailwindMotionFindings(templateFiles, options) {
     try {
       source = options.readSource ? options.readSource(filePath) : fs.readFileSync(filePath, 'utf8');
     } catch {
+      // Unreadable since the scan (deleted, permissions): this pass reads only what it can.
       continue;
     }
 

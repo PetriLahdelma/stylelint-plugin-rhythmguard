@@ -11,8 +11,12 @@ const path = require('node:path');
 
 const { createAuditReport } = require('../audit/report');
 
-const TOKEN_FILE_PATTERN = /(^|[.-])tokens?\.json$/i;
-const TOKEN_DIRS = ['tokens', 'design-tokens', path.join('src', 'tokens'), path.join('dist', 'tokens')];
+// tokens.json, *.tokens.json, *-tokens.json and the same as CSS (tf-12).
+const TOKEN_FILE_PATTERN = /(^|[.-])tokens?\.(json|css)$/i;
+// Style Dictionary's CSS output: build/css/variables.css and dist/css/variables.css.
+const BUILT_VARIABLES = /^variables\.css$/i;
+const TOKEN_DIRS = ['tokens', 'design-tokens', path.join('src', 'tokens'), path.join('dist', 'tokens'), 'src', 'styles', path.join('src', 'styles')];
+const BUILT_DIRS = [path.join('build', 'css'), path.join('dist', 'css')];
 const TAILWIND_CONFIG_FILES = ['tailwind.config.js', 'tailwind.config.cjs', 'tailwind.config.mjs', 'tailwind.config.ts'];
 const RC_FILE = '.rhythmguardrc.json';
 
@@ -20,6 +24,7 @@ function readPackage(cwd) {
   try {
     return JSON.parse(fs.readFileSync(path.join(cwd, 'package.json'), 'utf8'));
   } catch {
+    // No readable package.json: no dependencies to read.
     return {};
   }
 }
@@ -39,22 +44,26 @@ function tailwindMajor(pkg) {
 
 function findTokenFiles(cwd) {
   const found = new Set();
-  const consider = (dir) => {
+  const consider = (dir, pattern) => {
     let entries;
     try {
       entries = fs.readdirSync(dir, { withFileTypes: true });
     } catch {
+      // A directory that does not exist holds no token files.
       return;
     }
     for (const entry of entries) {
-      if (entry.isFile() && TOKEN_FILE_PATTERN.test(entry.name)) {
+      if (entry.isFile() && pattern.test(entry.name)) {
         found.add(path.relative(cwd, path.join(dir, entry.name)));
       }
     }
   };
-  consider(cwd);
+  consider(cwd, TOKEN_FILE_PATTERN);
   for (const sub of TOKEN_DIRS) {
-    consider(path.join(cwd, sub));
+    consider(path.join(cwd, sub), TOKEN_FILE_PATTERN);
+  }
+  for (const sub of BUILT_DIRS) {
+    consider(path.join(cwd, sub), BUILT_VARIABLES);
   }
   return Array.from(found).sort();
 }
@@ -118,6 +127,11 @@ function stylelintConfigFor({ nextjs = false, profile, scale, scss = false, tail
   let ruleOptions = null;
   if (tailwindConfig && sources.length === 0) {
     ruleOptions = { scale: 'auto', tailwindConfigPath: toPosix(tailwindConfig) };
+  } else if (scale.source === 'fallback' && tokenFiles.length > 0) {
+    // Token files that gave no scale: point at them anyway, so every lint
+    // names why they were not read until they are fixed (tf-12). The fallback
+    // is the profile's, as in the audit.
+    ruleOptions = { scale: 'auto', scaleSources: tokenFiles.map(toPosix), ...(profile === 'tailwind' ? { preset: 'tailwind' } : {}) };
   } else if (scale.source === 'explicit') {
     ruleOptions = { scale: [...scale.values] };
   } else if (scale.source !== 'fallback' && scale.source !== 'default') {

@@ -146,6 +146,7 @@ function parseRegexLikeString(value) {
   try {
     return new RegExp(pattern, flags);
   } catch {
+    // Not a valid regex: validation then rejects the entry as an unknown property.
     return null;
   }
 }

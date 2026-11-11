@@ -48,6 +48,7 @@ function collectDeclarations({ cssFiles, externalDefinitions, readSource = (file
     try {
       source = readSource(filePath);
     } catch {
+      // Unreadable since the scan (deleted, permissions): this pass reads only what it can.
       continue;
     }
     const lineComments = hasLineComments(filePath);

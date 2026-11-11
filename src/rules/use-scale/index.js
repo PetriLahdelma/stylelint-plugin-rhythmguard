@@ -36,13 +36,14 @@ const {
 
 const {
   autoScaleFallbackNote,
+  loaderWarningsNote,
   collectTokenDefinitions,
   withResolvedScale,
 } = require('../../core/scale-inference');
 const { createScssVariableResolver, evaluateScssValueList } = require('../../core/token-sources');
 
 const { createTokenRegex, reportInvalidPreset, reportProblem, reportValueNode } = require('../report');
-const { decisionFor, loadRcDecisions } = require('../../core/decisions');
+const { decisionFor, loadRcDecisionWarnings, loadRcDecisions } = require('../../core/decisions');
 const { replacementFor, tokenHoldsNote, tokenIndexFromDefinitions } = require('../../core/token-index');
 const { validatePrimary, validateUseScaleSecondaryOptions } = require('../validate');
 
@@ -276,7 +277,9 @@ const ruleFunction = (primary, secondaryOptions) => {
       );
     }
 
-    let fallbackNote = autoScaleFallbackNote(options.scaleInference);
+    // The fallback note and any loader warning ride on the first message in the file (cq-05).
+    const rcWarnings = options.readDecisions ? loadRcDecisionWarnings(process.cwd(), { baseFontSize: options.baseFontSize }) : [];
+    let fallbackNote = [autoScaleFallbackNote(options.scaleInference), loaderWarningsNote(rcWarnings, options.scaleInference)].filter(Boolean).join(' ');
     const getScaleStateForProperty = createPropertyScaleResolver(options);
 
     const report = (value, decl, node, nearest, fixedValue = null, nearestUnit = 'px', extraNote = '', position = null) => {

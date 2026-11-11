@@ -59,6 +59,7 @@ function walkFiles(rootDir, ignorePatterns = []) {
         try {
           kind = fs.statSync(fullPath);
         } catch {
+          // A dangling symbolic link: nothing to scan.
           continue;
         }
       }
@@ -123,6 +124,7 @@ function realPathOf(filePath) {
   try {
     return fs.realpathSync(filePath);
   } catch {
+    // A path that cannot be resolved has no real path.
     return null;
   }
 }
@@ -247,6 +249,7 @@ function isFileOnDisk(filePath) {
   try {
     return fs.statSync(filePath).isFile();
   } catch {
+    // Absent or unreadable: not a file.
     return false;
   }
 }
@@ -255,6 +258,7 @@ function isSymbolicLink(filePath) {
   try {
     return fs.lstatSync(filePath).isSymbolicLink();
   } catch {
+    // Absent: not a link.
     return false;
   }
 }
@@ -351,6 +355,7 @@ function findGitTopLevel(dir) {
     }).replace(/\r?\n$/, '');
     return output ? path.resolve(output) : null;
   } catch {
+    // Not a git repository, or no git: there is no repository root.
     return null;
   }
 }

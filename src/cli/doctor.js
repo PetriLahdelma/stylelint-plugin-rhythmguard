@@ -113,6 +113,7 @@ function findPackage(name, cwd) {
       try {
         return { dir: path.dirname(manifestPath), manifest: readJsonFile(manifestPath) };
       } catch {
+        // Unreadable: treated as an absent manifest; the install check reports it.
         return { dir: path.dirname(manifestPath), manifest: {} };
       }
     }
@@ -215,6 +216,7 @@ function readPackageJson(cwd) {
   try {
     return readJsonFile(path.join(cwd, 'package.json'));
   } catch {
+    // No readable package.json: the callers read that as no dependencies.
     return null;
   }
 }
@@ -390,6 +392,7 @@ function parseSample(cwd, file, customSyntax) {
   try {
     source = fs.readFileSync(file, 'utf8');
   } catch {
+    // Unreadable: no sample to lint; the caller reports that.
     return null;
   }
   let parser = postcss.parse;
@@ -406,6 +409,7 @@ function parseSample(cwd, file, customSyntax) {
   try {
     return { relative: relative(cwd, file), root: parser(source, { from: file }) };
   } catch {
+    // Not parseable: no sample to lint; the caller reports that.
     return null;
   }
 }
@@ -524,6 +528,7 @@ function checkCustomSyntax({ cwd, fail, pass }, config) {
     require.resolve(name, { paths: [cwd] });
     pass('custom-syntax', `custom syntax installed (${name})`);
   } catch {
+    // Not resolvable from the project: reported just below.
     if (path.isAbsolute(name) && fs.existsSync(name)) {
       pass('custom-syntax', `custom syntax found (${name})`);
       return;
@@ -542,6 +547,7 @@ async function checkScssSyntax({ cwd, project, warn }, stylelint) {
   try {
     config = await stylelint.resolveConfig(scss, { cwd });
   } catch {
+    // A config Stylelint cannot resolve is reported by the config check.
     return;
   }
   if (config && !config.customSyntax) {
@@ -562,6 +568,7 @@ function checkRuleOptions({ cwd, fail, pass }, config, ruleNames) {
         new RegExp(secondary.tokenPattern);
         pass('token-pattern', `token pattern valid on ${ruleName} (${secondary.tokenPattern})`);
       } catch {
+        // Reported by fail() below.
         fail('token-pattern', `token pattern invalid on ${ruleName}: ${secondary.tokenPattern}`, 'Fix the regex in the tokenPattern option');
       }
     }
@@ -805,6 +812,7 @@ function checkRhythmguardConfig(ctx) {
   try {
     parsed = readJsonFile(configPath);
   } catch {
+    // Reported by fail() below.
     fail('rc', '.rhythmguardrc.json is not valid JSON', 'Fix or remove .rhythmguardrc.json');
     return;
   }
@@ -894,6 +902,7 @@ function checkRhythmguardTokenSources(ctx, audit, baseDir) {
     try {
       normalizeTokenSourceFormat(format || 'auto');
     } catch {
+      // Reported by fail() below.
       fail('rc-token-sources', `token source format invalid for ${sourcePath}`, 'Use auto, css, flat-json, style-dictionary, or dtcg');
     }
 
@@ -950,6 +959,7 @@ function checkRhythmguardBaseline({ cwd, fail, pass, skip }, audit) {
     }
     pass('rc-baseline', `baseline file readable (${relative(cwd, baselinePath)})`);
   } catch {
+    // Reported by fail() below.
     fail('rc-baseline', 'baseline file is not valid JSON', 'Regenerate it with rhythmguard audit --write-baseline');
   }
 }

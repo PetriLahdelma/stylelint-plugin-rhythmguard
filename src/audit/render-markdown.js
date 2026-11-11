@@ -6,6 +6,9 @@ const { nothingAudited, nothingAuditedReasons } = require('./render-text');
 const { escapeMarkdown, markdownCode, newFindingsPhrase, tableCode } = require('./render-utils');
 
 function describeScaleSource(scale) {
+  if (scale.rejected && scale.rejected.source === 'token-sources') {
+    return `${scale.source} (token sources gave no scale; see the warnings)`;
+  }
   if (scale.rejected) {
     return `${scale.source} (${scale.rejected.source} rejected: ${scale.rejected.reasons.join(', ')})`;
   }

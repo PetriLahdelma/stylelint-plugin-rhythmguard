@@ -174,6 +174,10 @@ async function run() {
     out.push("    Note            No spacing tokens found; the audit's default scale is being used.");
     out.push('                    Add scaleSources or define --space-*/--spacing-* custom properties to lint against your own scale.');
   }
+  // Every loader warning, so a token file that was found but not read says why (tf-12).
+  for (const warning of new Set(report.tokenSourceWarnings || [])) {
+    out.push(`    !               ${warning}`);
+  }
   if (scale.classStrings) {
     out.push(`    Class strings   ${scale.classStrings.name} (the ESLint rule's default)`);
   }

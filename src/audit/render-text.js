@@ -39,8 +39,18 @@ function renderText(report, options = {}) {
   if (report.scale) {
     lines.push(`  Scale                    ${report.scale.values.join(', ')}`);
     const files = report.scale.files.length > 0 ? ` (${report.scale.files.join(', ')})` : '';
-    const rejected = report.scale.rejected ? ` (${report.scale.rejected.source} rejected: ${report.scale.rejected.reasons.join(', ')})` : '';
+    // Configured token sources that gave no scale: their warnings are printed under the token contract.
+    const rejected = !report.scale.rejected ? ''
+      : report.scale.rejected.source === 'token-sources' ? ' (token sources gave no scale; see the warnings)'
+        : ` (${report.scale.rejected.source} rejected: ${report.scale.rejected.reasons.join(', ')})`;
     lines.push(`  Scale source             ${report.scale.source}${files}${rejected}`);
+    // Warnings that belong to no token source, such as a Tailwind config that could not be loaded (cq-05).
+    const sourceWarnings = new Set(((report.tokenContract && report.tokenContract.sources) || []).flatMap((source) => source.warnings || []));
+    for (const warning of new Set(report.tokenSourceWarnings || [])) {
+      if (!sourceWarnings.has(warning)) {
+        lines.push(`  ! ${warning}`);
+      }
+    }
     if (report.scale.classStrings) {
       lines.push(`  Class-string scale       ${report.scale.classStrings.name} (${report.scale.classStrings.values.join(', ')})`);
     }

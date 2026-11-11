@@ -27,6 +27,7 @@ function resolveScssSyntax() {
   try {
     scssSyntaxCache = require.resolve('postcss-scss', { paths: [process.cwd(), __dirname] });
   } catch {
+    // postcss-scss is an optional peer; without it SCSS files are counted as skipped.
     scssSyntaxCache = null;
   }
   return scssSyntaxCache;
@@ -161,6 +162,7 @@ async function lintSources(stylelint, files, config, readSource) {
     try {
       code = readSource(file);
     } catch {
+      // Unreadable since the scan (deleted, permissions): this pass reads only what it can.
       continue;
     }
     const result = await stylelint.lint({ allowEmptyInput: true, code, codeFilename: file, config });
@@ -245,6 +247,7 @@ function readSourceOnce(cache, filePath, readSource = readSourceFromDisk) {
     try {
       cache.set(filePath, readSource(filePath));
     } catch {
+      // Unreadable since the scan (deleted, permissions): this pass reads only what it can.
       cache.set(filePath, null);
     }
   }
