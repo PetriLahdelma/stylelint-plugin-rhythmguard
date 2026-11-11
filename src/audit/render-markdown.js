@@ -54,6 +54,9 @@ function renderMarkdown(report, options = {}) {
   if (report.scale) {
     lines.push(`| Scale | ${report.scale.values.join(', ')} |`);
     lines.push(`| Scale source | ${escapeMarkdown(describeScaleSource(report.scale))} |`);
+    if (report.scale.classStrings) {
+      lines.push(`| Class-string scale | ${escapeMarkdown(report.scale.classStrings.name)} |`);
+    }
   }
 
   if (report.decisions) {

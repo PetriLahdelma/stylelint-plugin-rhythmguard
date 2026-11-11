@@ -16,6 +16,7 @@ Use a preset by name in any rule that accepts `preset`. `customScale` and `scale
 | `compact` | Dense UI spacing | `[0,2,4,6,8,12,16,20,24,32]` |
 | `fibonacci` | Fibonacci progression | `[0,2,3,5,8,13,21,34,55,89]` |
 | `powers-of-two` | Geometric doubling | `[0,2,4,8,16,32,64,128]` |
+| `tailwind` | Tailwind's default spacing theme on a 16px root (`p-0.5` to `p-96`); the ESLint rule's default and the fallback of `configs/tailwind` | `[0,2,4,6,8,10,12,14,16,20,24,28,32,36,40,44,48,52,56,60,64,72,80,96,112,128,144,160,176,192,208,224,240,256,288,320,384]` |
 | `golden-ratio` | Ratio 1.618 | generated modular sequence |
 | `modular-major-second` | Ratio 1.125 | generated modular sequence |
 | `modular-minor-third` | Ratio 1.2 | generated modular sequence |

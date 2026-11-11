@@ -1,5 +1,7 @@
 'use strict';
 
+const { DEFAULT_SCALE } = require('../presets/default-scale');
+
 /** @type {import('../../types/shared').RhythmguardStylelintConfig} */
 module.exports = {
   plugins: ['stylelint-plugin-rhythmguard'],
@@ -19,7 +21,7 @@ module.exports = {
           /^scroll-margin(?:-.+)?$/,
           /^scroll-padding(?:-.+)?$/,
         ],
-        scale: [0, 4, 8, 12, 16, 24, 32, 40, 48, 64],
+        scale: [...DEFAULT_SCALE],
       },
     ],
     'rhythmguard/no-offscale-transform': [

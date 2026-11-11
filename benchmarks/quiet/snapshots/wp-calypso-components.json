@@ -10,12 +10,15 @@
       12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      64
     ]
   },
   "summary": {
-    "total": 82,
-    "drift": 82,
+    "total": 78,
+    "drift": 78,
     "falsePositives": 0
   },
   "findings": [
@@ -24,7 +27,6 @@
     "packages/components/src/button/style.scss:24:14px:drift",
     "packages/components/src/button/style.scss:39:-2px:drift",
     "packages/components/src/button/style.scss:86:7px:drift",
-    "packages/components/src/card/style.scss:41:48px:drift",
     "packages/components/src/card/style.scss:63:21px:drift",
     "packages/components/src/card/style.scss:8:10px:drift",
     "packages/components/src/count/style.scss:5:6px:drift",
@@ -46,8 +48,6 @@
     "packages/components/src/flow-question/style.scss:14:22px:drift",
     "packages/components/src/flow-question/style.scss:40:5px:drift",
     "packages/components/src/flow-question/style.scss:46:10px:drift",
-    "packages/components/src/foldable-card/style.scss:160:40px:drift",
-    "packages/components/src/foldable-card/style.scss:30:48px:drift",
     "packages/components/src/foldable-card/style.scss:86:5px:drift",
     "packages/components/src/forms/form-input-validation/style.scss:22:26px:drift",
     "packages/components/src/forms/form-input-validation/style.scss:38:-26px:drift",
@@ -79,7 +79,6 @@
     "packages/components/src/searchable-dropdown/style.scss:11:14px:drift",
     "packages/components/src/searchable-dropdown/style.scss:11:7px:drift",
     "packages/components/src/searchable-dropdown/style.scss:37:10px:drift",
-    "packages/components/src/select-dropdown/style.scss:149:40px:drift",
     "packages/components/src/suggestions/style.scss:34:42px:drift",
     "packages/components/src/tabs/style.module.scss:177:2px:drift",
     "packages/components/src/theme-type-badge/bundled-badge/style.scss:26:5px:drift",

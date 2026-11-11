@@ -10,12 +10,15 @@
       12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      64
     ]
   },
   "summary": {
-    "total": 23,
-    "drift": 23,
+    "total": 22,
+    "drift": 22,
     "falsePositives": 0
   },
   "findings": [
@@ -29,7 +32,6 @@
     "src/client/theme-default/styles/components/vp-doc.css:324:0.375rem:drift",
     "src/client/theme-default/styles/components/vp-doc.css:386:1.25rem:drift",
     "src/client/theme-default/styles/components/vp-doc.css:487:1.25rem:drift",
-    "src/client/theme-default/styles/components/vp-doc.css:48:3rem:drift",
     "src/client/theme-default/styles/components/vp-doc.css:557:0.625rem:drift",
     "src/client/theme-default/styles/components/vp-doc.css:597:0.6875rem:drift",
     "src/client/theme-default/styles/components/vp-doc.css:76:-0.87em:drift",

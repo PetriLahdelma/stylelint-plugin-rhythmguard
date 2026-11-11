@@ -17,6 +17,7 @@ const {
 } = require('./token-sources');
 const { normalizeTokenSourceEntry } = require('./token-source-entries');
 const { getScalePreset } = require('../presets/scales');
+const { TAILWIND_SPACING_MULTIPLIERS } = require('../presets/default-scale');
 
 // Matches the audit default so lint and audit agree on what a spacing token is.
 const DEFAULT_AUTO_TOKEN_PATTERN = '(^--|-)(?<!letter-)(?<!word-)(space|spacing|spacer)(-|$)';
@@ -29,9 +30,6 @@ const TAILWIND_BASE_TOKENS = new Set(['--spacing']);
 // plain lengths (`--space-s`, `--space-m`) next to `--space` is the scale, and
 // `--space` is one more step on it (issue #293).
 const CONDITIONAL_BASE_TOKENS = new Set(['--space']);
-const TAILWIND_SPACING_MULTIPLIERS = [
-  0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64, 72, 80, 96,
-];
 const FALLBACK_PRESET = 'rhythmic-4';
 // Zero plus at least three distinct token values; a one- or two-token scale is worse than the default.
 const MIN_INFERRED_SCALE_LENGTH = 4;
@@ -456,6 +454,7 @@ function scaleFromTokenMap(map, baseFontSize, extraKeys = []) {
  */
 function resolveAutoScale({
   baseFontSize = 16,
+  fallbackPreset = FALLBACK_PRESET,
   root,
   scaleSources = [],
   sourceTokenPattern = null,
@@ -517,7 +516,7 @@ function resolveAutoScale({
     return { source: 'token-package', ...fromPackages };
   }
 
-  return fallbackInference(rejected, warnings);
+  return fallbackInference(rejected, warnings, fallbackPreset);
 }
 
 const TRUSTED_SCALE_SOURCES = new Set(['scaleSources', 'rhythmguardrc', 'token-sources', 'tailwind', 'token-package', 'explicit', 'default']);
@@ -562,12 +561,18 @@ function assessScale({ files = null, source, values = [] } = {}) {
   return { plausible: reasons.length === 0, reasons };
 }
 
-function fallbackInference(rejected = null, warnings = []) {
+/**
+ * The scale when no source gives one: the rule's `preset` when it sets one
+ * next to `scale: "auto"` (configs/tailwind falls back to the Tailwind ladder),
+ * else `rhythmic-4`.
+ */
+function fallbackInference(rejected = null, warnings = [], preset = FALLBACK_PRESET) {
+  const name = getScalePreset(preset) ? preset : FALLBACK_PRESET;
   return {
     files: [],
-    preset: FALLBACK_PRESET,
+    preset: name,
     ...(rejected ? { rejected } : {}),
-    scale: getScalePreset(FALLBACK_PRESET),
+    scale: getScalePreset(name),
     source: 'fallback',
     tokenCount: 0,
     warnings,
@@ -583,6 +588,7 @@ function withResolvedScale(options, root) {
   if (options.scaleAuto) {
     const inference = resolveAutoScale({
       baseFontSize: options.baseFontSize,
+      fallbackPreset: options.preset || FALLBACK_PRESET,
       root,
       scaleSources: options.scaleSources,
       sourceTokenPattern: options.tokenPatternExplicit ? options.tokenPattern : null,

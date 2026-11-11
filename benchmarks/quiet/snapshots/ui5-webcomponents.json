@@ -10,12 +10,15 @@
       12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      64
     ]
   },
   "summary": {
-    "total": 75,
-    "drift": 75,
+    "total": 74,
+    "drift": 74,
     "falsePositives": 0
   },
   "findings": [
@@ -76,7 +79,6 @@
     "packages/main/src/themes/SliderTooltip.css:6:-28px:drift",
     "packages/main/src/themes/SplitButton.css:103:0.125rem:drift",
     "packages/main/src/themes/Switch.css:347:0.1875rem:drift",
-    "packages/main/src/themes/TabContainer.css:178:3rem:drift",
     "packages/main/src/themes/TabContainer.css:73:0.188rem:drift",
     "packages/main/src/themes/TabInOverflow.css:48:-1.25rem:drift",
     "packages/main/src/themes/TabInStrip.css:245:1.25rem:drift",

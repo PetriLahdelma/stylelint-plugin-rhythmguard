@@ -18,6 +18,7 @@ const {
 } = require('./config');
 const { buildReport, collectTokenDefinitions } = require('./contract');
 const { DEFAULT_SCALE, formatPath } = require('./shared');
+const { TAILWIND_SCALE_NAME, TAILWIND_SPACING_UNIT_REM, tailwindSpacingLadder } = require('../presets/default-scale');
 const {
   assessScale,
   discoverTokenPackages,
@@ -90,6 +91,15 @@ async function createAuditReport(options) {
     scales: parsed.scales,
   };
 
+  // Class strings follow the ESLint rule: with no scale of the project's own
+  // (the default, or "auto" finding none), they are judged by Tailwind's
+  // default ladder, so the audit and `tailwind-class-use-scale` agree (cs-05).
+  const classScale = classStringScale(scale, templateFiles, parsed.baseFontSize);
+  if (classScale) {
+    scale.classStrings = classScale;
+  }
+  const classOptions = classScale ? { ...lintOptions, scale: classScale.values } : lintOptions;
+
   const cssResults = await runStylelintAudit(cssFiles, lintOptions);
   const collectedCssFindings = collectCssFindings(cssResults, readSource);
   // A stylesheet that failed to parse was not audited; it is reported apart
@@ -100,7 +110,7 @@ async function createAuditReport(options) {
     baseFontSize: parsed.baseFontSize,
     cssFindings: stylelintFindings.filter((finding) => !finding.type.startsWith('motion-')),
     decisions: parsed.decisions || [],
-    tailwindFindings: collectTailwindFindings(templateFiles, lintOptions),
+    tailwindFindings: collectTailwindFindings(templateFiles, classOptions),
   });
   const cssFindings = decided.cssFindings;
   const motionFindings = [
@@ -163,7 +173,7 @@ async function createAuditReport(options) {
     groupScales,
     offScaleFindings: [
       ...stylelintFindings.filter((finding) => finding.type === 'off-scale'),
-      ...collectTailwindFindings(templateFiles, lintOptions),
+      ...collectTailwindFindings(templateFiles, classOptions),
     ],
     scale: scale.values,
   });
@@ -227,6 +237,22 @@ function classifyNonAuthored(cssFiles, rootDir, readSource) {
     }
   }
   return classified;
+}
+
+/**
+ * The scale class strings are checked against when it differs from the
+ * stylesheet scale: Tailwind's default ladder, when the stylesheet scale is the
+ * built-in default or the fallback and there are template files to check.
+ */
+function classStringScale(scale, templateFiles, baseFontSize) {
+  if (templateFiles.length === 0 || (scale.source !== 'default' && scale.source !== 'fallback')) {
+    return null;
+  }
+  return {
+    name: TAILWIND_SCALE_NAME,
+    source: 'tailwind-default',
+    values: tailwindSpacingLadder(baseFontSize * TAILWIND_SPACING_UNIT_REM),
+  };
 }
 
 /**

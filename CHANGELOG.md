@@ -6,6 +6,17 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Changed
+
+- One default scale. The audit without `--scale`, the audit's `--scale auto` fallback, `use-scale` with no `scale`, `configs/recommended`, `configs/strict` and the `rhythmic-4` preset now read one list, `0, 4, 8, 12, 16, 24, 32, 40, 48, 64`, exported once. Before, the audit stopped at 32, so 40, 48 and 64px were findings in the audit and not in Stylelint, and `init`, the quickstart and the audit judged one project by three scales. Audit findings only go away: on the quiet benchmark, 31 rows that fall back to the default lose 40, 48 and 64px findings and none gains one (dx-06, ai-01).
+- `tailwind-class-use-scale` with no `scale` checks Tailwind's default spacing ladder on `spacingUnit` (`0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, ... 384` on a 16px root) instead of `[0, 4, 8, 12, 16, 24, 32]`, and its messages end with `Scale: Tailwind default spacing.` `p-[20px]`, `p-[40px]` and `p-[2px]` are standard `p-5`, `p-10` and `p-0.5`, not findings. A value past the top step is still reported but no longer fixed: `p-[64px]` on a scale that ends at 32 was rewritten to `p-8`, halving the padding. With `scale` set, messages are unchanged (cs-01).
+- The audit checks class strings against the same Tailwind ladder when the stylesheet scale is the default or the fallback, so it agrees with the ESLint rule; `contracts.scale.classStrings` and a "Class-string scale" line say so (cs-05).
+- `configs/tailwind` sets `scale: "auto"` on `use-scale` and `no-offscale-transform`, falling back to Tailwind's default ladder instead of `rhythmic-4`. `padding: 20px`, `margin: 28px` and `inset: 44px` are Tailwind steps and no longer reported or rewritten to 16, 24 and 40px (css-01).
+
+### Added
+
+- A `tailwind` scale preset: Tailwind's default spacing theme on a 16px root. With `scale: "auto"`, a rule's `preset` is now the fallback when no tokens are found, as `configs/tailwind` uses it.
+
 ### Fixed
 
 - Token fixes never guess and never leave a token's scope. When two tokens hold one value, `prefer-token` names both (`Use one of the tokens that hold it: var(--space-gutter) or var(--space-layout).`) and writes neither on every map source: `tokenMapFromCssCustomProperties` (on in the `tailwind` config and the playground), `tokenMapFile` and `tokenMapFromTailwindSpacing`. Before, the map kept the last token declared, so `margin: 24px` became `var(--space-layout)` while the token index named both and wrote nothing, and a `use-scale` snap followed by `prefer-token` turned `23px` into the guessed token. A token declared only under `@media`, `@supports` or `@container`, or in a component block such as `.card`, is written by `use-scale` and `no-offscale-transform` with `fixWith: "token"` and by `prefer-token` only where it is defined: under the same conditions, or inside that block. Before, `padding: 13px` became `var(--space-3)` outside the media query that defines it, which computes to no padding below the breakpoint. No rule writes a token into a `var()` fallback any more, since the fallback is what renders when the tokens are missing; the literal is written, or the value is reported and left alone. A token that is not defined where a value sits is no longer named in that value's message either. The findings and the message templates are unchanged (css-08, fix-06, fix-02)

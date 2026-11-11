@@ -10,12 +10,15 @@
       12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      64
     ]
   },
   "summary": {
-    "total": 43,
-    "drift": 43,
+    "total": 40,
+    "drift": 40,
     "falsePositives": 0
   },
   "findings": [
@@ -28,9 +31,6 @@
     "src/material/chips/chip.scss:308:$_graphic-padding:drift",
     "src/material/chips/chip.scss:309:$_graphic-padding:drift",
     "src/material/core/typography/_typography.scss:246:56px:drift",
-    "src/material/core/typography/_typography.scss:253:64px:drift",
-    "src/material/core/typography/_typography.scss:260:64px:drift",
-    "src/material/core/typography/_typography.scss:267:64px:drift",
     "src/material/datepicker/_datepicker-legacy-compat.scss:46:-2px:drift",
     "src/material/datepicker/calendar.scss:63:$calendar-arrow-size:drift",
     "src/material/datepicker/calendar.scss:73:$calendar-arrow-size:drift",

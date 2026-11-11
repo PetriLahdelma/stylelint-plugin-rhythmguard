@@ -423,6 +423,9 @@ function toAuditContractReport(report) {
       decisions: report.decisions || null,
       motion: report.motion,
       scale: {
+        // Set when class strings are checked against another scale than the
+        // stylesheets: Tailwind's default ladder when no project scale exists.
+        classStrings: report.scale && report.scale.classStrings ? report.scale.classStrings : null,
         cleanliness: report.scaleCleanliness,
         files: report.scale ? report.scale.files : [],
         offScaleProperties: report.offScaleProperties || {},

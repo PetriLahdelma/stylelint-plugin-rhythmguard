@@ -40,6 +40,9 @@ function renderText(report, options = {}) {
     const files = report.scale.files.length > 0 ? ` (${report.scale.files.join(', ')})` : '';
     const rejected = report.scale.rejected ? ` (${report.scale.rejected.source} rejected: ${report.scale.rejected.reasons.join(', ')})` : '';
     lines.push(`  Scale source             ${report.scale.source}${files}${rejected}`);
+    if (report.scale.classStrings) {
+      lines.push(`  Class-string scale       ${report.scale.classStrings.name} (${report.scale.classStrings.values.join(', ')})`);
+    }
   }
   if (report.decisions) {
     lines.push(`  Decisions                ${report.decisions.adopt + report.decisions.allow + report.decisions.snap + report.decisions.undecided} (${report.decisions.adopt} adopt, ${report.decisions.allow} allow, ${report.decisions.snap} snap, ${report.decisions.undecided} undecided); ${report.decisions.suppressed} findings suppressed`);

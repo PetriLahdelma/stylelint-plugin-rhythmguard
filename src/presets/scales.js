@@ -3,6 +3,8 @@
 const fs = require('node:fs');
 const path = require('node:path');
 
+const { DEFAULT_SCALE, TAILWIND_DEFAULT_SCALE } = require('./default-scale');
+
 function normalizePresetName(name) {
   if (typeof name !== 'string') {
     return '';
@@ -24,7 +26,7 @@ function createModularScale({ base, ratio, steps }) {
 }
 
 const CORE_SCALE_PRESETS = Object.freeze({
-  'rhythmic-4': Object.freeze([0, 4, 8, 12, 16, 24, 32, 40, 48, 64]),
+  'rhythmic-4': DEFAULT_SCALE,
   'rhythmic-8': Object.freeze([0, 8, 16, 24, 32, 40, 48, 64, 80, 96]),
   'product-material-8dp': Object.freeze([0, 4, 8, 12, 16, 24, 32, 40, 48, 56, 64, 72, 80]),
   'product-atlassian-8px': Object.freeze([0, 2, 4, 6, 8, 12, 16, 20, 24, 32, 40, 48, 64, 80]),
@@ -41,6 +43,8 @@ const CORE_SCALE_PRESETS = Object.freeze({
   'modular-augmented-fourth': Object.freeze(createModularScale({ base: 4, ratio: 1.41421356237, steps: 12 })),
   'modular-perfect-fourth': Object.freeze(createModularScale({ base: 4, ratio: 4 / 3, steps: 12 })),
   'modular-perfect-fifth': Object.freeze(createModularScale({ base: 4, ratio: 1.5, steps: 12 })),
+  // Tailwind's default spacing ladder on a 16px root: p-0.5 to p-96.
+  tailwind: TAILWIND_DEFAULT_SCALE,
 });
 
 const CORE_PRESET_ALIASES = Object.freeze({

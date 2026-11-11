@@ -11,16 +11,13 @@ const {
   pxOnScale,
   toPx,
 } = require('./length');
+const { TAILWIND_SCALE_NAME, TAILWIND_SPACING_UNIT_REM, tailwindSpacingLadder } = require('../presets/default-scale');
 
-// The ESLint rule's and the audit's default scale. It is not the `rhythmic-4`
-// preset (which continues to 40, 48, 64); unifying the defaults changes
-// reports, so it waits for a major (#246).
-const DEFAULT_SCALE = [0, 4, 8, 12, 16, 24, 32];
 const DEFAULT_UNITS = ['px', 'rem', 'em'];
 // Tailwind's numeric spacing utilities are multiples of one unit: `--spacing`
 // (0.25rem) in v4, and the same 0.25rem step in the v3 default scale. In px
 // that is a quarter of the root font size: 4px at 16px, 2.5px at 10px (#247).
-const SPACING_UNIT_REM = 0.25;
+const SPACING_UNIT_REM = TAILWIND_SPACING_UNIT_REM;
 
 const ARBITRARY_SPACING_CLASS = /^(?<utility>-?(?:m(?:[trblxy])?|p(?:[trblxy])?|gap(?:-[xy])?|space-[xy]|inset(?:-[xy])?|top|right|bottom|left|translate-[xy]|scroll-(?:m|p)(?:[trblxy])?))-\[(?<rawValue>[^\]]+)\]$/;
 
@@ -31,16 +28,22 @@ function normalizeTailwindClassOptions(option = {}) {
     option.baseFontSize > 0
       ? option.baseFontSize
       : 16;
+  const spacingUnit = option.spacingUnit === false
+    ? null
+    : typeof option.spacingUnit === 'number' && Number.isFinite(option.spacingUnit) && option.spacingUnit > 0
+      ? option.spacingUnit
+      : baseFontSize * SPACING_UNIT_REM;
+  // No `scale`: Tailwind's default ladder on the spacing unit, so a standard
+  // step such as p-5 (20px) is on the scale (cs-01). Before 3.20 the default
+  // was 0 to 32px.
+  const defaultScale = !Array.isArray(option.scale);
   return {
     allowHairlines: option.allowHairlines !== false,
     allowNegative: option.allowNegative !== false,
     baseFontSize,
-    scale: Array.isArray(option.scale) ? option.scale : DEFAULT_SCALE,
-    spacingUnit: option.spacingUnit === false
-      ? null
-      : typeof option.spacingUnit === 'number' && Number.isFinite(option.spacingUnit) && option.spacingUnit > 0
-        ? option.spacingUnit
-        : baseFontSize * SPACING_UNIT_REM,
+    scale: defaultScale ? tailwindSpacingLadder(spacingUnit || baseFontSize * SPACING_UNIT_REM) : option.scale,
+    scaleName: defaultScale ? TAILWIND_SCALE_NAME : null,
+    spacingUnit,
     units: Array.isArray(option.units)
       ? option.units.map((unit) => String(unit).toLowerCase())
       : DEFAULT_UNITS,
@@ -213,6 +216,9 @@ function analyzeClassToken(token, options, scalePx) {
   if (!nearest) {
     return null;
   }
+  // Past the top step the nearest step is not a fix: 64px snapped to a 32px
+  // top step halves the padding (cs-01). Reported, with no fix.
+  const beyondScale = pxValue > scalePx[scalePx.length - 1];
 
   const signedNearest = parsedLength.number < 0
     ? -Math.abs(nearest.nearest)
@@ -235,7 +241,7 @@ function analyzeClassToken(token, options, scalePx) {
   const fixedCandidate = utilityFix || parsedToken.candidate.replace(match.groups.rawValue, replacementValue);
 
   return {
-    fixedToken: wrap(fixedCandidate),
+    fixedToken: beyondScale ? null : wrap(fixedCandidate),
     nearest,
     // The utility classes for the two nearest steps, when both are quarter
     // steps of the spacing unit; messages name these instead of px values.
@@ -276,7 +282,14 @@ function createTailwindClassAnalyzer(option = {}) {
  * The message text for an off-scale class: the two nearest utility classes
  * with their px values when the unit makes them, the px steps otherwise.
  */
-function offScaleClassMessage(token, analysis) {
+function offScaleClassMessage(token, analysis, scaleName = null) {
+  const message = offScaleClassText(token, analysis);
+  // The ESLint rule names the scale it fell back to, so a reader knows the
+  // verdict is Tailwind's default ladder and not the project's tokens.
+  return scaleName && analysis.reason !== 'negative' ? `${message} Scale: ${scaleName}.` : message;
+}
+
+function offScaleClassText(token, analysis) {
   if (analysis.reason === 'negative') {
     return `Unexpected Tailwind arbitrary spacing value "${token}". Negative values are disabled for this rule.`;
   }

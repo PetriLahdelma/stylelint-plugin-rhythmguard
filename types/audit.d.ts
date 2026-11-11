@@ -220,7 +220,20 @@ export interface AuditScaleRejected {
   values: Array<number | string>;
 }
 
+export interface AuditClassStringScale {
+  /** "Tailwind default spacing". */
+  name: string;
+  source: 'tailwind-default';
+  values: number[];
+}
+
 export interface AuditScale {
+  /**
+   * Set when class strings are checked against another scale than the
+   * stylesheets: Tailwind's default ladder, when the stylesheet scale is the
+   * default or the fallback and template files were scanned.
+   */
+  classStrings?: AuditClassStringScale | null;
   /** Files the scale was derived from (token sources or scanned stylesheets). Empty for explicit, default and fallback. */
   files: string[];
   /** Present when `source` is "fallback" because an inferred scale failed the plausibility check. */
@@ -287,6 +300,8 @@ export interface AuditContractReport {
     decisions: AuditDecisionSummary | null;
     motion?: unknown;
     scale: {
+      /** The class-string scale when it differs from the stylesheet scale; null otherwise. */
+      classStrings: AuditClassStringScale | null;
       cleanliness?: unknown;
       files: string[];
       offScaleProperties?: Record<string, number>;
