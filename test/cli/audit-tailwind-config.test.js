@@ -42,19 +42,17 @@ test('--tailwind-config gives the --scale auto scale, with source "tailwind"', (
   assert.deepEqual(report.findings.css.filter((finding) => finding.type === 'off-scale').map((finding) => finding.value), ['16px']);
 });
 
-test('audit.tailwindConfigPath resolves from the rc file, and the config is never loaded unless configured', () => {
+test('a repository file never makes the audit run code: the rc cannot name a Tailwind config', () => {
+  const marker = path.join(os.tmpdir(), `rhythmguard-ran-${process.pid}-${Date.now()}`);
   const dir = project({
     '.rhythmguardrc.json': JSON.stringify({ audit: { scale: 'auto', tailwindConfigPath: './tailwind.config.js' } }),
-    'tailwind.config.js': CONFIG,
+    'tailwind.config.js': `require('node:fs').writeFileSync(${JSON.stringify(marker)}, 'ran'); module.exports = {};\n`,
     'src/a.css': '.a { margin: 20px; }\n',
   });
-  assert.equal(JSON.parse(audit(dir).stdout).contracts.scale.source, 'tailwind');
-
-  // Without the key the file is not run: a config that throws when loaded is never touched.
-  fs.writeFileSync(path.join(dir, 'tailwind.config.js'), "throw new Error('loaded');\n");
-  fs.writeFileSync(path.join(dir, '.rhythmguardrc.json'), JSON.stringify({ audit: { scale: 'auto' } }));
-  const report = JSON.parse(audit(dir).stdout);
-  assert.equal(report.contracts.scale.source, 'fallback');
+  const result = audit(dir);
+  assert.equal(fs.existsSync(marker), false, 'the Tailwind config was not loaded');
+  assert.match(result.stderr, /tailwindConfigPath/, 'the rc key is refused by name');
+  assert.notEqual(result.status, 0);
 });
 
 test('a Tailwind project with no tokens falls back to Tailwind\'s ladder, as configs/tailwind does', () => {

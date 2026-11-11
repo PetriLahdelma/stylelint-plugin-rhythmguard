@@ -136,15 +136,16 @@ function stylelintConfigFor({ nextjs = false, profile, scale, scss = false, tail
 
 /**
  * The `.rhythmguardrc.json` that makes a bare `npx rhythmguard audit .` use
- * the scale this run found (ai-01): `scale: "auto"` with the token files, or
- * the Tailwind config. Read by the audit and, for token sources, by the rules.
+ * the scale this run found (ai-01): `scale: "auto"` with the token files.
+ * Read by the audit and, for token sources, by the rules. It never names a
+ * Tailwind config: a file in the repository must not make the audit run code
+ * (only `--tailwind-config` on the command line does).
  */
-function rcFor({ tailwindConfig = null, tokenFiles = [] }) {
+function rcFor({ tokenFiles = [] }) {
   return {
     audit: {
       scale: 'auto',
       ...(tokenFiles.length > 0 ? { tokenSources: tokenFiles.map(toPosix) } : {}),
-      ...(tailwindConfig ? { tailwindConfigPath: toPosix(tailwindConfig) } : {}),
     },
   };
 }

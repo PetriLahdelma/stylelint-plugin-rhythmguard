@@ -57,6 +57,11 @@ function loadAuditConfig(parsed) {
   if (!audit || typeof audit !== 'object' || Array.isArray(audit)) {
     throw new Error(`Invalid Rhythmguard config ${parsed.configPath}: "audit" must be an object.`);
   }
+  // A file in the repository must never make the audit run code: a Tailwind
+  // config is loaded with require(), so only --tailwind-config names one.
+  if (audit.tailwindConfigPath !== undefined) {
+    throw new Error(`Invalid Rhythmguard config ${parsed.configPath}: audit.tailwindConfigPath is not read from a config file, because loading a Tailwind config runs it. Pass --tailwind-config on the command line.`);
+  }
 
   return {
     audit,
@@ -109,8 +114,6 @@ function applyAuditConfig(parsed, configResult) {
   applyConfigScalar(next, audit, cliOptions, 'tokenCandidateMinCount', 'tokenCandidateMinCount', parsePositiveInteger);
   applyConfigScalar(next, audit, cliOptions, 'tokenKind', 'tokenKind', normalizeTokenKind);
   applyConfigScalar(next, audit, cliOptions, 'baseFontSize', 'baseFontSize', parseBaseFontSize);
-  // Relative to the config file, like its token sources.
-  applyConfigScalar(next, audit, cliOptions, 'tailwindConfigPath', 'tailwindConfigPath', (value, key) => path.resolve(configResult.rootDir, parsePathOption(value, `audit.${key}`)));
   applyConfigScalar(next, audit, cliOptions, 'includeMotion', 'includeMotion', parseBooleanOption);
   applyConfigScalar(next, audit, cliOptions, 'includeNonAuthored', 'includeNonAuthored', parseBooleanOption);
   applyConfigScalar(next, audit, cliOptions, 'checkMathBounds', 'checkMathBounds', parseBooleanOption);
