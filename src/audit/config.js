@@ -109,6 +109,8 @@ function applyAuditConfig(parsed, configResult) {
   applyConfigScalar(next, audit, cliOptions, 'tokenCandidateMinCount', 'tokenCandidateMinCount', parsePositiveInteger);
   applyConfigScalar(next, audit, cliOptions, 'tokenKind', 'tokenKind', normalizeTokenKind);
   applyConfigScalar(next, audit, cliOptions, 'baseFontSize', 'baseFontSize', parseBaseFontSize);
+  // Relative to the config file, like its token sources.
+  applyConfigScalar(next, audit, cliOptions, 'tailwindConfigPath', 'tailwindConfigPath', (value, key) => path.resolve(configResult.rootDir, parsePathOption(value, `audit.${key}`)));
   applyConfigScalar(next, audit, cliOptions, 'includeMotion', 'includeMotion', parseBooleanOption);
   applyConfigScalar(next, audit, cliOptions, 'includeNonAuthored', 'includeNonAuthored', parseBooleanOption);
   applyConfigScalar(next, audit, cliOptions, 'checkMathBounds', 'checkMathBounds', parseBooleanOption);

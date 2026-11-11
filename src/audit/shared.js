@@ -91,6 +91,7 @@ function createDefaultAuditOptions() {
     since: null,
     sinceBaseline: false,
     staged: false,
+    tailwindConfigPath: null,
     tokenCandidateMinCount: DEFAULT_TOKEN_CANDIDATE_MIN_COUNT,
     tokenKind: 'spacing',
     tokenSourceFormat: 'auto',

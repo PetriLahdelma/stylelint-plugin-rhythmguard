@@ -1,5 +1,6 @@
 'use strict';
 
+const fs = require('node:fs');
 const path = require('node:path');
 
 const {
@@ -19,11 +20,32 @@ const {
 const { buildReport, collectTokenDefinitions } = require('./contract');
 const { DEFAULT_SCALE, formatPath } = require('./shared');
 const { TAILWIND_SCALE_NAME, TAILWIND_SPACING_UNIT_REM, tailwindSpacingLadder } = require('../presets/default-scale');
+
+const TAILWIND_CONFIG_FILES = ['tailwind.config.js', 'tailwind.config.cjs', 'tailwind.config.mjs', 'tailwind.config.ts'];
+
+/**
+ * Whether the project in `cwd` uses Tailwind: a `tailwindcss` or
+ * `@tailwindcss/*` dependency, or a Tailwind config file (found, not loaded).
+ * Its `--scale auto` fallback is then Tailwind's ladder, as in configs/tailwind.
+ */
+function isTailwindProject(cwd) {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(cwd, 'package.json'), 'utf8'));
+    const deps = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies, ...pkg.peerDependencies });
+    if (deps.some((name) => name === 'tailwindcss' || name.startsWith('@tailwindcss/'))) {
+      return true;
+    }
+  } catch {
+    // No readable package.json: decide by the config file alone.
+  }
+  return TAILWIND_CONFIG_FILES.some((file) => fs.existsSync(path.join(cwd, file)));
+}
 const {
   assessScale,
   discoverTokenPackages,
   inferScaleFromDefinitions,
   scaleFromDefinitions,
+  scaleFromTailwindConfig,
 } = require('../core/scale-inference');
 const { buildGroupScales } = require('../core/options');
 const { applyDecisions, buildDecisionPlan } = require('./decisions');
@@ -64,6 +86,12 @@ async function createAuditReport(options) {
     warnWhenEmpty: true,
   });
 
+  // A configured Tailwind config that does not exist is a configuration error,
+  // as a missing token source is (the CLI exits 2 on either).
+  if (parsed.tailwindConfigPath && !fs.existsSync(path.resolve(process.cwd(), parsed.tailwindConfigPath))) {
+    tokenSourceResult.warnings.push(`Tailwind config not found: ${parsed.tailwindConfigPath}`);
+  }
+
   // The spacing scale always reads spacing tokens; --token-kind shapes the token contract only (issue #260).
   const spacingSourceResult = parsed.tokenKind === 'spacing'
     ? tokenSourceResult
@@ -79,6 +107,7 @@ async function createAuditReport(options) {
     isNonAuthored: (file) => nonAuthored.has(file),
     readSource,
     requested: spacingOverride || parsed.scale,
+    tailwindConfigPath: parsed.tailwindConfigPath,
     tokenSourceResult: spacingSourceResult,
   });
 
@@ -260,7 +289,7 @@ function classStringScale(scale, templateFiles, baseFontSize) {
  * "auto": external token sources, then spacing custom properties across the scanned
  * CSS, then the default scale. First source that yields values wins.
  */
-function resolveAuditScale({ baseFontSize, cssFiles, isNonAuthored = () => false, readSource = readSourceFromDisk, requested, tokenSourceResult }) {
+function resolveAuditScale({ baseFontSize, cssFiles, isNonAuthored = () => false, readSource = readSourceFromDisk, requested, tailwindConfigPath = null, tokenSourceResult }) {
   if (Array.isArray(requested)) {
     return {
       files: [],
@@ -324,6 +353,14 @@ function resolveAuditScale({ baseFontSize, cssFiles, isNonAuthored = () => false
     }
   }
 
+  // A Tailwind v3 config, only when one is configured: loading it runs it (tf-06).
+  if (tailwindConfigPath) {
+    const values = scaleFromTailwindConfig(path.resolve(process.cwd(), tailwindConfigPath), baseFontSize);
+    if (values) {
+      return { files: [formatPath(path.resolve(process.cwd(), tailwindConfigPath))], source: 'tailwind', tokenCount: values.length - 1, values };
+    }
+  }
+
   const packageSources = discoverTokenPackages(process.cwd());
   if (packageSources.length > 0) {
     const parsedPackages = parseTokenSources({ baseFontSize, sources: packageSources, tokenKind: 'spacing' });
@@ -338,7 +375,16 @@ function resolveAuditScale({ baseFontSize, cssFiles, isNonAuthored = () => false
     }
   }
 
-  return { files: [], ...(rejected ? { rejected } : {}), source: 'fallback', tokenCount: 0, values: DEFAULT_SCALE };
+  // The fallback the rules use: configs/tailwind falls back to Tailwind's ladder, the rest to DEFAULT_SCALE.
+  const tailwind = isTailwindProject(process.cwd());
+  return {
+    files: [],
+    preset: tailwind ? 'tailwind' : 'rhythmic-4',
+    ...(rejected ? { rejected } : {}),
+    source: 'fallback',
+    tokenCount: 0,
+    values: tailwind ? tailwindSpacingLadder(baseFontSize * TAILWIND_SPACING_UNIT_REM) : DEFAULT_SCALE,
+  };
 }
 
 function normalizeCreateAuditOptions(rawOptions) {

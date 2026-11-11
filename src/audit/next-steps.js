@@ -51,13 +51,14 @@ function lintGlob(cwd, cssFiles) {
 }
 
 /** `npx rhythmguard audit <dir>` with the scale flags of the run it describes. */
-function auditCommand({ dir = '.', scale = null, tokenSources = [] } = {}) {
+function auditCommand({ dir = '.', scale = null, tailwindConfig = null, tokenSources = [] } = {}) {
   const scaleArg = Array.isArray(scale) ? scale.join(',') : scale;
   return [
     'npx rhythmguard audit',
     shellQuote(dir),
     ...(scaleArg ? [`--scale ${shellQuote(String(scaleArg))}`] : []),
     ...tokenSources.map((file) => `--token-source ${shellQuote(file)}`),
+    ...(tailwindConfig ? [`--tailwind-config ${shellQuote(tailwindConfig)}`] : []),
   ].join(' ');
 }
 
@@ -70,6 +71,7 @@ function auditCommandFromArgs(parsed) {
   return auditCommand({
     dir: parsed.dir || '.',
     scale: passed.has('scale') ? parsed.scale : null,
+    tailwindConfig: passed.has('tailwindConfigPath') ? parsed.tailwindConfigPath : null,
     tokenSources: passed.has('tokenSources') ? parsed.tokenSources.map((entry) => (typeof entry === 'string' ? entry : entry.path)) : [],
   });
 }

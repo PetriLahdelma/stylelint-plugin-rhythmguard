@@ -21,7 +21,7 @@ What it is not: it does not check colors or hex values, and the Stylelint rules 
 npx rhythmguard
 ```
 
-No install, no config. It detects your stack and token files, infers your spacing scale from your own tokens, audits the current directory, and prints the exact `.stylelintrc.json` (and ESLint snippet for Tailwind) to paste. This is the whole run on Bootstrap's `v6-dev` branch, unedited:
+No install, no config. It detects your stack and token files, infers your spacing scale from your own tokens, audits the current directory, and prints the exact `.stylelintrc.json` (and ESLint snippet for Tailwind) to paste, with the `.rhythmguardrc.json` that makes a bare `npx rhythmguard audit .` use the same scale. This is the whole run on Bootstrap's `v6-dev` branch, unedited:
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/petrilahdelma/stylelint-plugin-rhythmguard/main/assets/quickstart.gif?v=1" width="100%" alt="Terminal recording: npx stylelint-plugin-rhythmguard on Bootstrap v6-dev detects the stack, infers the 13-step spacing scale from scss/_config.scss, reports 20 off-scale values in CSS and prints a .stylelintrc.json to paste" />
@@ -103,7 +103,7 @@ npx rhythmguard audit ./src --format github
 
 The audit scans CSS declarations, Tailwind class strings and your token contract, prints a scale-cleanliness score, and supports baselines so legacy codebases can gate only new drift. Formats: text, Markdown, JSON 2.0, HTML, GitHub Actions annotations, and a shields.io badge document for your README. Full reference in [docs/AUDIT.md](docs/AUDIT.md), rollout recipe and the badge workflow in [docs/CI_ADOPTION.md](docs/CI_ADOPTION.md). In GitHub Actions, [`PetriLahdelma/rhythmguard-action@v1`](https://github.com/PetriLahdelma/rhythmguard-action) runs the audit, annotates the diff, comments on the pull request and fails on new drift in one step.
 
-`npx rhythmguard audit ./src --plan` turns the report into a proposed `decisions` section (adopt a value, allow it, or snap it), and `npx rhythmguard fix ./src --value 10px --to "var(--space-sm)" --write` executes one decision as one reviewable change; see [decisions](docs/AUDIT.md#decisions). `npx rhythmguard init` writes a starter config for your stack, and `init --agents all` installs the coding-agent instructions. `npx rhythmguard doctor` checks the setup.
+`npx rhythmguard audit ./src --plan` turns the report into a proposed `decisions` section (adopt a value, allow it, or snap it), and `npx rhythmguard fix ./src --value 10px --to "var(--space-sm)" --write` executes one decision as one reviewable change; see [decisions](docs/AUDIT.md#decisions). `npx rhythmguard init` writes the config the quickstart prints, showing a diff before it replaces one, and `init --agents all` installs the coding-agent instructions. `npx rhythmguard doctor` checks the setup.
 
 ## Guides
 
