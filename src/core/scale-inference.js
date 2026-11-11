@@ -151,11 +151,11 @@ function pxValuesFromKeys(keys, baseFontSize) {
  * do not normalise (a bad format, no path) are skipped with a warning; they
  * never throw out of a lint.
  */
-function parseSourcesCached(sources, baseFontSize) {
+function parseSourcesCached(sources, baseFontSize, cwd = process.cwd()) {
   const normalized = [];
   const warnings = [];
   for (const entry of sources) {
-    const { error, source } = normalizeTokenSourceEntry(entry, process.cwd());
+    const { error, source } = normalizeTokenSourceEntry(entry, cwd);
     if (error) {
       warnings.push(error);
     } else {
@@ -185,14 +185,15 @@ function parseSourcesCached(sources, baseFontSize) {
  * spacing names, unless a source sets its own. Fixes and scale inference read
  * the same tokens through this (issue #296).
  */
-function parseSourcesWithPattern(sources, baseFontSize, tokenPattern = null) {
-  const plain = parseSourcesCached(sources, baseFontSize);
+function parseSourcesWithPattern(sources, baseFontSize, tokenPattern = null, cwd = process.cwd()) {
+  const plain = parseSourcesCached(sources, baseFontSize, cwd);
   if (!tokenPattern || !plain) {
     return plain;
   }
   const withPattern = parseSourcesCached(
     sources.map((source) => (typeof source === 'string' ? { path: source, tokenPattern } : { tokenPattern, ...source })),
     baseFontSize,
+    cwd,
   );
   const definitions = new Map(plain.definitions);
   for (const [token, definition] of withPattern ? withPattern.definitions : []) {
@@ -209,8 +210,8 @@ function parseSourcesWithPattern(sources, baseFontSize, tokenPattern = null) {
  * that are missing or do not parse go into `warnings` either way, so a
  * fallback can say which source failed (issue #270).
  */
-function scaleFromSources(sources, baseFontSize, warnings = [], tokenPattern = null) {
-  const parsed = parseSourcesWithPattern(sources, baseFontSize, tokenPattern);
+function scaleFromSources(sources, baseFontSize, warnings = [], tokenPattern = null, cwd = process.cwd()) {
+  const parsed = parseSourcesWithPattern(sources, baseFontSize, tokenPattern, cwd);
   if (!parsed) {
     return null;
   }
@@ -451,9 +452,12 @@ function scaleFromTokenMap(map, baseFontSize, extraKeys = []) {
  * token sources, the linted stylesheet, `tailwindConfigPath`, installed token
  * packages, the fallback preset. `sourceTokenPattern` is the rule's own
  * explicit `tokenPattern`, applied to the token files as fixes apply it.
+ * `cwd` is the project directory that relative `scaleSources`, the rc file
+ * and installed token packages are read from; the rules leave it to default.
  */
 function resolveAutoScale({
   baseFontSize = 16,
+  cwd = process.cwd(),
   fallbackPreset = FALLBACK_PRESET,
   root,
   scaleSources = [],
@@ -463,14 +467,14 @@ function resolveAutoScale({
 } = {}) {
   // Warnings from every source tried, for the fallback note when none yields a scale.
   const warnings = [];
-  const fromOption = scaleFromSources(scaleSources, baseFontSize, warnings, sourceTokenPattern);
+  const fromOption = scaleFromSources(scaleSources, baseFontSize, warnings, sourceTokenPattern, cwd);
   if (fromOption) {
     return { source: 'scaleSources', ...fromOption };
   }
 
-  const rc = rcTokenSources(process.cwd());
+  const rc = rcTokenSources(cwd);
   warnings.push(...rc.warnings);
-  const fromRc = scaleFromSources(rc.sources, baseFontSize, warnings, sourceTokenPattern);
+  const fromRc = scaleFromSources(rc.sources, baseFontSize, warnings, sourceTokenPattern, cwd);
   if (fromRc) {
     return { source: 'rhythmguardrc', ...fromRc };
   }
@@ -501,7 +505,7 @@ function resolveAutoScale({
     }
   }
 
-  const fromPackages = scaleFromSources(discoverTokenPackages(process.cwd()), baseFontSize, warnings, sourceTokenPattern);
+  const fromPackages = scaleFromSources(discoverTokenPackages(cwd), baseFontSize, warnings, sourceTokenPattern, cwd);
   if (fromPackages) {
     return { source: 'token-package', ...fromPackages };
   }

@@ -21,6 +21,9 @@
       "stylelint-plugin-rhythmguard/audit": [
         "./types/audit.d.ts"
       ],
+      "stylelint-plugin-rhythmguard/cli": [
+        "./types/cli.d.ts"
+      ],
       "stylelint-plugin-rhythmguard/eslint": [
         "./types/eslint.d.ts"
       ],

@@ -60,7 +60,26 @@ function main() {
   }
 }
 
-module.exports = { HELP, main };
+/**
+ * The doctor's checks as a function: `runDoctor({ cwd })` resolves to typed
+ * checks instead of printing them (cq-11). Loaded on first call, so the CLI
+ * does not pay for it on other commands.
+ */
+function runDoctor(options) {
+  return require('./doctor').runDoctor(options);
+}
+
+/** The text `rhythmguard doctor` prints for a runDoctor result. */
+function formatDoctorReport(result) {
+  return require('./doctor').formatDoctorReport(result);
+}
+
+/** A short summary of a runDoctor result (or its checks) for another command to print. */
+function doctorSummary(resultOrChecks) {
+  return require('./doctor').doctorSummary(resultOrChecks);
+}
+
+module.exports = { HELP, doctorSummary, formatDoctorReport, main, runDoctor };
 
 if (require.main === module) {
   main();
