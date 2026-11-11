@@ -12,6 +12,8 @@ import type {
   ScalePresetMetadata,
 } from 'stylelint-plugin-rhythmguard';
 import { createAuditReport, toAuditContractReport } from 'stylelint-plugin-rhythmguard/audit';
+import { doctorSummary, formatDoctorReport, runDoctor } from 'stylelint-plugin-rhythmguard/cli';
+import type { DoctorCheck, DoctorResult } from 'stylelint-plugin-rhythmguard/cli';
 import eslintPlugin from 'stylelint-plugin-rhythmguard/eslint';
 import { getScalePreset, listScalePresetNames } from 'stylelint-plugin-rhythmguard/presets';
 import recommended from 'stylelint-plugin-rhythmguard/configs/recommended';
@@ -83,6 +85,20 @@ async function runAudit(): Promise<AuditContractReport> {
   return toAuditContractReport(report);
 }
 
+// The doctor as a function (cq-11): typed checks, a printable report, a summary for quickstart.
+async function runDoctorChecks(): Promise<string> {
+  const result: DoctorResult = await runDoctor({ cwd: '.' });
+  const failed: DoctorCheck[] = result.checks.filter((check) => check.status === 'fail');
+  const scaleValues: number[] | undefined = result.scale?.values;
+  const eslintSource: string | undefined = result.eslintScale?.source;
+  const setup: 'stylelint' | 'eslint-only' = result.setup;
+  void failed;
+  void scaleValues;
+  void eslintSource;
+  void setup;
+  return `${formatDoctorReport(result)}${doctorSummary(result)}${doctorSummary(result.checks)}`;
+}
+
 void pluginConfigs;
 void ruleOptions;
 void autoScaleOptions;
@@ -97,3 +113,4 @@ void presetsAgain;
 void eslintRule;
 void eslintRuleAgain;
 void runAudit;
+void runDoctorChecks;
