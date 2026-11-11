@@ -8,6 +8,7 @@ const {
   getNormalizedValueKeys,
   hasLineComments,
 } = require('../core/token-sources');
+const { findDeclarationProperty } = require('./scan/stylesheets');
 const { formatPath } = require('./shared');
 
 function collectTokenContract({
@@ -54,7 +55,10 @@ function collectTokenContract({
   }
 
   for (const finding of cssFindings) {
-    addRawValue(rawValues, rawValueLocations, finding.value, finding);
+    // A missing-token finding's value is a token name, not a raw value.
+    if (finding.type !== 'missing-token') {
+      addRawValue(rawValues, rawValueLocations, finding.value, finding);
+    }
   }
 
   for (const finding of tailwindFindings) {
@@ -124,6 +128,78 @@ function collectTokenUses(source, file, uses, matchesKind) {
     entry.files.add(file);
     uses.set(token, entry);
   }
+}
+
+const MISSING_TOKEN_RULE = 'rhythmguard/missing-token';
+
+/**
+ * One finding per `var()` of a missing token: a token the scanned
+ * stylesheets use and nothing defines. `missingTokens` is the token
+ * contract's list; a token an installed token package or a token source of
+ * another kind defines (`knownTokens`) is not missing. Comments are blanked
+ * first, so a commented-out declaration is not a finding.
+ */
+function collectMissingTokenFindings({
+  cssFiles,
+  knownTokens = new Set(),
+  missingTokens,
+  readSource = (filePath) => fs.readFileSync(filePath, 'utf8'),
+  tokenKind,
+}) {
+  const missing = new Set(missingTokens
+    .map(({ token }) => token)
+    .filter((token) => !knownTokens.has(token)));
+  if (missing.size === 0) {
+    return [];
+  }
+
+  const matchesKind = createTokenKindMatcher(tokenKind);
+  const findings = [];
+  for (const filePath of cssFiles) {
+    let source;
+    try {
+      source = readSource(filePath);
+    } catch {
+      continue;
+    }
+    const file = formatPath(filePath);
+    const text = blankComments(source, hasLineComments(file));
+    const varPattern = /var\(\s*(--[\w-]+)/g;
+    let match;
+    while ((match = varPattern.exec(text)) !== null) {
+      const token = match[1];
+      if (!missing.has(token) || !matchesKind(token)) {
+        continue;
+      }
+      const { column, line } = offsetToPosition(text, match.index);
+      findings.push({
+        column,
+        file,
+        line,
+        property: findDeclarationProperty(source, line, column),
+        rule: MISSING_TOKEN_RULE,
+        text: `Token "${token}" is used but not defined in any scanned stylesheet, token source or installed token package.`,
+        type: 'missing-token',
+        value: token,
+      });
+    }
+  }
+  return findings;
+}
+
+/** The source with block comments, and `//` line comments where the syntax has them, replaced by spaces of the same length. */
+function blankComments(source, lineComments) {
+  const blank = (match) => match.replace(/[^\n]/g, ' ');
+  const blocked = source.replace(/\/\*[\s\S]*?\*\//g, blank);
+  // `//` after a colon is a URL (`https://`), not a comment.
+  return lineComments ? blocked.replace(/(^|[^:])\/\/[^\n]*/g, (match, lead) => `${lead}${blank(match.slice(lead.length))}`) : blocked;
+}
+
+/** 1-based line and column of a character offset. */
+function offsetToPosition(text, offset) {
+  const before = text.slice(0, offset);
+  const line = before.split('\n').length;
+  return { column: offset - before.lastIndexOf('\n'), line };
 }
 
 function addRawValue(rawValues, rawValueLocations, value, finding) {
@@ -235,11 +311,13 @@ function buildReport({
   dir,
   externalTokenDefinitions,
   includeMotion,
+  knownTokens = new Set(),
   linksOutsideRoot = [],
   motionFindings,
   nonAuthoredFiles = [],
   parseErrorFindings = [],
   readSource,
+  reportMissingTokens = false,
   scale,
   scanScope,
   scssFiles = 0,
@@ -252,7 +330,36 @@ function buildReport({
   tokenKind,
   tokenSourceReports,
   tokenSourceWarnings,
+  unauditedFiles = new Set(),
 }) {
+  const tokenContract = collectTokenContract({
+    baseFontSize,
+    cssFiles,
+    cssFindings,
+    externalTokenDefinitions,
+    minCandidateCount: tokenCandidateMinCount,
+    readSource,
+    tailwindFindings,
+    tokenKind,
+    tokenSourceReports,
+  });
+
+  // With --report-missing-tokens, each var() of a token that no scanned
+  // stylesheet, token source or installed token package defines is a finding
+  // (ai-03). Off by default in 3.x, so the default findings do not grow.
+  if (reportMissingTokens) {
+    cssFindings = [
+      ...cssFindings,
+      ...collectMissingTokenFindings({
+        cssFiles: cssFiles.filter((file) => !unauditedFiles.has(file)),
+        knownTokens,
+        missingTokens: tokenContract.missingTokens,
+        readSource,
+        tokenKind,
+      }),
+    ];
+  }
+
   const offScaleValues = countByValue(cssFindings
     .filter((finding) => finding.type === 'off-scale' && finding.value)
     .map((finding) => finding.value));
@@ -289,17 +396,6 @@ function buildReport({
     parseErrorFiles: countFiles(parseErrorFindings),
     totalFiles,
   }));
-  const tokenContract = collectTokenContract({
-    baseFontSize,
-    cssFiles,
-    cssFindings,
-    externalTokenDefinitions,
-    minCandidateCount: tokenCandidateMinCount,
-    readSource,
-    tailwindFindings,
-    tokenKind,
-    tokenSourceReports,
-  });
 
   return {
     config,
@@ -535,7 +631,9 @@ module.exports = {
   AUDIT_JSON_SCHEMA,
   addRawValue,
   buildReport,
+  MISSING_TOKEN_RULE,
   collectConflictingTokens,
+  collectMissingTokenFindings,
   collectRawValueMatches,
   collectTokenContract,
   collectTokenDefinitions,

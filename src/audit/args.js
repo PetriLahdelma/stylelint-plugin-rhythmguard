@@ -46,8 +46,10 @@ const OPTIONS = [
     apply: (p, raw) => { p.writeBaseline = true; setFrom(p, 'writeBaseline'); if (raw !== undefined) { p.baselinePath = parsePathOption(raw, '--write-baseline'); setFrom(p, 'baselinePath'); } } },
   { flag: '--since-baseline', kind: 'optional', value: '[file]', help: 'Compare current findings against a baseline',
     apply: (p, raw) => { p.sinceBaseline = true; setFrom(p, 'sinceBaseline'); if (raw !== undefined) { p.baselinePath = parsePathOption(raw, '--since-baseline'); setFrom(p, 'baselinePath'); } } },
-  { flag: '--fail-on-new-drift', kind: 'flag', help: 'Exit 1 when --since-baseline finds new drift',
+  { flag: '--fail-on-new-drift', kind: 'flag', help: ['Exit 1 when --since-baseline finds new drift: off-scale, class-string,', 'motion and missing-token findings, not token debt'],
     apply: (p) => { p.failOnNewDrift = true; setFrom(p, 'failOnNewDrift'); } },
+  { flag: '--fail-on-new-token-debt', kind: 'flag', help: ['Exit 1 when --since-baseline finds new token debt: raw values', 'prefer-token says a token could replace'],
+    apply: (p) => { p.failOnNewTokenDebt = true; setFrom(p, 'failOnNewTokenDebt'); } },
   { flag: '--max-findings', kind: 'value', value: '<number>', help: 'Exit 1 when total findings exceed this count',
     apply: (p, raw) => { p.maxFindings = parseNonNegativeInteger(raw, '--max-findings'); setFrom(p, 'maxFindings'); } },
   { flag: '--min-cleanliness', kind: 'value', value: '<percent>', help: 'Exit 1 when scale cleanliness is lower than this percent',
@@ -57,6 +59,8 @@ const OPTIONS = [
   { flag: '--staged', kind: 'flag', help: 'Scan only staged files', apply: (p) => { p.staged = true; setFrom(p, 'staged'); } },
   { flag: '--check-math-bounds', kind: 'flag', help: 'Check clamp() minimum and maximum and min()/max() arguments against the scale',
     apply: (p) => { p.checkMathBounds = true; setFrom(p, 'checkMathBounds'); } },
+  { flag: '--report-missing-tokens', kind: 'flag', help: ['Report each var() of a token nothing defines as a missing-token', 'finding (counted in totals, baselines and --fail-on-new-drift)'],
+    apply: (p) => { p.reportMissingTokens = true; setFrom(p, 'reportMissingTokens'); } },
   { flag: '--include-motion', kind: 'flag', help: 'Include opt-in motion duration/easing drift',
     apply: (p) => { p.includeMotion = true; setFrom(p, 'includeMotion'); } },
   { flag: '--include-non-authored', kind: 'flag', help: ['Audit vendored, test, generated, minified and built stylesheets', '(skipped by default: vendor/, tests/, generated/, *.min.css, one-line CSS over 5 KB)'],
@@ -80,9 +84,9 @@ const OPTIONS = [
 
 const HELP_COLUMN = 33;
 
-function renderHelp() {
-  const lines = ['Usage: rhythmguard audit <dir> [options]', '', 'Options:'];
-  for (const option of OPTIONS) {
+function renderOptionLines(options) {
+  const lines = [];
+  for (const option of options) {
     const label = `  ${option.flag}${option.value ? ` ${option.value}` : ''}`;
     const help = Array.isArray(option.help) ? option.help : [option.help];
     lines.push(`${label.padEnd(HELP_COLUMN)}${label.length >= HELP_COLUMN ? ' ' : ''}${help[0]}`);
@@ -90,6 +94,11 @@ function renderHelp() {
       lines.push(`${''.padEnd(HELP_COLUMN)}${extra}`);
     }
   }
+  return lines;
+}
+
+function renderHelp() {
+  const lines = ['Usage: rhythmguard audit <dir> [options]', '', 'Options:', ...renderOptionLines(OPTIONS)];
   lines.push(
     '',
     'Scans .css files, and .scss files when postcss-scss is installed. Reports drift by',
@@ -102,12 +111,18 @@ function renderHelp() {
 
 const HELP = renderHelp();
 
-function findOption(arg) {
-  return OPTIONS.find((option) => option.flag === arg || option.alias === arg) || null;
+function findOptionIn(arg, options = OPTIONS) {
+  return options.find((option) => option.flag === arg || option.alias === arg) || null;
 }
 
-function parseArgs(argv) {
+/**
+ * Parse audit arguments. `options` narrows the accepted flags to a subset of
+ * OPTIONS, for a command such as `rhythmguard scale` that resolves the scale
+ * the way the audit does and takes the audit's flags for it.
+ */
+function parseArgs(argv, options = OPTIONS) {
   const parsed = createDefaultAuditOptions();
+  const findOption = (arg) => findOptionIn(arg, options);
 
   for (let index = 0; index < argv.length; index++) {
     const arg = argv[index];
@@ -155,6 +170,10 @@ function parseArgs(argv) {
 
   if (parsed.failOnNewDrift && !parsed.sinceBaseline) {
     throw new Error('--fail-on-new-drift requires --since-baseline.');
+  }
+
+  if (parsed.failOnNewTokenDebt && !parsed.sinceBaseline) {
+    throw new Error('--fail-on-new-token-debt requires --since-baseline.');
   }
 
   return parsed;
@@ -301,6 +320,7 @@ function parseBaseFontSize(raw) {
 module.exports = {
   OPTIONS,
   HELP,
+  renderOptionLines,
   parseArgs,
   parseBaseFontSize,
   parseIgnorePatterns,

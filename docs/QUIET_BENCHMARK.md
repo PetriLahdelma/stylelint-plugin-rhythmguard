@@ -56,8 +56,8 @@ Findings classified as `drift` are, by construction, the values the tool would a
 | [patternfly](https://github.com/patternfly/patternfly.git) | `b62f051` | 200 | 0 | 10 | 0 | 10 | 0 | 100% | 18 | scanned-css (50 tokens) |
 | [penpot](https://github.com/penpot/penpot.git) | `00e0492` | 294 | 31 | 17 | 17 | 0 | 0 | 0% | 43 | fallback (no spacing tokens found) |
 | [pico](https://github.com/picocss/pico.git) | `1039a47` | 54 | 1 | 7 | 7 | 0 | 0 | 0% | 23 | fallback (no spacing tokens found) |
-| [primer-css](https://github.com/primer/css.git) | `72564a3` | 113 | 0 | 69 | 69 | 0 | 0 | 0% | 116 | installed @primer/primitives@11.10.0 (19 tokens) |
-| [primer-react](https://github.com/primer/react.git) | `dc8387f` | 204 | 442 | 11 | 11 | 0 | 0 | 0% | 33 | installed @primer/primitives@11.10.0 (19 tokens) |
+| [primer-css](https://github.com/primer/css.git) | `72564a3` | 113 | 0 | 69 | 69 | 0 | 0 | 0% | 114 | installed @primer/primitives@11.10.0 (19 tokens) |
+| [primer-react](https://github.com/primer/react.git) | `dc8387f` | 204 | 442 | 11 | 11 | 0 | 0 | 0% | 32 | installed @primer/primitives@11.10.0 (19 tokens) |
 | [pure](https://github.com/pure-css/pure.git) | `d35fb6f` | 16 | 14 | 27 | 27 | 0 | 0 | 0% | 88 | fallback (no spacing tokens found) |
 | [radix-themes](https://github.com/radix-ui/themes.git) | `1faff10` | 150 | 149 | 7 | 7 | 0 | 0 | 0% | 19 | scanned-css (9 tokens) |
 | [salesforce-lightning](https://github.com/salesforce-ux/design-system.git) | `9bc6a40` | 441 | 558 | 52 | 52 | 0 | 0 | 0% | 69 | fallback (no spacing tokens found) |

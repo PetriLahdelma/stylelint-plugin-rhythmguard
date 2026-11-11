@@ -3,7 +3,7 @@
 const { sortCountMap } = require('./contract');
 const { auditCommand } = require('./next-steps');
 const { nothingAudited, nothingAuditedReasons } = require('./render-text');
-const { escapeMarkdown, markdownCode, tableCode } = require('./render-utils');
+const { escapeMarkdown, markdownCode, newFindingsPhrase, tableCode } = require('./render-utils');
 
 function describeScaleSource(scale) {
   if (scale.rejected) {
@@ -24,7 +24,7 @@ function renderMarkdown(report, options = {}) {
   const lines = [
     '# Rhythmguard Design-System Audit',
     '',
-    ...(report.baseline ? [`**Since baseline:** ${report.baseline.resolvedFindingsCount} resolved, ${report.baseline.newFindingsCount} new.`, ''] : []),
+    ...(report.baseline ? [`**Since baseline:** ${report.baseline.resolvedFindingsCount} resolved, ${newFindingsPhrase(report.baseline)}.`, ''] : []),
     `Directory: ${markdownCode(report.directory)}`,
     '',
   ];

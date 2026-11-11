@@ -32,6 +32,15 @@ test('with a baseline only new findings are annotated, as errors', () => {
   assert.equal(out.length, 2, 'no cap notice when nothing was left out');
 });
 
+test('with a baseline new token debt is a warning and the summary splits it from drift (dx-08)', () => {
+  const all = report(3);
+  const debt = { column: 3, file: 'src/f1.css', line: 2, rule: 'rhythmguard/prefer-token', text: 'Unexpected raw scale value "12px". Use var(--space-3) (tokens/tokens.json).', type: 'token-opportunity' };
+  const drift = { ...all.findings.css[0], type: 'off-scale' };
+  const out = lines(renderGithub({ ...all, baseline: { newDriftCount: 1, newFindings: [drift, debt], newFindingsCount: 2, newTokenDebtCount: 1, resolvedFindingsCount: 0 } }));
+  assert.match(out[0], /Since baseline: 0 resolved, 2 new \(1 drift, 1 token debt\)\./);
+  assert.deepEqual(out.filter((line) => /^::(error|warning)/.test(line)).map((line) => line.split(' ')[0]), ['::error', '::warning']);
+});
+
 test('200,000 findings render without overflowing the stack', () => {
   const out = lines(renderGithub(report(200000)));
   assert.equal(out.length, 1 + ANNOTATIONS_PER_TYPE + 1);

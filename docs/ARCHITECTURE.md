@@ -67,7 +67,7 @@ A Stylelint rule in this repository is an assembly of primitives, not a copy of 
 
 `use-scale` is the reference implementation. A fifth rule should read like it. If a fifth rule needs something two existing rules already do in slightly different ways, the fix is a new primitive in core, not a third variant.
 
-Messages are part of the public contract. They name the value, the two nearest steps and, once per file, why the scale came from a preset. The audit parses them back into findings, so a message change is a breaking change for the audit's finding types and must be made in both places.
+Messages are part of the public contract. They name the value, the two nearest steps and, once per file, why the scale came from a preset. The audit parses them back into findings (`FINDING_PATTERNS` in `src/audit/scan/stylesheets.js`), so a message change is a breaking change for the audit's finding types and must be made in both places. `test/contracts/finding-messages.test.js` calls every template of every rule and fails until each shape is parsed or listed as deliberately unclassified; a warning the audit cannot read becomes a finding of type `unclassified`, never an off-scale value of null.
 
 ## The audit
 

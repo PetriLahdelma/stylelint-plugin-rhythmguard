@@ -93,6 +93,12 @@ async function runStylelintAudit(cssFiles, options) {
         severity: 'warning',
         tokenMapFromCssCustomProperties: true,
         tokenPattern: DEFAULT_AUDIT_TOKEN_PATTERN,
+        // The token definitions the audit resolved (token sources and the
+        // stylesheets that declare tokens), so the message names the token
+        // and its file instead of "No known token holds this value" (dx-08).
+        ...(Array.isArray(options.tokenScaleSources) && options.tokenScaleSources.length > 0
+          ? { scaleSources: options.tokenScaleSources }
+          : {}),
       },
     ],
   };
@@ -211,18 +217,7 @@ function collectCssFindings(fileResults, readSource) {
         continue;
       }
       const source = readSourceOnce(sources, fileResult.source, readSource);
-      const offScaleMatch = text.match(
-        /Unexpected (?:off-scale (?:value|(?:clamp|min|max)\(\) (?:minimum|maximum|argument))|transform translation value) "([^"]+)"/,
-      );
-      const tokenMatch = text.match(
-        /Unexpected raw (?:scale value|(?:clamp|min|max)\(\) (?:minimum|maximum|argument)) "([^"]+)"/,
-      );
-      const motionDurationMatch = text.match(
-        /Unexpected (?:motion duration|negative motion duration) "([^"]+)"/,
-      );
-      const motionEasingMatch = text.match(
-        /Unexpected raw motion easing "([^"]+)"/,
-      );
+      const { type, value } = classifyCssWarningText(text);
 
       findings.push({
         column: warning.column || 1,
@@ -233,13 +228,8 @@ function collectCssFindings(fileResults, readSource) {
           : findDeclarationProperty(source, warning.line || 1, warning.column || 1),
         rule: warning.rule || 'rhythmguard',
         text,
-        type: getCssFindingType({ motionDurationMatch, motionEasingMatch, tokenMatch }),
-        value: getCssFindingValue({
-          motionDurationMatch,
-          motionEasingMatch,
-          offScaleMatch,
-          tokenMatch,
-        }),
+        type,
+        value,
       });
     }
   }
@@ -316,48 +306,50 @@ function positionToOffset(source, line, column) {
   return offset + Math.min(Math.max((column || 1) - 1, 0), lineLength);
 }
 
-function getCssFindingValue({
-  motionDurationMatch,
-  motionEasingMatch,
-  offScaleMatch,
-  tokenMatch,
-}) {
-  if (tokenMatch) {
-    return tokenMatch[1];
-  }
+/**
+ * The message shapes the audit reads back into findings, each with the type
+ * it becomes. Stylelint reports positions and text, not structured data, so
+ * these follow the message templates in src/rules; the contract test
+ * test/contracts/finding-messages.test.js calls every template and checks
+ * that each one is parsed here or listed there as deliberately unclassified.
+ */
+const FINDING_PATTERNS = Object.freeze([
+  ['motion-duration', /Unexpected (?:motion duration|negative motion duration) "([^"]+)"/],
+  ['motion-easing', /Unexpected raw motion easing "([^"]+)"/],
+  ['token-opportunity', /Unexpected raw (?:scale value|(?:clamp|min|max)\(\) (?:minimum|maximum|argument)) "([^"]+)"/],
+  // Followed by the advice, so a forbidden negative or percentage, which names no scale step, is not read as off-scale.
+  ['off-scale', /Unexpected (?:off-scale|transform translation) (?:value|(?:clamp|min|max)\(\) (?:minimum|maximum|argument)) "([^"]+)"(?: \([^)]*\))?\. Use /],
+]);
 
-  if (offScaleMatch) {
-    return offScaleMatch[1];
+/**
+ * The finding type and value of one Stylelint warning. A message none of the
+ * patterns reads (a root-level configuration report, or a template the audit
+ * does not know) is `unclassified` with no value: it is still a finding, but
+ * it is not counted as an off-scale value it may not be (cq-02).
+ */
+function classifyCssWarningText(text) {
+  for (const [type, pattern] of FINDING_PATTERNS) {
+    const match = String(text || '').match(pattern);
+    if (match) {
+      return { type, value: match[1] };
+    }
   }
-
-  if (motionDurationMatch) {
-    return motionDurationMatch[1];
-  }
-
-  if (motionEasingMatch) {
-    return motionEasingMatch[1];
-  }
-
-  return null;
+  return { type: 'unclassified', value: null };
 }
 
-function getCssFindingType({ motionDurationMatch, motionEasingMatch, tokenMatch }) {
-  if (motionDurationMatch) {
-    return 'motion-duration';
-  }
+/** The finding type of a warning's text (see classifyCssWarningText). */
+function getCssFindingType(text) {
+  return classifyCssWarningText(text).type;
+}
 
-  if (motionEasingMatch) {
-    return 'motion-easing';
-  }
-
-  if (tokenMatch) {
-    return 'token-opportunity';
-  }
-
-  return 'off-scale';
+/** The value a warning's text names, or null (see classifyCssWarningText). */
+function getCssFindingValue(text) {
+  return classifyCssWarningText(text).value;
 }
 
 module.exports = {
+  FINDING_PATTERNS,
+  classifyCssWarningText,
   collectCssFindings,
   findDeclarationProperty,
   getCssFindingType,
