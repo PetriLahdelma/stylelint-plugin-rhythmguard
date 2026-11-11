@@ -84,7 +84,7 @@ function varFallbackNodes(node) {
  * Walk value nodes for a length rule. `walkNode` returns true to skip a
  * function's children, or WALK_TOKEN_FALLBACK to walk only the fallback of a
  * var(). Nodes inside a fallback carry `tokenFallbackOf`, the names of the
- * var()s they fall back from, outermost first.
+ * var()s they fall back from, outermost first, whether the name is a token or not.
  */
 function createNodeWalker(walkNode, rootFunctionName = null) {
   const walkNodes = (nodes, parentFunction, firstArgIndex = 1, tokenFallbackOf = []) => {
@@ -106,7 +106,9 @@ function createNodeWalker(walkNode, rootFunctionName = null) {
         const fnName = node.value.toLowerCase();
         const skipChildren = walkNode(node, context);
 
-        if (skipChildren === WALK_TOKEN_FALLBACK) {
+        // Any var() falls back from its name, a token or not: its fallback
+        // nodes carry that name, so no fix writes a token there (fix-02).
+        if (skipChildren === WALK_TOKEN_FALLBACK || (!skipChildren && fnName === 'var')) {
           walkNodes(varFallbackNodes(node), { name: fnName }, 2, [...tokenFallbackOf, varName(node)]);
           continue;
         }

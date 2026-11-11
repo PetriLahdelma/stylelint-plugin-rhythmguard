@@ -9,6 +9,8 @@ const { buildEffectiveTokenMap } = require('./token-map');
 const {
   addDefinition,
   collectScssTokens,
+  conditionsOfNode,
+  scopeOfNode,
   createTokenKindMatcher,
   parseTokenSources,
   parseTokenValueLength,
@@ -309,24 +311,6 @@ function scaleWithBase({ baseFontSize, baseKeys, conditionalKeys, keys }) {
   return expandTailwindBase(plain, conditionalKeys, baseFontSize);
 }
 
-/** The scope of a declaration node: the AST-side twin of customPropertyDeclarations. */
-function scopeOfNode(decl) {
-  for (let node = decl.parent; node; node = node.parent) {
-    if (node.type === 'rule') {
-      return String(node.selector).split(',').every((selector) => ROOT_SELECTOR.test(selector.trim())) ? 'root' : 'component';
-    }
-    if (node.type === 'atrule') {
-      const name = String(node.name).toLowerCase();
-      if (name === 'theme') return 'root';
-      if (!TRANSPARENT_AT_RULES.has(name)) return 'component';
-    }
-  }
-  return 'root';
-}
-
-const ROOT_SELECTOR = /^(?::root|html|:host|:(?:where|is)\(\s*(?::root|html)\s*\))$/i;
-const TRANSPARENT_AT_RULES = new Set(['media', 'supports', 'layer', 'container', 'scope', 'document']);
-
 /** Token definitions declared in the linted stylesheet itself: custom properties with their scope, plus Sass variables and maps. */
 function stylesheetDefinitions(root, tokenRegex, baseFontSize) {
   const definitions = new Map();
@@ -339,7 +323,8 @@ function stylesheetDefinitions(root, tokenRegex, baseFontSize) {
     if (!parsed || parsed.number === 0) {
       return;
     }
-    addDefinition(definitions, { baseFontSize, file: 'stylesheet', scope: scopeOfNode(decl), source: 'stylesheet', token: decl.prop, value: decl.value });
+    // A component token is in scope only inside its own block (fix-02).
+    addDefinition(definitions, { anchor: decl.parent, baseFontSize, conditions: conditionsOfNode(decl), file: 'stylesheet', scope: scopeOfNode(decl), source: 'stylesheet', token: decl.prop, value: decl.value });
   });
   for (const sassToken of sassTokensFromRoot(root)) {
     addDefinition(definitions, { baseFontSize, file: 'stylesheet', scope: 'root', source: 'stylesheet', token: sassToken.token, value: sassToken.value });

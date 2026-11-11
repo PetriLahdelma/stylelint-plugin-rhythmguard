@@ -28,7 +28,7 @@ Opt-in groups via `propertyGroups`:
 - `typography`: `font-size`, `line-height`, `letter-spacing`, `word-spacing`
 - `size`: `width`, `height`, min/max sizes, logical `inline-size` and `block-size`
 
-Values that are `0`, percentages (when `allowPercentages` is on), hairlines (when `allowHairlines` is on, see below), keywords, or tokenized through one of `tokenFunctions` are never reported. A `var()` whose name matches `tokenPattern` is a token, but its fallback is a value: `padding: var(--space-1, 7px)` reports the `7px`, also in a nested `var(--a, var(--b, 7px))`. With `fixWith: "token"`, a fallback is never fixed to the token it is the fallback of; the literal is written instead.
+Values that are `0`, percentages (when `allowPercentages` is on), hairlines (when `allowHairlines` is on, see below), keywords, or tokenized through one of `tokenFunctions` are never reported. A `var()` whose name matches `tokenPattern` is a token, but its fallback is a value: `padding: var(--space-1, 7px)` reports the `7px`, also in a nested `var(--a, var(--b, 7px))`. With `fixWith: "token"`, no token is ever written into a `var()` fallback, its own or another: a fallback is what renders when the tokens are missing, so the literal is written instead.
 
 ## Examples
 
@@ -150,7 +150,7 @@ The message names the position: `clamp() minimum`, `clamp() maximum`, `min() arg
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
 | `preset` | `string` | `rhythmic-4` | Selects a built-in scale. See [scale presets](../SCALE_PRESETS.md). |
-| `fixWith` | `"value" \| "token"` | `"value"` | What autofix writes. `"token"` writes `var(--name)` when exactly one custom property holds the snapped value in the literal's own unit, read from this stylesheet, `scaleSources`, `.rhythmguardrc.json` token sources and installed token packages; otherwise the literal. Negative values become `calc(-1 * var(--name))`. When a token qualifies the message says so: `var(--space-3) holds 12px.` |
+| `fixWith` | `"value" \| "token"` | `"value"` | What autofix writes. `"token"` writes `var(--name)` when exactly one custom property holds the snapped value in the literal's own unit, read from this stylesheet, `scaleSources`, `.rhythmguardrc.json` token sources and installed token packages; otherwise the literal. Only a token defined where the declaration sits counts: one declared at the root outside `@media`, `@supports` and `@container`, one declared under the same conditions as the declaration, or one declared in the component block the declaration is in. Negative values become `calc(-1 * var(--name))`. When a token qualifies the message says so: `var(--space-3) holds 12px.` |
 | `decisions` | `boolean` | `true` | Read the `decisions` section of `.rhythmguardrc.json`: adopted values count as on scale, allowed values are not findings (optionally on some properties only). See [decisions](../AUDIT.md#decisions). |
 | `customScale` | `Array<number\|string>` | `undefined` | Highest-priority custom scale override. An empty list is an invalid option |
 | `scale` | `Array<number\|string> \| "auto"` | `[0,4,8,12,16,24,32,40,48,64]` | Allowed values, or `"auto"` to infer them from tokens (see above). An empty list, or `"auto"` inside a list, is an invalid option |

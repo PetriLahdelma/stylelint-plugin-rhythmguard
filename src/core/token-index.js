@@ -2,7 +2,7 @@
 
 const { propertyKindOf } = require('./css-vocabulary');
 const { fixedLengthValue, numbersEqual, toPx } = require('./length');
-const { createTokenKindMatcher, parseTokenValueLength } = require('./token-sources');
+const { conditionsOfNode, createTokenKindMatcher, parseTokenValueLength } = require('./token-sources');
 
 // Dedicated kinds first: a name like --radius-space-1 is a radius token.
 const TOKEN_KINDS = ['radius', 'typography', 'motion', 'size', 'spacing'].map((kind) => [kind, createTokenKindMatcher(kind)]);
@@ -70,10 +70,47 @@ function tokenIndexFromDefinitions(definitions, baseFontSize = 16) {
     for (const { px, raw, unit } of lengths || []) {
       if (px === 0) continue;
       const file = definition.files ? [...definition.files][0] : null;
-      index.push({ file: file && file !== 'stylesheet' ? file : null, px, raw, token: definition.token, unit });
+      // A definition built without scopes (an older caller) counts as declared at the root.
+      const fixScopes = definition.fixScopes || [{ global: true }];
+      index.push({ file: file && file !== 'stylesheet' ? file : null, fixScopes, px, raw, token: definition.token, unit });
     }
   }
   return index;
+}
+
+/** The conditions and ancestors of a declaration being fixed, computed once per declaration. */
+const placeCache = new WeakMap();
+function placeOf(decl) {
+  if (!placeCache.has(decl)) {
+    const ancestors = new Set();
+    for (let node = decl.parent; node; node = node.parent) ancestors.add(node);
+    placeCache.set(decl, { ancestors, conditions: new Set(conditionsOfNode(decl)) });
+  }
+  return placeCache.get(decl);
+}
+
+/**
+ * Whether a token is defined where a declaration sits (fix-02). A token
+ * declared at the root outside every conditional at-rule is defined
+ * everywhere. One declared at the root under `@media`, `@supports` or
+ * `@container` is defined only under the same conditions, and one declared in
+ * a component block only inside that block. Anywhere else the property would
+ * be invalid at computed-value time, so the token is never offered there.
+ * Without a declaration (`at` undefined) every token counts.
+ */
+function tokenDefinedAt(entry, at) {
+  if (!at || !entry.fixScopes) {
+    return true;
+  }
+  return entry.fixScopes.some((scope) => {
+    if (scope.global) return true;
+    if (scope.anchor) return placeOf(at).ancestors.has(scope.anchor);
+    if (scope.conditions) {
+      const { conditions } = placeOf(at);
+      return scope.conditions.every((condition) => conditions.has(condition));
+    }
+    return false;
+  });
 }
 
 /**
@@ -82,14 +119,16 @@ function tokenIndexFromDefinitions(definitions, baseFontSize = 16) {
  * rules always know the same tokens. The px value is signed: 8 finds the
  * tokens that hold 8px, -8 the tokens that hold -8px. Same unit first; with
  * `anyUnit`, a token in another unit that holds the same px value counts when
- * none matches the unit. Sorted, so messages are stable.
+ * none matches the unit. With `at`, the declaration being fixed, only the
+ * tokens defined where it sits count (see tokenDefinedAt). Sorted, so
+ * messages are stable.
  */
-function tokensForLength(index, px, unit, { anyUnit = false, prop = null } = {}) {
+function tokensForLength(index, px, unit, { anyUnit = false, at = null, prop = null } = {}) {
   const wanted = unit || 'px';
   const sameUnit = new Set();
   const otherUnit = new Set();
   for (const entry of index) {
-    if (!entry.token.startsWith('--') || !numbersEqual(entry.px, px) || !tokenFitsProperty(entry.token, prop)) {
+    if (!entry.token.startsWith('--') || !numbersEqual(entry.px, px) || !tokenFitsProperty(entry.token, prop) || !tokenDefinedAt(entry, at)) {
       continue;
     }
     (entry.unit === wanted ? sameUnit : otherUnit).add(entry.token);
@@ -114,8 +153,8 @@ function signedTokensForLength(index, px, unit, options = {}) {
   return { negate: px < 0, tokens: tokensForLength(index, Math.abs(px), unit, options) };
 }
 
-function tokenForLength(index, px, unit, prop = null) {
-  const candidates = tokensForLength(index, px, unit, { prop });
+function tokenForLength(index, px, unit, prop = null, at = null) {
+  const candidates = tokensForLength(index, px, unit, { at, prop });
   return candidates.length === 1 ? `var(${candidates[0]})` : null;
 }
 
@@ -135,18 +174,19 @@ function negateReplacement(replacement) {
  * options ask for one and exactly one qualifies, otherwise the literal. The
  * nearest value is in px, or in the literal's unit with `unitStrategy:
  * "exact"`; tokens are indexed in px, so the lookup converts it (issue #223).
- * `avoidTokens` are the var() names a fallback literal falls back from; one
- * of them is never written, the literal is.
+ * `avoidTokens` are the var() names a fallback literal falls back from. A
+ * fallback is what renders when tokens are missing, so no token is written
+ * into one, the literal is (fix-02; issue #240). `at` is the declaration being
+ * fixed: a token not defined there is never written (see tokenDefinedAt).
  */
-function replacementFor(parsedLength, nearest, options, prop = null, avoidTokens = []) {
-  if (options.fixWith === 'token' && options.tokenIndex) {
+function replacementFor(parsedLength, nearest, options, prop = null, avoidTokens = [], at = null) {
+  if (options.fixWith === 'token' && options.tokenIndex && avoidTokens.length === 0) {
     const unit = parsedLength.unit || 'px';
     const nearestPx = options.unitStrategy === 'exact' ? toPx(Math.abs(nearest), unit, options.baseFontSize) : Math.abs(nearest);
     if (nearestPx !== null) {
       const signedPx = parsedLength.number < 0 ? -nearestPx : nearestPx;
-      const { negate, tokens } = signedTokensForLength(options.tokenIndex, signedPx, unit, { prop });
-      // A var() fallback never falls back to the token it is the fallback of (issue #240).
-      if (tokens.length === 1 && !avoidTokens.includes(tokens[0])) {
+      const { negate, tokens } = signedTokensForLength(options.tokenIndex, signedPx, unit, { at, prop });
+      if (tokens.length === 1) {
         const token = `var(${tokens[0]})`;
         return negate ? negateReplacement(token) : token;
       }
@@ -173,6 +213,7 @@ module.exports = {
   negateReplacement,
   replacementFor,
   signedTokensForLength,
+  tokenDefinedAt,
   tokenFitsProperty,
   tokenHoldsNote,
   tokenForLength,

@@ -59,7 +59,8 @@ const messages = stylelint.utils.ruleMessages(ruleName, {
 });
 
 function listTokens(tokens) {
-  const references = tokens.map((token) => `var(${token})`);
+  // Index candidates are custom property names; map candidates are already references.
+  const references = tokens.map((token) => (token.startsWith('--') ? `var(${token})` : token));
   return references.length > 1
     ? `${references.slice(0, -1).join(', ')} or ${references[references.length - 1]}`
     : references.join('');
@@ -70,9 +71,10 @@ function listTokens(tokens) {
  * literal's sign holds exactly that value, so its token is written as is; a
  * negative literal that only matches the positive key gets the token negated.
  * Keys are signed, so a positive literal never finds a negative token (issue
- * #221).
+ * #221). A key several tokens hold returns those that fit the property as
+ * `candidates` and no token: the rule names them and fixes nothing (fix-06).
  */
-function resolveTokenReplacement(tokenMap, raw, parsedLength, options) {
+function resolveTokenReplacement(tokenMap, ambiguous, raw, parsedLength, options, prop) {
   const unit = parsedLength.unit || 'px';
   const negative = parsedLength.number < 0;
   // [key, negate]: the literal as written, then normalized, then in px.
@@ -88,6 +90,16 @@ function resolveTokenReplacement(tokenMap, raw, parsedLength, options) {
   }
 
   for (const [key, negate] of lookups) {
+    if (Object.prototype.hasOwnProperty.call(ambiguous, key)) {
+      const candidates = ambiguous[key].filter((token) => tokenFitsProperty(token, prop));
+      if (candidates.length === 0) {
+        return null;
+      }
+      if (candidates.length > 1) {
+        return { candidates };
+      }
+      return { replacement: negate ? negateReplacement(candidates[0]) : candidates[0], token: candidates[0] };
+    }
     if (Object.prototype.hasOwnProperty.call(tokenMap, key)) {
       const token = tokenMap[key];
       return { replacement: negate ? negateReplacement(token) : token, token };
@@ -100,19 +112,21 @@ function resolveTokenReplacement(tokenMap, raw, parsedLength, options) {
 /**
  * The tokens use-scale's `fixWith: "token"` would see: the stylesheet,
  * `scaleSources`, `.rhythmguardrc.json` token sources and installed token
- * packages, filtered to the property's kind. One same-unit token is a fix; a
- * token in another unit, or several tokens, are named but never written.
+ * packages, filtered to the property's kind and to the tokens defined where
+ * `decl` sits (a `.card` token or one under `@media` is not defined
+ * elsewhere, fix-02). One same-unit token is a fix; a token in another unit,
+ * or several tokens, are named but never written.
  */
-function resolveFromIndex(tokenIndex, parsedLength, prop, options) {
+function resolveFromIndex(tokenIndex, parsedLength, prop, options, decl) {
   const px = toPx(parsedLength.number, parsedLength.unit || 'px', options.baseFontSize);
   if (px === null || tokenIndex.length === 0) {
     return { candidates: [] };
   }
   const unit = parsedLength.unit || 'px';
-  const sameUnit = signedTokensForLength(tokenIndex, px, unit, { prop });
+  const sameUnit = signedTokensForLength(tokenIndex, px, unit, { at: decl, prop });
   const found = sameUnit.tokens.length > 0 || options.unitStrategy !== 'convert'
     ? sameUnit
-    : signedTokensForLength(tokenIndex, px, unit, { anyUnit: true, prop });
+    : signedTokensForLength(tokenIndex, px, unit, { anyUnit: true, at: decl, prop });
   const candidates = found.tokens;
   if (candidates.length !== 1) {
     return { candidates };
@@ -158,7 +172,9 @@ const ruleFunction = (primary, secondaryOptions) => {
 
     const tokenRegex = createTokenRegex(options.tokenPattern, { result, root, ruleName });
     const origins = {};
+    const ambiguous = {};
     const tokenMap = buildEffectiveTokenMap({
+      ambiguous,
       options,
       origins,
       root,
@@ -195,11 +211,20 @@ const ruleFunction = (primary, secondaryOptions) => {
       const sassOperands = sassOperandNodes(parsed, decl.value);
 
       // `avoidTokens`: the var() names a fallback literal falls back from. A
-      // fallback held by one of them restates that token and passes; it is
-      // never replaced with the token it is the fallback of (issue #240).
+      // fallback held by one of them restates that token and passes (issue
+      // #240). Any other fallback is reported but never rewritten: a fallback
+      // is what renders when the tokens are missing, so no token belongs
+      // there (fix-02).
       const reportNode = (node, parsedLength, position = null, avoidTokens = []) => {
-        const fixable = !sassOperands.has(node);
-        const mapped = resolveTokenReplacement(tokenMap, node.value, parsedLength, options);
+        const fixable = !sassOperands.has(node) && avoidTokens.length === 0;
+        const mapped = resolveTokenReplacement(tokenMap, ambiguous, node.value, parsedLength, options, prop);
+        if (mapped && mapped.candidates) {
+          if (mapped.candidates.some((candidate) => avoidTokens.includes(replacementToken(candidate)))) {
+            return;
+          }
+          reportValueNode({ decl, message: messages.rejected(node.value, null, null, options.note, mapped.candidates, position), node, replacement: null, result, ruleName });
+          return;
+        }
         if (mapped && tokenFitsProperty(mapped.token, prop)) {
           if (avoidTokens.includes(replacementToken(mapped.token))) {
             return;
@@ -208,7 +233,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           reportValueNode({ decl, message: messages.rejected(node.value, mapped.replacement, origin, options.note, [], position), node, replacement: fixable ? mapped.replacement : null, result, ruleName });
           return;
         }
-        const indexed = resolveFromIndex(tokenIndex, parsedLength, prop, options);
+        const indexed = resolveFromIndex(tokenIndex, parsedLength, prop, options, decl);
         if (indexed.candidates.some((candidate) => avoidTokens.includes(candidate))) {
           return;
         }

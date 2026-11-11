@@ -158,7 +158,7 @@ function checkLengthValue({
     }
 
     const fixedValue = options.fixToScale && fixable
-      ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens)
+      ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens, decl)
       : null;
 
     report(node.value, decl, node, nearest, fixedValue, unit, evaluated ? evaluatedNote(evaluated, options) : '');
@@ -182,7 +182,7 @@ function checkLengthValue({
   }
 
   const fixedValue = options.fixToScale && fixable
-    ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens)
+    ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens, decl)
     : null;
 
   report(node.value, decl, node, nearest, fixedValue, 'px', evaluated ? evaluatedNote(evaluated, options) : '');
