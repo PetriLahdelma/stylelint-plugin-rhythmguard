@@ -37,7 +37,8 @@ function collectTokenContract({
 
     const file = formatPath(filePath);
     collectTokenDefinitions(source, file, definitions, matchesKind, baseFontSize);
-    collectTokenUses(source, file, uses, matchesKind);
+    // A token source token read for its `$type` or a camelCase name (`--gap-sm`, `--spacingXs`) counts as used too.
+    collectTokenUses(source, file, uses, (token) => matchesKind(token) || externalTokenDefinitions.has(token));
   }
 
   for (const entry of externalTokenDefinitions.values()) {
@@ -62,7 +63,9 @@ function collectTokenContract({
 
   const definedTokens = mapTokenEntries(definitions);
   const usedTokens = mapTokenEntries(uses);
-  const missingTokens = usedTokens.filter(({ token }) => !definitions.has(token));
+  // A DTCG `$deprecated` token is not a scale step, but it is declared: using it is not a missing token.
+  const deprecatedTokens = new Set((tokenSourceReports || []).flatMap((source) => source.deprecated || []));
+  const missingTokens = usedTokens.filter(({ token }) => !definitions.has(token) && !deprecatedTokens.has(token));
   const unusedTokens = definedTokens.filter(({ token }) => !uses.has(token));
   const rawValueMatches = collectRawValueMatches(rawValues, definitions, baseFontSize);
   const conflictingTokens = collectConflictingTokens(definitions);

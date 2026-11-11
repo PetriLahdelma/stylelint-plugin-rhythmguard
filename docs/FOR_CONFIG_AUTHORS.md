@@ -75,7 +75,14 @@ Design systems often ship tokens from a Style Dictionary build or an npm package
 }
 ```
 
-Flat JSON, Style Dictionary JSON, DTCG JSON and CSS custom properties are all accepted. This is the pattern the first external adopter arrived at independently: derive the effective pixel scale from the token *values* rather than the token names, because under Tailwind v4 the per-step `--spacing-N` names are inert and only the values matter.
+Flat JSON, Style Dictionary JSON, DTCG JSON, Tokens Studio JSON exports and CSS custom properties are all accepted. This is the pattern the first external adopter arrived at independently: derive the effective pixel scale from the token *values* rather than the token names, because under Tailwind v4 the per-step `--spacing-N` names are inert and only the values matter.
+
+Spacing tokens are read by name (`space`, `spacing` or `spacer`). When a file has none so named, it is read again: names in any case and camelCase (`--spacingXs`) count, and in JSON so does any token typed as a dimension, whatever its name (DTCG `$type: "dimension"`, or a `type` of `spacing`, `sizing` or `dimension`), unless the name says radius, font, border or another kind. [AUDIT.md](./AUDIT.md#config-file) has the full rule.
+
+From Tokens Studio, point `scaleSources` at either file:
+
+- the raw export (`tokens.json` with `$metadata` and `$themes`): its sets, references, unitless values and `+ - * /` math are read as Tokens Studio reads them;
+- the CSS that `@tokens-studio/sd-transforms` builds through Style Dictionary. Its default names are camelCase (`--spacingXs`), which are read as they are; adding the `name/kebab` transform gives `--spacing-xs`, which every tool reads by name.
 
 ## How consumers opt out
 

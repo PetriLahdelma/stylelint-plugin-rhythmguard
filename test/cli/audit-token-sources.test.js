@@ -106,7 +106,7 @@ function auditOutput(cwd, format, ...args) {
   return result.stdout;
 }
 
-const NO_SPACING_HINT = 'spacing tokens are read by name (space, spacing or spacer), so set a tokenPattern on this source if its tokens are named otherwise';
+const NO_SPACING_HINT = 'spacing tokens are read by name (space, spacing or spacer, in any case) or, in JSON, by a dimension type, so set a tokenPattern on this source if its tokens are named and typed otherwise';
 
 test('a token source with no spacing tokens is a warning in every report format, whatever its format (issue #163)', () => {
   const dir = project({
@@ -146,4 +146,32 @@ test('an rc token source stylesheet with no custom properties is a warning too; 
   for (const format of ['json', 'text', 'markdown']) {
     assert.doesNotMatch(auditOutput(dir, format, '--scale', 'auto'), /yielded no/);
   }
+});
+
+test('a role-named DTCG source and a $root/$deprecated source give the scale, with selectedBy and deprecated tokens in provenance (tf-01, tf-11)', () => {
+  const fixtures = path.join(__dirname, '..', 'fixtures', 'token-selection');
+  const dir = project({
+    'roles.json': fs.readFileSync(path.join(fixtures, 'dtcg-roles.json'), 'utf8'),
+    'root.json': fs.readFileSync(path.join(fixtures, 'dtcg-root.json'), 'utf8'),
+    'src/a.css': '.a { padding: var(--layout-gap-sm); margin: var(--space-5); gap: 6px; }\n',
+  });
+
+  const roles = audit(dir, '--no-config', '--scale', 'auto', '--token-source', 'roles.json');
+  assert.equal(roles.contracts.scale.source, 'token-sources');
+  assert.deepEqual(roles.contracts.scale.values, [0, 4, 8, 12, 16, 24, 32]);
+  assert.deepEqual(roles.contracts.tokens.sources.map((source) => [source.file, source.selectedBy, source.tokenCount, source.warnings]), [
+    ['roles.json', 'type', 7, []],
+  ]);
+  // A token read for its `$type` counts as used where a stylesheet uses it.
+  assert.ok(roles.contracts.tokens.usedTokens.some((entry) => entry.token === '--layout-gap-sm'));
+  assert.ok(!roles.contracts.tokens.unusedTokens.some((entry) => entry.token === '--layout-gap-sm'));
+
+  const root = audit(dir, '--no-config', '--scale', 'auto', '--token-source', 'root.json');
+  // Deprecated values stay on the 3.x scale, so no finding is added (tf-11).
+  assert.deepEqual(root.contracts.scale.values, [0, 2, 4, 8, 12, 16, 20, 24, 32]);
+  assert.deepEqual(root.contracts.tokens.sources[0].deprecated, ['--space-5', '--space-legacy-half']);
+  assert.equal(root.contracts.tokens.sources[0].selectedBy, 'name');
+  // A deprecated token is declared: using it is not a missing token.
+  assert.ok(root.contracts.tokens.usedTokens.some((entry) => entry.token === '--space-5'));
+  assert.ok(!root.contracts.tokens.missingTokens.some((entry) => entry.token === '--space-5'));
 });

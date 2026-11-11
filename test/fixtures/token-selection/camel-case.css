@@ -1,0 +1,12 @@
+/* The default @tokens-studio/sd-transforms output: camelCase names, px added. */
+:root {
+  --spacingXs: 4px;
+  --spacingSm: 8px;
+  --spacingMd: 12px;
+  --spacingLg: 16px;
+  --spacingXl: 24px;
+  --spacing2xl: 32px;
+  --letterSpacingTight: -0.5px;
+  --borderRadiusSm: 2px;
+  --fontSizesBody: 15px;
+}

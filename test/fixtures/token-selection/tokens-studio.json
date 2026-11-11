@@ -1,0 +1,36 @@
+{
+  "core": {
+    "spacing": {
+      "xs": { "value": "4", "type": "spacing" },
+      "sm": { "value": "{spacing.xs} * 2", "type": "spacing" },
+      "md": { "value": "12", "type": "spacing" },
+      "lg": { "value": "{spacing.md} + 4", "type": "spacing" },
+      "xl": { "value": "{spacing.sm} * 3", "type": "spacing" },
+      "2xl": { "value": "{spacing.lg} * 2", "type": "spacing" }
+    },
+    "borderRadius": {
+      "sm": { "value": "2", "type": "borderRadius" }
+    },
+    "sizing": {
+      "icon": { "value": "20", "type": "sizing" }
+    }
+  },
+  "semantic": {
+    "gap": {
+      "card": { "value": "{spacing.lg}", "type": "spacing" }
+    },
+    "font": {
+      "body": { "value": "15", "type": "fontSizes" }
+    }
+  },
+  "$themes": [
+    {
+      "id": "default",
+      "name": "Default",
+      "selectedTokenSets": { "core": "source", "semantic": "enabled" }
+    }
+  ],
+  "$metadata": {
+    "tokenSetOrder": ["core", "semantic"]
+  }
+}
