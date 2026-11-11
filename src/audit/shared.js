@@ -91,6 +91,7 @@ function createDefaultAuditOptions() {
     since: null,
     sinceBaseline: false,
     staged: false,
+    // CLI flag or API only, never the rc: a repository file must not make the audit run code.
     tailwindConfigPath: null,
     tokenCandidateMinCount: DEFAULT_TOKEN_CANDIDATE_MIN_COUNT,
     tokenKind: 'spacing',

@@ -21,7 +21,8 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Added
 
-- `rhythmguard audit --tailwind-config <file>` and `audit.tailwindConfigPath`: with `--scale auto`, the audit reads a Tailwind v3 config's `theme.spacing` after the scanned stylesheets (`source: "tailwind"`), as the rules do with `tailwindConfigPath`. The config is loaded with `require()`, so only when you name it; a configured path that does not exist exits 2, like a missing token source (tf-06).
+- `rhythmguard audit --tailwind-config <file>`: with `--scale auto`, the audit reads a Tailwind v3 config's `theme.spacing` after the scanned stylesheets (`source: "tailwind"`), as the rules do with `tailwindConfigPath`. The config is loaded with `require()`, so only when the flag names it; `.rhythmguardrc.json` cannot, and an `audit.tailwindConfigPath` key there is refused, so a file in a repository (a fork's pull request, a cloned project) never makes the audit run code. A path that does not exist exits 2, like a missing token source (tf-06).
+- The Claude Code skill pre-approves exactly `npx rhythmguard audit . --scale auto --format json`, the command it asks for, instead of any `npx rhythmguard audit` command, since `--tailwind-config` loads a file.
 - A `tailwind` scale preset: Tailwind's default spacing theme on a 16px root. With `scale: "auto"`, a rule's `preset` is now the fallback when no tokens are found, as `configs/tailwind` uses it.
 
 ### Fixed
