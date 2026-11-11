@@ -769,7 +769,7 @@ test('audit CLI --scale auto falls back to the default scale and reports it', ()
   assert.equal(result.status, 0, result.stderr);
   const report = JSON.parse(result.stdout);
   assert.equal(report.contracts.scale.source, 'fallback');
-  assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12, 16, 24, 32]);
+  assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12, 16, 24, 32, 40, 48, 64], 'the fallback is the one DEFAULT_SCALE, as in the rules (dx-06)');
 
   const explicit = runAuditCommand(fixtureDir, 'src', '--scale', '0,4,8', '--format', 'json');
   assert.equal(JSON.parse(explicit.stdout).contracts.scale.source, 'explicit');
@@ -883,7 +883,7 @@ test('audit CLI --scale auto rejects an incoherent inferred scale, falls back, a
   assert.equal(json.status, 0, json.stderr);
   const report = JSON.parse(json.stdout);
   assert.equal(report.contracts.scale.source, 'fallback');
-  assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12, 16, 24, 32]);
+  assert.deepEqual(report.contracts.scale.values, [0, 4, 8, 12, 16, 24, 32, 40, 48, 64], 'the fallback is the one DEFAULT_SCALE, as in the rules (dx-06)');
   assert.equal(report.contracts.scale.rejected.source, 'scanned-css');
   assert.deepEqual(report.contracts.scale.rejected.reasons, ['no common step', 'sources are component files']);
   assert.deepEqual(report.contracts.scale.rejected.values, [0, 2, 3, 5, 25]);
@@ -1049,10 +1049,11 @@ test('audit applies decisions: adopted and allowed values stop being findings, u
   const offScale = report.findings.css.filter((finding) => finding.type === 'off-scale').map((finding) => `${finding.property}:${finding.value}`).sort();
   assert.deepEqual(offScale, ['inset:22px', 'padding-top:2px', 'padding:15px'], 'adopted 10px and the gap-scoped 2px are gone; padding-top: 2px stays');
   assert.deepEqual(report.findings.tailwind.map((finding) => finding.token), ['m-[22px]'], 'the adopted value is gone from class strings too');
-  assert.deepEqual(report.contracts.decisions, { adopt: 1, allow: 1, snap: 1, undecided: 1, suppressed: 3 });
+  // p-[10px] is p-2.5 on Tailwind's default ladder, so it is not a finding to suppress (cs-05).
+  assert.deepEqual(report.contracts.decisions, { adopt: 1, allow: 1, snap: 1, undecided: 1, suppressed: 2 });
 
   const markdown = runAuditCommand(fixtureDir, 'src', '--format', 'markdown').stdout;
-  assert.match(markdown, /\| Decisions \| 4 \(1 adopt, 1 allow, 1 snap, 1 undecided\); 3 findings suppressed \|/);
+  assert.match(markdown, /\| Decisions \| 4 \(1 adopt, 1 allow, 1 snap, 1 undecided\); 2 findings suppressed \|/);
 });
 
 test('audit refuses an invalid decisions section with a precise message', () => {

@@ -10,12 +10,15 @@
       12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      64
     ]
   },
   "summary": {
-    "total": 74,
-    "drift": 74,
+    "total": 73,
+    "drift": 73,
     "falsePositives": 0
   },
   "findings": [
@@ -60,7 +63,6 @@
     "src/vs/base/browser/ui/keybindingLabel/keybindingLabel.css:21:3px:drift",
     "src/vs/base/browser/ui/keybindingLabel/keybindingLabel.css:21:5px:drift",
     "src/vs/base/browser/ui/keybindingLabel/keybindingLabel.css:22:2px:drift",
-    "src/vs/base/browser/ui/list/list.css:73:40px:drift",
     "src/vs/base/browser/ui/menu/menubar.css:22:5px:drift",
     "src/vs/base/browser/ui/pixelSpinner/pixelSpinner.css:108:7px:drift",
     "src/vs/base/browser/ui/pixelSpinner/pixelSpinner.css:10:2px:drift",

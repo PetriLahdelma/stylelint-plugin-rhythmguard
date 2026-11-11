@@ -10,12 +10,15 @@
       12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      64
     ]
   },
   "summary": {
-    "total": 33,
-    "drift": 33,
+    "total": 32,
+    "drift": 32,
     "falsePositives": 0
   },
   "findings": [
@@ -38,7 +41,6 @@
     "packages/docusaurus-theme-classic/src/theme/EditMetaRow/styles.module.css:11:0.2rem:drift",
     "packages/docusaurus-theme-classic/src/theme/Icon/Edit/styles.module.css:9:0.3em:drift",
     "packages/docusaurus-theme-classic/src/theme/Icon/ExternalLink/styles.module.css:9:0.3rem:drift",
-    "packages/docusaurus-theme-classic/src/theme/Layout/styles.module.css:21:3rem:drift",
     "packages/docusaurus-theme-classic/src/theme/NavbarItem/LocaleDropdownNavbarItem/styles.module.css:10:5px:drift",
     "packages/docusaurus-theme-classic/src/theme/TOC/styles.module.css:21:0.3rem:drift",
     "packages/docusaurus-theme-classic/src/theme/TOCCollapsible/CollapseButton/styles.module.css:13:0.4rem:drift",

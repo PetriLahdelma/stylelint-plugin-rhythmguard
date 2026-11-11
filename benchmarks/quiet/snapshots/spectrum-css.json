@@ -10,20 +10,22 @@
       12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      64
     ]
   },
   "summary": {
-    "total": 5,
-    "drift": 5,
+    "total": 4,
+    "drift": 4,
     "falsePositives": 0
   },
   "findings": [
     "components/asset/index.css:41:20px:drift",
     "components/steplist/index.css:107:-10px:drift",
     "components/steplist/index.css:113:-10px:drift",
-    "components/steplist/index.css:202:-10px:drift",
-    "components/steplist/index.css:91:40px:drift"
+    "components/steplist/index.css:202:-10px:drift"
   ],
   "commit": "37620864c60c4c142a506017e1a15348a26abb0e"
 }

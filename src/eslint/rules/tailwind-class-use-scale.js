@@ -23,9 +23,9 @@ function maybeCheckNodeText(node, sourceCode, context, analyzer, allowFix) {
 
   for (const { analysis, segment } of findings) {
     context.report({
-      message: withNote(offScaleClassMessage(segment.token, analysis), analyzer.note),
+      message: withNote(offScaleClassMessage(segment.token, analysis, analyzer.options.scaleName), analyzer.note),
       node,
-      fix: replaceToken && analysis.reason !== 'negative'
+      fix: replaceToken && analysis.reason !== 'negative' && analysis.fixedToken
         ? replaceToken(segment.start, segment.token, analysis.fixedToken)
         : null,
     });

@@ -10,18 +10,20 @@
       12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      64
     ]
   },
   "summary": {
-    "total": 47,
-    "drift": 47,
+    "total": 38,
+    "drift": 38,
     "falsePositives": 0
   },
   "findings": [
     "packages/docusaurus/src/components/StoryTabs.module.css:8:10px:drift",
     "packages/docusaurus/src/components/StoryTabs.module.css:8:20px:drift",
-    "packages/docusaurus/src/pages/index.module.css:7:4rem:drift",
     "packages/flolegal-decision-tree-client/assets/flo-client-styles.css:3:-20px:drift",
     "packages/flolegal-decision-tree-client/assets/flo-client-styles.css:3:10px:drift",
     "packages/flolegal-decision-tree-client/assets/flo-client-styles.css:3:13px:drift",
@@ -52,14 +54,6 @@
     "packages/storybook-react/src/stories/prototype-src/index.css:265:3px:drift",
     "packages/storybook-react/src/stories/prototype-src/index.css:266:3px:drift",
     "packages/storybook-react/src/stories/prototype-src/index.css:273:18px:drift",
-    "packages/storybook-react/src/stories/prototype-src/index.css:383:3rem:drift",
-    "packages/storybook-react/src/stories/prototype-src/index.css:391:3rem:drift",
-    "packages/storybook-react/src/stories/prototype-src/index.css:392:3rem:drift",
-    "packages/storybook-react/src/stories/prototype-src/index.css:400:3rem:drift",
-    "packages/storybook-react/src/stories/prototype-src/index.css:473:3rem:drift",
-    "packages/storybook-react/src/stories/prototype-src/index.css:474:3rem:drift",
-    "packages/storybook-react/src/stories/prototype-src/index.css:475:3rem:drift",
-    "packages/storybook-react/src/stories/prototype-src/index.css:476:3rem:drift",
     "packages/storybook-react/src/stories/prototype-src/index.css:518:-2px:drift",
     "packages/storybook-react/src/stories/prototype-src/index.css:534:10px:drift",
     "packages/storybook-react/src/stories/prototype-src/index.css:674:20px:drift",

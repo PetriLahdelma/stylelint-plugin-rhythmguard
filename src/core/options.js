@@ -21,7 +21,7 @@ const {
   resolveScaleSelection,
 } = require('../presets/scales');
 
-const DEFAULT_SCALE = getScalePreset('rhythmic-4') || [0, 4, 8, 12, 16, 24, 32];
+const { DEFAULT_SCALE } = require('../presets/default-scale');
 const VALIDATE_ALWAYS = () => true;
 const SUPPORTED_MATH_FUNCTIONS = new Set(Array.from(MATH_FUNCTIONS));
 

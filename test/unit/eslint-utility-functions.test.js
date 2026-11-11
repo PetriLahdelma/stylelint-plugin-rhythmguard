@@ -31,7 +31,7 @@ test('eslint rule detects arbitrary spacing in clsx() calls', () => {
     invalid: [
       {
         code: 'const cls = clsx("p-[13px]", "m-[7px]");',
-        output: 'const cls = clsx("p-3", "m-2");',
+        output: 'const cls = clsx("p-3", "m-1.5");',
         errors: [
           { message: /Unexpected Tailwind arbitrary spacing/ },
           { message: /Unexpected Tailwind arbitrary spacing/ },
@@ -47,7 +47,7 @@ test('eslint rule detects arbitrary spacing in twMerge() calls', () => {
     invalid: [
       {
         code: 'const cls = twMerge("p-[13px]", active && "m-[7px]");',
-        output: 'const cls = twMerge("p-3", active && "m-2");',
+        output: 'const cls = twMerge("p-3", active && "m-1.5");',
         errors: [
           { message: /Unexpected Tailwind arbitrary spacing/ },
           { message: /Unexpected Tailwind arbitrary spacing/ },

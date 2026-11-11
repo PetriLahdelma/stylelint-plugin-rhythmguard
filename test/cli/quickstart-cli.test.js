@@ -77,24 +77,24 @@ test('quickstart points scaleSources at a token file it finds', () => {
 test('with no tokens, quickstart names the scale it used and suggests a config that reproduces its result (#246)', async () => {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-quickstart-fallback-'));
   fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ name: 'fixture' }));
-  const code = '.a { margin: 40px; padding: 48px; }\n';
+  const code = '.a { margin: 40px; padding: 13px; }\n';
   fs.writeFileSync(path.join(dir, 'a.css'), code);
   const result = run(dir);
 
   assert.equal(result.status, 0, result.stderr);
   const out = result.stdout;
-  assert.match(out, /Scale\s+0, 4, 8, 12, 16, 24, 32\n/);
+  assert.match(out, /Scale\s+0, 4, 8, 12, 16, 24, 32, 40, 48, 64\n/);
   assert.match(out, /No spacing tokens found; the audit's default scale is being used\./);
   assert.doesNotMatch(out, /rhythmic-4/, 'the fallback is not the rhythmic-4 preset, so it is not called that');
-  assert.match(out, /Off-scale\s+2 in CSS/);
+  assert.match(out, /Off-scale\s+1 in CSS/);
 
   const pasted = out.split('Then paste this into .stylelintrc.json:')[1].split('\n\n')[1];
   const suggested = JSON.parse(pasted);
-  assert.deepEqual(suggested.rules['rhythmguard/use-scale'], [true, { scale: [0, 4, 8, 12, 16, 24, 32] }]);
+  assert.deepEqual(suggested.rules['rhythmguard/use-scale'], [true, { scale: [0, 4, 8, 12, 16, 24, 32, 40, 48, 64] }]);
 
   const { lintCss } = require('../helpers/lint');
   const linted = await lintCss({ code, rules: suggested.rules });
-  assert.equal(linted.warnings.length, 2, 'the pasted config reports what quickstart reported');
+  assert.equal(linted.warnings.length, 1, 'the pasted config reports what quickstart reported');
 });
 
 test('quickstart keeps --help working and exits 0 with no findings noise on an empty directory', () => {

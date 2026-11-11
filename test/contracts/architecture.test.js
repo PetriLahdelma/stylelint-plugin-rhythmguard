@@ -26,7 +26,7 @@ const ALLOWED = {
   eslint: ['eslint', 'core'],
   audit: ['audit', 'core', 'presets'],
   cli: ['cli', 'audit', 'core', 'presets', 'configs'],
-  configs: ['configs'],
+  configs: ['configs', 'presets'],
 };
 
 const FORBIDDEN_PACKAGES = {

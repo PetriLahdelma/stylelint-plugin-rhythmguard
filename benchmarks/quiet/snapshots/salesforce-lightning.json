@@ -10,12 +10,15 @@
       12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      64
     ]
   },
   "summary": {
-    "total": 57,
-    "drift": 57,
+    "total": 52,
+    "drift": 52,
     "falsePositives": 0
   },
   "findings": [
@@ -30,8 +33,6 @@
     "ui/components/path/base/_index.scss:540:10px:drift",
     "ui/components/path/base/_index.scss:552:10px:drift",
     "ui/components/path/base/_touch.scss:26:9px:drift",
-    "ui/components/popovers/error/_index.scss:57:2.5rem:drift",
-    "ui/components/popovers/warning/_index.scss:53:2.5rem:drift",
     "ui/components/rich-text-editor/base/_index.scss:365:0.3em:drift",
     "ui/components/rich-text-editor/base/_index.scss:497:3.5em:drift",
     "ui/components/rich-text-editor/base/_index.scss:501:4.5em:drift",
@@ -51,9 +52,6 @@
     "ui/components/rich-text-editor/base/_index.scss:557:25.5em:drift",
     "ui/components/rich-text-editor/base/_index.scss:561:19.5em:drift",
     "ui/components/rich-text-editor/base/_index.scss:565:28.5em:drift",
-    "ui/components/rich-text-editor/base/_index.scss:683:2.5rem:drift",
-    "ui/components/rich-text-editor/base/_index.scss:731:3em:drift",
-    "ui/components/rich-text-editor/base/_index.scss:735:3em:drift",
     "ui/components/rich-text-editor/base/_index.scss:739:6em:drift",
     "ui/components/rich-text-editor/base/_index.scss:743:6em:drift",
     "ui/components/rich-text-editor/base/_index.scss:747:9em:drift",

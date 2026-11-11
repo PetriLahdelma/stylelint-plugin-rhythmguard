@@ -10,12 +10,15 @@
       12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      64
     ]
   },
   "summary": {
-    "total": 55,
-    "drift": 55,
+    "total": 51,
+    "drift": 51,
     "falsePositives": 0
   },
   "findings": [
@@ -26,12 +29,9 @@
     "frontend/src/metabase/css/core/animation.module.css:59:100px:drift",
     "frontend/src/metabase/css/core/animation.module.css:8:1000px:drift",
     "frontend/src/metabase/css/core/base.module.css:25:6.5rem:drift",
-    "frontend/src/metabase/css/core/layout.module.css:17:3em:drift",
-    "frontend/src/metabase/css/core/layout.module.css:18:3em:drift",
     "frontend/src/metabase/css/core/text.module.css:78:0.2em:drift",
     "frontend/src/metabase/css/core/text.module.css:78:0.4em:drift",
     "frontend/src/metabase/css/query_builder.module.css:178:-41px:drift",
-    "frontend/src/metabase/css/query_builder.module.css:182:4rem:drift",
     "frontend/src/metabase/css/query_builder.module.css:255:10px:drift",
     "frontend/src/metabase/css/query_builder.module.css:256:10px:drift",
     "frontend/src/metabase/css/query_builder.module.css:44:5px:drift",
@@ -53,7 +53,6 @@
     "frontend/src/metabase/ui/components/inputs/MultiSelect/MultiSelect.module.css:5:5px:drift",
     "frontend/src/metabase/ui/components/inputs/MultiSelect/MultiSelect.module.css:6:5px:drift",
     "frontend/src/metabase/ui/components/inputs/MultiSelect/MultiSelect.module.css:7:5px:drift",
-    "frontend/src/metabase/ui/components/inputs/MultiSelect/MultiSelect.module.css:8:40px:drift",
     "frontend/src/metabase/ui/components/inputs/Pill/Pill.module.css:15:0.375rem:drift",
     "frontend/src/metabase/ui/components/inputs/Pill/Pill.module.css:19:0.375rem:drift",
     "frontend/src/metabase/ui/components/inputs/Pill/Pill.module.css:20:0.375rem:drift",

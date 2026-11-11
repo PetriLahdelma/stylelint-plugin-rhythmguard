@@ -98,7 +98,7 @@ Template literal chunks are reported but not fixed. Negative values, written eit
 
 | Option | Type | Default | Description |
 | --- | --- | --- | --- |
-| `scale` | `Array<number\|string>` | `[0,4,8,12,16,24,32]` | Allowed spacing values. This default is not the `rhythmic-4` preset the Stylelint rules default to (which goes on to 40, 48 and 64); set `scale` explicitly when you use both |
+| `scale` | `Array<number\|string>` | Tailwind's default spacing ladder | Allowed spacing values. Without it, the steps of Tailwind's default theme as multiples of `spacingUnit` (`0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 44, 48, 56, 64, ... 384` on a 16px root, the `tailwind` preset), and each message ends with `Scale: Tailwind default spacing.` Before 3.20 the default was `[0,4,8,12,16,24,32]`. Set `scale` to your project's scale when it is not Tailwind's |
 | `units` | `string[]` | `['px','rem','em']` | Units considered |
 | `baseFontSize` | `number` | `16` | `rem` and `em` conversion base |
 | `allowHairlines` | `boolean` | `true` | Skips non-zero lengths of one CSS pixel or less (`translate-y-[0.5px]`, `-mt-[1px]`). See [Hairlines](#hairlines) |

@@ -140,7 +140,7 @@ Padding, margin, gap, inset, space and translate utilities, with their axis and 
 
 | Option | Default | What it does |
 | --- | --- | --- |
-| `scale` | `[0, 4, 8, 12, 16, 24, 32]` | Allowed spacing values in px. This default stops at 32; the Stylelint rules default to the `rhythmic-4` preset, which goes on to 40, 48 and 64, so set `scale` when you use both |
+| `scale` | Tailwind's default ladder | Allowed spacing values in px. Without it, the steps of Tailwind's default theme on `spacingUnit` (`0, 2, 4, 6, 8, 10, 12, 14, 16, 20, ... 384` on a 16px root), and messages end with `Scale: Tailwind default spacing.` Before 3.20 the default stopped at 32. Set `scale` to your project's scale when it is not Tailwind's |
 | `units` | `['px', 'rem', 'em']` | Units the rule checks |
 | `baseFontSize` | `16` | Base for converting `rem` and `em` |
 | `allowHairlines` | `true` | Skips non-zero lengths of one CSS pixel or less (`translate-y-[0.5px]`, `-mt-[1px]`, `p-[0.0625rem]`), as the Stylelint rules do. `false` reports them |

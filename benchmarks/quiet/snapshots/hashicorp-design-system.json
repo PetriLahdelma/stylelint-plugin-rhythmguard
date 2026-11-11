@@ -10,12 +10,15 @@
       12,
       16,
       24,
-      32
+      32,
+      40,
+      48,
+      64
     ]
   },
   "summary": {
-    "total": 114,
-    "drift": 114,
+    "total": 111,
+    "drift": 111,
     "falsePositives": 0
   },
   "findings": [
@@ -37,7 +40,6 @@
     "packages/components/src/styles/components/advanced-table.scss:469:-2px:drift",
     "packages/components/src/styles/components/advanced-table.scss:725:2px:drift",
     "packages/components/src/styles/components/alert.scss:101:2px:drift",
-    "packages/components/src/styles/components/alert.scss:112:48px:drift",
     "packages/components/src/styles/components/alert.scss:124:2px:drift",
     "packages/components/src/styles/components/alert.scss:56:5px:drift",
     "packages/components/src/styles/components/app-footer.scss:114:$hds-app-footer-icon-text-gap:drift",
@@ -53,8 +55,6 @@
     "packages/components/src/styles/components/code-block/index.scss:309:10px:drift",
     "packages/components/src/styles/components/code-block/index.scss:309:10px:drift",
     "packages/components/src/styles/components/code-block/index.scss:329:-1000px:drift",
-    "packages/components/src/styles/components/code-block/index.scss:336:$hds-code-block-code-footer-height:drift",
-    "packages/components/src/styles/components/code-block/index.scss:349:$hds-code-block-code-footer-height:drift",
     "packages/components/src/styles/components/copy/snippet.scss:36:6px:drift",
     "packages/components/src/styles/components/dropdown.scss:148:0.375rem:drift",
     "packages/components/src/styles/components/dropdown.scss:158:0.5625rem:drift",

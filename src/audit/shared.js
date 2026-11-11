@@ -4,7 +4,9 @@ const path = require('node:path');
 
 const pluginPath = path.resolve(__dirname, '..', 'index.js');
 
-const DEFAULT_SCALE = [0, 4, 8, 12, 16, 24, 32];
+// One default with the rules and configs/recommended (dx-06): before 3.20 the
+// audit stopped at 32, so 40, 48 and 64px were off-scale here and on-scale in Stylelint.
+const { DEFAULT_SCALE } = require('../presets/default-scale');
 
 const DEFAULT_BASE_FONT_SIZE = 16;
 
