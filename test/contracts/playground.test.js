@@ -107,3 +107,42 @@ test('the tailwind config in the bundle includes what it extends, as Stylelint r
   assert.ok(expected.some(([, , text]) => text.includes('rhythmguard/no-offscale-transform')), 'strict rules run');
   assert.deepEqual(byPosition(plain(actual.warnings.map((w) => [w.line, w.column, strip(w.text)]))), byPosition(expected));
 });
+
+// css-08, fix-06, fix-02: the playground takes the custom-property map path.
+// Two same-valued tokens are named and never written, and a token declared
+// only under @media is never written outside it, in the bundle as in Stylelint.
+test('the bundle agrees with Stylelint that same-valued and media-only tokens are never written', async () => {
+  const Rhythmguard = loadBundle();
+  const code = [
+    ':root { --spacing-1: 4px; --spacing-2: 8px; --spacing-gutter: 24px; --spacing-layout: 24px; }',
+    '@media (min-width: 768px) { :root { --spacing-3: 12px; } }',
+    '.a { gap: 24px; padding: 12px; margin: 23px; }',
+    '.b { margin: 13px; inset: 8px; }',
+    '@media (min-width: 768px) { .c { padding: 13px; } }',
+    '',
+  ].join('\n');
+  const rules = {
+    'rhythmguard/prefer-token': [true, { tokenMapFromCssCustomProperties: true, tokenPattern: '^--spacing-' }],
+    'rhythmguard/use-scale': [true, { fixWith: 'token', scale: [0, 4, 8, 12, 16, 24], tokenPattern: '^--spacing-' }],
+  };
+  const expected = await stylelintWarnings(code, rules);
+  const actual = Rhythmguard.lint(code, { rules });
+  // The token note names the file; Stylelint and the bundle spell its path differently.
+  const strip = (text) => text.replace(/ \([^()]*playground\.css\)/, '');
+  assert.deepEqual(
+    byPosition(plain(actual.warnings.map((w) => [w.line, w.column, strip(w.text)]))),
+    byPosition(expected.warnings.map(([line, column, text]) => [line, column, strip(text)])),
+  );
+  assert.ok(
+    expected.warnings.some(([, , text]) => text.includes('Use one of the tokens that hold it: var(--spacing-gutter) or var(--spacing-layout).')),
+    'the two 24px tokens are both named',
+  );
+
+  const fixedByStylelint = await stylelintWarnings(code, rules, true);
+  const fixedByBundle = Rhythmguard.lint(code, { fix: true, rules });
+  assert.equal(fixedByBundle.output, fixedByStylelint.output);
+  const lines = fixedByBundle.output.split('\n');
+  assert.equal(lines[2], '.a { gap: 24px; padding: 12px; margin: 24px; }', 'no guessed token, and the media-only token stays inside its media query');
+  assert.equal(lines[3], '.b { margin: 12px; inset: var(--spacing-2); }');
+  assert.equal(lines[4], '@media (min-width: 768px) { .c { padding: var(--spacing-3); } }', 'under the same condition the token is defined');
+});

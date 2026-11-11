@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- Token fixes never guess and never leave a token's scope. When two tokens hold one value, `prefer-token` names both (`Use one of the tokens that hold it: var(--space-gutter) or var(--space-layout).`) and writes neither on every map source: `tokenMapFromCssCustomProperties` (on in the `tailwind` config and the playground), `tokenMapFile` and `tokenMapFromTailwindSpacing`. Before, the map kept the last token declared, so `margin: 24px` became `var(--space-layout)` while the token index named both and wrote nothing, and a `use-scale` snap followed by `prefer-token` turned `23px` into the guessed token. A token declared only under `@media`, `@supports` or `@container`, or in a component block such as `.card`, is written by `use-scale` and `no-offscale-transform` with `fixWith: "token"` and by `prefer-token` only where it is defined: under the same conditions, or inside that block. Before, `padding: 13px` became `var(--space-3)` outside the media query that defines it, which computes to no padding below the breakpoint. No rule writes a token into a `var()` fallback any more, since the fallback is what renders when the tokens are missing; the literal is written, or the value is reported and left alone. A token that is not defined where a value sits is no longer named in that value's message either. The findings and the message templates are unchanged (css-08, fix-06, fix-02)
+
 ## [3.19.0] - 2026-11-09
 
 ### Changed

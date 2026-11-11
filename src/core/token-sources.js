@@ -195,6 +195,7 @@ function parseTokenSources({
         // `:root` and `@theme` declarations are the scale; a `.chip` variable is a
         // component parameter and stays out of it, as in the linted stylesheet (issue #258).
         scope: token.scope || 'root',
+        conditions: token.conditions || [],
         source: sourceReport.file,
         token: token.token,
         value: token.value,
@@ -307,6 +308,23 @@ function hasLineComments(filePath) {
 const ROOT_SELECTOR = /^(?::root|html|:host|:(?:where|is)\(\s*(?::root|html)\s*\))$/i;
 // At-rules that only condition their contents; the enclosing selector still decides the scope.
 const TRANSPARENT_AT_RULES = new Set(['media', 'supports', 'layer', 'container', 'scope', 'document']);
+// Of those, the ones that apply their contents only some of the time. A token
+// declared under one is undefined outside it, so a fix may write it only where
+// the same condition holds (fix-02). `@layer` applies always.
+const CONDITIONAL_AT_RULES = new Set(['media', 'supports', 'container', 'scope', 'document']);
+
+/**
+ * A conditional at-rule as a comparable key: `@media (min-width:768px)` and
+ * `@media (min-width: 768px)` are one condition.
+ */
+function conditionKey(name, params) {
+  const text = `${String(name).toLowerCase()} ${String(params || '')}`
+    .replace(/\s+/g, ' ')
+    .replace(/\s*([():,])\s*/g, '$1')
+    .trim()
+    .toLowerCase();
+  return text;
+}
 
 /**
  * Whether `//` at `index` starts a line comment. Never in plain CSS, and never
@@ -402,6 +420,44 @@ function readCustomPropertyValue(source, start, lineComments) {
   return { end: index, value: value.replace(/\s*!\s*important\s*$/i, '').trim() };
 }
 
+/** The scope of a declaration node: the AST-side twin of customPropertyDeclarations. */
+function scopeOfNode(decl) {
+  for (let node = decl.parent; node; node = node.parent) {
+    if (node.type === 'rule') {
+      return String(node.selector).split(',').every((selector) => ROOT_SELECTOR.test(selector.trim())) ? 'root' : 'component';
+    }
+    if (node.type === 'atrule') {
+      const name = String(node.name).toLowerCase();
+      if (name === 'theme') return 'root';
+      if (!TRANSPARENT_AT_RULES.has(name)) return 'component';
+    }
+  }
+  return 'root';
+}
+
+/** The conditional at-rules (`@media`, `@supports`, `@container`) a PostCSS node sits under, as condition keys. */
+function conditionsOfNode(node) {
+  const conditions = [];
+  for (let parent = node.parent; parent; parent = parent.parent) {
+    if (parent.type === 'atrule' && CONDITIONAL_AT_RULES.has(String(parent.name).toLowerCase())) {
+      conditions.push(conditionKey(parent.name, parent.params));
+    }
+  }
+  return conditions;
+}
+
+/** The conditional at-rules a declaration sits under, as condition keys. */
+function conditionsOfBlockHeaders(headers) {
+  const conditions = [];
+  for (const header of headers) {
+    const match = header.match(/^@([\w-]+)\s*(.*)$/);
+    if (match && CONDITIONAL_AT_RULES.has(match[1].toLowerCase())) {
+      conditions.push(conditionKey(match[1], match[2]));
+    }
+  }
+  return conditions;
+}
+
 function scopeOfBlockHeaders(headers) {
   for (let index = headers.length - 1; index >= 0; index -= 1) {
     const header = headers[index];
@@ -421,7 +477,7 @@ function scopeOfBlockHeaders(headers) {
  * for `:root`, `html`, `:host` and `@theme` blocks (through conditional
  * at-rules), `component` for anything else. One pass over the source that
  * skips comments and strings, so a brace in a comment cannot shift the
- * scope; this is the text-side twin of scopeOfNode in scale-inference.js.
+ * scope; this is the text-side twin of scopeOfNode.
  */
 function customPropertyDeclarations(source, { lineComments = true } = {}) {
   const declarations = [];
@@ -475,7 +531,7 @@ function customPropertyDeclarations(source, { lineComments = true } = {}) {
       if (match) {
         const { end, value } = readCustomPropertyValue(source, index + match[0].length, lineComments);
         if (value) {
-          declarations.push({ scope: scopeOfBlockHeaders(headers), token: match[1], value });
+          declarations.push({ conditions: conditionsOfBlockHeaders(headers), scope: scopeOfBlockHeaders(headers), token: match[1], value });
         }
         index = end;
         continue;
@@ -1325,8 +1381,26 @@ function extractTokenName(value) {
   return null;
 }
 
+/**
+ * Where a fix may write a token from one declaration of it (fix-02):
+ * `{ global: true }` for a root declaration outside every conditional at-rule,
+ * `{ conditions }` for a root declaration under `@media`, `@supports` or
+ * `@container` (the fixed declaration must sit under the same conditions),
+ * `{ anchor }` for a declaration in the linted stylesheet's own component
+ * block (the fixed declaration must sit inside that block), and null for a
+ * component declaration in another file, which no fix may write.
+ */
+function fixScopeOf(scope, conditions, anchor) {
+  if (scope === 'root') {
+    return conditions.length === 0 ? { global: true } : { conditions: [...conditions] };
+  }
+  return anchor ? { anchor } : null;
+}
+
 function addDefinition(definitions, {
+  anchor = null,
   baseFontSize,
+  conditions = [],
   file,
   scope = 'root',
   source,
@@ -1335,6 +1409,7 @@ function addDefinition(definitions, {
 }) {
   const entry = definitions.get(token) || {
     files: new Set(),
+    fixScopes: [],
     normalizedValues: new Set(),
     scopes: new Set(),
     sources: new Set(),
@@ -1344,6 +1419,10 @@ function addDefinition(definitions, {
 
   entry.files.add(file);
   entry.scopes.add(scope);
+  const fixScope = fixScopeOf(scope, conditions, anchor);
+  if (fixScope) {
+    entry.fixScopes.push(fixScope);
+  }
   entry.sources.add(source);
   entry.values.add(String(value).trim());
 
@@ -1425,7 +1504,9 @@ module.exports = {
   addDefinition,
   collectCssTokens,
   collectScssTokens,
+  conditionsOfNode,
   customPropertyDeclarations,
+  scopeOfNode,
   createTokenKindMatcher,
   getNormalizedValueKeys,
   hasLineComments,

@@ -1,7 +1,7 @@
 'use strict';
 
 const { readJsonFile } = require('./json');
-const { parseTokenValueLength } = require('./token-sources');
+const { conditionsOfNode, parseTokenValueLength, scopeOfNode } = require('./token-sources');
 
 const fs = require('node:fs');
 const path = require('node:path');
@@ -52,7 +52,27 @@ function displayOrigin(file) {
   return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? relative : file;
 }
 
-function addLengthValueMapping(map, rawLength, tokenReference, baseFontSize, origins = null, origin = null) {
+/**
+ * The tokens one map source offers for each key, before they reach the map.
+ * A key collects the tokens whose value is written that way (`exact`) apart
+ * from the tokens that only convert to it (`converted`: a 1rem token under the
+ * 16px key), so a token in the literal's own unit is preferred, as the token
+ * index does.
+ */
+function createCollector() {
+  return new Map();
+}
+
+function collect(collector, key, token, exact) {
+  if (!collector.has(key)) {
+    collector.set(key, { converted: new Set(), exact: new Set(), last: token });
+  }
+  const entry = collector.get(key);
+  (exact ? entry.exact : entry.converted).add(token);
+  entry.last = token;
+}
+
+function addLengthValueMapping(collector, rawLength, tokenReference, baseFontSize, origins = null, origin = null) {
   if (typeof rawLength !== 'string') {
     return;
   }
@@ -74,15 +94,49 @@ function addLengthValueMapping(map, rawLength, tokenReference, baseFontSize, ori
   // Keyed by the signed value: a -8px token stands for -8px, never for 8px
   // (issue #221). prefer-token negates a positive token for a negative literal.
   const normalizedRaw = formatLength(parsed.number, parsed.unit || 'px');
-  map[normalizedRaw] = token;
+  collect(collector, normalizedRaw, token, true);
 
   const px = toPx(parsed.number, parsed.unit, baseFontSize);
   if (px !== null) {
-    map[`${px}px`] = token;
+    const pxKey = `${px}px`;
+    collect(collector, pxKey, token, pxKey === normalizedRaw);
   }
 }
 
-function mergeExplicitTokenMap(target, source) {
+/**
+ * The tokens a collected key stands for: the ones written in its unit when
+ * there are any, the converted ones otherwise. Sorted, so messages are stable.
+ */
+function candidatesOf(entry) {
+  const chosen = entry.exact.size > 0 ? entry.exact : entry.converted;
+  return [...chosen].sort((a, b) => a.localeCompare(b, 'en', { numeric: true }));
+}
+
+/**
+ * Write one source's keys into the map. A key one token holds maps to that
+ * token. A key several tokens hold is a guess either way, so it is recorded
+ * in `ambiguous` with every candidate and no fix writes it (fix-06); the map
+ * keeps a token under the key only so the set of keys (which scale inference
+ * reads) is unchanged. A later source replaces an earlier one key by key.
+ * `accept` may skip a key entirely, leaving earlier sources in charge of it.
+ */
+function applyCollector(map, ambiguous, collector, accept = () => true) {
+  for (const [key, entry] of collector) {
+    const candidates = candidatesOf(entry);
+    if (!accept(candidates)) {
+      continue;
+    }
+    if (candidates.length === 1) {
+      map[key] = candidates[0];
+      delete ambiguous[key];
+    } else {
+      map[key] = entry.last;
+      ambiguous[key] = candidates;
+    }
+  }
+}
+
+function mergeExplicitTokenMap(target, source, ambiguous = {}) {
   if (!isPlainObject(source)) {
     return target;
   }
@@ -93,12 +147,13 @@ function mergeExplicitTokenMap(target, source) {
     }
 
     target[raw] = tokenReference;
+    delete ambiguous[raw];
   }
 
   return target;
 }
 
-function walkTokenGroup(map, group, prefix, baseFontSize, origins, origin) {
+function walkTokenGroup(collector, group, prefix, baseFontSize, origins, origin) {
   for (const [key, value] of Object.entries(group)) {
     const tokenName = `${prefix}-${key}`;
 
@@ -108,22 +163,23 @@ function walkTokenGroup(map, group, prefix, baseFontSize, origins, origin) {
 
     // Leaf node with $value (DTCG)
     if (typeof value.$value === 'string') {
-      addLengthValueMapping(map, value.$value, tokenName, baseFontSize, origins, origin);
+      addLengthValueMapping(collector, value.$value, tokenName, baseFontSize, origins, origin);
       continue;
     }
 
     // Leaf node with value (Style Dictionary)
     if (typeof value.value === 'string') {
-      addLengthValueMapping(map, value.value, tokenName, baseFontSize, origins, origin);
+      addLengthValueMapping(collector, value.value, tokenName, baseFontSize, origins, origin);
       continue;
     }
 
     // Nested group: recurse deeper
-    walkTokenGroup(map, value, tokenName, baseFontSize, origins, origin);
+    walkTokenGroup(collector, value, tokenName, baseFontSize, origins, origin);
   }
 }
 
 function mergeTokenMapFromFile({
+  ambiguous = {},
   baseFontSize,
   currentMap,
   origins = null,
@@ -152,6 +208,7 @@ function mergeTokenMapFromFile({
   const nextMap = {
     ...currentMap,
   };
+  const collector = createCollector();
   const origin = displayOrigin(resolvedPath);
 
   for (const [entryKey, entryValue] of Object.entries(parsed)) {
@@ -160,7 +217,7 @@ function mergeTokenMapFromFile({
       const valueAsLength = parseLengthToken(entryValue);
 
       if (keyAsLength) {
-        nextMap[entryKey] = entryValue;
+        collect(collector, entryKey, entryValue, true);
         if (origins && !origins[entryValue]) {
           origins[entryValue] = origin;
         }
@@ -168,36 +225,46 @@ function mergeTokenMapFromFile({
       }
 
       if (valueAsLength) {
-        addLengthValueMapping(nextMap, entryValue, entryKey, baseFontSize, origins, origin);
+        addLengthValueMapping(collector, entryValue, entryKey, baseFontSize, origins, origin);
       }
 
       continue;
     }
 
     if (typeof entryValue === 'number') {
-      addLengthValueMapping(nextMap, `${entryValue}px`, entryKey, baseFontSize, origins, origin);
+      addLengthValueMapping(collector, `${entryValue}px`, entryKey, baseFontSize, origins, origin);
       continue;
     }
 
     if (isPlainObject(entryValue)) {
       // Style Dictionary format: { value: "16px" }
       if (typeof entryValue.value === 'string') {
-        addLengthValueMapping(nextMap, entryValue.value, entryKey, baseFontSize, origins, origin);
+        addLengthValueMapping(collector, entryValue.value, entryKey, baseFontSize, origins, origin);
         continue;
       }
 
       // W3C DTCG format: { $value: "16px", $type: "dimension" }
       if (typeof entryValue.$value === 'string') {
-        addLengthValueMapping(nextMap, entryValue.$value, entryKey, baseFontSize, origins, origin);
+        addLengthValueMapping(collector, entryValue.$value, entryKey, baseFontSize, origins, origin);
         continue;
       }
 
       // Nested group: recurse (e.g. { spacing: { 4: { $value: "16px" } } })
-      walkTokenGroup(nextMap, entryValue, entryKey, baseFontSize, origins, origin);
+      walkTokenGroup(collector, entryValue, entryKey, baseFontSize, origins, origin);
     }
   }
 
+  applyCollector(nextMap, ambiguous, collector);
   return nextMap;
+}
+
+/**
+ * Whether a custom property declaration is defined everywhere: at the root
+ * (`:root`, `html`, `@theme`) and outside every `@media`, `@supports` and
+ * `@container` block.
+ */
+function declaredEverywhere(decl) {
+  return scopeOfNode(decl) === 'root' && conditionsOfNode(decl).length === 0;
 }
 
 function mergeTokenMapFromCssCustomProperties({
@@ -225,23 +292,38 @@ function mergeTokenMapFromCssCustomProperties({
     const px = parsed ? toPx(parsed.number, parsed.unit, baseFontSize) : null;
     const key = px === null ? `raw:${decl.value.trim()}` : `px:${formatLength(px, 'px')}`;
     if (!valuesByProp.has(decl.prop)) {
-      valuesByProp.set(decl.prop, { decl, keys: new Set() });
+      valuesByProp.set(decl.prop, { decl, everywhere: false, keys: new Set() });
     }
-    valuesByProp.get(decl.prop).keys.add(key);
+    const entry = valuesByProp.get(decl.prop);
+    entry.keys.add(key);
+    entry.everywhere = entry.everywhere || declaredEverywhere(decl);
   });
 
-  for (const { decl, keys } of valuesByProp.values()) {
-    if (keys.size > 1) {
+  const collector = createCollector();
+  const everywhere = new Set();
+  for (const entry of valuesByProp.values()) {
+    if (entry.keys.size > 1) {
       continue;
     }
 
-    const parsed = parseTokenValueLength(decl.value);
+    const parsed = parseTokenValueLength(entry.decl.value);
     if (!parsed || parsed.number === 0) {
       continue;
     }
 
-    addLengthValueMapping(nextMap, decl.value, `var(${decl.prop})`, baseFontSize, origins, origin);
+    const token = `var(${entry.decl.prop})`;
+    if (entry.everywhere) {
+      everywhere.add(token);
+    }
+    addLengthValueMapping(collector, entry.decl.value, token, baseFontSize, origins, origin);
   }
+
+  // A value two tokens hold, or one held by a token that is not defined
+  // everywhere (a `.card` token, a token under `@media`), is left out of the
+  // map. prefer-token's token index then names every candidate defined where
+  // the value sits and writes one only when it is the only one (css-08,
+  // fix-02).
+  applyCollector(nextMap, {}, collector, (candidates) => candidates.length === 1 && everywhere.has(candidates[0]));
 
   return nextMap;
 }
@@ -302,6 +384,7 @@ function loadTailwindSpacing(resolvedPath) {
 }
 
 function mergeTokenMapFromTailwindSpacing({
+  ambiguous = {},
   currentMap,
   origins = null,
   tailwindConfigPath,
@@ -323,6 +406,7 @@ function mergeTokenMapFromTailwindSpacing({
   const nextMap = {
     ...currentMap,
   };
+  const collector = createCollector();
 
   for (const [key, value] of Object.entries(spacing)) {
     if (typeof value !== 'string') {
@@ -335,12 +419,14 @@ function mergeTokenMapFromTailwindSpacing({
     }
 
     const normalizedRaw = formatLength(parsed.number, parsed.unit || 'px');
-    nextMap[normalizedRaw] = `theme(spacing.${key})`;
-    if (origins && !origins[nextMap[normalizedRaw]]) {
-      origins[nextMap[normalizedRaw]] = displayOrigin(resolvedPath);
+    const token = `theme(spacing.${key})`;
+    collect(collector, normalizedRaw, token, true);
+    if (origins && !origins[token]) {
+      origins[token] = displayOrigin(resolvedPath);
     }
   }
 
+  applyCollector(nextMap, ambiguous, collector);
   return nextMap;
 }
 
@@ -348,9 +434,12 @@ function mergeTokenMapFromTailwindSpacing({
  * The raw-length to token-reference map a rule fixes with. Pass `origins` to
  * also learn where each token reference came from (the token map file, the
  * stylesheet, the Tailwind config), keyed by the reference; an explicit
- * `tokenMap` entry has no origin.
+ * `tokenMap` entry has no origin. Pass `ambiguous` to learn the keys several
+ * tokens of one source hold, each with its candidates: those keys are never a
+ * fix (fix-06).
  */
 function buildEffectiveTokenMap({
+  ambiguous = {},
   options,
   origins = null,
   root,
@@ -360,6 +449,7 @@ function buildEffectiveTokenMap({
 
   if (options.tokenMapFile) {
     tokenMap = mergeTokenMapFromFile({
+      ambiguous,
       baseFontSize: options.baseFontSize,
       currentMap: tokenMap,
       origins,
@@ -379,6 +469,7 @@ function buildEffectiveTokenMap({
 
   if (options.tokenMapFromTailwindSpacing && options.tailwindConfigPath) {
     tokenMap = mergeTokenMapFromTailwindSpacing({
+      ambiguous,
       currentMap: tokenMap,
       origins,
       tailwindConfigPath: options.tailwindConfigPath,
@@ -386,7 +477,7 @@ function buildEffectiveTokenMap({
   }
 
   // Explicit tokenMap applied last so it takes precedence over auto-derived tokens
-  tokenMap = mergeExplicitTokenMap(tokenMap, options.tokenMap);
+  tokenMap = mergeExplicitTokenMap(tokenMap, options.tokenMap, ambiguous);
 
   return tokenMap;
 }

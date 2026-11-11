@@ -190,7 +190,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           }
 
           const fixedValue = options.fixToScale
-            ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens)
+            ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens, decl)
             : null;
 
           report(node, nearest, unit, fixedValue, position);
@@ -214,7 +214,7 @@ const ruleFunction = (primary, secondaryOptions) => {
         }
 
         const fixedValue = options.fixToScale
-          ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens)
+          ? replacementFor(parsedLength, nearest.nearest, options, decl.prop, avoidTokens, decl)
           : null;
 
         report(node, nearest, 'px', fixedValue, position);

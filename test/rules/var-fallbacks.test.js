@@ -55,13 +55,13 @@ test('no-offscale-transform checks the fallback of a token var()', async () => {
   assert.equal(tokenFix.code, ':root { --space-2: 12px; }\n.a { transform: translateX(var(--space-2, 12px)); }', 'never the token it falls back from');
 });
 
-test('use-scale never fixes a fallback to the token it falls back from', async () => {
+test('use-scale never writes a token into a var() fallback, its own or another (fix-02)', async () => {
   const code = ':root { --space-2: 8px; }\n.a { padding: var(--space-2, 7px); margin: var(--brand-gap, 7px); }';
   const fixed = await lintCss({ code, fix: true, rules: useScale({ fixWith: 'token', tokenPattern: '^--space-' }) });
-  assert.equal(fixed.code, ':root { --space-2: 8px; }\n.a { padding: var(--space-2, 8px); margin: var(--brand-gap, var(--space-2)); }');
+  assert.equal(fixed.code, ':root { --space-2: 8px; }\n.a { padding: var(--space-2, 8px); margin: var(--brand-gap, 8px); }');
 });
 
-test('prefer-token asks for a token in the fallback of a token var()', async () => {
+test('prefer-token asks for a token in a var() fallback but never writes one there (fix-02)', async () => {
   const code = ':root { --space-2: 8px; }\n.a { padding: var(--brand-gap, 8px); gap: var(--space-x, var(--space-y, 8px)); }';
   const reported = await lintCss({ code, rules: preferToken() });
   assert.deepEqual(reported.warnings.map((w) => w.text), [
@@ -69,7 +69,7 @@ test('prefer-token asks for a token in the fallback of a token var()', async () 
     'Unexpected raw scale value "8px". Use var(--space-2). (rhythmguard/prefer-token)',
   ]);
   const fixed = await lintCss({ code, fix: true, rules: preferToken() });
-  assert.equal(fixed.code, ':root { --space-2: 8px; }\n.a { padding: var(--brand-gap, var(--space-2)); gap: var(--space-x, var(--space-y, var(--space-2))); }');
+  assert.equal(fixed.code, code, 'a fallback renders when the tokens are missing, so a token there renders nothing');
 });
 
 test('prefer-token accepts a fallback that restates the token it falls back from', async () => {
@@ -79,5 +79,5 @@ test('prefer-token accepts a fallback that restates the token it falls back from
     'Unexpected raw scale value "12px". Use var(--space-3). (rhythmguard/prefer-token)',
   ]);
   const fixed = await lintCss({ code, fix: true, rules: preferToken() });
-  assert.equal(fixed.code, ':root { --space-2: 8px; --space-3: 12px; }\n.a { padding: var(--space-2, 8px); margin: var(--space-x, var(--space-2, 8px)); gap: var(--space-2, var(--space-3)); }');
+  assert.equal(fixed.code, code);
 });
