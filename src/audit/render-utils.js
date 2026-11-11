@@ -57,11 +57,25 @@ function escapeHtml(value) {
     .replace(/"/g, '&quot;');
 }
 
+/**
+ * "N new", and when some of them are token debt, how many are drift and how
+ * many token debt: --fail-on-new-drift counts only the drift (dx-08).
+ */
+function newFindingsPhrase(baseline) {
+  const total = baseline.newFindingsCount;
+  const debt = Number.isInteger(baseline.newTokenDebtCount) ? baseline.newTokenDebtCount : 0;
+  if (debt === 0) {
+    return `${total} new`;
+  }
+  return `${total} new (${total - debt} drift, ${debt} token debt)`;
+}
+
 module.exports = {
   escapeHtml,
   escapeMarkdown,
   histBar,
   markdownCode,
+  newFindingsPhrase,
   tableCode,
   scoreBar,
   truncate,

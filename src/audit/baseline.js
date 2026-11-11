@@ -103,11 +103,16 @@ function applyBaselineComparison(report, baselinePath, scopeInput) {
   const newFindings = currentFindings.filter((finding) => !baselineKeys.has(currentKeys.get(finding)));
   const resolvedFindings = entries.filter((entry) => !currentKeySet.has(entry.key) && countsAsResolved(scope, entry.file));
 
+  const newTokenDebtCount = newFindings.filter(isTokenDebtFinding).length;
   report.baseline = {
     baselineFindings: baselineFindings.length,
     file: formatPath(resolvedPath),
+    // What --fail-on-new-drift counts: every new finding but token debt.
+    newDriftCount: newFindings.length - newTokenDebtCount,
     newFindings,
     newFindingsCount: newFindings.length,
+    // What --fail-on-new-token-debt counts.
+    newTokenDebtCount,
     resolvedFindingsCount: resolvedFindings.length,
   };
   report.summary.newFindings = newFindings.length;
@@ -230,6 +235,18 @@ function legacyWriterDirectory(directory, scanRoot) {
   return path.resolve(scanRoot, ...segments.map(() => '..'));
 }
 
+/**
+ * Token debt: a raw value prefer-token says could be a token. It is not
+ * drift. On a scale value it is what the off-scale finding asked for: 13px
+ * snapped to 12px is a fix, and a gate that failed it rejected the fix the
+ * audit recommended (dx-08, ci-01). On an off-scale value it sits at the same
+ * position as the use-scale finding, which the drift gate already counts.
+ * --fail-on-new-drift leaves it out; --fail-on-new-token-debt gates it.
+ */
+function isTokenDebtFinding(finding) {
+  return Boolean(finding) && finding.type === 'token-opportunity';
+}
+
 function getAllFindings(report) {
   return [
     ...report.findings.css,
@@ -297,7 +314,7 @@ function createLegacyFindingKey(finding) {
 
 function getAuditFailures(report, parsed) {
   const failures = [];
-  const gated = parsed.maxFindings !== null || parsed.minCleanliness !== null || parsed.failOnNewDrift;
+  const gated = parsed.maxFindings !== null || parsed.minCleanliness !== null || parsed.failOnNewDrift || parsed.failOnNewTokenDebt === true;
   const missing = (report.scanned && report.scanned.stylelintMissing) || 0;
 
   // Without Stylelint the stylesheets were not audited, so no gate can pass on
@@ -316,11 +333,27 @@ function getAuditFailures(report, parsed) {
     failures.push(`scale cleanliness ${report.scaleCleanliness}% is below --min-cleanliness ${parsed.minCleanliness}%`);
   }
 
-  if (parsed.failOnNewDrift && report.baseline && report.baseline.newFindingsCount > 0) {
-    failures.push(`new drift found: ${report.baseline.newFindingsCount} finding(s) not present in baseline`);
+  // Token debt is not drift (see isTokenDebtFinding); it fails only with --fail-on-new-token-debt.
+  const comparison = report.baseline || null;
+  const newDrift = comparison ? countNew(comparison, 'newDriftCount', (finding) => !isTokenDebtFinding(finding)) : 0;
+  if (parsed.failOnNewDrift && newDrift > 0) {
+    failures.push(`new drift found: ${newDrift} finding(s) not present in baseline`);
+  }
+
+  const newTokenDebt = comparison ? countNew(comparison, 'newTokenDebtCount', isTokenDebtFinding) : 0;
+  if (parsed.failOnNewTokenDebt === true && newTokenDebt > 0) {
+    failures.push(`new token debt found: ${newTokenDebt} raw value(s) a token could replace, not present in baseline`);
   }
 
   return failures;
+}
+
+/** A count from the comparison, or worked out from its new findings when an older caller built it without one. */
+function countNew(comparison, key, predicate) {
+  if (Number.isInteger(comparison[key])) {
+    return comparison[key];
+  }
+  return (comparison.newFindings || []).filter(predicate).length;
 }
 
 module.exports = {
@@ -331,6 +364,7 @@ module.exports = {
   createLegacyFindingKey,
   getAllFindings,
   getAuditFailures,
+  isTokenDebtFinding,
   legacyWriterDirectory,
   writeBaseline,
 };

@@ -37,8 +37,10 @@ export interface AuditOptions {
   /** Path to a `.rhythmguardrc.json`-style config. Defaults to `.rhythmguardrc.json` in `cwd`. */
   configPath?: string;
   dir?: string;
-  /** @deprecated CLI only (`--fail-on-new-drift`): `createAuditReport` ignores it. Read `report.baseline.newFindingsCount`. */
+  /** @deprecated CLI only (`--fail-on-new-drift`): `createAuditReport` ignores it. Read `report.baseline.newDriftCount`. */
   failOnNewDrift?: boolean;
+  /** CLI only (`--fail-on-new-token-debt`, `audit.failOnNewTokenDebt`): `createAuditReport` ignores it. Read `report.baseline.newTokenDebtCount`. */
+  failOnNewTokenDebt?: boolean;
   /** @deprecated CLI only (`--badge-metric`): `createAuditReport` ignores it. */
   badgeMetric?: "drift" | "findings";
   /** @deprecated CLI only (`--format`): `createAuditReport` returns the report object, not rendered output. */
@@ -65,6 +67,12 @@ export interface AuditOptions {
   noConfig?: boolean;
   /** @deprecated CLI only (`--output`): `createAuditReport` writes nothing. */
   outputPath?: string;
+  /**
+   * Report each `var()` of a token that no scanned stylesheet, token source or
+   * installed token package defines as a `missing-token` finding (equivalent to
+   * `--report-missing-tokens`). Off by default in 3.x.
+   */
+  reportMissingTokens?: boolean;
   /** Explicit scale values, or `"auto"` to infer from token sources, then scanned CSS, then the default. */
   scale?: Array<number | string> | "auto";
   since?: string;
@@ -155,7 +163,9 @@ export interface AuditFinding {
   token?: string;
   /**
    * "off-scale", "token-opportunity", "motion-duration", "motion-easing", "tailwind-arbitrary-spacing",
-   * "tailwind-motion-duration", "tailwind-motion-easing", or "parse-error" for a stylesheet that could not be parsed.
+   * "tailwind-motion-duration", "tailwind-motion-easing", "missing-token" (with `reportMissingTokens`),
+   * "unclassified" for a Stylelint warning whose message the audit does not read (value null),
+   * or "parse-error" for a stylesheet that could not be parsed.
    */
   type: string;
   /** Class strings: the utility, such as `p` or `-mt`. */
@@ -168,8 +178,13 @@ export interface AuditBaselineComparison {
   baselineFindings: number;
   /** The baseline file, relative to the working directory. */
   file: string;
+  /** New findings that are drift: every new finding but token debt. What `--fail-on-new-drift` counts. */
+  newDriftCount: number;
+  /** Every finding not in the baseline, drift and token debt. */
   newFindings: AuditFinding[];
   newFindingsCount: number;
+  /** New `token-opportunity` findings: raw values a token could replace. What `--fail-on-new-token-debt` counts. */
+  newTokenDebtCount: number;
   resolvedFindingsCount: number;
   [key: string]: unknown;
 }

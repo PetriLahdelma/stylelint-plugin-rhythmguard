@@ -117,6 +117,8 @@ function applyAuditConfig(parsed, configResult) {
   applyConfigScalar(next, audit, cliOptions, 'includeMotion', 'includeMotion', parseBooleanOption);
   applyConfigScalar(next, audit, cliOptions, 'includeNonAuthored', 'includeNonAuthored', parseBooleanOption);
   applyConfigScalar(next, audit, cliOptions, 'checkMathBounds', 'checkMathBounds', parseBooleanOption);
+  applyConfigScalar(next, audit, cliOptions, 'failOnNewTokenDebt', 'failOnNewTokenDebt', parseBooleanOption);
+  applyConfigScalar(next, audit, cliOptions, 'reportMissingTokens', 'reportMissingTokens', parseBooleanOption);
   applyConfigScalar(next, audit, cliOptions, 'scales', 'scales', parseGroupScales);
   if (audit.ladders !== undefined) {
     next.ladderMinStepPx = parseLadderOptions(audit.ladders);

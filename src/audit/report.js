@@ -56,14 +56,19 @@ const { nonAuthoredReason } = require('./non-authored');
 const { collectCssFindings, runStylelintAudit } = require('./scan/stylesheets');
 const { collectTailwindFindings, collectTailwindMotionFindings } = require('./scan/templates');
 
-async function createAuditReport(options) {
-  const parsed = normalizeCreateAuditOptions(options);
+/**
+ * What an audit run reads before it lints anything: the files, the token
+ * sources and the one resolved scale. `rhythmguard scale` prints the scale
+ * from here, so it always names the scale the audit would check against.
+ * `parsed` is the options after normalizeCreateAuditOptions.
+ */
+function prepareAuditRun(parsed) {
   const resolvedDir = assertDirectory(parsed.dir);
   const ignorePatterns = resolveIgnorePatterns(parsed);
 
   const scanFiles = getScanFiles(resolvedDir, ignorePatterns, parsed);
 
-  const { scanScope, templateFiles } = scanFiles;
+  const { templateFiles } = scanFiles;
   // A --staged run reads each changed file as the index holds it.
   const readSource = scanFiles.readSource || readSourceFromDisk;
 
@@ -101,24 +106,16 @@ async function createAuditReport(options) {
   // against, so it is the scale the report names and prefer-token reads (#283).
   const groupScales = buildGroupScales(parsed.scales);
   const spacingOverride = groupScales.spacing && Array.isArray(groupScales.spacing.scale) ? groupScales.spacing.scale : null;
+  const isNonAuthored = (file) => nonAuthored.has(file);
   const scale = resolveAuditScale({
     baseFontSize: parsed.baseFontSize,
     cssFiles,
-    isNonAuthored: (file) => nonAuthored.has(file),
+    isNonAuthored,
     readSource,
     requested: spacingOverride || parsed.scale,
     tailwindConfigPath: parsed.tailwindConfigPath,
     tokenSourceResult: spacingSourceResult,
   });
-
-  const lintOptions = {
-    baseFontSize: parsed.baseFontSize,
-    checkMathBounds: parsed.checkMathBounds,
-    includeMotion: parsed.includeMotion,
-    readSource: scanFiles.readSource,
-    scale: scale.values,
-    scales: parsed.scales,
-  };
 
   // Class strings follow the ESLint rule: with no scale of the project's own
   // (the default, or "auto" finding none), they are judged by Tailwind's
@@ -127,6 +124,104 @@ async function createAuditReport(options) {
   if (classScale) {
     scale.classStrings = classScale;
   }
+
+  return {
+    classScale,
+    cssFiles,
+    groupScales,
+    isNonAuthored,
+    nonAuthored,
+    nonAuthoredSkipped,
+    readSource,
+    resolvedDir,
+    scale,
+    scanFiles,
+    spacingSourceResult,
+    templateFiles,
+    tokenSourceResult,
+  };
+}
+
+/**
+ * The places the audit knows spacing tokens from, as `scaleSources` entries
+ * for prefer-token: the configured token sources that exist, then every
+ * authored stylesheet that declares a spacing custom property or Sass token.
+ * prefer-token then names the token that holds a raw value, and the file it
+ * comes from, as the token contract does (dx-08, ci-01). A token declared in
+ * a component block or under a media query in another file is never offered
+ * outside it: the rule's token index keeps each declaration's scope.
+ */
+function tokenScaleSources({ baseFontSize, cssFiles, isNonAuthored, readSource, tokenSources }) {
+  const entries = [];
+  for (const source of tokenSources || []) {
+    if (!source || typeof source !== 'object' || !source.path) {
+      continue;
+    }
+    const resolved = path.resolve(source.baseDir || process.cwd(), source.path);
+    if (!fs.existsSync(resolved)) {
+      continue;
+    }
+    entries.push({
+      format: source.format || 'auto',
+      path: resolved,
+      ...(source.tokenPattern ? { tokenPattern: source.tokenPattern } : {}),
+    });
+  }
+
+  const matchesKind = createTokenKindMatcher('spacing');
+  for (const filePath of cssFiles) {
+    if (isNonAuthored(filePath)) {
+      continue;
+    }
+    let text;
+    try {
+      text = readSource(filePath);
+    } catch {
+      continue;
+    }
+    const definitions = new Map();
+    collectTokenDefinitions(text, formatPath(filePath), definitions, matchesKind, baseFontSize);
+    if (definitions.size > 0) {
+      entries.push({ format: 'css', path: path.resolve(filePath) });
+    }
+  }
+  return entries;
+}
+
+async function createAuditReport(options) {
+  const parsed = normalizeCreateAuditOptions(options);
+  const run = prepareAuditRun(parsed);
+  const {
+    classScale,
+    cssFiles,
+    groupScales,
+    nonAuthored,
+    nonAuthoredSkipped,
+    readSource,
+    resolvedDir,
+    scale,
+    scanFiles,
+    templateFiles,
+    tokenSourceResult,
+  } = run;
+  const { scanScope } = scanFiles;
+
+  const lintOptions = {
+    baseFontSize: parsed.baseFontSize,
+    checkMathBounds: parsed.checkMathBounds,
+    includeMotion: parsed.includeMotion,
+    readSource: scanFiles.readSource,
+    scale: scale.values,
+    scales: parsed.scales,
+    tokenScaleSources: tokenScaleSources({
+      baseFontSize: parsed.baseFontSize,
+      cssFiles,
+      isNonAuthored: run.isNonAuthored,
+      readSource,
+      tokenSources: parsed.tokenSources,
+    }),
+  };
+
   const classOptions = classScale ? { ...lintOptions, scale: classScale.values } : lintOptions;
 
   const cssResults = await runStylelintAudit(cssFiles, lintOptions);
@@ -147,6 +242,9 @@ async function createAuditReport(options) {
     ...collectTailwindMotionFindings(templateFiles, lintOptions),
   ];
 
+  // Every token a chain can end in: token sources of any kind and installed
+  // token packages. Read once, for the chains and for missing tokens.
+  const knownDefinitions = chainDefinitions(parsed);
   const report = buildReport({
     baseFontSize: parsed.baseFontSize,
     config: parsed.config,
@@ -155,11 +253,15 @@ async function createAuditReport(options) {
     dir: parsed.dir,
     externalTokenDefinitions: tokenSourceResult.definitions,
     includeMotion: parsed.includeMotion,
+    knownTokens: parsed.reportMissingTokens === true
+      ? knownTokenNames(knownDefinitions, nonAuthoredSkipped, readSource)
+      : new Set(),
     linksOutsideRoot: scanFiles.linksOutsideRoot || [],
     motionFindings,
     nonAuthoredFiles: nonAuthoredSkipped.map((file) => ({ file: formatPath(file), reason: nonAuthored.get(file) })),
     parseErrorFindings,
     readSource,
+    reportMissingTokens: parsed.reportMissingTokens === true,
     scale,
     scanScope,
     scssFiles: cssResults.scssFiles || 0,
@@ -172,6 +274,10 @@ async function createAuditReport(options) {
     tokenKind: parsed.tokenKind,
     tokenSourceReports: tokenSourceResult.sources,
     tokenSourceWarnings: tokenSourceResult.warnings,
+    unauditedFiles: new Set([
+      ...(cssResults.unauditedFiles || []),
+      ...parseErrorFindings.map((finding) => path.resolve(process.cwd(), finding.file)),
+    ]),
   });
 
   // The files this run scanned, for the CLI's next-step commands (lint globs,
@@ -187,7 +293,7 @@ async function createAuditReport(options) {
   report.tokenContract.chains = toChainsContract(resolveTokenChains({
     baseFontSize: parsed.baseFontSize,
     declarations,
-    references: collectDeclarations({ cssFiles: [], externalDefinitions: chainDefinitions(parsed) }),
+    references: collectDeclarations({ cssFiles: [], externalDefinitions: knownDefinitions }),
     scale: scale.values,
   }));
   report.tokenContract.ladders = toLaddersContract(resolveTokenLadders({
@@ -232,6 +338,30 @@ async function createAuditReport(options) {
   }
 
   return report;
+}
+
+/**
+ * Token names defined outside the token contract's own definitions: token
+ * sources of any kind, installed token packages, and the vendored or built
+ * stylesheets the audit skips. A `var()` of one of these is not a missing token.
+ */
+function knownTokenNames(knownDefinitions, skippedCssFiles, readSource) {
+  const names = new Set(knownDefinitions.keys());
+  const matchesAll = createTokenKindMatcher('all');
+  for (const filePath of skippedCssFiles) {
+    let text;
+    try {
+      text = readSource(filePath);
+    } catch {
+      continue;
+    }
+    const definitions = new Map();
+    collectTokenDefinitions(text, formatPath(filePath), definitions, matchesAll, 16);
+    for (const token of definitions.keys()) {
+      names.add(token);
+    }
+  }
+  return names;
 }
 
 /**
@@ -420,4 +550,6 @@ function normalizeCreateAuditOptions(rawOptions) {
 module.exports = {
   createAuditReport,
   normalizeCreateAuditOptions,
+  prepareAuditRun,
+  tokenScaleSources,
 };

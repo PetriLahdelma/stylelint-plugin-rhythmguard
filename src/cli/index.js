@@ -9,6 +9,8 @@ the spacing scale, audits the current directory and prints a config to paste.
 Commands:
   quickstart    Same as running with no command
   audit <dir>   Report design-system drift across CSS and Tailwind class strings
+  scale [dir]   Print the scale the audit checks against, its source and the
+                tokens that hold each step (--format json for agents)
   fix <dir>     Replace one off-scale value everywhere, or execute snap decisions
   init          Scaffold a Rhythmguard config for your project
                 --agents <claude|cursor|copilot|all> installs the agent instruction packs instead
@@ -22,6 +24,7 @@ Examples:
   npx rhythmguard
   npx rhythmguard audit ./src
   npx rhythmguard audit ./src --format markdown
+  npx rhythmguard scale --scale auto --format json
   npx rhythmguard fix ./src --value 10px --to "var(--space-sm)" --write
   npx rhythmguard init
   npx rhythmguard init --agents all
@@ -47,6 +50,8 @@ function main() {
     require('./quickstart').run();
   } else if (command === 'audit') {
     require('./audit').run();
+  } else if (command === 'scale') {
+    require('./scale').run();
   } else if (command === 'fix') {
     require('./fix').run();
   } else if (command === 'init') {

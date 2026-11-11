@@ -7,6 +7,7 @@ const {
 const { auditCommand, shellQuote } = require('./next-steps');
 const {
   histBar,
+  newFindingsPhrase,
   scoreBar,
   truncate,
 } = require('./render-utils');
@@ -48,7 +49,7 @@ function renderText(report, options = {}) {
     lines.push(`  Decisions                ${report.decisions.adopt + report.decisions.allow + report.decisions.snap + report.decisions.undecided} (${report.decisions.adopt} adopt, ${report.decisions.allow} allow, ${report.decisions.snap} snap, ${report.decisions.undecided} undecided); ${report.decisions.suppressed} findings suppressed`);
   }
   if (report.baseline) {
-    lines.push(`  Since baseline           ${report.baseline.resolvedFindingsCount} resolved, ${report.baseline.newFindingsCount} new`);
+    lines.push(`  Since baseline           ${report.baseline.resolvedFindingsCount} resolved, ${newFindingsPhrase(report.baseline)}`);
   }
   lines.push('');
 
@@ -57,6 +58,8 @@ function renderText(report, options = {}) {
   appendHistogram(lines, 'CSS TOKEN OPPORTUNITIES', report.tokenOpportunities);
   appendHistogram(lines, 'TAILWIND CLASS-STRING DRIFT', report.tailwindArbitraryValues);
   appendHistogram(lines, 'MOTION RHYTHM DRIFT', report.motion.values);
+  appendFindingList(lines, 'MISSING TOKENS IN USE', report.findings.css.filter((finding) => finding.type === 'missing-token'));
+  appendFindingList(lines, 'UNCLASSIFIED WARNINGS', report.findings.css.filter((finding) => finding.type === 'unclassified'));
   appendTokenContractText(lines, report.tokenContract);
   if (report.tokenContract.chains && report.tokenContract.chains.summary.total > 0) {
     const { summary } = report.tokenContract.chains;
@@ -212,6 +215,9 @@ function appendBaselineText(lines, report) {
     lines.push('');
     lines.push(`  Baseline findings      ${String(report.baseline.baselineFindings).padStart(4)}`);
     lines.push(`  New findings           ${String(report.baseline.newFindingsCount).padStart(4)}`);
+    if (report.baseline.newTokenDebtCount > 0) {
+      lines.push(`    of which token debt  ${String(report.baseline.newTokenDebtCount).padStart(4)}  (not drift; --fail-on-new-token-debt gates it)`);
+    }
     lines.push(`  Resolved findings      ${String(report.baseline.resolvedFindingsCount).padStart(4)}`);
     lines.push('');
   }
@@ -220,6 +226,26 @@ function appendBaselineText(lines, report) {
     lines.push(`  Baseline written       ${report.baselineWritten.file}`);
     lines.push('');
   }
+}
+
+/**
+ * Findings that have no value to count by: missing-token uses (with
+ * --report-missing-tokens) and Stylelint warnings the audit could not read
+ * (cq-02). Ten lines, then a count.
+ */
+function appendFindingList(lines, title, findings) {
+  if (findings.length === 0) {
+    return;
+  }
+  lines.push(`  ── ${title} ──  ${findings.length} total`);
+  lines.push('');
+  for (const finding of findings.slice(0, 10)) {
+    lines.push(`  ${finding.file}:${finding.line}:${finding.column}  ${finding.text}`);
+  }
+  if (findings.length > 10) {
+    lines.push(`  ${findings.length - 10} more in --format json`);
+  }
+  lines.push('');
 }
 
 function appendHistogram(lines, title, counts = {}) {
