@@ -92,11 +92,21 @@ const VUE_TEMPLATE_KEYS = {
 function vueAttribute(code, attribute) {
   const directive = attribute.name.startsWith(':');
   const node = withLoc(code, { directive, range: [attribute.start, attribute.end], type: 'VAttribute' });
-  node.key = withLoc(code, {
-    name: directive ? attribute.name.slice(1) : attribute.name,
-    range: [attribute.start, attribute.start + attribute.name.length],
-    type: directive ? 'VDirectiveKey' : 'VIdentifier',
-  });
+  const keyRange = [attribute.start, attribute.start + attribute.name.length];
+  if (directive) {
+    // `:class` is shorthand for `v-bind:class`: the directive name is `bind`
+    // and the argument names the attribute, as vue-eslint-parser builds it.
+    node.key = withLoc(code, { range: keyRange, type: 'VDirectiveKey' });
+    node.key.name = withLoc(code, { name: 'bind', range: [attribute.start, attribute.start + 1], rawName: ':', type: 'VIdentifier' });
+    node.key.argument = withLoc(code, {
+      name: attribute.name.slice(1),
+      range: [attribute.start + 1, keyRange[1]],
+      rawName: attribute.name.slice(1),
+      type: 'VIdentifier',
+    });
+  } else {
+    node.key = withLoc(code, { name: attribute.name, range: keyRange, rawName: attribute.name, type: 'VIdentifier' });
+  }
   if (directive) {
     node.value = withLoc(code, { range: [attribute.valueStart, attribute.end], type: 'VExpressionContainer' });
     node.value.expression = parseExpressionAt(code, attribute.valueStart + 1, attribute.end - 1);

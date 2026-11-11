@@ -86,8 +86,8 @@ export default [
 Espree, ESLint's default parser, reads JavaScript and JSX only. Other files need their parser in `languageOptions.parser`, in a config block whose `files` matches them, with the plugin and rule added to that block:
 
 - TypeScript (`.ts`, `.tsx`): `typescript-eslint`, with `parser: tseslint.parser` and `files: ['**/*.{ts,tsx}']`. JSX in `.tsx` needs no `ecmaFeatures` there.
-- Vue: `vue-eslint-parser`, usually through `eslint-plugin-vue`'s flat configs. The rule checks static `class` attributes in `<template>`, the strings in bound classes (`:class="{ 'p-[13px]': on }"`), and every string in `<script>`.
-- Svelte: `svelte-eslint-parser`, usually through `eslint-plugin-svelte`'s flat configs. The rule checks the static text of `class` attributes (`class="p-[13px] {extra}"`) and every string in expressions and `<script>`.
+- Vue: `vue-eslint-parser`, usually through `eslint-plugin-vue`'s flat configs. The rule checks static `class` attributes in `<template>`, the strings in bound classes (`:class="{ 'p-[13px]': on }"`), and class strings in `<script>` (see [What gets checked](#what-gets-checked)).
+- Svelte: `svelte-eslint-parser`, usually through `eslint-plugin-svelte`'s flat configs. The rule checks the static text of `class` attributes (`class="p-[13px] {extra}"`), the strings in `class={...}`, and class strings in `<script>`.
 - Astro: `astro-eslint-parser`, usually through `eslint-plugin-astro`'s flat configs.
 
 Set `scale` to your design system's spacing steps in px. The rule does not read your Tailwind theme; the Stylelint plugin does that for stylesheets (see below).
@@ -122,17 +122,20 @@ That writes `eslint-suppressions.json` with a count per file and rule. Commit it
 
 | Rule | What it reports | Fix |
 | --- | --- | --- |
-| [`tailwind-class-use-scale`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/tailwind-class-use-scale.md) | Off-scale arbitrary spacing values (`p-[13px]`, `gap-[18px]`, `-m-[7px]`) in class strings | The utility class for the nearest step |
+| [`tailwind-class-use-scale`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/tailwind-class-use-scale.md) | Off-scale arbitrary spacing values (`p-[13px]`, `gap-[18px]`, `-m-[7px]`) in class strings | The utility class for the nearest step; none for negative padding or gap, which Tailwind does not generate |
 | [`tailwind-class-use-motion-scale`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/tailwind-class-use-motion-scale.md) | Off-scale `duration-[...]` and `delay-[...]`, raw `ease-[...]`. Opt-in | Nearest duration |
 
 ### What gets checked
 
-Every string literal and template chunk in the file, so there is nothing to configure per helper:
+Class strings, not every string, so `--fix` never rewrites a type union, an enum member, an `aria-label` or a `title`:
 
-- `className="p-[13px]"`
-- `cn("p-[13px]", condition && "m-[7px]")`, `clsx(...)`, `twMerge(...)`
-- `cva("base", { variants: { size: { sm: "p-[5px]" } } })`
+- `className`, `class` and `*ClassName` attributes, and object properties with those names: `className="p-[13px]"`
+- Arguments of `cn`, `clsx`, `classnames`, `cx`, `cva`, `tv`, `twMerge` and `twJoin`, with nested arrays, object keys and conditionals: `cn("p-[13px]", condition && "m-[7px]")`, `cva("base", { variants: { size: { sm: "p-[5px]" } } })`
+- `tw` tagged templates: `` tw`p-[13px]` ``
 - `<div class="p-[13px]">` in Vue and Svelte templates, with their parsers (see [Other file types](#other-file-types))
+- Any other string with two or more utility-shaped tokens: `const base = "flex p-[13px]"`
+
+Type positions (literal types, enum members, interface members) and every other attribute (`aria-*`, `title`, `id`, `data-*`, `alt`, `placeholder`, component props) are never checked. Add your own helpers and attributes with `classFunctions` and `classContexts`.
 
 Padding, margin, gap, inset, space and translate utilities, with their axis and side variants and any variant prefix (`md:`, `hover:`, `has-[>button]:`). `rem` and `em` values are converted through `baseFontSize`.
 
@@ -143,6 +146,8 @@ Padding, margin, gap, inset, space and translate utilities, with their axis and 
 | `scale` | Tailwind's default ladder | Allowed spacing values in px. Without it, the steps of Tailwind's default theme on `spacingUnit` (`0, 2, 4, 6, 8, 10, 12, 14, 16, 20, ... 384` on a 16px root), and messages end with `Scale: Tailwind default spacing.` Before 3.20 the default stopped at 32. Set `scale` to your project's scale when it is not Tailwind's |
 | `units` | `['px', 'rem', 'em']` | Units the rule checks |
 | `baseFontSize` | `16` | Base for converting `rem` and `em` |
+| `classFunctions` | `[]` | More function and tagged-template names whose arguments are class strings, added to `cn`, `clsx`, `classnames`, `cx`, `cva`, `tv`, `twMerge`, `twJoin` and `tw` |
+| `classContexts` | `[]` | More JSX attribute and object property names whose values are class strings, added to `class`, `className` and `*ClassName`. A leading `*` matches by suffix |
 | `allowHairlines` | `true` | Skips non-zero lengths of one CSS pixel or less (`translate-y-[0.5px]`, `-mt-[1px]`, `p-[0.0625rem]`), as the Stylelint rules do. `false` reports them |
 | `allowNegative` | `true` | Whether negative arbitrary values (`m-[-8px]`, `-m-[8px]`) are allowed |
 | `spacingUnit` | `baseFontSize / 4` (`4`) | Px per Tailwind spacing step (`0.25rem`), used to name and write classes. `false` keeps the fix in arbitrary form (`p-[12px]`) |

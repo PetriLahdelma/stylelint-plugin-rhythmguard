@@ -8,12 +8,16 @@ import { defineConfig } from 'eslint/config';
 import rhythmguard from 'eslint-plugin-rhythmguard';
 import companion from 'stylelint-plugin-rhythmguard/eslint';
 import type { RhythmguardTailwindClassOptions } from 'stylelint-plugin-rhythmguard/eslint';
+import type { RhythmguardTailwindClassOptions as PackageClassOptions } from 'eslint-plugin-rhythmguard';
 
 const classOptions: RhythmguardTailwindClassOptions = {
   allowHairlines: false,
+  classContexts: ['tw', '*Classes'],
+  classFunctions: ['classNames'],
   scale: [0, 4, 8, 12, 16, 24, 32],
   spacingUnit: false,
 };
+const packageClassOptions: PackageClassOptions = classOptions;
 
 const config = defineConfig([
   {
@@ -49,6 +53,7 @@ const recommendedAsConfig: Linter.Config = companion.configs.recommended;
 const spreadRecommended: Linter.Config = { ...rhythmguard.configs.recommended, files: ['**/*.jsx'] };
 
 void config;
+void packageClassOptions;
 void standalone;
 void recommendedAsConfig;
 void spreadRecommended;

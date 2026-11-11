@@ -3,10 +3,11 @@
 const { MAX_NOTE_LENGTH, normalizeNote, withNote } = require('../../core/options');
 const { createTailwindClassAnalyzer, offScaleClassMessage } = require('../../core/tailwind-class-analysis');
 const { classStringValue, createTokenFixer, isClassAttributeText } = require('../literal-spans');
+const { createClassContextMatchers, isClassString } = require('../class-context');
 
 const RULE_NAME = 'tailwind-class-use-scale';
 
-function maybeCheckNodeText(node, sourceCode, context, analyzer, allowFix) {
+function maybeCheckNodeText(node, sourceCode, context, analyzer, allowFix, matchers) {
   const value = classStringValue(node);
   if (!value) {
     return;
@@ -14,6 +15,14 @@ function maybeCheckNodeText(node, sourceCode, context, analyzer, allowFix) {
 
   const findings = analyzer.analyzeClassString(value);
   if (findings.length === 0) {
+    return;
+  }
+
+  // Only class strings are checked: class contexts, or elsewhere a string
+  // holding two or more utility-shaped tokens; never a type position or a
+  // non-class attribute (cs-04, fix-09). Markup class text is gated by the
+  // caller. Run after the cheap analysis, so most strings never walk up.
+  if (matchers && !isClassString(node, value, matchers)) {
     return;
   }
 
@@ -25,7 +34,7 @@ function maybeCheckNodeText(node, sourceCode, context, analyzer, allowFix) {
     context.report({
       message: withNote(offScaleClassMessage(segment.token, analysis, analyzer.options.scaleName), analyzer.note),
       node,
-      fix: replaceToken && analysis.reason !== 'negative' && analysis.fixedToken
+      fix: replaceToken && analysis.reason === 'off-scale' && analysis.fixedToken
         ? replaceToken(segment.start, segment.token, analysis.fixedToken)
         : null,
     });
@@ -47,6 +56,14 @@ module.exports = {
           allowHairlines: { type: 'boolean' },
           allowNegative: { type: 'boolean' },
           baseFontSize: { type: 'number' },
+          classContexts: {
+            items: { minLength: 1, type: 'string' },
+            type: 'array',
+          },
+          classFunctions: {
+            items: { minLength: 1, type: 'string' },
+            type: 'array',
+          },
           note: { maxLength: MAX_NOTE_LENGTH, minLength: 1, type: 'string' },
           scale: {
             items: {
@@ -77,9 +94,13 @@ module.exports = {
     const analyzer = createTailwindClassAnalyzer(option);
     analyzer.note = normalizeNote(option.note);
     const sourceCode = context.sourceCode || context.getSourceCode();
+    const matchers = createClassContextMatchers(option);
 
-    const Literal = (node) => maybeCheckNodeText(node, sourceCode, context, analyzer, true);
-    const TemplateElement = (node) => maybeCheckNodeText(node, sourceCode, context, analyzer, false);
+    const Literal = (node) => maybeCheckNodeText(node, sourceCode, context, analyzer, true, matchers);
+    const TemplateElement = (node) => maybeCheckNodeText(node, sourceCode, context, analyzer, false, matchers);
+    // Static class text in Vue and Svelte markup, already known to be a class
+    // attribute value.
+    const ClassText = (node) => maybeCheckNodeText(node, sourceCode, context, analyzer, true, null);
     const scriptVisitor = { Literal, TemplateElement };
     const parserServices = sourceCode.parserServices || context.parserServices;
 
@@ -89,8 +110,8 @@ module.exports = {
     // as other linters' JS plugin runtimes) never see it.
     if ((sourceCode.visitorKeys && sourceCode.visitorKeys.SvelteLiteral) || (parserServices && parserServices.isSvelte)) {
       scriptVisitor.SvelteLiteral = (node) => {
-        if (isClassAttributeText(node)) {
-          Literal(node);
+        if (isClassAttributeText(node, matchers.isClassContextName)) {
+          ClassText(node);
         }
       };
     }
@@ -104,8 +125,8 @@ module.exports = {
           Literal,
           TemplateElement,
           VLiteral(node) {
-            if (isClassAttributeText(node)) {
-              Literal(node);
+            if (isClassAttributeText(node, matchers.isClassContextName)) {
+              ClassText(node);
             }
           },
         },

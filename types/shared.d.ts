@@ -219,6 +219,16 @@ export interface RhythmguardTailwindClassOptions {
   allowNegative?: boolean;
   /** Base for converting `rem` and `em`. Default 16. */
   baseFontSize?: number;
+  /**
+   * JSX attribute and object property names whose string values are class strings, added to the defaults
+   * `["class", "className", "*ClassName"]`. A leading `*` matches by suffix. Other JSX attributes are never checked.
+   */
+  classContexts?: string[];
+  /**
+   * Function and tagged-template names whose string arguments are class strings, added to the defaults
+   * `["cn", "clsx", "classnames", "cx", "cva", "tv", "twMerge", "twJoin", "tw"]`.
+   */
+  classFunctions?: string[];
   /** A sentence of up to 200 characters appended to every finding, after the built-in text. */
   note?: string;
   /** Allowed values. Default `[0, 4, 8, 12, 16, 24, 32]`. */

@@ -269,9 +269,10 @@ function createTokenFixer(node, sourceCode) {
  * (`<div class="p-[13px]">`, a `VLiteral` in a non-directive `VAttribute`) or
  * a Svelte component (`<div class="p-[13px] {x}">`, a `SvelteLiteral` in a
  * `SvelteAttribute`). Bound classes (`:class="..."`, `class={...}`) are
- * expressions, and their strings are ordinary literals.
+ * expressions, and their strings are ordinary literals. `isClassName` adds
+ * attribute names (the rule's `classContexts`); `class` always counts.
  */
-function isClassAttributeText(node) {
+function isClassAttributeText(node, isClassName = () => false) {
   const attribute = node.parent;
   if (!attribute || !attribute.key) {
     return false;
@@ -280,13 +281,13 @@ function isClassAttributeText(node) {
     return attribute.type === 'VAttribute'
       && attribute.directive === false
       && attribute.value === node
-      && String(attribute.key.name).toLowerCase() === 'class';
+      && (String(attribute.key.name).toLowerCase() === 'class' || isClassName(attribute.key.name));
   }
   if (node.type === 'SvelteLiteral') {
     return attribute.type === 'SvelteAttribute'
       && Array.isArray(attribute.value)
       && attribute.value.includes(node)
-      && attribute.key.name === 'class';
+      && (attribute.key.name === 'class' || isClassName(attribute.key.name));
   }
   return false;
 }

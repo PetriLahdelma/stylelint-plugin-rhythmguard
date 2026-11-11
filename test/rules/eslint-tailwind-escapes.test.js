@@ -41,9 +41,9 @@ function assertParses(messages) {
 }
 
 test('fix keeps a \\n escape after the class (#225)', () => {
-  const { afterFix, fixed, messages } = lint("const a = 'p-[13px]\\n';");
+  const { afterFix, fixed, messages } = lint("const a = cn('p-[13px]\\n');");
   assert.equal(messages.length, 1);
-  assert.equal(fixed.output, "const a = 'p-3\\n';");
+  assert.equal(fixed.output, "const a = cn('p-3\\n');");
   assertParses(afterFix);
 });
 
@@ -54,8 +54,8 @@ test('fix keeps an escaped backslash inside an arbitrary content value (#225)', 
 });
 
 test('fix keeps a lone escaped backslash between classes (#225)', () => {
-  const { afterFix, fixed } = lint("const c = 'p-[13px] \\\\ x';");
-  assert.equal(fixed.output, "const c = 'p-3 \\\\ x';");
+  const { afterFix, fixed } = lint("const c = cn('p-[13px] \\\\ x');");
+  assert.equal(fixed.output, "const c = cn('p-3 \\\\ x');");
   assertParses(afterFix);
 });
 
@@ -84,8 +84,8 @@ test('fix keeps escaped quotes, unicode escapes and line continuations around cl
 });
 
 test('fix keeps an escaped delimiter quote in a double-quoted string', () => {
-  const { afterFix, fixed } = lint('const e = "a\\"b p-[13px]";');
-  assert.equal(fixed.output, 'const e = "a\\"b p-3";');
+  const { afterFix, fixed } = lint('const e = cn("a\\"b p-[13px]");');
+  assert.equal(fixed.output, 'const e = cn("a\\"b p-3");');
   assertParses(afterFix);
 });
 
