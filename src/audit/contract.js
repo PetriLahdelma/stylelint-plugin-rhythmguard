@@ -433,6 +433,8 @@ function toAuditContractReport(report) {
         files: report.scale ? report.scale.files : [],
         offScaleProperties: report.offScaleProperties || {},
         offScaleValues: report.offScaleValues,
+        // The preset a fallback is: "tailwind" in a Tailwind project, else "rhythmic-4"; null otherwise.
+        preset: report.scale && report.scale.preset ? report.scale.preset : null,
         rejected: report.scale && report.scale.rejected ? report.scale.rejected : null,
         source: report.scale ? report.scale.source : 'default',
         tokenOpportunities: report.tokenOpportunities,

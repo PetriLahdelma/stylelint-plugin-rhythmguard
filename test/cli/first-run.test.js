@@ -46,6 +46,8 @@ const STACKS = {
     'package.json': '{"name":"tw3-app","devDependencies":{"tailwindcss":"^3.4.0"}}',
     'web/styles/site.css': '.hero { margin-top: 13px; }\n',
     'web/pages/index.jsx': 'export const P = () => <main className="mt-[13px]" />;\n',
+    // Found, not loaded by the quickstart; the pasted config reads it (tf-06).
+    'tailwind.config.js': "module.exports = { theme: { spacing: { 0: '0px', 1: '4px', 2: '8px', 3: '12px', 4: '16px', 6: '24px', 8: '32px' } } };\n",
   },
 };
 
@@ -127,8 +129,40 @@ for (const [name, files] of Object.entries(STACKS)) {
 
     assert.match(stdout, /npx rhythmguard audit \. --scale auto[^\n]* --plan/);
     assert.doesNotMatch(stdout, /stylelint --fix/);
+
+    // The pasted config reproduces the audit (dx-02): as many use-scale problems as off-scale values reported.
+    const auditCount = Number(stdout.match(/Off-scale\s+(\d+) in CSS/)[1]);
+    const scaleWarnings = warnings.filter((warning) => warning.rule === 'rhythmguard/use-scale' && /off-scale value/.test(warning.text));
+    assert.equal(scaleWarnings.length, auditCount, `pasted config: ${JSON.stringify(scaleWarnings.map((w) => w.text))}`);
+
+    if (files['tailwind.config.js']) {
+      assert.deepEqual(blocks.stylelint.rules['rhythmguard/use-scale'], [true, { scale: 'auto', tailwindConfigPath: './tailwind.config.js' }]);
+      assert.match(stdout, /--tailwind-config \.\/tailwind\.config\.js --plan/);
+    }
+    // A bare `npx rhythmguard audit .` gets the same scale from the suggested rc (ai-01).
+    const rc = JSON.parse(stdout.split('And this into .rhythmguardrc.json')[1].split('\n\n')[1]);
+    assert.equal(rc.audit.scale, 'auto');
   });
 }
+
+test('init writes exactly the config the quickstart pastes, and the rc when asked (dx-06)', () => {
+  const dir = fixture(STACKS['CSS tokens']);
+  const quick = spawnSync(process.execPath, [cliPath], { cwd: dir, encoding: 'utf8' });
+  const { stylelint } = pasted(quick.stdout);
+  assert.deepEqual(stylelint.rules['rhythmguard/use-scale'], [true, { scale: 'auto', scaleSources: ['./src/tokens.css'] }]);
+
+  const init = spawnSync(process.execPath, [cliPath, 'init'], { cwd: dir, encoding: 'utf8', input: 'y\ny\n' });
+  assert.equal(init.status, 0, init.stderr);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, '.stylelintrc.json'), 'utf8')), stylelint);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(dir, '.rhythmguardrc.json'), 'utf8')), { audit: { scale: 'auto' } });
+
+  // A second run shows what it would replace before asking.
+  fs.writeFileSync(path.join(dir, '.stylelintrc.json'), '{\n  "extends": ["stylelint-plugin-rhythmguard/configs/recommended"]\n}\n');
+  const again = spawnSync(process.execPath, [cliPath, 'init'], { cwd: dir, encoding: 'utf8', input: 'n\n' });
+  assert.match(again.stdout, /Changes to \.stylelintrc\.json:/);
+  assert.match(again.stdout, /\+\s+"scaleSources": \[/);
+  assert.match(again.stdout, /Aborted/);
+});
 
 test('the audit footer repeats the run\'s scale flags and proposes --plan, not stylelint --fix', () => {
   const dir = fixture(STACKS.DTCG);

@@ -495,17 +495,7 @@ function resolveAutoScale({
   }
 
   if (tailwindConfigPath) {
-    const tailwindMap = buildEffectiveTokenMap({
-      options: {
-        baseFontSize,
-        tailwindConfigPath,
-        tokenMap: {},
-        tokenMapFromTailwindSpacing: true,
-      },
-      root,
-      tokenRegex,
-    });
-    const scale = scaleFromTokenMap(tailwindMap, baseFontSize);
+    const scale = scaleFromTailwindConfig(tailwindConfigPath, baseFontSize, { root, tokenRegex });
     if (scale) {
       return { files: [tailwindConfigPath], scale, source: 'tailwind', tokenCount: scale.length - 1, warnings: [] };
     }
@@ -517,6 +507,25 @@ function resolveAutoScale({
   }
 
   return fallbackInference(rejected, warnings, fallbackPreset);
+}
+
+/**
+ * The scale in a Tailwind v3 config's `theme.spacing` (and `extend.spacing`),
+ * or null. The config is loaded with `require()`, so callers pass a path only
+ * when the user configured one.
+ */
+function scaleFromTailwindConfig(tailwindConfigPath, baseFontSize = 16, { root = null, tokenRegex = new RegExp(DEFAULT_AUTO_TOKEN_PATTERN) } = {}) {
+  const tailwindMap = buildEffectiveTokenMap({
+    options: {
+      baseFontSize,
+      tailwindConfigPath,
+      tokenMap: {},
+      tokenMapFromTailwindSpacing: true,
+    },
+    root,
+    tokenRegex,
+  });
+  return scaleFromTokenMap(tailwindMap, baseFontSize);
 }
 
 const TRUSTED_SCALE_SOURCES = new Set(['scaleSources', 'rhythmguardrc', 'token-sources', 'tailwind', 'token-package', 'explicit', 'default']);
@@ -673,5 +682,6 @@ module.exports = {
   inferScaleFromDefinitions,
   resolveAutoScale,
   scaleFromDefinitions,
+  scaleFromTailwindConfig,
   withResolvedScale,
 };

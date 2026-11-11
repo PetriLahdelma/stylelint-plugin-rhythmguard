@@ -4,8 +4,9 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const { lintGlob, stylelintInstallLine } = require('../audit/next-steps');
-const { getScanFiles } = require('../audit/scan/files');
 const readline = require('node:readline');
+
+const { RC_FILE, inferFirstRun, lineDiff, rcFor, stylelintConfigFor } = require('./first-run');
 
 function createPrompter() {
   if (!process.stdin.isTTY) {
@@ -179,8 +180,11 @@ function configSnippet(kind, config) {
     return JSON.stringify({ stylelint: config }, null, 2).split('\n').slice(1, -1).map((line) => line.slice(2)).join('\n');
   }
   if (kind === 'yaml') {
+    // A list of strings as a YAML list; anything else in JSON flow style, which is YAML too.
     return Object.entries(config)
-      .map(([key, values]) => `${key}:\n${values.map((value) => `  - ${JSON.stringify(value)}`).join('\n')}`)
+      .map(([key, values]) => (Array.isArray(values) && values.every((value) => typeof value === 'string')
+        ? `${key}:\n${values.map((value) => `  - ${JSON.stringify(value)}`).join('\n')}`
+        : `${key}: ${JSON.stringify(values)}`))
       .join('\n');
   }
   return Object.entries(config)
@@ -340,15 +344,16 @@ async function run() {
     }
 
     const profile = selectProfile(stack);
+    // The quickstart's inference: init writes exactly the config the quickstart
+    // pastes, scale or scaleSources included, so the two never disagree (dx-06).
+    const inferred = await inferFirstRun({ cwd: process.cwd(), stack });
+    const scale = inferred.report.scale;
     // The stylesheets here decide the glob, and whether SCSS needs its syntax (dx-05, dx-10).
-    const stylesheets = getScanFiles(process.cwd(), [], {}).cssFiles;
+    const stylesheets = (inferred.report.files || { cssFiles: [] }).cssFiles;
     const scss = stylesheets.some((file) => file.endsWith('.scss'));
-    const config = {
-      extends: [`stylelint-plugin-rhythmguard/configs/${profile}`],
-      ...(scss ? { customSyntax: 'postcss-scss' } : {}),
-      // Next.js build output is generated CSS; never lint it.
-      ...(stack.nextjs ? { ignoreFiles: ['.next/**', 'out/**', 'node_modules/**'] } : {}),
-    };
+    // Next.js build output is generated CSS; never lint it.
+    const config = stylelintConfigFor({ nextjs: stack.nextjs, profile, scale, scss, tailwindConfig: inferred.tailwindConfig, tokenFiles: inferred.tokenFiles });
+    process.stdout.write(`Scale: ${scale.values.join(', ')} (${scale.source}${scale.files && scale.files.length > 0 ? `: ${scale.files.slice(0, 3).join(', ')}` : ''})\n`);
 
     // A .stylelintrc.json next to the config Stylelint actually loads is either
     // never read (package.json, a YAML .stylelintrc) or silently takes over
@@ -368,9 +373,20 @@ async function run() {
       return;
     }
 
-    // Warn about existing config
+    const nextText = JSON.stringify(config, null, 2) + '\n';
+
+    // Warn about existing config, and show what the write replaces (dx-06).
     if (stack.hasExistingConfig) {
       process.stdout.write('\n⚠ Existing Stylelint config found.\n');
+      let current = '';
+      try {
+        current = fs.readFileSync(path.join(process.cwd(), active.file), 'utf8');
+      } catch {
+        // Not readable: nothing to compare.
+      }
+      if (current) {
+        process.stdout.write(`\nChanges to ${active.file}:\n\n${lineDiff(current, nextText).map((line) => `  ${line}`).join('\n')}\n\n`);
+      }
       const answer = await prompter.ask('Overwrite? (y/n) ');
       if (answer !== 'y' && answer !== 'yes') {
         process.stdout.write('Aborted.\n');
@@ -388,9 +404,19 @@ async function run() {
     }
 
     const configPath = path.join(process.cwd(), targetFile);
-    fs.writeFileSync(configPath, JSON.stringify(config, null, 2) + '\n');
+    fs.writeFileSync(configPath, nextText);
 
     process.stdout.write(`\n✓ Wrote ${configPath}\n`);
+
+    // The rc makes a bare `npx rhythmguard audit .` (CI, an agent) use this scale (ai-01).
+    if (!inferred.rcPresent) {
+      const rcAnswer = await prompter.ask(`Write ${RC_FILE} so \`npx rhythmguard audit .\` uses the same scale? (y/n) `);
+      if (rcAnswer === 'y' || rcAnswer === 'yes') {
+        const rcPath = path.join(process.cwd(), RC_FILE);
+        fs.writeFileSync(rcPath, JSON.stringify(rcFor({ tailwindConfig: inferred.tailwindConfig, tokenFiles: inferred.tokenFiles }), null, 2) + '\n');
+        process.stdout.write(`✓ Wrote ${rcPath}\n`);
+      }
+    }
     process.stdout.write(`\nNext steps:\n`);
     process.stdout.write(`  ${stylelintInstallLine({ scss, tailwindConfig: profile === 'tailwind' })}\n`);
     process.stdout.write(`  npx stylelint "${lintGlob(process.cwd(), stylesheets)}"\n\n`);

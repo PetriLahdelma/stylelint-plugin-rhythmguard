@@ -114,9 +114,9 @@ function writeOutput(output, outputPath) {
 function finish(auditFailures, report) {
   // A configured token source that does not exist made the run audit against
   // another scale and pass (ci-02): that is a configuration error, exit 2.
-  const missing = ((report && report.tokenSourceWarnings) || []).filter((warning) => warning.startsWith('Token source not found:'));
+  const missing = ((report && report.tokenSourceWarnings) || []).filter((warning) => warning.startsWith('Token source not found:') || warning.startsWith('Tailwind config not found:'));
   if (missing.length > 0) {
-    process.stderr.write(`${missing.join('\n')}\nAudit failed: a configured token source does not exist, so the scale above is not the one configured. Fix the path in --token-source or audit.tokenSources.\n`);
+    process.stderr.write(`${missing.join('\n')}\nAudit failed: a configured token source does not exist, so the scale above is not the one configured. Fix the path in --token-source, --tailwind-config, audit.tokenSources or audit.tailwindConfigPath.\n`);
     process.exitCode = 2;
   }
 

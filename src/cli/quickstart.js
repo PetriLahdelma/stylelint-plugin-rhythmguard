@@ -9,13 +9,20 @@
  * process on findings; this is a report, not a gate.
  */
 
-const fs = require('node:fs');
 const path = require('node:path');
 
 const { auditCommand, eslintInstallLine, lintGlob, stylelintInstallLine } = require('../audit/next-steps');
-const { createAuditReport } = require('../audit/report');
 const { detect } = require('./init');
 const { discoverTokenPackages } = require('../core/scale-inference');
+const {
+  RC_FILE,
+  findTokenFiles,
+  inferFirstRun,
+  rcFor,
+  stylelintConfigFor,
+  tailwindMajor,
+  toPosix,
+} = require('./first-run');
 
 const HELP = `Usage: rhythmguard [quickstart]
 
@@ -27,60 +34,7 @@ Options:
   --help        Show this help message
 `;
 
-const TOKEN_FILE_PATTERN = /(^|[.-])tokens?\.json$/i;
-const TOKEN_DIRS = ['tokens', 'design-tokens', path.join('src', 'tokens'), path.join('dist', 'tokens')];
 const MAX_LISTED = 5;
-
-function readPackage(cwd) {
-  try {
-    return JSON.parse(fs.readFileSync(path.join(cwd, 'package.json'), 'utf8'));
-  } catch {
-    return {};
-  }
-}
-
-function tailwindMajor(pkg) {
-  const deps = { ...pkg.dependencies, ...pkg.devDependencies };
-  if (deps['@tailwindcss/postcss'] || deps['@tailwindcss/vite']) {
-    return 4;
-  }
-  const spec = deps.tailwindcss;
-  if (!spec) {
-    return null;
-  }
-  const match = String(spec).match(/(\d+)/);
-  return match ? Number(match[1]) : null;
-}
-
-function findTokenFiles(cwd) {
-  const found = new Set();
-  const consider = (dir) => {
-    let entries;
-    try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      if (entry.isFile() && TOKEN_FILE_PATTERN.test(entry.name)) {
-        found.add(path.relative(cwd, path.join(dir, entry.name)));
-      }
-    }
-  };
-  consider(cwd);
-  for (const sub of TOKEN_DIRS) {
-    consider(path.join(cwd, sub));
-  }
-  return Array.from(found).sort();
-}
-
-function hasRhythmguardConfig(cwd) {
-  return fs.existsSync(path.join(cwd, '.rhythmguardrc.json'));
-}
-
-function toPosix(relativePath) {
-  return `./${relativePath.split(path.sep).join('/')}`;
-}
 
 function topEntries(counts, limit = MAX_LISTED) {
   return Object.entries(counts || {})
@@ -88,27 +42,12 @@ function topEntries(counts, limit = MAX_LISTED) {
     .slice(0, limit);
 }
 
-/**
- * The config to paste. With a scale inferred from tokens it is `scale: "auto"`
- * pointed at the same token files, so Stylelint infers what the audit did.
- * When the audit fell back to its default scale, that scale is written out:
- * `scale: "auto"` would fall back to the `rhythmic-4` preset instead, which is
- * a longer scale, and the pasted config would not reproduce this report (#246).
- */
+/** The config to paste; kept under its 3.x name for callers of this module. */
 function suggestedStylelintConfig({ fallbackScale = null, nextjs = false, profile, scss = false, tokenFiles }) {
-  const ruleOptions = Array.isArray(fallbackScale) ? { scale: [...fallbackScale] } : { scale: 'auto' };
-  if (!fallbackScale && tokenFiles.length > 0) {
-    ruleOptions.scaleSources = tokenFiles.map(toPosix);
-  }
-  return {
-    extends: [`stylelint-plugin-rhythmguard/configs/${profile}`],
-    // postcss-scss also parses plain CSS, so a mixed project needs only this.
-    ...(scss ? { customSyntax: 'postcss-scss' } : {}),
-    ...(nextjs ? { ignoreFiles: ['.next/**', 'out/**', 'node_modules/**'] } : {}),
-    rules: {
-      'rhythmguard/use-scale': [true, ruleOptions],
-    },
-  };
+  const scale = Array.isArray(fallbackScale)
+    ? { files: [], source: 'fallback', values: fallbackScale }
+    : { files: tokenFiles, source: 'token-sources', values: [] };
+  return stylelintConfigFor({ nextjs, profile, scale, scss, tokenFiles });
 }
 
 /**
@@ -120,7 +59,11 @@ function suggestedStylelintConfig({ fallbackScale = null, nextjs = false, profil
 const quoted = (name) => `'${name}'`;
 
 function eslintSnippet(scaleValues, { typescript = false } = {}) {
-  const scale = scaleValues.filter((value) => typeof value === 'number').join(', ');
+  // No project scale: the rule's default, Tailwind's ladder, which the audit
+  // also checked class strings against (cs-05).
+  const options = Array.isArray(scaleValues)
+    ? `, { scale: [${scaleValues.filter((value) => typeof value === 'number').join(', ')}] }`
+    : '';
   return [
     "// eslint.config.js",
     `import rhythmguard from ${quoted('eslint-plugin-rhythmguard')};`,
@@ -134,7 +77,7 @@ function eslintSnippet(scaleValues, { typescript = false } = {}) {
       ? '    languageOptions: { parser: tseslint.parser, parserOptions: { ecmaFeatures: { jsx: true } } },'
       : '    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },',
     "    plugins: { 'rhythmguard-tailwind': rhythmguard },",
-    `    rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['warn', { scale: [${scale}] }] },`,
+    `    rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['warn'${options}] },`,
     '  },',
     '];',
   ].join('\n');
@@ -145,8 +88,8 @@ function eslintSnippet(scaleValues, { typescript = false } = {}) {
  * `--scale auto` and the token files it read, so they report the same scale
  * and the same findings; `audit .` alone would use the default scale (#287).
  */
-function nextCommands(tokenSources, { eslint = false, glob = '**/*.css', stylelint = true } = {}) {
-  const audit = auditCommand({ dir: '.', scale: 'auto', tokenSources: tokenSources.map(toPosix) });
+function nextCommands(tokenSources, { eslint = false, glob = '**/*.css', stylelint = true, tailwindConfig = null } = {}) {
+  const audit = auditCommand({ dir: '.', scale: 'auto', tailwindConfig: tailwindConfig ? toPosix(tailwindConfig) : null, tokenSources: tokenSources.map(toPosix) });
   // Each note on its own line above its command, so a long command copies whole.
   return [
     ...(stylelint ? [['Lint stylesheets with the config above:', `npx stylelint "${glob}"`]] : []),
@@ -180,12 +123,17 @@ async function run() {
   }
 
   const cwd = process.cwd();
-  const pkg = readPackage(cwd);
   const stack = detect();
-  const twMajor = stack.tailwind ? tailwindMajor(pkg) : null;
-  const tokenFiles = findTokenFiles(cwd);
-  const rcPresent = hasRhythmguardConfig(cwd);
   const out = [];
+  let inferred;
+  try {
+    inferred = await inferFirstRun({ cwd, stack });
+  } catch (error) {
+    process.stderr.write(`Quickstart could not audit ${cwd}: ${error.message}\n`);
+    process.exitCode = 1;
+    return;
+  }
+  const { auditTokenSources, rcPresent, report, tailwindConfig, tokenFiles, twMajor } = inferred;
 
   out.push('', '  Rhythmguard quickstart', `  ${cwd}`, '');
   out.push('  Detected');
@@ -196,22 +144,10 @@ async function run() {
   const tokenPackages = [...new Set(discoverTokenPackages(cwd).map((source) => source.package))];
   out.push(`    Token packages  ${tokenPackages.length > 0 ? tokenPackages.join(', ') : 'none installed'}`);
   out.push(`    .rhythmguardrc  ${rcPresent ? 'present (its token sources are used)' : 'none'}`);
-  out.push('');
-
-  // With an rc file its token sources are used; otherwise the token files found here.
-  const auditTokenSources = rcPresent ? [] : tokenFiles;
-  let report;
-  try {
-    report = await createAuditReport({
-      dir: '.',
-      scale: 'auto',
-      ...(auditTokenSources.length > 0 ? { tokenSources: auditTokenSources } : {}),
-    });
-  } catch (error) {
-    process.stderr.write(`Quickstart could not audit ${cwd}: ${error.message}\n`);
-    process.exitCode = 1;
-    return;
+  if (tailwindConfig) {
+    out.push(`    Tailwind config ${tailwindConfig} (not loaded here: loading it runs it; the config below reads it)`);
   }
+  out.push('');
 
   const scanned = report.scanned || {};
   const skippedStylesheets = (scanned.scssSkipped || 0) + (scanned.stylelintIgnored || 0) + (scanned.nonAuthoredSkipped || 0) + (scanned.stylelintMissing || 0);
@@ -231,9 +167,15 @@ async function run() {
   if (scale.source === 'fallback' && scale.rejected) {
     out.push(`    Note            Spacing tokens were found but do not form a scale (${scale.rejected.reasons.join(', ')}); the audit's default scale is being used.`);
     out.push('                    Point scaleSources at your real token file, or tighten tokenPattern.');
+  } else if (scale.source === 'fallback' && tailwindConfig) {
+    out.push(`    Note            No spacing tokens found; the default scale is shown. The config below reads ${tailwindConfig};`);
+    out.push(`                    audit with it: npx rhythmguard audit . --scale auto --tailwind-config ${toPosix(tailwindConfig)}`);
   } else if (scale.source === 'fallback') {
     out.push("    Note            No spacing tokens found; the audit's default scale is being used.");
     out.push('                    Add scaleSources or define --space-*/--spacing-* custom properties to lint against your own scale.');
+  }
+  if (scale.classStrings) {
+    out.push(`    Class strings   ${scale.classStrings.name} (the ESLint rule's default)`);
   }
   out.push('');
 
@@ -282,15 +224,20 @@ async function run() {
     out.push(withoutStylelint ? '  To audit your stylesheets too, install Stylelint and the plugin:' : '  Install:', '');
     out.push(`    ${stylelintInstallLine({ scss, tailwindConfig: profile === 'tailwind' })}`, '');
     out.push(`  ${withoutStylelint ? 'then paste' : 'Then paste'} this into .stylelintrc.json${stack.hasExistingConfig ? ' (merge with your existing config)' : ''}:`, '');
-    const fallbackScale = scale.source === 'fallback' ? scale.values : null;
-    out.push(JSON.stringify(suggestedStylelintConfig({ fallbackScale, nextjs: stack.nextjs, profile, scss, tokenFiles }), null, 2).replace(/^/gm, '    '));
+    out.push(JSON.stringify(stylelintConfigFor({ nextjs: stack.nextjs, profile, scale, scss, tailwindConfig, tokenFiles }), null, 2).replace(/^/gm, '    '));
     out.push('');
+    if (!rcPresent) {
+      // So a bare `npx rhythmguard audit .`, CI and an agent use this scale too (ai-01).
+      out.push(`  And this into ${RC_FILE}, so \`npx rhythmguard audit .\` uses the same scale:`, '');
+      out.push(JSON.stringify(rcFor({ tailwindConfig, tokenFiles }), null, 2).replace(/^/gm, '    '));
+      out.push('');
+    }
   };
   const printEslint = () => {
     out.push('  Tailwind class strings need the ESLint companion. Install:', '');
     out.push(`    ${eslintInstallLine({ typescript })}`, '');
     out.push('  Then paste this into eslint.config.js:', '');
-    out.push(eslintSnippet(scale.values, { typescript }).replace(/^/gm, '    '));
+    out.push(eslintSnippet(scale.classStrings ? null : scale.values, { typescript }).replace(/^/gm, '    '));
     if (otherTemplates.length > 0) {
       out.push('', `    ${otherTemplates.join(', ')} files need their parser in a block of their own; see the`);
       out.push('    eslint-plugin-rhythmguard README, "Other file types".');
@@ -310,7 +257,7 @@ async function run() {
   }
 
   out.push('  Next');
-  out.push(...nextCommands(auditTokenSources, { eslint: stack.tailwind, glob, stylelint: !withoutStylelint }).map((line) => `    ${line}`));
+  out.push(...nextCommands(auditTokenSources, { eslint: stack.tailwind, glob, stylelint: !withoutStylelint, tailwindConfig }).map((line) => `    ${line}`));
   out.push('');
 
   process.stdout.write(`${out.join('\n')}\n`);

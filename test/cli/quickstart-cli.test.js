@@ -90,10 +90,11 @@ test('with no tokens, quickstart names the scale it used and suggests a config t
 
   const pasted = out.split('Then paste this into .stylelintrc.json:')[1].split('\n\n')[1];
   const suggested = JSON.parse(pasted);
-  assert.deepEqual(suggested.rules['rhythmguard/use-scale'], [true, { scale: [0, 4, 8, 12, 16, 24, 32, 40, 48, 64] }]);
+  // The audit fell back to DEFAULT_SCALE, which configs/recommended already sets: no rule to override it.
+  assert.deepEqual(suggested, { extends: ['stylelint-plugin-rhythmguard/configs/recommended'] });
 
   const { lintCss } = require('../helpers/lint');
-  const linted = await lintCss({ code, rules: suggested.rules });
+  const linted = await lintCss({ code, rules: require('../../src/configs/recommended').rules });
   assert.equal(linted.warnings.length, 1, 'the pasted config reports what quickstart reported');
 });
 

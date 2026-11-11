@@ -70,6 +70,8 @@ export interface AuditOptions {
   since?: string;
   sinceBaseline?: boolean;
   staged?: boolean;
+  /** A Tailwind v3 config whose `theme.spacing` `scale: "auto"` reads, after the scanned stylesheets. Loaded with `require()`. */
+  tailwindConfigPath?: string | null;
   tokenCandidateMinCount?: number;
   tokenKind?: AuditTokenKind;
   /** Format applied to `tokenSources` entries that do not declare their own. */
@@ -183,7 +185,7 @@ export interface AuditScanScope {
 /** The config file the audit read, or null when there was none or `noConfig` was set. */
 export type AuditConfigReference = { file: string } | null;
 
-export type AuditScaleSource = "default" | "explicit" | "fallback" | "scanned-css" | "token-package" | "token-sources";
+export type AuditScaleSource = "default" | "explicit" | "fallback" | "scanned-css" | "tailwind" | "token-package" | "token-sources";
 
 export type AuditDecisionKind = "adopt" | "allow" | "snap" | "undecided";
 
@@ -236,6 +238,8 @@ export interface AuditScale {
   classStrings?: AuditClassStringScale | null;
   /** Files the scale was derived from (token sources or scanned stylesheets). Empty for explicit, default and fallback. */
   files: string[];
+  /** On a fallback, the preset it is: "tailwind" in a Tailwind project, else "rhythmic-4". */
+  preset?: string;
   /** Present when `source` is "fallback" because an inferred scale failed the plausibility check. */
   rejected?: AuditScaleRejected | null;
   source: AuditScaleSource;
@@ -306,6 +310,7 @@ export interface AuditContractReport {
       files: string[];
       offScaleProperties?: Record<string, number>;
       offScaleValues?: unknown;
+      preset: string | null;
       rejected: AuditScaleRejected | null;
       source: AuditScaleSource;
       tokenOpportunities?: unknown;

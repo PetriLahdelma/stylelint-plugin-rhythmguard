@@ -8,6 +8,9 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Changed
 
+- The quickstart's pasted config reproduces its report. When the audit took the scale from tokens in a stylesheet, the config points `scaleSources` at that stylesheet; before, `scale: "auto"` read only the file being linted, so every other file fell back and 40px passed in the editor and failed in the audit. On a Tailwind v3 project with a config file the paste sets `tailwindConfigPath` and the next commands pass `--tailwind-config` (the quickstart itself does not load the config). It also prints the `.rhythmguardrc.json` that makes a bare `npx rhythmguard audit .` use the same scale. A contract test lints five first-run stacks with the pasted config and checks the problem count equals the audit's (dx-02, ai-01, tf-06).
+- `init` writes exactly the config the quickstart pastes, from the same inference, shows a line diff of what it replaces before asking to overwrite, and offers to write the `.rhythmguardrc.json`. Before, it wrote `extends` alone, so `init`, the quickstart and the audit judged one project by three scales, and overwriting a quickstart config lost its `scaleSources` without showing it (dx-06).
+- `--scale auto` in a Tailwind project with no tokens falls back to Tailwind's default ladder, the fallback `configs/tailwind` uses, instead of the default scale; `contracts.scale.preset` names the fallback. Findings only go away (css-01).
 - One default scale. The audit without `--scale`, the audit's `--scale auto` fallback, `use-scale` with no `scale`, `configs/recommended`, `configs/strict` and the `rhythmic-4` preset now read one list, `0, 4, 8, 12, 16, 24, 32, 40, 48, 64`, exported once. Before, the audit stopped at 32, so 40, 48 and 64px were findings in the audit and not in Stylelint, and `init`, the quickstart and the audit judged one project by three scales. Audit findings only go away: on the quiet benchmark, 31 rows that fall back to the default lose 40, 48 and 64px findings and none gains one (dx-06, ai-01).
 - `tailwind-class-use-scale` with no `scale` checks Tailwind's default spacing ladder on `spacingUnit` (`0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, ... 384` on a 16px root) instead of `[0, 4, 8, 12, 16, 24, 32]`, and its messages end with `Scale: Tailwind default spacing.` `p-[20px]`, `p-[40px]` and `p-[2px]` are standard `p-5`, `p-10` and `p-0.5`, not findings. A value past the top step is still reported but no longer fixed: `p-[64px]` on a scale that ends at 32 was rewritten to `p-8`, halving the padding. With `scale` set, messages are unchanged (cs-01).
 - The audit checks class strings against the same Tailwind ladder when the stylesheet scale is the default or the fallback, so it agrees with the ESLint rule; `contracts.scale.classStrings` and a "Class-string scale" line say so (cs-05).
@@ -18,6 +21,7 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Added
 
+- `rhythmguard audit --tailwind-config <file>` and `audit.tailwindConfigPath`: with `--scale auto`, the audit reads a Tailwind v3 config's `theme.spacing` after the scanned stylesheets (`source: "tailwind"`), as the rules do with `tailwindConfigPath`. The config is loaded with `require()`, so only when you name it; a configured path that does not exist exits 2, like a missing token source (tf-06).
 - A `tailwind` scale preset: Tailwind's default spacing theme on a 16px root. With `scale: "auto"`, a rule's `preset` is now the fallback when no tokens are found, as `configs/tailwind` uses it.
 
 ### Fixed
