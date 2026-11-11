@@ -1,0 +1,18 @@
+{
+  "$schema": "https://www.designtokens.org/schemas/2025.10/format.json",
+  "space": {
+    "$type": "dimension",
+    "$root": { "$value": { "value": 4, "unit": "px" } },
+    "2": { "$value": { "value": 8, "unit": "px" } },
+    "3": { "$value": { "value": 12, "unit": "px" } },
+    "4": { "$value": { "value": 16, "unit": "px" } },
+    "5": { "$value": { "value": 20, "unit": "px" }, "$deprecated": "Use space.4 or space.6." },
+    "6": { "$value": { "value": 24, "unit": "px" } },
+    "8": { "$value": { "value": 32, "unit": "px" } },
+    "legacy": {
+      "$deprecated": true,
+      "half": { "$value": { "value": 2, "unit": "px" } },
+      "kept": { "$value": { "value": 4, "unit": "px" }, "$deprecated": false }
+    }
+  }
+}

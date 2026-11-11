@@ -223,7 +223,7 @@ test('a configured token source with no tokens of the kind read warns, naming th
   assert.deepEqual(parseTokenSources({ sources }).warnings, [`Token source not found: ${missing}`]);
 
   const parsed = parseTokenSources({ sources, warnWhenEmpty: true });
-  const hint = 'spacing tokens are read by name (space, spacing or spacer), so set a tokenPattern on this source if its tokens are named otherwise';
+  const hint = 'spacing tokens are read by name (space, spacing or spacer, in any case) or, in JSON, by a dimension type, so set a tokenPattern on this source if its tokens are named and typed otherwise';
   assert.deepEqual(parsed.sources.map((source) => source.warnings), [
     [`Token source ${colors} (dtcg) yielded no spacing tokens; ${hint}.`],
     [`Token source ${empty} (css) yielded no spacing tokens; ${hint}.`],

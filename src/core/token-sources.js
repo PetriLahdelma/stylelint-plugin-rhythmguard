@@ -45,6 +45,52 @@ const TOKEN_KIND_PATTERNS = Object.freeze({
   typography: /^--(?:(?:font|font-size|line-height|leading|tracking|typography|text|fs)-|(?:[\w-]*-)?(?:letter|word)-spacing(?:-|$))/,
 });
 
+/*
+ * The second reading of a spacing token source, used only when the first, by
+ * the names above, finds no length in it (tf-01). A file that resolved a scale
+ * before resolves the same one; a file that gave nothing gets these chances:
+ *
+ * - names in any case, with a camelCase or digit boundary after the word:
+ *   `--spacingXs` (the default @tokens-studio/sd-transforms output), `--Space-1`,
+ *   `Space1` from Style Dictionary's json/flat;
+ * - in JSON, a token typed as a dimension whatever its name: DTCG `$type:
+ *   dimension` on the token or a group above it, or a Tokens Studio or Style
+ *   Dictionary `type` of `spacing`, `sizing` or `dimension`. A typed token
+ *   named for another kind (radius, font size, border width, breakpoint) is
+ *   still left out.
+ */
+const RELAXED_SPACING_NAME = /^--(?:[\w-]*-)?(?<![Ll]etter-)(?<![Ww]ord-)(?<!LETTER-)(?<!WORD-)(?:[Ss]pac(?:e|ing|er)|SPAC(?:E|ING|ER))(?:-|$|(?=[A-Z0-9]))/;
+const SPACING_TOKEN_TYPES = new Set(['dimension', 'spacing', 'sizing']);
+const OTHER_KIND_NAME_SEGMENTS = new Set([
+  'avatar', 'blur', 'border', 'breakpoint', 'breakpoints', 'container', 'corner', 'delay', 'duration', 'ease', 'easing',
+  'elevation', 'font', 'fontsize', 'fs', 'height', 'icon', 'leading', 'letter', 'line', 'lineheight', 'motion', 'opacity',
+  'outline', 'radii', 'radius', 'rounded', 'screen', 'screens', 'shadow', 'size', 'sizes', 'sizing', 'stroke', 'text',
+  'tracking', 'typography', 'width', 'word', 'z',
+]);
+
+/** Whether a token's name says it belongs to another kind: `--radius-sm`, `--fontSize-200`, `--border-width-thin`. */
+function isOtherKindName(token) {
+  if (['typography', 'radius', 'motion', 'size'].some((kind) => TOKEN_KIND_PATTERNS[kind].test(token))) {
+    return true;
+  }
+  return token
+    .replace(/^--/, '')
+    .replace(/([a-z0-9])([A-Z])/g, '$1-$2')
+    .toLowerCase()
+    .split(/[-_.\s]+/)
+    .some((segment) => OTHER_KIND_NAME_SEGMENTS.has(segment));
+}
+
+function createRelaxedSpacingMatcher(matchesKind) {
+  return (token) => matchesKind(token) || RELAXED_SPACING_NAME.test(token);
+}
+
+/** A token whose value is a length, so a scale can be built from it; a unitless ratio is not one. */
+function isLengthToken(token) {
+  const parsed = parseTokenValueLength(String(token.value));
+  return Boolean(parsed) && !(parsed.unit === '' && parsed.number !== 0);
+}
+
 function isPlainObject(value) {
   return (
     value !== null &&
@@ -100,7 +146,7 @@ function emptySourceWarning(source, format, tokenKind) {
     return `${prefix} tokens.`;
   }
   if (tokenKind === 'spacing') {
-    return `${prefix} spacing tokens; spacing tokens are read by name (space, spacing or spacer), so set a tokenPattern on this source if its tokens are named otherwise.`;
+    return `${prefix} spacing tokens; spacing tokens are read by name (space, spacing or spacer, in any case) or, in JSON, by a dimension type, so set a tokenPattern on this source if its tokens are named and typed otherwise.`;
   }
   return `${prefix} ${tokenKind} tokens.`;
 }
@@ -152,21 +198,26 @@ function parseTokenSources({
       continue;
     }
 
-    let tokens;
     const matchesSource = normalizedSource.tokenPattern
       ? createPatternMatcher(normalizedSource.tokenPattern, matchesKind)
       : matchesKind;
-    const skipped = [];
+    let read;
     try {
-      if (normalizedSource.format === 'css') {
-        tokens = collectCssTokens(text, matchesSource, { lineComments: hasLineComments(normalizedSource.resolvedPath) });
-      } else {
-        const parsed = JSON.parse(text);
-        const detectedFormat = normalizedSource.requestedFormat === 'auto'
-          ? detectJsonTokenFormat(parsed)
+      const document = normalizedSource.format === 'css' ? null : JSON.parse(text);
+      if (document !== null) {
+        sourceReport.format = normalizedSource.requestedFormat === 'auto'
+          ? detectJsonTokenFormat(document)
           : normalizedSource.format;
-        sourceReport.format = detectedFormat;
-        tokens = collectJsonTokens(parsed, matchesSource, (token, reason) => skipped.push(`${token} (${reason})`));
+      }
+      const readWith = (selection) => readSourceTokens(normalizedSource, text, document, selection);
+      read = readWith({ matchesKind: matchesSource, selectedBy: normalizedSource.tokenPattern ? 'tokenPattern' : 'name' });
+      // Names first; a source with no spacing length by name is read again by
+      // the wider rule (any case, camelCase, `$type`). See RELAXED_SPACING_NAME.
+      if (kind === 'spacing' && !normalizedSource.tokenPattern && !read.tokens.some(isLengthToken)) {
+        const relaxed = readWith({ matchesKind: createRelaxedSpacingMatcher(matchesKind), selectByType: true, selectedBy: 'name' });
+        if (relaxed.tokens.some(isLengthToken)) {
+          read = relaxed;
+        }
       }
     } catch (err) {
       const warning = `Unable to parse token source ${normalizedSource.displayPath}: ${err.message}`;
@@ -174,6 +225,13 @@ function parseTokenSources({
       warnings.push(warning);
       sourceReports.push(sourceReport);
       continue;
+    }
+
+    const { deprecated, skipped, tokens } = read;
+    sourceReport.selectedBy = read.selectedBy;
+    if (deprecated.length > 0) {
+      // DTCG `$deprecated` tokens: on the scale in 3.x, never written by a fix (tf-11).
+      sourceReport.deprecated = deprecated;
     }
 
     if (skipped.length > 0) {
@@ -196,6 +254,7 @@ function parseTokenSources({
         // component parameter and stays out of it, as in the linted stylesheet (issue #258).
         scope: token.scope || 'root',
         conditions: token.conditions || [],
+        deprecated: token.deprecated === true,
         source: sourceReport.file,
         token: token.token,
         value: token.value,
@@ -210,6 +269,29 @@ function parseTokenSources({
     definitions,
     sources: sourceReports,
     warnings,
+  };
+}
+
+/**
+ * One reading of a parsed source: the tokens `selection` picks, the tokens it
+ * skipped with why, the deprecated tokens it left out, and how the tokens were
+ * chosen (`selectedBy`): `tokenPattern`, `name`, or `type` when at least one
+ * token was taken for its `$type` alone.
+ */
+function readSourceTokens(source, text, document, selection) {
+  const skipped = [];
+  const deprecated = [];
+  const tokens = document === null
+    ? collectCssTokens(text, selection.matchesKind, { lineComments: hasLineComments(source.resolvedPath) })
+    : collectJsonTokens(document, selection, {
+      onDeprecated: (token) => deprecated.push(token),
+      onSkip: (token, reason) => skipped.push(`${token} (${reason})`),
+    });
+  return {
+    deprecated: Array.from(new Set(deprecated)).sort(),
+    selectedBy: tokens.some((token) => token.selectedBy === 'type') ? 'type' : selection.selectedBy,
+    skipped,
+    tokens,
   };
 }
 
@@ -248,6 +330,10 @@ function detectSourceFormat(filePath) {
 }
 
 function detectJsonTokenFormat(parsed) {
+  if (tokensStudioSets(parsed)) {
+    return 'tokens-studio';
+  }
+
   let hasDtcg = false;
   let hasStyleDictionary = false;
 
@@ -1069,33 +1155,67 @@ function formatScssValue(value) {
 }
 
 /**
- * Tokens in a DTCG, Style Dictionary or flat JSON file. References
- * (`{dimension.100}`, `{size.base.value}`) are resolved against the whole file
- * first, so a semantic alias over a primitive of another kind still counts
- * (issue #267). `onSkip(token, reason)` hears about tokens of the requested
- * kind that were left out, such as a dimension in an unsupported unit.
+ * Tokens in a DTCG, Style Dictionary, Tokens Studio or flat JSON file.
+ * References (`{dimension.100}`, `{size.base.value}`) are resolved against the
+ * whole file first, so a semantic alias over a primitive of another kind still
+ * counts (issue #267). `selection.matchesKind` picks tokens by name and, with
+ * `selection.selectByType`, a token typed as a dimension is picked whatever its
+ * name (tf-01). `hooks.onSkip(token, reason)` hears about tokens of the
+ * requested kind that were left out, such as a dimension in an unsupported
+ * unit, and `hooks.onDeprecated(token)` about DTCG `$deprecated` ones (tf-11).
  */
-function collectJsonTokens(parsed, matchesKind, onSkip = () => {}) {
+function collectJsonTokens(parsed, selection, hooks = {}) {
   if (!isPlainObject(parsed)) {
     return [];
   }
 
   const tokens = [];
-  const context = { matchesKind, onSkip, root: parsed };
-  walkJsonTokenGroup(parsed, [], tokens, context);
+  const context = {
+    matchesKind: selection.matchesKind,
+    onDeprecated: hooks.onDeprecated || (() => {}),
+    onSkip: hooks.onSkip || (() => {}),
+    root: parsed,
+    selectByType: Boolean(selection.selectByType),
+  };
+  const studio = tokensStudioSets(parsed);
+  if (!studio) {
+    walkJsonTokenGroup(parsed, [], tokens, context);
+    return tokens;
+  }
+
+  // Tokens Studio (tf-08): each set is read without its set name, as
+  // sd-transforms names them, and references resolve across the sets in
+  // `tokenSetOrder`, a later set overriding an earlier one.
+  const seen = new Set();
+  for (const name of studio.sets) {
+    const setTokens = [];
+    walkJsonTokenGroup(parsed[name], [], setTokens, { ...context, root: studio.root, setName: name, studio: true });
+    for (const token of setTokens) {
+      const key = `${token.token}\n${token.value}`;
+      if (!seen.has(key)) {
+        seen.add(key);
+        tokens.push(token);
+      }
+    }
+  }
   return tokens;
 }
 
-function walkJsonTokenGroup(group, segments, tokens, context, inheritedType = null) {
-  const { matchesKind, onSkip } = context;
+function walkJsonTokenGroup(group, segments, tokens, context, inherited = { deprecated: undefined, type: null }) {
   for (const [key, value] of Object.entries(group)) {
+    // DTCG 2025.10 `$root`: the group's own token, named for the group (`space.$root` is `--space`).
+    if (key === '$root' && isPlainObject(value) && segments.length > 0) {
+      readJsonToken(value, segments, null, tokens, context, inherited);
+      continue;
+    }
+
     if (isMetadataKey(key)) {
       continue;
     }
 
     if (typeof value === 'string' || typeof value === 'number') {
       const tokenEntry = tokenFromPrimitive(key, value, segments);
-      if (tokenEntry && matchesKind(tokenEntry.token)) {
+      if (tokenEntry && context.matchesKind(tokenEntry.token)) {
         tokens.push(tokenEntry);
       }
       continue;
@@ -1105,25 +1225,202 @@ function walkJsonTokenGroup(group, segments, tokens, context, inheritedType = nu
       continue;
     }
 
-    // DTCG `$type` applies to the node and, on a group, to every token below it.
-    const type = typeof value.$type === 'string' ? value.$type : inheritedType;
-    const leaf = leafTokenValue(value, context.root, type);
-    if (leaf !== null) {
-      const token = key.startsWith('--')
-        ? key
-        : toCustomProperty([...segments, key]);
-      if (matchesKind(token)) {
-        if (leaf.value !== null) {
-          tokens.push({ token, value: leaf.value });
-        } else if (leaf.skipped) {
-          onSkip(token, leaf.skipped);
-        }
-      }
+    if (readJsonToken(value, [...segments, key], key.startsWith('--') ? key : null, tokens, context, inherited)) {
       continue;
     }
 
-    walkJsonTokenGroup(value, [...segments, key], tokens, context, type);
+    walkJsonTokenGroup(value, [...segments, key], tokens, context, inheritedFrom(value, inherited));
   }
+}
+
+/** What a node passes down: DTCG `$type` and `$deprecated` apply to the node and, on a group, to every token below it. */
+function inheritedFrom(node, inherited) {
+  return {
+    deprecated: Object.prototype.hasOwnProperty.call(node, '$deprecated') ? node.$deprecated : inherited.deprecated,
+    type: typeof node.$type === 'string' ? node.$type : inherited.type,
+  };
+}
+
+/** DTCG `$deprecated`: `true` or an explanation string; `false` undoes a group's. */
+function isDeprecated(value) {
+  return value === true || typeof value === 'string';
+}
+
+/**
+ * Read `node` as one token named by `segments` (or `explicitName`), when it is
+ * a token. Returns false for a group, so the caller walks into it.
+ */
+function readJsonToken(node, segments, explicitName, tokens, context, inherited) {
+  const own = inheritedFrom(node, inherited);
+  const leaf = leafTokenValue(node, context.root, own.type);
+  if (leaf === null) {
+    return false;
+  }
+
+  const selection = tokenSelection(explicitName || toCustomProperty(segments), segments, node, own, context);
+  if (!selection) {
+    return true;
+  }
+  const { selectedBy, token } = selection;
+  // A DTCG `$deprecated` token is named in provenance and never written by a
+  // fix; in 3.x its value stays on the scale so no finding is added (tf-11).
+  // It leaves the scale in 4.0.
+  const deprecated = isDeprecated(own.deprecated);
+  if (deprecated) {
+    context.onDeprecated(token);
+  }
+
+  const value = context.studio && leaf.value !== null
+    ? tokensStudioValue(leaf.value, context.root, tokenTypeOf(node, own))
+    : leaf.value;
+  if (value !== null) {
+    tokens.push({ ...(deprecated ? { deprecated } : {}), ...(selectedBy === 'type' ? { selectedBy } : {}), token, value });
+  } else if (leaf.skipped) {
+    context.onSkip(token, leaf.skipped);
+  }
+  return true;
+}
+
+/** The type a token declares: DTCG `$type` (its own or a group's), else a Tokens Studio or Style Dictionary `type`. */
+function tokenTypeOf(node, own) {
+  const type = own.type || (typeof node.type === 'string' ? node.type : null);
+  return type ? type.trim().toLowerCase() : null;
+}
+
+/** Whether a token is read, and why (`name` or `type`), with the name it is read under; null when it is not. */
+function tokenSelection(token, segments, node, own, context) {
+  if (context.matchesKind(token)) {
+    return { selectedBy: 'name', token };
+  }
+  // Before 3.20 a Tokens Studio token was named with its set; a set called `spacing` still gives `--spacing-*` tokens.
+  const legacyName = context.setName ? toCustomProperty([context.setName, ...segments]) : null;
+  if (legacyName && context.matchesKind(legacyName)) {
+    return { selectedBy: 'name', token: legacyName };
+  }
+  if (context.selectByType && SPACING_TOKEN_TYPES.has(tokenTypeOf(node, own)) && !isOtherKindName(token)) {
+    return { selectedBy: 'type', token };
+  }
+  return null;
+}
+
+/**
+ * Tokens Studio's shape: sets at the top level, ordered by
+ * `$metadata.tokenSetOrder`, with `$themes` naming which sets a theme enables.
+ * Returns the sets to read, in order, and the merged tree references resolve
+ * against; null when the file is not a Tokens Studio export.
+ *
+ * Every set in `tokenSetOrder` is read, as every set was read before, so the
+ * scale stays the union of the sets; without an order, the sets the first
+ * theme enables are read.
+ */
+function tokensStudioSets(parsed) {
+  if (!isPlainObject(parsed)) {
+    return null;
+  }
+  const order = isPlainObject(parsed.$metadata) && Array.isArray(parsed.$metadata.tokenSetOrder)
+    ? parsed.$metadata.tokenSetOrder
+    : null;
+  const themes = Array.isArray(parsed.$themes) ? parsed.$themes : null;
+  if (!order && !themes) {
+    return null;
+  }
+
+  const isSet = (name) => typeof name === 'string' && !name.startsWith('$') && isPlainObject(parsed[name]);
+  const allSets = Object.keys(parsed).filter(isSet);
+  let sets;
+  if (order) {
+    const ordered = Array.from(new Set(order.filter(isSet)));
+    sets = [...ordered, ...allSets.filter((name) => !ordered.includes(name))];
+  } else {
+    const theme = themes.find((entry) => isPlainObject(entry) && isPlainObject(entry.selectedTokenSets));
+    const enabled = theme
+      ? Object.keys(theme.selectedTokenSets).filter((name) => theme.selectedTokenSets[name] === 'enabled' && isSet(name))
+      : [];
+    sets = enabled.length > 0 ? enabled : allSets;
+  }
+
+  // Sets that are only referenced (a theme's `source` sets) first, then the read sets in order.
+  const root = Object.create(null);
+  for (const name of [...allSets.filter((item) => !sets.includes(item)), ...sets]) {
+    mergeTokenTree(root, parsed[name]);
+  }
+  return { root, sets };
+}
+
+/** Merge a token tree into `target`: groups merge, a token replaces. Null-prototype copies, so no key reaches a prototype. */
+function mergeTokenTree(target, source) {
+  for (const [key, value] of Object.entries(source)) {
+    const isGroup = isPlainObject(value) && rawTokenValue(value) === undefined;
+    if (isGroup && isPlainObject(target[key]) && rawTokenValue(target[key]) === undefined) {
+      mergeTokenTree(target[key], value);
+    } else {
+      target[key] = isGroup ? mergeTokenTree(Object.create(null), value) : value;
+    }
+  }
+  return target;
+}
+
+const UNITLESS_NUMBER = /^-?(?:\d+\.?\d*|\.\d+)$/;
+const STUDIO_REFERENCE = /\{([^{}]+)\}/g;
+
+/**
+ * A Tokens Studio value for a spacing, sizing or dimension token: a unitless
+ * number is px, as Tokens Studio and sd-transforms read it, and `+ - * /`
+ * over numbers and references (`{spacing.sm} * 2`) is evaluated by the Sass
+ * evaluator. Other types, and what cannot be evaluated, are left as written.
+ */
+function tokensStudioValue(value, root, type) {
+  if (!SPACING_TOKEN_TYPES.has(type)) {
+    return value;
+  }
+  const text = String(value).trim();
+  if (UNITLESS_NUMBER.test(text)) {
+    return `${Number(text)}px`;
+  }
+  if (parseLengthToken(text)) {
+    return text;
+  }
+  return evaluateTokensStudioMath(text, root, new Set()) || value;
+}
+
+function evaluateTokensStudioMath(text, root, stack) {
+  const references = [];
+  // A reference becomes a parenthesised Sass variable; a px literal becomes a plain number, as a resolved reference does.
+  const expression = text
+    .replace(STUDIO_REFERENCE, (match, reference) => `($r${references.push(reference.trim()) - 1})`)
+    .replace(/(\d)px\b/gi, '$1');
+  const resolveVariable = (name) => {
+    const reference = references[Number(name.slice(1))];
+    if (reference === undefined || stack.has(reference) || stack.size >= MAX_JSON_REFERENCE_DEPTH) {
+      return null;
+    }
+    const raw = lookupJsonReference(root, reference);
+    if (raw === undefined || raw === null) {
+      return null;
+    }
+    stack.add(reference);
+    try {
+      const resolved = resolveJsonValue(raw, root);
+      if (resolved.value === null) {
+        return null;
+      }
+      const inner = String(resolved.value).trim();
+      const length = parseLengthToken(inner) ? inner : evaluateTokensStudioMath(inner, root, stack);
+      const parsed = length ? parseLengthToken(length) : null;
+      if (!parsed) {
+        return null;
+      }
+      return { number: parsed.number, unit: parsed.unit === 'px' ? '' : parsed.unit };
+    } finally {
+      stack.delete(reference);
+    }
+  };
+  const result = evaluateScssExpression(expression, resolveVariable, stack);
+  if (!result || !Number.isFinite(result.number) || !['', 'rem'].includes(result.unit)) {
+    return null;
+  }
+  const rounded = Math.round(result.number * 1000) / 1000;
+  return `${rounded}${result.unit || 'px'}`;
 }
 
 function tokenFromPrimitive(key, value, segments) {
@@ -1401,6 +1698,7 @@ function addDefinition(definitions, {
   anchor = null,
   baseFontSize,
   conditions = [],
+  deprecated = false,
   file,
   scope = 'root',
   source,
@@ -1419,7 +1717,8 @@ function addDefinition(definitions, {
 
   entry.files.add(file);
   entry.scopes.add(scope);
-  const fixScope = fixScopeOf(scope, conditions, anchor);
+  // A deprecated token gets no fix scope, so no fix writes it.
+  const fixScope = deprecated ? null : fixScopeOf(scope, conditions, anchor);
   if (fixScope) {
     entry.fixScopes.push(fixScope);
   }

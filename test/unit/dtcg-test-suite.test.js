@@ -25,9 +25,13 @@
  *   `$ref` that names nothing or a bare number are skipped with a warning that
  *   says why. Two cases are documented in place: a `{}` reference cycle keeps
  *   its text, as every `{}` reference that cannot be followed does (issue
- *   #267), so it has no length; and the reader goes by token names, not
- *   `$type`, so a color token that aliases a dimension (reference-type-mismatch)
- *   is not read as spacing but is read under kind `all`.
+ *   #267), so it has no length; and spacing is read by name, or by a dimension
+ *   `$type` when no name gives a length, so a color token that aliases a
+ *   dimension (reference-type-mismatch) is not read as spacing but is read
+ *   under kind `all`.
+ * - The positive dimension cases are read as spacing as they are, too: their
+ *   names are not spacing names, so their `$type: dimension` selects them
+ *   (tf-01).
  */
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -219,6 +223,16 @@ test('the positive dimension cases read the same px values as spacing tokens, ne
     const expected = Object.fromEntries(Object.entries(EXPECTED[entry.id].tokens).map(([token, value]) => [token.replace(/^--/, '--spacing-'), value]));
     const actual = Object.fromEntries(Object.entries(parsed.values).map(([token, [value]]) => [token, [value, pxOf(value)]]));
     assert.deepEqual(actual, expected, entry.id);
+    assert.deepEqual(parsed.warnings, [], entry.id);
+  }
+});
+
+test('the positive dimension cases read as spacing as they are, selected by their $type (tf-01)', () => {
+  for (const entry of entries.filter((item) => item.type === 'PositiveEvaluationTest' && item.input.startsWith('positive/dimensions/'))) {
+    const parsed = read(path.join(formatDir, entry.input), { tokenKind: 'spacing' });
+    const actual = Object.fromEntries(Object.entries(parsed.values).map(([token, [value]]) => [token, [value, pxOf(value)]]));
+    assert.deepEqual(actual, EXPECTED[entry.id].tokens, entry.id);
+    assert.equal(parsed.sources[0].selectedBy, 'type', entry.id);
     assert.deepEqual(parsed.warnings, [], entry.id);
   }
 });
