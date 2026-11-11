@@ -66,16 +66,16 @@ function eslintMessages(code, options) {
 
 test('the ESLint rule reports nothing on Tailwind\'s default steps and names its scale', () => {
   const steps = ['p-[2px]', 'p-[6px]', 'p-[10px]', 'p-[20px]', 'p-[28px]', 'p-[40px]', 'p-[48px]', 'p-[64px]', 'p-[1.25rem]', 'p-[384px]'];
-  assert.deepEqual(eslintMessages(`const c = '${steps.join(' ')}';`).messages, []);
+  assert.deepEqual(eslintMessages(`const c = cn('${steps.join(' ')}');`).messages, []);
 
-  const { messages, fixed } = eslintMessages("const c = 'p-[13px]';");
+  const { messages, fixed } = eslintMessages("const c = cn('p-[13px]');");
   assert.equal(messages.length, 1);
   assert.match(messages[0].message, /Use "p-3" \(12px\) or "p-3\.5" \(14px\)\. Scale: Tailwind default spacing\.$/);
-  assert.equal(fixed, "const c = 'p-3';");
+  assert.equal(fixed, "const c = cn('p-3');");
 });
 
 test('the ESLint rule names no scale when one is configured; messages keep their 3.19 text', () => {
-  const { messages } = eslintMessages("const c = 'p-[13px]';", { scale: [0, 4, 8, 12, 16, 24, 32] });
+  const { messages } = eslintMessages("const c = cn('p-[13px]');", { scale: [0, 4, 8, 12, 16, 24, 32] });
   assert.equal(messages[0].message, 'Unexpected Tailwind arbitrary spacing value "p-[13px]". Use "p-3" (12px) or "p-4" (16px).');
 });
 

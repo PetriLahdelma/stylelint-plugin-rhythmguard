@@ -2,7 +2,11 @@
 // resolves through `types`; a subpath needs `exports` or typesVersions (#281).
 import type { RhythmguardEslintPlugin } from "stylelint-plugin-rhythmguard";
 
-export type { EslintRuleModule, RhythmguardEslintPlugin } from "stylelint-plugin-rhythmguard";
+export type {
+  EslintRuleModule,
+  RhythmguardEslintPlugin,
+  RhythmguardTailwindClassOptions,
+} from "stylelint-plugin-rhythmguard";
 
 export const configs: RhythmguardEslintPlugin["configs"];
 export const rules: RhythmguardEslintPlugin["rules"];

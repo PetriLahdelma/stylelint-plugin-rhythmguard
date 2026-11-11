@@ -40,14 +40,24 @@ A `recommended` config is exported too: `rhythmguard.configs.recommended` enable
 
 ## What it checks
 
-Every string literal and template chunk in the file, so it needs no callee configuration. These all get checked:
+Class strings: string literals and template chunks in a class context, and other strings only when they look like a class list. Type positions and non-class attributes are never checked, so `--fix` cannot rewrite a type union, an enum member or an accessible name.
 
-- `className="p-[13px]"`
-- `cn("p-[13px]", condition && "m-[7px]")`
-- `clsx("p-[13px]", "gap-[18px]")`
-- `twMerge("p-[13px]", other)`
-- `cva("base", { variants: { size: { sm: "p-[5px]" } } })`
-- `<div class="p-[13px]">` in a Vue `<template>` (vue-eslint-parser) or a Svelte component (svelte-eslint-parser); other attributes in the markup are not checked, and strings in bound classes (`:class="..."`, `class={...}`) are checked as strings
+Class contexts, always checked:
+
+- JSX attributes `className`, `class` and any name ending in `ClassName` (`contentClassName`): `className="p-[13px]"`, `className={active ? "p-[13px]" : ""}`, `` className={`p-[13px] ${x}`} ``
+- Object properties with those names: `{ className: "p-[13px]" }`
+- Arguments of `cn`, `clsx`, `classnames`, `cx`, `cva`, `tv`, `twMerge` and `twJoin`, including nested arrays, object keys and values, and both branches of `?:`, `&&`, `||` and `??`: `cn("p-[13px]", condition && "m-[7px]")`, `clsx({ "p-[13px]": on })`, `cva("base", { variants: { size: { sm: "p-[5px]" } } })`, `tv({ base: "p-[13px]", slots: { body: "m-[7px]" } })`. A method call matches by its name too (`utils.cn(...)`). A call to any other function takes the context it sits in: `className={mergeClasses("p-[13px]")}` is checked, `title={t("p-[13px]")}` is not
+- `tw` tagged templates: `` tw`p-[13px]` ``, `` tw.div`p-[13px]` ``
+- `<div class="p-[13px]">` in a Vue `<template>` (vue-eslint-parser) or a Svelte component (svelte-eslint-parser), and the strings in bound classes (`:class="..."`, `class={...}`)
+
+Never checked:
+
+- Type positions: string literal types, template literal types, enum members, interface and type alias members (`type Size = "p-[13px]"`, `enum Spacing { Tight = "p-[13px]" }`)
+- Any other JSX, Vue or Svelte attribute: `aria-*`, `title`, `id`, `data-*`, `alt`, `placeholder`, component props such as `<Box padding="p-[13px]">`
+
+Any other string is checked only when it holds two or more utility-shaped tokens: `const base = "flex p-[13px]"` is checked, `Object.freeze({ Tight: "p-[13px]" })` and `"Error in p-[13px] string"` are not. A token is utility-shaped when, after its variant prefix (`md:`), important marker and leading `-` are removed, it is an arbitrary value (`p-[13px]`, `bg-[#fff]`), a numeric step or fraction (`p-4`, `w-1/2`, `bg-red-500`), a size keyword step (`text-sm`, `w-full`, `m-auto`), or one of a short list of keyword utilities (`flex`, `hidden`, `items-center`). Capitalised and plain words never are. The test is deliberately strict: a lone class in a plain variable (`const pad = "p-[13px]"`) is not checked; move it into a `cn(...)` call or a `className`, or add your helper to `classFunctions`.
+
+The gate needs no type information or scope analysis, so it runs the same under ESLint and Oxlint. `rhythmguard audit` does not apply it: its template scan has no parser and still reads every string literal in a template file.
 
 Variant prefixes are handled (`md:p-[13px]`, `has-[>button]:ml-[-0.3rem]`). Spacing utilities covered: padding, margin, gap, inset, space, translate and their axis and side variants. Arbitrary values in `rem` and `em` are converted through `baseFontSize`.
 
@@ -92,6 +102,8 @@ Writes the utility class for the nearest scale step: `p-[13px]` becomes `p-3`, `
 
 When the snapped value is not a quarter step of the unit, the fix keeps the arbitrary form and writes the nearest step inside it (`p-[4px]`). Tailwind v4 generates any quarter step; v3 generates the quarter steps of its default scale up to `3.5` and whole numbers above, so a v3 project whose scale needs `p-4.5` should set `spacingUnit: false` to keep the arbitrary-value fix.
 
+Tailwind has no negative padding, scroll padding or gap: it generates no `-p-3` or `-gap-3`, and `p-[-13px]` writes a declaration the browser drops. An off-scale `-p-[13px]`, `p-[-13px]`, `-gap-[13px]` or `gap-[-13px]` is reported with `Padding and gap cannot be negative, so this class has no effect.` and no fix; the rule never suggests `-p-3` or `-gap-3`. Margin, inset, `top`/`right`/`bottom`/`left`, translate, `scroll-m*` and `space-*` keep their negative forms.
+
 Template literal chunks are reported but not fixed. Negative values, written either way (`m-[-16px]` or `-m-[16px]`), are reported without a fix when `allowNegative` is `false`; `-m-[-16px]` is positive and is checked like `m-[16px]`.
 
 ## Options
@@ -101,6 +113,8 @@ Template literal chunks are reported but not fixed. Negative values, written eit
 | `scale` | `Array<number\|string>` | Tailwind's default spacing ladder | Allowed spacing values. Without it, the steps of Tailwind's default theme as multiples of `spacingUnit` (`0, 2, 4, 6, 8, 10, 12, 14, 16, 20, 24, 28, 32, 36, 40, 44, 48, 56, 64, ... 384` on a 16px root, the `tailwind` preset), and each message ends with `Scale: Tailwind default spacing.` Before 3.20 the default was `[0,4,8,12,16,24,32]`. Set `scale` to your project's scale when it is not Tailwind's |
 | `units` | `string[]` | `['px','rem','em']` | Units considered |
 | `baseFontSize` | `number` | `16` | `rem` and `em` conversion base |
+| `classFunctions` | `string[]` | `[]` | Function and tagged-template names whose arguments are class strings, added to the built-in list (`cn`, `clsx`, `classnames`, `cx`, `cva`, `tv`, `twMerge`, `twJoin`, `tw`). It extends the list; it cannot remove a built-in name. See [What it checks](#what-it-checks) |
+| `classContexts` | `string[]` | `[]` | JSX attribute and object property names whose values are class strings, added to `class`, `className` and `*ClassName`. A leading `*` matches by suffix (`"*Classes"`). Applies to Vue and Svelte attribute names too. Every other attribute is never checked |
 | `allowHairlines` | `boolean` | `true` | Skips non-zero lengths of one CSS pixel or less (`translate-y-[0.5px]`, `-mt-[1px]`). See [Hairlines](#hairlines) |
 | `allowNegative` | `boolean` | `true` | Whether negative arbitrary values are allowed |
 | `spacingUnit` | `number \| false` | `baseFontSize / 4` (`4`) | Px per Tailwind spacing step (`--spacing`, `0.25rem`), used to name and write utility classes. `false` keeps the arbitrary-value fix |

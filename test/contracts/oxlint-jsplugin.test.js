@@ -73,6 +73,20 @@ test('tailwind-class-use-scale fixes to the nearest step under Oxlint', { skip }
   assert.match(fixed, /cn\("p-\[12px\]", "-m-2"\)/);
 });
 
+test('under Oxlint, --fix leaves type, enum and aria-label probes alone (cs-04)', { skip }, () => {
+  const probes = path.join(root, 'test', 'fixtures', 'ts-class-context');
+  const dir = fixture();
+  fs.copyFileSync(path.join(probes, 'probe.tsx'), path.join(dir, 'a.tsx'));
+  const report = JSON.parse(run(dir, ['-f', 'json']).stdout).diagnostics
+    .filter((d) => d.code.startsWith('rhythmguard-tailwind'))
+    .map((d) => d.message);
+  assert.deepEqual(report, [
+    'Unexpected Tailwind arbitrary spacing value "p-[13px]". Use "p-3" (12px) or "p-4" (16px).',
+  ]);
+  run(dir, ['--fix']);
+  assert.equal(fs.readFileSync(path.join(dir, 'a.tsx'), 'utf8'), fs.readFileSync(path.join(probes, 'probe.fixed.tsx'), 'utf8'));
+});
+
 // Every `.oxlintrc.json` sample in the docs, run as written with the plugin
 // specifier pointed at this checkout.
 const DOCS = [

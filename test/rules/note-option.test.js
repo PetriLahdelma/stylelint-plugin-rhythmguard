@@ -85,7 +85,7 @@ function lintTailwind(ruleName, code, options) {
 }
 
 test('the ESLint rules append the note', () => {
-  const spacing = lintTailwind('tailwind-class-use-scale', "const c = 'p-[13px]';", { scale: [0, 4, 8, 12, 16], note: NOTE });
+  const spacing = lintTailwind('tailwind-class-use-scale', "const c = cn('p-[13px]');", { scale: [0, 4, 8, 12, 16], note: NOTE });
   assert.equal(spacing[0].message, `Unexpected Tailwind arbitrary spacing value "p-[13px]". Use "p-3" (12px) or "p-4" (16px). ${NOTE}`);
   const motion = lintTailwind('tailwind-class-use-motion-scale', "const c = 'duration-[130ms]';", { durationScale: [100, 200], note: NOTE });
   assert.equal(motion[0].message, `Unexpected Tailwind arbitrary motion duration "duration-[130ms]". Use duration scale values (nearest: 100ms or 200ms). ${NOTE}`);

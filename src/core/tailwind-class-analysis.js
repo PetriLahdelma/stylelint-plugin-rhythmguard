@@ -19,6 +19,13 @@ const DEFAULT_UNITS = ['px', 'rem', 'em'];
 // that is a quarter of the root font size: 4px at 16px, 2.5px at 10px (#247).
 const SPACING_UNIT_REM = TAILWIND_SPACING_UNIT_REM;
 
+// Utilities Tailwind has no negative form for: padding, scroll padding and
+// gap (padding and gap cannot be negative in CSS). `-p-3` and `-gap-3` are
+// never generated, and `p-[-13px]` writes an invalid declaration (cs-08).
+// The class regex still accepts the sign on them so a finding that was
+// reported keeps being reported, now without a fix.
+const NO_NEGATIVE_FORM = /^(?:p[trblxy]?|gap(?:-[xy])?|scroll-p[trblxy]?)$/;
+
 const ARBITRARY_SPACING_CLASS = /^(?<utility>-?(?:m(?:[trblxy])?|p(?:[trblxy])?|gap(?:-[xy])?|space-[xy]|inset(?:-[xy])?|top|right|bottom|left|translate-[xy]|scroll-(?:m|p)(?:[trblxy])?))-\[(?<rawValue>[^\]]+)\]$/;
 
 function normalizeTailwindClassOptions(option = {}) {
@@ -157,6 +164,9 @@ function utilityClassFor(utility, px, negative, spacingUnit) {
     return null;
   }
   const name = utility.startsWith('-') ? utility.slice(1) : utility;
+  if (negative && steps !== 0 && NO_NEGATIVE_FORM.test(name)) {
+    return null;
+  }
   const sign = negative && steps !== 0 ? '-' : '';
   return `${sign}${name}-${formatNumber(Math.round(quarters) / 4)}`;
 }
@@ -219,6 +229,23 @@ function analyzeClassToken(token, options, scalePx) {
   // Past the top step the nearest step is not a fix: 64px snapped to a 32px
   // top step halves the padding (cs-01). Reported, with no fix.
   const beyondScale = pxValue > scalePx[scalePx.length - 1];
+
+  // `-p-[13px]`, `p-[-13px]`, `-gap-[13px]`: still reported, as before, but
+  // with no fix and no suggested class, since `-p-3` and `-gap-3` do not
+  // exist. A double negative (`-p-[-13px]`) is no better: Tailwind has no
+  // `-p-*` utility at all. On-scale values were never reported and are not now.
+  const bareUtility = match.groups.utility.replace(/^-/, '');
+  if (NO_NEGATIVE_FORM.test(bareUtility) && (match.groups.utility.startsWith('-') || parsedLength.number < 0)) {
+    return {
+      fixedToken: null,
+      nearest,
+      nearestUtilities: null,
+      parsedLength,
+      reason: 'no-negative-form',
+      rawValue: match.groups.rawValue,
+      utility: match.groups.utility,
+    };
+  }
 
   const signedNearest = parsedLength.number < 0
     ? -Math.abs(nearest.nearest)
@@ -286,12 +313,15 @@ function offScaleClassMessage(token, analysis, scaleName = null) {
   const message = offScaleClassText(token, analysis);
   // The ESLint rule names the scale it fell back to, so a reader knows the
   // verdict is Tailwind's default ladder and not the project's tokens.
-  return scaleName && analysis.reason !== 'negative' ? `${message} Scale: ${scaleName}.` : message;
+  return scaleName && analysis.reason === 'off-scale' ? `${message} Scale: ${scaleName}.` : message;
 }
 
 function offScaleClassText(token, analysis) {
   if (analysis.reason === 'negative') {
     return `Unexpected Tailwind arbitrary spacing value "${token}". Negative values are disabled for this rule.`;
+  }
+  if (analysis.reason === 'no-negative-form') {
+    return `Unexpected Tailwind arbitrary spacing value "${token}". Padding and gap cannot be negative, so this class has no effect.`;
   }
   const lowerPx = analysis.nearest ? formatLength(analysis.nearest.lower, 'px') : 'n/a';
   const upperPx = analysis.nearest ? formatLength(analysis.nearest.upper, 'px') : 'n/a';

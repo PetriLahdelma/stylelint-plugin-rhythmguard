@@ -33,7 +33,7 @@ function lint(code, parser, filename) {
 test('a Vue template class attribute is checked and fixed, as well as script strings', () => {
   const code = [
     '<template><div class="p-[13px]"></div></template>',
-    '<script>export default { data(){ return { c: "m-[13px]" } } }</script>',
+    '<script>export default { data(){ return { c: cn("m-[13px]") } } }</script>',
   ].join('\n');
   const { fixed, messages } = lint(code, fakeVueParser, 'App.vue');
 
@@ -43,7 +43,7 @@ test('a Vue template class attribute is checked and fixed, as well as script str
   ]);
   assert.equal(fixed.output, [
     '<template><div class="p-3"></div></template>',
-    '<script>export default { data(){ return { c: "m-3" } } }</script>',
+    '<script>export default { data(){ return { c: cn("m-3") } } }</script>',
   ].join('\n'));
 });
 
@@ -70,7 +70,7 @@ test('Vue: bound class strings are checked, other attributes are not, entities a
 
 test('a Svelte class attribute is checked and fixed, as well as script strings', () => {
   const code = [
-    '<script>let x = "m-[13px]";</script>',
+    '<script>let x = cn("m-[13px]");</script>',
     '<div class="p-[13px]"></div>',
   ].join('\n');
   const { fixed, messages } = lint(code, fakeSvelteParser, 'App.svelte');
@@ -80,7 +80,7 @@ test('a Svelte class attribute is checked and fixed, as well as script strings',
     [2, 'Unexpected Tailwind arbitrary spacing value "p-[13px]". Use "p-3" (12px) or "p-4" (16px).'],
   ]);
   assert.equal(fixed.output, [
-    '<script>let x = "m-3";</script>',
+    '<script>let x = cn("m-3");</script>',
     '<div class="p-3"></div>',
   ].join('\n'));
 });
@@ -95,4 +95,17 @@ test('Svelte: text around a mustache tag is checked, other attributes are not', 
     'Unexpected Tailwind arbitrary spacing value "m-[7px]". Use "m-1" (4px) or "m-2" (8px).',
   ]);
   assert.equal(fixed.output, `<div class="p-3 {active ? 'gap-4' : ''} m-2" title="p-[13px]"></div>`);
+});
+
+test('Vue and Svelte: bound non-class attributes are skipped even with two utility tokens (cs-04)', () => {
+  const tokens = ({ messages }) => messages.map(({ message }) => /"([^"]+)"/.exec(message)[1]);
+  const vue = lint([
+    '<template>',
+    `  <div :title="'p-[13px] m-[7px]'" :aria-label="'p-[13px] m-[7px]'" :class="['p-[13px]', on && 'gap-[18px]']"></div>`,
+    '</template>',
+  ].join('\n'), fakeVueParser, 'App.vue');
+  assert.deepEqual(tokens(vue), ['p-[13px]', 'gap-[18px]']);
+
+  const svelte = lint(`<div title="{'p-[13px] m-[7px]'}" class="{cn('p-[13px]')}"></div>`, fakeSvelteParser, 'App.svelte');
+  assert.deepEqual(tokens(svelte), ['p-[13px]']);
 });

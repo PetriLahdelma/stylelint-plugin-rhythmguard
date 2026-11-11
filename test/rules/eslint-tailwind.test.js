@@ -32,7 +32,7 @@ test('eslint tailwind class rule autofixes nearest value', () => {
   const linter = new Linter();
 
   const fixResult = linter.verifyAndFix(
-    "const classes = 'p-[13px]';",
+    "const classes = cn('p-[13px]');",
     {
       languageOptions: { ecmaVersion: 2022, sourceType: 'module' },
       plugins: { 'rhythmguard-tailwind': eslintPlugin },
@@ -45,7 +45,7 @@ test('eslint tailwind class rule autofixes nearest value', () => {
   );
 
   assert.equal(fixResult.fixed, true);
-  assert.equal(fixResult.output, "const classes = 'p-3';");
+  assert.equal(fixResult.output, "const classes = cn('p-3');");
 });
 
 test('eslint tailwind motion rule reports arbitrary duration and easing values', () => {
@@ -146,7 +146,7 @@ function lintTailwind(code, options) {
 }
 
 test('tailwind rule names the utility classes for the two nearest steps', () => {
-  const { messages } = lintTailwind("const c = 'p-[13px]';", { scale: [0, 4, 8, 12, 16, 24, 32] });
+  const { messages } = lintTailwind("const c = cn('p-[13px]');", { scale: [0, 4, 8, 12, 16, 24, 32] });
   assert.equal(messages.length, 1);
   assert.equal(
     messages[0].message,
@@ -155,21 +155,21 @@ test('tailwind rule names the utility classes for the two nearest steps', () => 
 });
 
 test('tailwind rule fix writes the utility class when the snapped value is a step of the spacing unit', () => {
-  const { fixed } = lintTailwind("const c = 'p-[13px] md:-m-[13px]! m-[-13px] !gap-[18px] p-[0.8125rem]';", {
+  const { fixed } = lintTailwind("const c = cn('p-[13px] md:-m-[13px]! m-[-13px] !gap-[18px] p-[0.8125rem]');", {
     scale: [0, 4, 8, 12, 16, 24, 32],
   });
-  assert.equal(fixed.output, "const c = 'p-3 md:-m-3! -m-3 !gap-4 p-3';");
+  assert.equal(fixed.output, "const c = cn('p-3 md:-m-3! -m-3 !gap-4 p-3');");
 });
 
 test('tailwind rule fix writes a fractional utility for quarter steps', () => {
-  const { fixed, messages } = lintTailwind("const c = 'p-[7px]';", { scale: [0, 2, 6, 10] });
-  assert.equal(fixed.output, "const c = 'p-1.5';");
+  const { fixed, messages } = lintTailwind("const c = cn('p-[7px]');", { scale: [0, 2, 6, 10] });
+  assert.equal(fixed.output, "const c = cn('p-1.5');");
   assert.match(messages[0].message, /Use "p-1\.5" \(6px\) or "p-2\.5" \(10px\)\./);
 });
 
 test('tailwind rule keeps the arbitrary value when the snapped value is not a quarter step of the unit', () => {
-  const { fixed, messages } = lintTailwind("const c = 'p-[5px]';", { scale: [0, 4, 8], spacingUnit: 3 });
-  assert.equal(fixed.output, "const c = 'p-[4px]';");
+  const { fixed, messages } = lintTailwind("const c = cn('p-[5px]');", { scale: [0, 4, 8], spacingUnit: 3 });
+  assert.equal(fixed.output, "const c = cn('p-[4px]');");
   assert.equal(
     messages[0].message,
     'Unexpected Tailwind arbitrary spacing value "p-[5px]". Use scale values (nearest: 4px or 8px).',
@@ -177,14 +177,14 @@ test('tailwind rule keeps the arbitrary value when the snapped value is not a qu
 });
 
 test('tailwind rule spacingUnit false keeps the arbitrary-value fix and message', () => {
-  const { fixed, messages } = lintTailwind("const c = 'p-[13px]';", { scale: [0, 4, 8, 12, 16], spacingUnit: false });
-  assert.equal(fixed.output, "const c = 'p-[12px]';");
+  const { fixed, messages } = lintTailwind("const c = cn('p-[13px]');", { scale: [0, 4, 8, 12, 16], spacingUnit: false });
+  assert.equal(fixed.output, "const c = cn('p-[12px]');");
   assert.match(messages[0].message, /nearest: 12px or 16px/);
 });
 
 test('tailwind rule spacingUnit follows a non-default unit', () => {
-  const { fixed } = lintTailwind("const c = 'p-[13px]';", { scale: [0, 8, 16], spacingUnit: 8 });
-  assert.equal(fixed.output, "const c = 'p-2';");
+  const { fixed } = lintTailwind("const c = cn('p-[13px]');", { scale: [0, 8, 16], spacingUnit: 8 });
+  assert.equal(fixed.output, "const c = cn('p-2');");
 });
 
 test('a class above the largest step names one class, not the same class twice', () => {
@@ -205,7 +205,7 @@ test('a class above the largest step names one class, not the same class twice',
 });
 
 test('allowNegative false reports the negative class form as negative, without a fix (#241)', () => {
-  const { fixed, messages } = lintTailwind("const c = '-m-[13px] -m-[16px] md:-mt-[0.5rem] m-[-16px] m-[13px]';", {
+  const { fixed, messages } = lintTailwind("const c = cn('-m-[13px] -m-[16px] md:-mt-[0.5rem] m-[-16px] m-[13px]');", {
     allowNegative: false,
     scale: [0, 4, 8, 12, 16, 24, 32],
   });
@@ -216,13 +216,13 @@ test('allowNegative false reports the negative class form as negative, without a
     'Unexpected Tailwind arbitrary spacing value "m-[-16px]". Negative values are disabled for this rule.',
     'Unexpected Tailwind arbitrary spacing value "m-[13px]". Use "m-3" (12px) or "m-4" (16px).',
   ]);
-  assert.equal(fixed.output, "const c = '-m-[13px] -m-[16px] md:-mt-[0.5rem] m-[-16px] m-3';");
+  assert.equal(fixed.output, "const c = cn('-m-[13px] -m-[16px] md:-mt-[0.5rem] m-[-16px] m-3');");
 });
 
 test('hairlines are exempt by default, as in use-scale: one CSS pixel or less (#159)', () => {
   const scale = [0, 4, 8, 12, 16, 24, 32];
   // From calcom/cal.com packages/ui/components/button/Button.tsx.
-  const code = "const c = 'group-[:not(div):active]:translate-y-[0.5px] -mt-[1px] m-[-1px] p-[0.0625rem] top-[0.05em] gap-[1.5px] m-[13px]';";
+  const code = "const c = cn('group-[:not(div):active]:translate-y-[0.5px] -mt-[1px] m-[-1px] p-[0.0625rem] top-[0.05em] gap-[1.5px] m-[13px]');";
   const { fixed, messages } = lintTailwind(code, { scale });
   assert.deepEqual(messages.map(({ message }) => message), [
     'Unexpected Tailwind arbitrary spacing value "gap-[1.5px]". Use "gap-0" (0px) or "gap-1" (4px).',
@@ -230,10 +230,10 @@ test('hairlines are exempt by default, as in use-scale: one CSS pixel or less (#
   ]);
   assert.equal(
     fixed.output,
-    "const c = 'group-[:not(div):active]:translate-y-[0.5px] -mt-[1px] m-[-1px] p-[0.0625rem] top-[0.05em] gap-0 m-3';",
+    "const c = cn('group-[:not(div):active]:translate-y-[0.5px] -mt-[1px] m-[-1px] p-[0.0625rem] top-[0.05em] gap-0 m-3');",
   );
 
-  const tenPxRoot = lintTailwind("const c = 'p-[0.1rem] p-[0.15rem]';", { baseFontSize: 10, scale });
+  const tenPxRoot = lintTailwind("const c = cn('p-[0.1rem] p-[0.15rem]');", { baseFontSize: 10, scale });
   assert.deepEqual(
     tenPxRoot.messages.map(({ message }) => message),
     ['Unexpected Tailwind arbitrary spacing value "p-[0.15rem]". Use scale values (nearest: 0px or 4px).'],
@@ -242,7 +242,7 @@ test('hairlines are exempt by default, as in use-scale: one CSS pixel or less (#
 });
 
 test('hairlines are exempt before allowNegative, as in use-scale (#159)', () => {
-  const { messages } = lintTailwind("const c = '-mt-[1px] m-[-0.5px] -mt-[2px]';", {
+  const { messages } = lintTailwind("const c = cn('-mt-[1px] m-[-0.5px] -mt-[2px]');", {
     allowNegative: false,
     scale: [0, 4, 8, 12, 16, 24, 32],
   });
@@ -252,7 +252,7 @@ test('hairlines are exempt before allowNegative, as in use-scale (#159)', () => 
 });
 
 test('allowHairlines false reports hairlines as off-scale values (#159)', () => {
-  const { fixed, messages } = lintTailwind("const c = 'translate-y-[0.5px] -mt-[1px]';", {
+  const { fixed, messages } = lintTailwind("const c = cn('translate-y-[0.5px] -mt-[1px]');", {
     allowHairlines: false,
     scale: [0, 4, 8, 12, 16, 24, 32],
   });
@@ -260,7 +260,7 @@ test('allowHairlines false reports hairlines as off-scale values (#159)', () => 
     'Unexpected Tailwind arbitrary spacing value "translate-y-[0.5px]". Use "translate-y-0" (0px) or "translate-y-1" (4px).',
     'Unexpected Tailwind arbitrary spacing value "-mt-[1px]". Use "mt-0" (0px) or "-mt-1" (4px).',
   ]);
-  assert.equal(fixed.output, "const c = 'translate-y-0 mt-0';");
+  assert.equal(fixed.output, "const c = cn('translate-y-0 mt-0');");
 });
 
 test('the declared tailwind-class-use-scale option types match the rule schema (#159)', () => {
@@ -274,44 +274,44 @@ test('the declared tailwind-class-use-scale option types match the rule schema (
 
 test('the utility class follows baseFontSize when spacingUnit is not set (#247)', () => {
   // At a 10px root a Tailwind step is 0.25rem = 2.5px, so p-3 is 7.5px, not 12px.
-  const offStep = lintTailwind("const c = 'p-[1.3rem] m-[13px]';", { baseFontSize: 10, scale: [0, 4, 8, 12, 16, 24, 32] });
+  const offStep = lintTailwind("const c = cn('p-[1.3rem] m-[13px]');", { baseFontSize: 10, scale: [0, 4, 8, 12, 16, 24, 32] });
   assert.deepEqual(offStep.messages.map(({ message }) => message), [
     'Unexpected Tailwind arbitrary spacing value "p-[1.3rem]". Use scale values (nearest: 12px or 16px).',
     'Unexpected Tailwind arbitrary spacing value "m-[13px]". Use scale values (nearest: 12px or 16px).',
   ]);
-  assert.equal(offStep.fixed.output, "const c = 'p-[1.2rem] m-[12px]';");
+  assert.equal(offStep.fixed.output, "const c = cn('p-[1.2rem] m-[12px]');");
 
-  const onStep = lintTailwind("const c = 'p-[1.3rem]';", { baseFontSize: 10, scale: [0, 5, 10, 15, 20] });
+  const onStep = lintTailwind("const c = cn('p-[1.3rem]');", { baseFontSize: 10, scale: [0, 5, 10, 15, 20] });
   assert.equal(onStep.messages[0].message, 'Unexpected Tailwind arbitrary spacing value "p-[1.3rem]". Use "p-4" (10px) or "p-6" (15px).');
-  assert.equal(onStep.fixed.output, "const c = 'p-6';");
+  assert.equal(onStep.fixed.output, "const c = cn('p-6');");
 
-  const explicit = lintTailwind("const c = 'p-[1.3rem]';", { baseFontSize: 10, scale: [0, 4, 8, 12, 16], spacingUnit: 4 });
-  assert.equal(explicit.fixed.output, "const c = 'p-3';", 'an explicit spacingUnit is used as given');
+  const explicit = lintTailwind("const c = cn('p-[1.3rem]');", { baseFontSize: 10, scale: [0, 4, 8, 12, 16], spacingUnit: 4 });
+  assert.equal(explicit.fixed.output, "const c = cn('p-3');", 'an explicit spacingUnit is used as given');
 });
 
 test('em values keep the arbitrary form: they follow the element font size, utilities follow the root (#247)', () => {
-  const { fixed, messages } = lintTailwind("const c = 'p-[1.1em] -m-[0.8em]';", { scale: [0, 4, 8, 12, 16, 24, 32] });
+  const { fixed, messages } = lintTailwind("const c = cn('p-[1.1em] -m-[0.8em]');", { scale: [0, 4, 8, 12, 16, 24, 32] });
   assert.deepEqual(messages.map(({ message }) => message), [
     'Unexpected Tailwind arbitrary spacing value "p-[1.1em]". Use scale values (nearest: 16px or 24px).',
     'Unexpected Tailwind arbitrary spacing value "-m-[0.8em]". Use scale values (nearest: 12px or 16px).',
   ]);
-  assert.equal(fixed.output, "const c = 'p-[1em] -m-[0.75em]';");
+  assert.equal(fixed.output, "const c = cn('p-[1em] -m-[0.75em]');");
 });
 
 test('a double negative is a positive value and is fixed to the positive class (#277)', () => {
   // Tailwind resolves -m-[-13px] to margin: 13px; the two signs cancel.
   const scale = [0, 4, 8, 12, 16, 24, 32];
-  const { fixed, messages } = lintTailwind("const c = '-m-[-13px] md:-mt-[-0.8rem]';", { scale });
+  const { fixed, messages } = lintTailwind("const c = cn('-m-[-13px] md:-mt-[-0.8rem]');", { scale });
   assert.deepEqual(messages.map(({ message }) => message), [
     'Unexpected Tailwind arbitrary spacing value "-m-[-13px]". Use "m-3" (12px) or "m-4" (16px).',
     'Unexpected Tailwind arbitrary spacing value "md:-mt-[-0.8rem]". Use "mt-3" (12px) or "mt-4" (16px).',
   ]);
-  assert.equal(fixed.output, "const c = 'm-3 md:mt-3';");
+  assert.equal(fixed.output, "const c = cn('m-3 md:mt-3');");
 
-  const arbitrary = lintTailwind("const c = '-m-[-13px]';", { scale, spacingUnit: false });
-  assert.equal(arbitrary.fixed.output, "const c = '-m-[-12px]';", 'the arbitrary form keeps both signs');
+  const arbitrary = lintTailwind("const c = cn('-m-[-13px]');", { scale, spacingUnit: false });
+  assert.equal(arbitrary.fixed.output, "const c = cn('-m-[-12px]');", 'the arbitrary form keeps both signs');
 
-  const noNegatives = lintTailwind("const c = '-m-[-16px] -m-[-13px]';", { allowNegative: false, scale });
+  const noNegatives = lintTailwind("const c = cn('-m-[-16px] -m-[-13px]');", { allowNegative: false, scale });
   assert.deepEqual(noNegatives.messages.map(({ message }) => message), [
     'Unexpected Tailwind arbitrary spacing value "-m-[-13px]". Use "m-3" (12px) or "m-4" (16px).',
   ], 'a double negative is not a negative value');
@@ -335,13 +335,13 @@ test('both rules declare meta.type so --fix-type applies their fixes (#278)', as
     },
     overrideConfigFile: true,
   });
-  const [result] = await eslint.lintText("const c = 'p-[13px] duration-[175ms]';");
-  assert.equal(result.output, "const c = 'p-3 duration-[150ms]';");
+  const [result] = await eslint.lintText("const c = cn('p-[13px] duration-[175ms]');");
+  assert.equal(result.output, "const c = cn('p-3 duration-[150ms]');");
 });
 
 test('configs.recommended works as a flat config on its own and keeps its rules spreadable (#279)', () => {
   const linter = new Linter();
-  const code = "const c = 'p-[13px]';";
+  const code = "const c = cn('p-[13px]');";
   const languageOptions = { ecmaVersion: 2022, sourceType: 'module' };
 
   const alone = linter.verify(code, [{ languageOptions }, eslintPlugin.configs.recommended]);
