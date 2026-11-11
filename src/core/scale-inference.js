@@ -53,6 +53,7 @@ function readDirectDependencies(dir) {
       ...Object.keys(pkg.peerDependencies || {}),
     ]);
   } catch {
+    // No package.json, or one npm could not read either: no dependencies to discover.
     return null;
   }
 }
@@ -469,20 +470,21 @@ function resolveAutoScale({
   const warnings = [];
   const fromOption = scaleFromSources(scaleSources, baseFontSize, warnings, sourceTokenPattern, cwd);
   if (fromOption) {
-    return { source: 'scaleSources', ...fromOption };
+    return { source: 'scaleSources', ...fromOption, warnings: [...warnings] };
   }
 
   const rc = rcTokenSources(cwd);
   warnings.push(...rc.warnings);
   const fromRc = scaleFromSources(rc.sources, baseFontSize, warnings, sourceTokenPattern, cwd);
   if (fromRc) {
-    return { source: 'rhythmguardrc', ...fromRc };
+    return { source: 'rhythmguardrc', ...fromRc, warnings: [...warnings] };
   }
 
   let tokenRegex;
   try {
     tokenRegex = new RegExp(tokenPattern);
   } catch {
+    // createTokenRegex reports an invalid tokenPattern; inference reads the default names.
     tokenRegex = new RegExp(DEFAULT_AUTO_TOKEN_PATTERN);
   }
 
@@ -492,22 +494,22 @@ function resolveAutoScale({
     if (scale) {
       const assessment = assessScale({ source: 'stylesheet', values: scale });
       if (assessment.plausible) {
-        return { files: [], scale, source: 'stylesheet', tokenCount: scale.length - 1, warnings: [] };
+        return { files: [], scale, source: 'stylesheet', tokenCount: scale.length - 1, warnings: [...warnings] };
       }
       rejected = { reasons: assessment.reasons, source: 'stylesheet', values: scale };
     }
   }
 
   if (tailwindConfigPath) {
-    const scale = scaleFromTailwindConfig(tailwindConfigPath, baseFontSize, { root, tokenRegex });
+    const scale = scaleFromTailwindConfig(tailwindConfigPath, baseFontSize, { root, tokenRegex, warnings });
     if (scale) {
-      return { files: [tailwindConfigPath], scale, source: 'tailwind', tokenCount: scale.length - 1, warnings: [] };
+      return { files: [tailwindConfigPath], scale, source: 'tailwind', tokenCount: scale.length - 1, warnings: [...warnings] };
     }
   }
 
   const fromPackages = scaleFromSources(discoverTokenPackages(cwd), baseFontSize, warnings, sourceTokenPattern, cwd);
   if (fromPackages) {
-    return { source: 'token-package', ...fromPackages };
+    return { source: 'token-package', ...fromPackages, warnings: [...warnings] };
   }
 
   return fallbackInference(rejected, warnings, fallbackPreset);
@@ -518,7 +520,7 @@ function resolveAutoScale({
  * or null. The config is loaded with `require()`, so callers pass a path only
  * when the user configured one.
  */
-function scaleFromTailwindConfig(tailwindConfigPath, baseFontSize = 16, { root = null, tokenRegex = new RegExp(DEFAULT_AUTO_TOKEN_PATTERN) } = {}) {
+function scaleFromTailwindConfig(tailwindConfigPath, baseFontSize = 16, { root = null, tokenRegex = new RegExp(DEFAULT_AUTO_TOKEN_PATTERN), warnings = [] } = {}) {
   const tailwindMap = buildEffectiveTokenMap({
     options: {
       baseFontSize,
@@ -528,6 +530,7 @@ function scaleFromTailwindConfig(tailwindConfigPath, baseFontSize = 16, { root =
     },
     root,
     tokenRegex,
+    warnings,
   });
   return scaleFromTokenMap(tailwindMap, baseFontSize);
 }
@@ -677,11 +680,23 @@ function sourceWarningsNote(warnings) {
   return unique.map((warning) => ` ${/[.!?]$/.test(warning) ? warning : `${warning}.`}`).join('');
 }
 
+/**
+ * The loader warnings a rule adds to its first message in a file, beyond the
+ * fallback note: an rc that could not be read, a token map or Tailwind config
+ * that could not be loaded, a token source that failed while another gave the
+ * scale (cq-05). Empty when nothing failed.
+ */
+function loaderWarningsNote(warnings, inference = null) {
+  const fromInference = inference && inference.source !== 'fallback' ? inference.warnings || [] : [];
+  return sourceWarningsNote([...(warnings || []), ...fromInference]).trim();
+}
+
 module.exports = {
   DEFAULT_AUTO_TOKEN_PATTERN,
   assessScale,
   autoScaleFallbackNote,
   collectTokenDefinitions,
+  loaderWarningsNote,
   discoverTokenPackages,
   inferScaleFromDefinitions,
   resolveAutoScale,

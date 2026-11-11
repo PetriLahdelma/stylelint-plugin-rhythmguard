@@ -32,6 +32,7 @@ const { buildEffectiveTokenMap } = require('../../core/token-map');
 
 const {
   collectTokenDefinitions,
+  loaderWarningsNote,
   withResolvedScale,
 } = require('../../core/scale-inference');
 
@@ -173,13 +174,23 @@ const ruleFunction = (primary, secondaryOptions) => {
     const tokenRegex = createTokenRegex(options.tokenPattern, { result, root, ruleName });
     const origins = {};
     const ambiguous = {};
+    const loaderWarnings = [];
     const tokenMap = buildEffectiveTokenMap({
       ambiguous,
       options,
       origins,
       root,
       tokenRegex,
+      warnings: loaderWarnings,
     });
+    // A token map file or Tailwind config that could not be loaded is named on
+    // the first message in the file, once (cq-05).
+    let pendingNote = loaderWarningsNote(loaderWarnings, options.scaleInference);
+    const takeNote = () => {
+      const note = [pendingNote, options.note].filter(Boolean).join(' ');
+      pendingNote = '';
+      return note;
+    };
 
     const tokenIndex = tokenIndexFromDefinitions(
       collectTokenDefinitions({
@@ -222,7 +233,7 @@ const ruleFunction = (primary, secondaryOptions) => {
           if (mapped.candidates.some((candidate) => avoidTokens.includes(replacementToken(candidate)))) {
             return;
           }
-          reportValueNode({ decl, message: messages.rejected(node.value, null, null, options.note, mapped.candidates, position), node, replacement: null, result, ruleName });
+          reportValueNode({ decl, message: messages.rejected(node.value, null, null, takeNote(), mapped.candidates, position), node, replacement: null, result, ruleName });
           return;
         }
         if (mapped && tokenFitsProperty(mapped.token, prop)) {
@@ -230,7 +241,7 @@ const ruleFunction = (primary, secondaryOptions) => {
             return;
           }
           const origin = origins[mapped.token] || null;
-          reportValueNode({ decl, message: messages.rejected(node.value, mapped.replacement, origin, options.note, [], position), node, replacement: fixable ? mapped.replacement : null, result, ruleName });
+          reportValueNode({ decl, message: messages.rejected(node.value, mapped.replacement, origin, takeNote(), [], position), node, replacement: fixable ? mapped.replacement : null, result, ruleName });
           return;
         }
         const indexed = resolveFromIndex(tokenIndex, parsedLength, prop, options, decl);
@@ -240,7 +251,7 @@ const ruleFunction = (primary, secondaryOptions) => {
         const named = indexed.replacement || null;
         reportValueNode({
           decl,
-          message: messages.rejected(node.value, named, indexed.origin || null, options.note, indexed.candidates, position),
+          message: messages.rejected(node.value, named, indexed.origin || null, takeNote(), indexed.candidates, position),
           node,
           replacement: indexed.fixable && fixable ? named : null,
           result,

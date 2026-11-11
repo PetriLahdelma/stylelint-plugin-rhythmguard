@@ -33,6 +33,7 @@ function collectTokenContract({
     try {
       source = readSource(filePath);
     } catch {
+      // Unreadable since the scan (deleted, permissions): this pass reads only what it can.
       continue;
     }
 
@@ -160,6 +161,7 @@ function collectMissingTokenFindings({
     try {
       source = readSource(filePath);
     } catch {
+      // Unreadable since the scan (deleted, permissions): this pass reads only what it can.
       continue;
     }
     const file = formatPath(filePath);
@@ -542,6 +544,8 @@ function toAuditContractReport(report) {
     scanned: report.scanned,
     schemaVersion: '2.0',
     summary: report.summary,
+    // Every loader warning of the run: token sources, the Tailwind config (cq-05, tf-02).
+    warnings: [...new Set(report.tokenSourceWarnings || [])],
   };
 }
 

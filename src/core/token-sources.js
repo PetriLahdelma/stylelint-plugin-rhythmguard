@@ -122,6 +122,7 @@ function createPatternMatcher(pattern, fallback) {
     const regex = new RegExp(pattern);
     return (token) => regex.test(token);
   } catch {
+    // Unreachable for token sources, which are validated first; the kind matcher is the safe default.
     return fallback;
   }
 }
@@ -149,6 +150,26 @@ function emptySourceWarning(source, format, tokenKind) {
     return `${prefix} spacing tokens; spacing tokens are read by name (space, spacing or spacer, in any case) or, in JSON, by a dimension type, so set a tokenPattern on this source if its tokens are named and typed otherwise.`;
   }
   return `${prefix} ${tokenKind} tokens.`;
+}
+
+/** Why a token value is not a length, for the warning that names a few (tf-02). */
+function whyNotALength(value) {
+  const text = String(value).trim();
+  if (/^\{[^}]+\}$/.test(text)) return 'an alias to a token outside this file';
+  if (/\{[^}]+\}/.test(text)) return 'arithmetic over aliases';
+  if (/var\(/i.test(text)) return 'a var() chain';
+  if (/^-?\d*\.?\d+$/.test(text)) return 'a unitless number';
+  return 'not a length';
+}
+
+/**
+ * A source whose tokens parse but none of which is a length: aliases into
+ * another file, var() chains, unitless values. It counted its tokens and fell
+ * back silently before (tf-02); this names the count, three examples and why.
+ */
+function noLengthWarning(source, format, tokens, kind) {
+  const examples = tokens.slice(0, 3).map((token) => `${token.token}: ${String(token.value).trim()} (${whyNotALength(token.value)})`);
+  return `Token source ${source.displayPath} (${format}): ${tokens.length} ${kind} token${tokens.length === 1 ? '' : 's'} found, none carries a length: ${examples.join('; ')}${tokens.length > 3 ? '; ...' : ''}. Add the file the aliases point to, or use values with a unit.`;
 }
 
 /**
@@ -198,7 +219,19 @@ function parseTokenSources({
       continue;
     }
 
-    const matchesSource = normalizedSource.tokenPattern
+    // An invalid tokenPattern on a source used to fall back to the name rule in silence (cq-05).
+    let validPattern = Boolean(normalizedSource.tokenPattern);
+    if (validPattern) {
+      try {
+        new RegExp(normalizedSource.tokenPattern);
+      } catch (error) {
+        validPattern = false;
+        const warning = `Token source ${normalizedSource.displayPath}: tokenPattern "${normalizedSource.tokenPattern}" is not a valid regular expression (${error.message}); its tokens are read by name instead.`;
+        sourceReport.warnings.push(warning);
+        warnings.push(warning);
+      }
+    }
+    const matchesSource = validPattern
       ? createPatternMatcher(normalizedSource.tokenPattern, matchesKind)
       : matchesKind;
     let read;
@@ -210,10 +243,10 @@ function parseTokenSources({
           : normalizedSource.format;
       }
       const readWith = (selection) => readSourceTokens(normalizedSource, text, document, selection);
-      read = readWith({ matchesKind: matchesSource, selectedBy: normalizedSource.tokenPattern ? 'tokenPattern' : 'name' });
+      read = readWith({ matchesKind: matchesSource, selectedBy: validPattern ? 'tokenPattern' : 'name' });
       // Names first; a source with no spacing length by name is read again by
       // the wider rule (any case, camelCase, `$type`). See RELAXED_SPACING_NAME.
-      if (kind === 'spacing' && !normalizedSource.tokenPattern && !read.tokens.some(isLengthToken)) {
+      if (kind === 'spacing' && !validPattern && !read.tokens.some(isLengthToken)) {
         const relaxed = readWith({ matchesKind: createRelaxedSpacingMatcher(matchesKind), selectByType: true, selectedBy: 'name' });
         if (relaxed.tokens.some(isLengthToken)) {
           read = relaxed;
@@ -242,6 +275,13 @@ function parseTokenSources({
 
     if (warnWhenEmpty && tokens.length === 0) {
       const warning = emptySourceWarning(normalizedSource, sourceReport.format, kind);
+      sourceReport.warnings.push(warning);
+      warnings.push(warning);
+    }
+
+    // Tokens but no length: always a warning, since the scale falls back (tf-02).
+    if (kind === 'spacing' && tokens.length > 0 && !tokens.some(isLengthToken)) {
+      const warning = noLengthWarning(normalizedSource, sourceReport.format, tokens, kind);
       sourceReport.warnings.push(warning);
       warnings.push(warning);
     }
@@ -1548,6 +1588,7 @@ function lookupJsonPointer(root, pointer) {
     try {
       segment = decodeURIComponent(encoded).replace(/~1/g, '/').replace(/~0/g, '~');
     } catch {
+      // A malformed escape names no token: the reference is reported as unresolved.
       return undefined;
     }
     if (Array.isArray(node)) {

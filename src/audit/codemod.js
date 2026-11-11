@@ -169,6 +169,7 @@ function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], includeNonAut
     try {
       parsed = parseStylesheet(filePath, source);
     } catch {
+      // Not parseable: listed in `skipped` with the reason.
       skipped.push({ file: formatPath(filePath), reason: 'could not parse' });
       continue;
     }
@@ -201,6 +202,7 @@ function writableRealPath(filePath, rootDir, realRoot) {
     }
     realPath = fs.realpathSync(filePath);
   } catch {
+    // A path that cannot be resolved is not a file to rewrite.
     return null;
   }
   const expected = path.join(realRoot, path.relative(rootDir, filePath));

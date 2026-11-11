@@ -97,26 +97,39 @@ function decisionFor(px, prop, decisions) {
 }
 
 /** Decisions from the .rhythmguardrc.json in cwd, cached and revalidated by mtime. Invalid entries throw. */
-function loadRcDecisions(cwd = process.cwd(), { baseFontSize = 16 } = {}) {
+/** The rc decisions and why they could not be read, cached on the rc file. */
+function readRcDecisions(cwd, baseFontSize) {
   const rcPath = path.join(cwd, RC_FILE);
   return cachedByFiles(`decisions:${rcPath}:${baseFontSize}`, (consult) => {
     consult(rcPath);
     if (!fs.existsSync(rcPath)) {
-      return [];
+      return { decisions: [], warnings: [] };
     }
     let config;
     try {
       config = readJsonFile(rcPath);
-    } catch {
-      return [];
+    } catch (error) {
+      // A malformed rc loses its adopt and allow decisions: say so (cq-05).
+      return { decisions: [], warnings: [`${RC_FILE} could not be read, so its decisions are not applied: ${error.message}`] };
     }
-    return normalizeDecisions(config && typeof config === 'object' ? config.decisions : undefined, { baseFontSize });
+    // An invalid decisions section throws, and the rules report it as a problem.
+    return { decisions: normalizeDecisions(config && typeof config === 'object' ? config.decisions : undefined, { baseFontSize }), warnings: [] };
   });
+}
+
+function loadRcDecisions(cwd = process.cwd(), { baseFontSize = 16 } = {}) {
+  return readRcDecisions(cwd, baseFontSize).decisions;
+}
+
+/** Why the rc decisions were not applied, for the lint note; empty when they were. */
+function loadRcDecisionWarnings(cwd = process.cwd(), { baseFontSize = 16 } = {}) {
+  return readRcDecisions(cwd, baseFontSize).warnings;
 }
 
 module.exports = {
   DECISIONS,
   decisionFor,
+  loadRcDecisionWarnings,
   loadRcDecisions,
   normalizeDecisions,
 };

@@ -2,6 +2,8 @@
 
 const js = require('@eslint/js');
 
+const noSilentCatch = require('./scripts/eslint/no-silent-catch');
+
 module.exports = [
   {
     ignores: ['benchmarks/**', 'coverage/**', 'docs/playground/rhythmguard.js', 'node_modules/**'],
@@ -26,6 +28,12 @@ module.exports = [
     rules: {
       'no-console': 'off',
     },
+  },
+  {
+    // Shipped code: no catch drops an error without saying why (cq-05).
+    files: ['src/**/*.js'],
+    plugins: { repo: { rules: { 'no-silent-catch': noSilentCatch } } },
+    rules: { 'repo/no-silent-catch': 'error' },
   },
   {
     files: ['**/*.mjs'],

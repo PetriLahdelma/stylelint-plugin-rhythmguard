@@ -31,13 +31,14 @@ const {
 
 const {
   collectTokenDefinitions,
+  loaderWarningsNote,
   withResolvedScale,
 } = require('../../core/scale-inference');
 
 const { validatePrimary, validateNoOffscaleTransformSecondaryOptions } = require('../validate');
 
 const { createTokenRegex, reportInvalidPreset, reportProblem, reportValueNode } = require('../report');
-const { decisionFor, loadRcDecisions } = require('../../core/decisions');
+const { decisionFor, loadRcDecisionWarnings, loadRcDecisions } = require('../../core/decisions');
 const { replacementFor, tokenHoldsNote, tokenIndexFromDefinitions } = require('../../core/token-index');
 
 const ruleName = 'rhythmguard/no-offscale-transform';
@@ -80,6 +81,17 @@ const ruleFunction = (primary, secondaryOptions) => {
     }
 
     withResolvedScale(options, root);
+    // An rc that could not be read, or a token source that failed while another
+    // gave the scale, is named on the first message in the file, once (cq-05).
+    let pendingNote = loaderWarningsNote(
+      options.readDecisions ? loadRcDecisionWarnings(process.cwd(), { baseFontSize: options.baseFontSize }) : [],
+      options.scaleInference,
+    );
+    const takeNote = () => {
+      const note = [pendingNote, options.note].filter(Boolean).join(' ');
+      pendingNote = '';
+      return note;
+    };
     const tokenRegex = createTokenRegex(options.tokenPattern, { result, root, ruleName });
     if (options.fixWith === 'token') {
       options.tokenIndex = tokenIndexFromDefinitions(
@@ -115,7 +127,7 @@ const ruleFunction = (primary, secondaryOptions) => {
             node.value,
             formatLength(nearest.lower, nearestUnit),
             formatLength(nearest.upper, nearestUnit),
-            [tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit), node.value.trim().startsWith('-')), options.note].filter(Boolean).join(' '),
+            [tokenHoldsNote(fixedValue, formatLength(nearest.nearest, nearestUnit), node.value.trim().startsWith('-')), takeNote()].filter(Boolean).join(' '),
             position,
             position ? pxAside(node.value, options.baseFontSize) : '',
           ),
@@ -128,7 +140,7 @@ const ruleFunction = (primary, secondaryOptions) => {
 
       // A value the options forbid outright says so, with no fix (issue #274).
       const reportForbidden = (node, message, position) => {
-        reportValueNode({ decl, message: message(node.value, options.note, position), node, result, ruleName });
+        reportValueNode({ decl, message: message(node.value, takeNote(), position), node, result, ruleName });
       };
 
       const checkNode = (node, avoidTokens = [], position = null) => {

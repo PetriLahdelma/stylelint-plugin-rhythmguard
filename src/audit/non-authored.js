@@ -63,6 +63,7 @@ function nonAuthoredReason(relativePath, readSource) {
   try {
     source = readSource();
   } catch {
+    // Unreadable: no content to classify, so the file counts as authored.
     return null;
   }
   return isBuiltBundle(source) ? 'bundle' : null;

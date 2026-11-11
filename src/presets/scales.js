@@ -116,6 +116,7 @@ function loadCommunityScales() {
     try {
       parsed = JSON.parse(fs.readFileSync(absolutePath, 'utf8'));
     } catch {
+      // Shipped data checked by npm run scales:validate; an unreadable file is skipped.
       continue;
     }
 

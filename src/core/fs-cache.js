@@ -16,6 +16,7 @@ function fileStamp(file) {
   try {
     return fs.statSync(file).mtimeMs;
   } catch {
+    // Absent: a missing file has no stamp, and its absence is part of the key.
     return null;
   }
 }
