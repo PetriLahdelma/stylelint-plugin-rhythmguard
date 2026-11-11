@@ -313,7 +313,7 @@ function offScaleClassMessage(token, analysis, scaleName = null) {
   const message = offScaleClassText(token, analysis);
   // The ESLint rule names the scale it fell back to, so a reader knows the
   // verdict is Tailwind's default ladder and not the project's tokens.
-  return scaleName && analysis.reason !== 'negative' ? `${message} Scale: ${scaleName}.` : message;
+  return scaleName && analysis.reason === 'off-scale' ? `${message} Scale: ${scaleName}.` : message;
 }
 
 function offScaleClassText(token, analysis) {
