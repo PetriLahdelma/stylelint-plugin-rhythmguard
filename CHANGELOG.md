@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- Windows: `rhythmguard audit --staged` and `--since` found no files when the project path held an 8.3 short name (`C:\Users\RUNNER~1\...`, the form Windows gives temporary directories), because git prints the long form; baseline keys from such a path climbed out of the repository. Paths are now compared after `fs.realpathSync.native`. `prefer-token` names a token's file with `/` (`src/tokens.css`), and `init --agents` prints the files it wrote with `/`. The suite now passes on Windows: 777 tests, none failing (#174).
+
 ## [3.20.0] - 2026-11-11
 
 ### Changed
