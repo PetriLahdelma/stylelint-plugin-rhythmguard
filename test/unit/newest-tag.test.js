@@ -2,9 +2,10 @@
 
 const assert = require('node:assert/strict');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const test = require('node:test');
 
-const load = () => import(path.join(__dirname, '..', '..', 'scripts', 'ci', 'newest-tag.mjs'));
+const load = () => import(pathToFileURL(path.join(__dirname, '..', '..', 'scripts', 'ci', 'newest-tag.mjs')).href);
 
 test('next is chosen only when it is ahead of latest', async () => {
   const { newestTag } = await load();

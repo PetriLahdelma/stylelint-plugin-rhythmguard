@@ -143,7 +143,7 @@ function runCodemod({ baseFontSize = 16, dir, ignorePatterns = [], includeNonAut
   const skipped = walked.linksOutsideRoot
     .filter((link) => !isTemplateFile(link))
     .map((link) => ({ file: formatPath(path.join(rootDir, link)), reason: 'symbolic link to a path outside the directory; not followed' }));
-  const realRoot = fs.realpathSync(rootDir);
+  const realRoot = fs.realpathSync.native(rootDir);
   const rewritten = new Set();
   let nonAuthoredSkipped = 0;
   for (const filePath of files) {
@@ -200,7 +200,7 @@ function writableRealPath(filePath, rootDir, realRoot) {
     if (fs.lstatSync(filePath).isSymbolicLink()) {
       return null;
     }
-    realPath = fs.realpathSync(filePath);
+    realPath = fs.realpathSync.native(filePath);
   } catch {
     // A path that cannot be resolved is not a file to rewrite.
     return null;

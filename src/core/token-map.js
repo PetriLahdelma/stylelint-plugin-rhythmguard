@@ -48,8 +48,9 @@ function displayOrigin(file) {
   if (!file) {
     return null;
   }
+  // Named with / on every platform, as the audit names files (#174).
   const relative = path.relative(process.cwd(), file);
-  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? relative : file;
+  return relative && !relative.startsWith('..') && !path.isAbsolute(relative) ? relative.split(path.sep).join('/') : file;
 }
 
 /**

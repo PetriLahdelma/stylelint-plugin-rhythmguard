@@ -122,7 +122,9 @@ function preferPath(candidate, current) {
 
 function realPathOf(filePath) {
   try {
-    return fs.realpathSync(filePath);
+    // The native call expands Windows 8.3 short names (C:\Users\RUNNER~1),
+    // which git never prints; the JS one does not, and nothing then matched (#174).
+    return fs.realpathSync.native(filePath);
   } catch {
     // A path that cannot be resolved has no real path.
     return null;
@@ -145,14 +147,15 @@ function getScanFiles(rootDir, ignorePatterns, parsed) {
 function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
   // Git runs in the scanned directory, so the repository is the one that holds
   // the files, whichever directory the command was started from.
-  const topLevel = runGit(rootDir, ['rev-parse', '--show-toplevel']).replace(/\r?\n$/, '');
+  const gitTopLevel = path.resolve(runGit(rootDir, ['rev-parse', '--show-toplevel']).replace(/\r?\n$/, ''));
+  const topLevel = realPathOf(gitTopLevel) || gitTopLevel;
   const changed = parsed.staged
     ? listStagedFiles(rootDir)
     : listFilesChangedSince(rootDir, parsed.since);
 
   // git reports the top level with symlinks resolved (/private/var on macOS);
   // compare in that form, then name files under the directory as it was given.
-  const realRootDir = fs.realpathSync(rootDir);
+  const realRootDir = fs.realpathSync.native(rootDir);
   const ignoreMatchers = createIgnoreMatchers(ignorePatterns);
   const seen = new Set();
   const found = [];
@@ -189,7 +192,8 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
     }
 
     seen.add(fullPath);
-    const fileRealPath = realPathOf(fullPath) || fullPath;
+    // A staged file gone from the working tree has no real path on disk; git's own path is the real form.
+    const fileRealPath = realPathOf(fullPath) || realPath;
     // A link that resolves outside the scanned directory is not followed (#289).
     if (!isPathInside(realRootDir, fileRealPath)) {
       linksOutsideRoot.push(relativePath);
@@ -353,7 +357,7 @@ function findGitTopLevel(dir) {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
     }).replace(/\r?\n$/, '');
-    return output ? path.resolve(output) : null;
+    return output ? realPathOf(path.resolve(output)) || path.resolve(output) : null;
   } catch {
     // Not a git repository, or no git: there is no repository root.
     return null;

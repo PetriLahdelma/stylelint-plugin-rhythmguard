@@ -2,9 +2,10 @@
 
 const assert = require('node:assert/strict');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const test = require('node:test');
 
-const load = () => import(path.join(__dirname, '..', '..', 'scripts', 'metrics', 'aged-downloads.mjs'));
+const load = () => import(pathToFileURL(path.join(__dirname, '..', '..', 'scripts', 'metrics', 'aged-downloads.mjs')).href);
 const now = new Date('2026-11-05T12:00:00Z');
 
 test('aged downloads count versions 14 or more days old and drop a version that is most of the week', async () => {
