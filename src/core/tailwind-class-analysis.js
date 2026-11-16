@@ -4,6 +4,7 @@ const {
   formatLength,
   formatNumber,
   isHairlineLength,
+  numbersEqual,
   nearestScaleValues,
   nearestText,
   normalizeScale,
@@ -50,8 +51,13 @@ function normalizeTailwindClassOptions(option = {}) {
     baseFontSize,
     reportEquivalents: option.reportEquivalents === true,
     scale: defaultScale ? tailwindSpacingLadder(spacingUnit || baseFontSize * SPACING_UNIT_REM) : option.scale,
-    scaleName: defaultScale ? TAILWIND_SCALE_NAME : null,
+    // The scale a message names after its 3.20 text: Tailwind's ladder when no
+    // scale is set, or the fallback a resolver chose (core/tailwind-project-scale).
+    scaleName: defaultScale ? TAILWIND_SCALE_NAME : (typeof option.scaleName === 'string' ? option.scaleName : null),
     spacingUnit,
+    // `--spacing-<name>` theme tokens as `{ name, px }`: Tailwind generates
+    // `p-<name>` from each, and fixes and suggestions prefer it.
+    themeSpacing: Array.isArray(option.themeSpacing) ? option.themeSpacing : [],
     units: Array.isArray(option.units)
       ? option.units.map((unit) => String(unit).toLowerCase())
       : DEFAULT_UNITS,
@@ -172,6 +178,25 @@ function utilityClassFor(utility, px, negative, spacingUnit) {
   return `${sign}${name}-${formatNumber(Math.round(quarters) / 4)}`;
 }
 
+/**
+ * The named utilities Tailwind v4 generates from `--spacing-<name>` theme
+ * tokens that hold a px value: `py-md` for 16px under `--spacing-md: 16px`,
+ * `-mt-md` when negative. None for a negative padding or gap.
+ */
+function themeClassesFor(utility, px, negative, themeSpacing) {
+  if (!themeSpacing || themeSpacing.length === 0 || px === 0) {
+    return [];
+  }
+  const name = utility.startsWith('-') ? utility.slice(1) : utility;
+  if (negative && NO_NEGATIVE_FORM.test(name)) {
+    return [];
+  }
+  const sign = negative ? '-' : '';
+  return themeSpacing
+    .filter((token) => numbersEqual(token.px, Math.abs(px)))
+    .map((token) => `${sign}${name}-${token.name}`);
+}
+
 function analyzeClassToken(token, options, scalePx) {
   const parsedToken = parseClassToken(token);
   if (parsedToken.prefix && hasInvalidVariantPrefix(parsedToken.prefix)) {
@@ -223,6 +248,12 @@ function analyzeClassToken(token, options, scalePx) {
   // Utility classes are root-relative; an `em` value follows the element's own
   // font size, so it keeps the arbitrary form and its unit (#247).
   const spacingUnit = parsedLength.unit === 'em' ? null : options.spacingUnit;
+  const themeSpacing = parsedLength.unit === 'em' ? null : options.themeSpacing;
+  // One theme token on a step names the class to write; two would be a guess.
+  const themeClassFor = (px) => {
+    const classes = themeClassesFor(match.groups.utility, px, negative, themeSpacing);
+    return classes.length === 1 ? classes[0] : null;
+  };
 
   const isOnScale = pxOnScale(scalePx, pxValue, parsedLength.unit, options.baseFontSize);
   if (isOnScale) {
@@ -234,7 +265,7 @@ function analyzeClassToken(token, options, scalePx) {
     if (!options.reportEquivalents) {
       return null;
     }
-    const equivalent = utilityClassFor(match.groups.utility, pxValue, negative, spacingUnit);
+    const equivalent = themeClassFor(pxValue) || utilityClassFor(match.groups.utility, pxValue, negative, spacingUnit);
     if (!equivalent || equivalent === parsedToken.candidate) {
       return null;
     }
@@ -274,12 +305,15 @@ function analyzeClassToken(token, options, scalePx) {
     };
   }
 
-  // The class that writes a step: its utility when the step is a quarter step
-  // of the spacing unit, otherwise the arbitrary value in the token's unit.
+  // The class that writes a step: the named utility of the one theme token
+  // that holds it, else its numeric utility when the step is a quarter step of
+  // the spacing unit, else the arbitrary value in the token's unit. `utility`
+  // is the numeric class the 3.20 message names.
   const replacementFor = (stepPx) => {
     const utilityClass = utilityClassFor(match.groups.utility, stepPx, negative, spacingUnit);
-    if (utilityClass) {
-      return { candidate: utilityClass, utility: utilityClass };
+    const themeClass = themeClassFor(stepPx);
+    if (themeClass || utilityClass) {
+      return { candidate: themeClass || utilityClass, utility: utilityClass };
     }
     const signed = parsedLength.number < 0 ? -Math.abs(stepPx) : stepPx;
     const number = parsedLength.unit === 'px' ? signed : signed / options.baseFontSize;
@@ -305,6 +339,11 @@ function analyzeClassToken(token, options, scalePx) {
     parsedLength,
     reason: 'off-scale',
     rawValue: match.groups.rawValue,
+    // Theme utilities on the two nearest steps, for the message suffix.
+    themeClasses: {
+      lower: themeClassesFor(match.groups.utility, nearest.lower, negative, themeSpacing),
+      upper: nearest.upper === nearest.lower ? [] : themeClassesFor(match.groups.utility, nearest.upper, negative, themeSpacing),
+    },
     upperToken: wrap(upper.candidate),
     utility: match.groups.utility,
   };
@@ -366,7 +405,7 @@ function offScaleClassReport(token, analysis, scaleName = null, suffix = '') {
   // The ESLint rule names the scale it fell back to, so a reader knows the
   // verdict is Tailwind's default ladder and not the project's tokens.
   const scaleSuffix = scaleName && analysis.reason === 'off-scale' ? ` Scale: ${scaleName}.` : '';
-  const data = { suffix: `${scaleSuffix}${suffix}`, token };
+  const data = { suffix: `${scaleSuffix}${themeSuffix(analysis)}${suffix}`, token };
   if (analysis.reason === 'negative') {
     return { data, messageId: 'negative' };
   }
@@ -385,6 +424,24 @@ function offScaleClassReport(token, analysis, scaleName = null, suffix = '') {
       : { data: { ...data, lower, lowerPx, upper, upperPx }, messageId: 'offScaleUtilities' };
   }
   return { data: { ...data, nearest: nearestText(lowerPx, upperPx) }, messageId: 'offScale' };
+}
+
+/**
+ * ` In your theme: "py-sm" (8px) or "py-md" (16px).` when `--spacing-<name>`
+ * theme tokens hold the nearest steps; empty otherwise. A suffix, so the 3.20
+ * text before it is unchanged (cs-03).
+ */
+function themeSuffix(analysis) {
+  if (analysis.reason !== 'off-scale' || !analysis.themeClasses || !analysis.nearest) {
+    return '';
+  }
+  const parts = [
+    [analysis.themeClasses.lower, analysis.nearest.lower],
+    [analysis.themeClasses.upper, analysis.nearest.upper],
+  ]
+    .filter(([classes]) => classes.length > 0)
+    .map(([classes, px]) => `${classes.map((name) => `"${name}"`).join(', ')} (${formatLength(px, 'px')})`);
+  return parts.length > 0 ? ` In your theme: ${parts.join(' or ')}.` : '';
 }
 
 /**

@@ -1,0 +1,17 @@
+{
+  "space": {
+    "$type": "dimension",
+    "inset-xs": { "$value": "{space.1}" },
+    "inset-sm": { "$value": "{space.2}" },
+    "inset-md": { "$value": "{space.4}" },
+    "stack-sm": { "$value": "{space.3}" },
+    "stack-md": { "$value": "{space.6}" },
+    "stack-lg": { "$value": "{space.8}" },
+    "section": { "$value": "{space.16}" },
+    "chip-x": { "$value": "1.375rem" },
+    "chip-y": { "$value": "{space.1-5}" },
+    "field": { "$value": "{space.2-5}" },
+    "gutter": { "$value": "clamp(1rem, 2vw, 2rem)" },
+    "panel": { "$value": "clamp(1.5rem, 4vw, 3rem)" }
+  }
+}

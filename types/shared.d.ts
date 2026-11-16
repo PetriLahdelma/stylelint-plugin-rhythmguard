@@ -235,7 +235,10 @@ export interface RhythmguardTailwindClassOptions {
   allowHairlines?: boolean;
   /** Allow negative values (`-m-[16px]`, `m-[-16px]`). Default true. */
   allowNegative?: boolean;
-  /** Base for converting `rem` and `em`. Default 16. */
+  /**
+   * Base for converting `rem` and `em`. Default: the `font-size` that `tailwindCss` or a CSS file in `scaleSources`
+   * sets on `html` or `:root` (`62.5%` is 10), else 16.
+   */
   baseFontSize?: number;
   /**
    * JSX attribute and object property names whose string values are class strings, added to the defaults
@@ -247,6 +250,8 @@ export interface RhythmguardTailwindClassOptions {
    * `["cn", "clsx", "classnames", "cx", "cva", "tv", "twMerge", "twJoin", "tw"]`.
    */
   classFunctions?: string[];
+  /** Apply the `adopt` and `allow` decisions of the nearest `.rhythmguardrc.json`, as Stylelint and the audit do. Default true. */
+  decisions?: boolean;
   /**
    * `"nearest"` autofixes an off-scale value to the nearest step, as 3.20 did. Default `false`: an off-scale value
    * gets the two nearest steps as editor suggestions and no autofix, since either step changes the rendered spacing.
@@ -254,15 +259,37 @@ export interface RhythmguardTailwindClassOptions {
   fixOffScale?: "nearest" | false;
   /** A sentence of up to 200 characters appended to every finding, after the built-in text. */
   note?: string;
+  /** A built-in scale: the scale when `scale` is not set, the fallback when it is `"auto"`. */
+  preset?: string;
   /**
    * Also report an on-scale arbitrary value that a utility class writes exactly (`p-[12px]` and `p-[0.75rem]` are
    * `p-3` on a 4px spacing unit), with an autofix to that class. Default false.
    */
   reportEquivalents?: boolean;
-  /** Allowed values. Default Tailwind's default spacing ladder on `spacingUnit` (`0, 2, 4, 6, 8, ... 384` on a 16px root). */
-  scale?: ScaleValue[];
-  /** px per Tailwind spacing step, used to write utility classes in messages and fixes. Default a quarter of `baseFontSize`; `false` keeps arbitrary values. */
+  /**
+   * Allowed values, or `"auto"` to read them from the project: `scaleSources` and `tailwindCss`, then the nearest
+   * `.rhythmguardrc.json` audit token sources, then installed token packages, then `preset` or Tailwind's default
+   * ladder. Without it: `"auto"` when `scaleSources` or `tailwindCss` is set, else `preset`, else Tailwind's default
+   * spacing ladder on `spacingUnit` (`0, 2, 4, 6, 8, ... 384` on a 16px root).
+   */
+  scale?: ScaleValue[] | "auto";
+  /** Token files (CSS, SCSS, DTCG or other JSON) that hold the scale, read without running code. Paths resolve from ESLint's working directory. */
+  scaleSources?: Array<string | ScaleSource>;
+  /**
+   * px per Tailwind spacing step, used to write utility classes in messages and fixes. Default `--spacing` in
+   * `tailwindCss` (`initial` is `false`), else a quarter of `baseFontSize`; `false` keeps arbitrary values.
+   */
   spacingUnit?: number | false;
+  /**
+   * A Tailwind v3 config whose `theme.spacing` feeds `scale: "auto"`. The rule loads it with `require()`, so it runs
+   * that file; only an ESLint config can name it, never `.rhythmguardrc.json`.
+   */
+  tailwindConfigPath?: string;
+  /**
+   * The Tailwind v4 CSS entry point (`./src/app.css`). Its `@theme` `--spacing` sets the spacing unit and
+   * `--spacing-<name>` tokens are named in messages and preferred in fixes (`p-md`); both feed the scale. Read as text.
+   */
+  tailwindCss?: string;
   /** Units checked. Default `["px", "rem", "em"]`. */
   units?: string[];
 }

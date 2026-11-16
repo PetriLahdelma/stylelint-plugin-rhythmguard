@@ -19,6 +19,14 @@ const classOptions: RhythmguardTailwindClassOptions = {
   scale: [0, 4, 8, 12, 16, 24, 32],
   spacingUnit: false,
 };
+const projectOptions: RhythmguardTailwindClassOptions = {
+  decisions: false,
+  preset: 'rhythmic-4',
+  scale: 'auto',
+  scaleSources: ['tokens/spacing.json', { format: 'dtcg', path: 'tokens/space.tokens.json' }],
+  tailwindCss: './src/app.css',
+};
+void projectOptions;
 const packageClassOptions: PackageClassOptions = classOptions;
 
 const config = defineConfig([

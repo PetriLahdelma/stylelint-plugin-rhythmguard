@@ -6,7 +6,7 @@ Like its Stylelint counterpart [`use-motion-scale`](./use-motion-scale.md), this
 
 ```js
 // eslint.config.js
-import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';
+import rhythmguard from 'eslint-plugin-rhythmguard';
 
 export default [
   {
@@ -14,7 +14,7 @@ export default [
     languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
     plugins: { 'rhythmguard-tailwind': rhythmguard },
     rules: {
-      'rhythmguard-tailwind/tailwind-class-use-motion-scale': ['warn', { durationScale: [0, 75, 100, 150, 200, 300, 500] }],
+      'rhythmguard-tailwind/tailwind-class-use-motion-scale': ['error', { durationScale: [0, 75, 100, 150, 200, 300, 500] }],
     },
   },
 ];

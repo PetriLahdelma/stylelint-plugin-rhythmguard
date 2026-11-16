@@ -49,7 +49,7 @@ Rhythmguard reads the scale from the file your design system already ships: DTCG
 }
 ```
 
-`npx rhythmguard scale` prints the scale, the file it came from and the token that holds each step. In the audit, `prefer-token` names that token and its file (`Use var(--space-3) (tokens/tokens.json).`), and `--report-missing-tokens` reports a `var()` of a token that nothing defines. The ESLint rule for class strings takes the steps as a `scale` array; copy them from `npx rhythmguard scale`. More for design-system teams: [shared configs and the `embed` entry point](docs/FOR_CONFIG_AUTHORS.md), [token sources in the audit](docs/AUDIT.md#config-file), [scale presets](docs/SCALE_PRESETS.md).
+`npx rhythmguard scale` prints the scale, the file it came from and the token that holds each step. In the audit, `prefer-token` names that token and its file (`Use var(--space-3) (tokens/tokens.json).`), and `--report-missing-tokens` reports a `var()` of a token that nothing defines. The ESLint rule for class strings reads the same files: `scaleSources` with `scale: "auto"`, your Tailwind v4 CSS entry as `tailwindCss`, and the `.rhythmguardrc.json` token sources and decisions ([Your project's scale](docs/rules/tailwind-class-use-scale.md#your-projects-scale)). More for design-system teams: [shared configs and the `embed` entry point](docs/FOR_CONFIG_AUTHORS.md), [token sources in the audit](docs/AUDIT.md#config-file), [scale presets](docs/SCALE_PRESETS.md).
 
 ### You write CSS or Tailwind in a product repo
 

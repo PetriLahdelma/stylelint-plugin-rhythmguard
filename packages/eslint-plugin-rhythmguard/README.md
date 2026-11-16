@@ -6,7 +6,7 @@
 
 Nobody chose 13px; Rhythmguard reads the spacing scale from your design tokens, reports off-scale spacing in CSS, SCSS and Tailwind class strings with the two nearest steps, and fails CI only on new drift.
 
-This package is the class-string half, for ESLint and Oxlint. It catches off-scale Tailwind arbitrary spacing in class strings, and points at each class with the utility classes for the two nearest steps on your scale, offered as one-click suggestions in your editor; `--fix` writes a class only when it renders the same value. It checks against the `scale` you set, or Tailwind's default ladder; [stylelint-plugin-rhythmguard](https://www.npmjs.com/package/stylelint-plugin-rhythmguard) and its audit read the scale from DTCG, Style Dictionary, Tailwind `@theme` and Sass token files.
+This package is the class-string half, for ESLint and Oxlint. It catches off-scale Tailwind arbitrary spacing in class strings, and points at each class with the utility classes for the two nearest steps on your scale, offered as one-click suggestions in your editor; `--fix` writes a class only when it renders the same value. It reads your scale from the same token files as [stylelint-plugin-rhythmguard](https://www.npmjs.com/package/stylelint-plugin-rhythmguard) and its audit (DTCG, Style Dictionary, Tailwind `@theme`, Sass), or checks the `scale` you set, or Tailwind's default ladder.
 
 [![npm version](https://img.shields.io/npm/v/eslint-plugin-rhythmguard?label=npm&color=1f6feb)](https://www.npmjs.com/package/eslint-plugin-rhythmguard)
 [![npm downloads](https://img.shields.io/npm/dm/eslint-plugin-rhythmguard.svg)](https://www.npmjs.com/package/eslint-plugin-rhythmguard)
@@ -94,7 +94,21 @@ Espree, ESLint's default parser, reads JavaScript and JSX only. Other files need
 - Svelte: `svelte-eslint-parser`, usually through `eslint-plugin-svelte`'s flat configs. The rule checks the static text of `class` attributes (`class="p-[13px] {extra}"`), the strings in `class={...}`, and class strings in `<script>`.
 - Astro: `astro-eslint-parser`, usually through `eslint-plugin-astro`'s flat configs.
 
-Set `scale` to your design system's spacing steps in px. The rule does not read your Tailwind theme; the Stylelint plugin does that for stylesheets (see below).
+### Your project's scale
+
+The rule reads the scale you already declare, without running your code: token files (`scaleSources`: CSS, SCSS, DTCG, Style Dictionary, Tokens Studio), your Tailwind v4 CSS entry (`tailwindCss`: `@theme` `--spacing` and `--spacing-*`), or both with `scale: "auto"`, which also reads the nearest `.rhythmguardrc.json`:
+
+```js
+rules: {
+  'rhythmguard-tailwind/tailwind-class-use-scale': ['error', {
+    scale: 'auto',
+    scaleSources: ['tokens/spacing.json'],
+    tailwindCss: './src/app.css',
+  }],
+},
+```
+
+`--spacing` in the entry sets the spacing unit, and a `--spacing-md: 16px` theme token is named in the message and written by suggestions (`In your theme: "py-md" (16px).`). The `adopt` and `allow` decisions in `.rhythmguardrc.json` hold here as in Stylelint and the audit. Without any of these, the rule checks Tailwind's default ladder. Details: [Your project's scale](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/tailwind-class-use-scale.md#your-projects-scale).
 
 ### Oxlint
 
@@ -151,14 +165,19 @@ Padding, margin, gap, inset, space and translate utilities, with their axis and 
 
 | Option | Default | What it does |
 | --- | --- | --- |
-| `scale` | Tailwind's default ladder | Allowed spacing values in px. Without it, the steps of Tailwind's default theme on `spacingUnit` (`0, 2, 4, 6, 8, 10, 12, 14, 16, 20, ... 384` on a 16px root), and messages end with `Scale: Tailwind default spacing.` Before 3.20 the default stopped at 32. Set `scale` to your project's scale when it is not Tailwind's |
+| `scale` | Tailwind's default ladder | Allowed spacing values in px, or `"auto"`. Without it, and without `scaleSources`, `tailwindCss` or `preset`, the steps of Tailwind's default theme on `spacingUnit` (`0, 2, 4, 6, 8, 10, 12, 14, 16, 20, ... 384` on a 16px root), and messages end with `Scale: Tailwind default spacing.` Before 3.20 the default stopped at 32. Set `scale` to your project's scale when it is not Tailwind's |
+| `scaleSources` | `[]` | Token files that hold the scale. With no `scale`, they mean `"auto"` |
+| `tailwindCss` | none | Your Tailwind v4 CSS entry (`./src/app.css`): `--spacing` and `--spacing-<name>` theme tokens |
+| `preset` | none | A built-in scale: the scale when `scale` is not set, the fallback of `"auto"` |
+| `decisions` | `true` | Apply the `adopt` and `allow` decisions of the nearest `.rhythmguardrc.json` |
+| `tailwindConfigPath` | none | A Tailwind v3 config for `scale: "auto"`. Loaded with `require()`, so it runs that file; only your ESLint config can name it |
 | `units` | `['px', 'rem', 'em']` | Units the rule checks |
-| `baseFontSize` | `16` | Base for converting `rem` and `em` |
+| `baseFontSize` | the root `font-size` in `tailwindCss`, else `16` | Base for converting `rem` and `em` |
 | `classFunctions` | `[]` | More function and tagged-template names whose arguments are class strings, added to `cn`, `clsx`, `classnames`, `cx`, `cva`, `tv`, `twMerge`, `twJoin` and `tw` |
 | `classContexts` | `[]` | More JSX attribute and object property names whose values are class strings, added to `class`, `className` and `*ClassName`. A leading `*` matches by suffix |
 | `allowHairlines` | `true` | Skips non-zero lengths of one CSS pixel or less (`translate-y-[0.5px]`, `-mt-[1px]`, `p-[0.0625rem]`), as the Stylelint rules do. `false` reports them |
 | `allowNegative` | `true` | Whether negative arbitrary values (`m-[-8px]`, `-m-[8px]`) are allowed |
-| `spacingUnit` | `baseFontSize / 4` (`4`) | Px per Tailwind spacing step (`0.25rem`), used to name and write classes. `false` keeps the fix in arbitrary form (`p-[12px]`) |
+| `spacingUnit` | `--spacing` in `tailwindCss`, else `baseFontSize / 4` (`4`) | Px per Tailwind spacing step (`0.25rem`), used to name and write classes. `false` keeps the fix in arbitrary form (`p-[12px]`) |
 | `fixOffScale` | `false` | `"nearest"` makes `--fix` write the nearest step, as 3.20 did. By default an off-scale value gets suggestions and no autofix |
 | `reportEquivalents` | `false` | Also report an on-scale arbitrary value a utility class writes exactly (`p-[12px]` is `p-3`), with an autofix to the class |
 | `note` | none | A sentence added to every finding, such as `"See docs/spacing.md for approved exceptions."` Up to 200 characters |

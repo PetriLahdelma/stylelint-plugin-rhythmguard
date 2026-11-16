@@ -77,7 +77,8 @@ function eslintSnippet(scaleValues, { typescript = false } = {}) {
       ? '    languageOptions: { parser: tseslint.parser, parserOptions: { ecmaFeatures: { jsx: true } } },'
       : '    languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },',
     "    plugins: { 'rhythmguard-tailwind': rhythmguard },",
-    `    rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['warn'${options}] },`,
+    // One import and one severity in every ESLint sample, docs and quickstart alike (pos-07).
+    `    rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['error'${options}] },`,
     '  },',
     '];',
   ].join('\n');

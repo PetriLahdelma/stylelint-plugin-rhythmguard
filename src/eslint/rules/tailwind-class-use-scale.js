@@ -1,8 +1,10 @@
 'use strict';
 
+const { decisionFor } = require('../../core/decisions');
 const { MAX_NOTE_LENGTH, normalizeNote } = require('../../core/options');
-const { formatLength } = require('../../core/length');
+const { formatLength, toPx } = require('../../core/length');
 const { CLASS_MESSAGES, createTailwindClassAnalyzer, offScaleClassReport } = require('../../core/tailwind-class-analysis');
+const { presetNames, resolveTailwindProjectOptions } = require('../../core/tailwind-project-scale');
 const { classStringValue, createTokenSpans, isClassAttributeText } = require('../literal-spans');
 const { createClassContextMatchers, isClassString } = require('../class-context');
 
@@ -56,7 +58,9 @@ function maybeCheckNodeText(node, sourceCode, context, analyzer, matchers) {
     return;
   }
 
-  const findings = analyzer.analyzeClassString(value);
+  // `adopt` and `allow` decisions in .rhythmguardrc.json hold here as in
+  // Stylelint and the audit, matched as the audit matches a class string.
+  const findings = analyzer.analyzeClassString(value).filter(({ analysis }) => !isDecided(analysis, analyzer));
   if (findings.length === 0) {
     return;
   }
@@ -73,9 +77,12 @@ function maybeCheckNodeText(node, sourceCode, context, analyzer, matchers) {
   // token, so escapes and JSX or HTML entities elsewhere in the literal are
   // kept as written (#225).
   const spans = createTokenSpans(node, sourceCode);
-  const suffix = analyzer.note ? ` ${analyzer.note}` : '';
 
   for (const { analysis, segment } of findings) {
+    // Why a configured source gave no scale rides on the first finding in a
+    // file, once, so a wrong path does not fall back in silence (tf-02).
+    const suffix = [analyzer.pendingNote, analyzer.note].filter(Boolean).map((text) => ` ${text}`).join('');
+    analyzer.pendingNote = '';
     const { data, messageId } = offScaleClassReport(segment.token, analysis, analyzer.options.scaleName, suffix);
     // Autofix only rewrites a class to one that renders the same value. An
     // off-scale value moves layout whichever step it takes, so it gets the
@@ -99,6 +106,38 @@ function maybeCheckNodeText(node, sourceCode, context, analyzer, matchers) {
     });
   }
 }
+
+function isDecided(analysis, analyzer) {
+  if (analyzer.decisions.length === 0 || !analysis.parsedLength) {
+    return false;
+  }
+  const { number, unit } = analysis.parsedLength;
+  const px = toPx(Math.abs(number), unit, analyzer.options.baseFontSize);
+  const decision = px === null ? null : decisionFor(px, 'class-string', analyzer.decisions);
+  return Boolean(decision && (decision.decision === 'adopt' || decision.decision === 'allow'));
+}
+
+/** The warnings of a project resolution as one note: sentences, each ending in a period. */
+function warningsNote(warnings) {
+  return warnings.map((warning) => (/[.!?]$/.test(warning) ? warning : `${warning}.`)).join(' ');
+}
+
+const TOKEN_SOURCE = {
+  anyOf: [
+    { minLength: 1, type: 'string' },
+    {
+      additionalProperties: false,
+      properties: {
+        baseDir: { minLength: 1, type: 'string' },
+        file: { minLength: 1, type: 'string' },
+        format: { type: 'string' },
+        path: { minLength: 1, type: 'string' },
+        tokenPattern: { minLength: 1, type: 'string' },
+      },
+      type: 'object',
+    },
+  ],
+};
 
 module.exports = {
   meta: {
@@ -128,18 +167,28 @@ module.exports = {
             items: { minLength: 1, type: 'string' },
             type: 'array',
           },
+          decisions: { type: 'boolean' },
           fixOffScale: { enum: ['nearest', false] },
           note: { maxLength: MAX_NOTE_LENGTH, minLength: 1, type: 'string' },
+          preset: { enum: presetNames() },
           reportEquivalents: { type: 'boolean' },
           scale: {
-            items: {
-              anyOf: [
-                { type: 'number' },
-                { type: 'string' },
-              ],
-            },
-            type: 'array',
+            anyOf: [
+              {
+                items: {
+                  anyOf: [
+                    { type: 'number' },
+                    { type: 'string' },
+                  ],
+                },
+                type: 'array',
+              },
+              { enum: ['auto'] },
+            ],
           },
+          scaleSources: { items: TOKEN_SOURCE, type: 'array' },
+          tailwindConfigPath: { minLength: 1, type: 'string' },
+          tailwindCss: { minLength: 1, type: 'string' },
           spacingUnit: {
             anyOf: [
               { exclusiveMinimum: true, minimum: 0, type: 'number' },
@@ -157,7 +206,15 @@ module.exports = {
   },
   create(context) {
     const option = (context.options && context.options[0]) || {};
-    const analyzer = createTailwindClassAnalyzer(option);
+    // The project's scale, spacing unit, theme tokens and decisions, read from
+    // files only (no project code runs unless `tailwindConfigPath` names it).
+    const project = resolveTailwindProjectOptions(option, {
+      cwd: context.cwd || (typeof context.getCwd === 'function' ? context.getCwd() : process.cwd()),
+      filename: context.physicalFilename || context.filename || (typeof context.getFilename === 'function' ? context.getFilename() : null),
+    });
+    const analyzer = createTailwindClassAnalyzer({ ...option, ...project.analyzerOptions });
+    analyzer.decisions = project.decisions;
+    analyzer.pendingNote = warningsNote(project.warnings);
     analyzer.note = normalizeNote(option.note);
     analyzer.fixOffScale = option.fixOffScale === 'nearest' ? 'nearest' : false;
     const sourceCode = context.sourceCode || context.getSourceCode();

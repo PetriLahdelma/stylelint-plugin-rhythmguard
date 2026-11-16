@@ -94,6 +94,20 @@ test('under Oxlint, --fix writes nothing by default; --fix-suggestions and fixOf
   assert.match(fixed, /cn\("p-\[12px\]", "-m-2"\)/);
 });
 
+test('under Oxlint the rule reads the project scale: tailwindCss, scale "auto" and the rc decisions (cs-03)', { skip }, () => {
+  const dir = fixture({ fixOffScale: 'nearest', scale: 'auto', tailwindCss: 'app.css' });
+  fs.writeFileSync(path.join(dir, 'app.css'), '@theme {\n  --spacing: 4px;\n  --spacing-md: 16px;\n}\n');
+  fs.writeFileSync(path.join(dir, '.rhythmguardrc.json'), JSON.stringify({ decisions: [{ decision: 'allow', value: '7px' }] }));
+  const result = run(dir, ['-f', 'json']);
+  const messages = JSON.parse(result.stdout).diagnostics.map((d) => d.message).sort();
+  assert.deepEqual(messages, [
+    'Unexpected Tailwind arbitrary spacing value "md:gap-[18px]". Use "gap-4" (16px) or "gap-5" (20px). In your theme: "gap-md" (16px).',
+    'Unexpected Tailwind arbitrary spacing value "p-[13px]". Use "p-3" (12px) or "p-3.5" (14px).',
+  ], result.stderr);
+  run(dir, ['--fix']);
+  assert.match(fs.readFileSync(path.join(dir, 'a.tsx'), 'utf8'), /className="p-3 md:gap-md"/);
+});
+
 test('under Oxlint, --fix leaves type, enum and aria-label probes alone (cs-04)', { skip }, () => {
   const probes = path.join(root, 'test', 'fixtures', 'ts-class-context');
   const dir = fixture({ fixOffScale: 'nearest' });
@@ -131,7 +145,8 @@ test('every documented .oxlintrc.json reports p-[13px]', { skip }, () => {
     for (const sample of samples) {
       count += 1;
       for (const plugin of sample.jsPlugins) {
-        assert.match(plugin.specifier, /^(eslint-plugin-rhythmguard|stylelint-plugin-rhythmguard\/eslint)$/, doc);
+        // One canonical name in every sample (pos-07).
+        assert.equal(plugin.specifier, 'eslint-plugin-rhythmguard', doc);
         plugin.specifier = path.join(root, 'src', 'eslint', 'index.js');
       }
       const dir = fixture();

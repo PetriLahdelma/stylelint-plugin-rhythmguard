@@ -75,8 +75,19 @@ for (const doc of DOCS) {
 samples.push({ name: 'quickstart eslintSnippet', source: eslintSnippet([0, 4, 8, 12, 16, 24, 32]) });
 
 test('every documented ESLint sample is found', () => {
-  // README 1, package README 2, COMPARISON 1, FRAMEWORKS 1, TAILWIND 1, rule docs 1 + 1, quickstart 1.
-  assert.equal(samples.length, 9, samples.map(({ name }) => name).join('\n'));
+  // README 1, package README 2, COMPARISON 1, FRAMEWORKS 1, TAILWIND 1, rule docs 2 + 1, quickstart 1.
+  assert.equal(samples.length, 10, samples.map(({ name }) => name).join('\n'));
+});
+
+test('every ESLint sample uses one import and one severity (pos-07, pos-10)', () => {
+  for (const { name, source } of samples) {
+    const imports = [...source.matchAll(/import \w+ from '([^']+rhythmguard[^']*)'/g)].map((match) => match[1]);
+    assert.deepEqual(imports, ['eslint-plugin-rhythmguard'], name);
+    const severities = [...source.matchAll(/'rhythmguard-tailwind\/[\w-]+':\s*\[?\s*'(\w+)'/g)].map((match) => match[1]);
+    for (const severity of severities) {
+      assert.equal(severity, 'error', name);
+    }
+  }
 });
 
 for (const { name, source } of samples) {

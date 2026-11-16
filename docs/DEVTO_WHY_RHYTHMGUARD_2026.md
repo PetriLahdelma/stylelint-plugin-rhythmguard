@@ -67,7 +67,7 @@ That's it for CSS files. For Tailwind class strings in JSX/TSX, add the ESLint c
 **eslint.config.js:**
 
 ```js
-import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';
+import rhythmguard from 'eslint-plugin-rhythmguard';
 
 export default [
   {

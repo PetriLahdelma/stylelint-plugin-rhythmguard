@@ -54,7 +54,7 @@ This gives:
 Use the built-in Rhythmguard ESLint companion for arbitrary spacing classes:
 
 ```js
-import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';
+import rhythmguard from 'eslint-plugin-rhythmguard';
 
 export default [
   {
@@ -77,7 +77,7 @@ If you run Oxlint instead, load the same rule as a JS plugin:
 ```json
 // .oxlintrc.json
 {
-  "jsPlugins": [{ "name": "rhythmguard-tailwind", "specifier": "stylelint-plugin-rhythmguard/eslint" }],
+  "jsPlugins": [{ "name": "rhythmguard-tailwind", "specifier": "eslint-plugin-rhythmguard" }],
   "rules": {
     "rhythmguard-tailwind/tailwind-class-use-scale": ["error", { "scale": [0, 4, 8, 12, 16, 24, 32] }]
   }
