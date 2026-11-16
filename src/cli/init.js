@@ -286,6 +286,7 @@ function removeLegacyCopilotBlock(cwd) {
   const legacy = '.github/copilot-instructions.md';
   const legacyPath = path.join(cwd, legacy);
   if (!fs.existsSync(legacyPath)) return null;
+  assertProjectFile(cwd, legacyPath, legacy);
   const existing = fs.readFileSync(legacyPath, 'utf8');
   const start = existing.indexOf(BLOCK_START);
   const end = existing.indexOf(BLOCK_END);
@@ -297,6 +298,33 @@ function removeLegacyCopilotBlock(cwd) {
     fs.writeFileSync(legacyPath, next.endsWith('\n') ? next : `${next}\n`);
   }
   return legacy;
+}
+
+/**
+ * Refuse a write that would leave the project: a target that is a symbolic
+ * link (a cloned repository can ship AGENTS.md as a link to ~/.bashrc), or
+ * one whose directory resolves outside the project root. Checked before any
+ * read or write of the target.
+ */
+function assertProjectFile(cwd, targetPath, label) {
+  const stat = fs.lstatSync(targetPath, { throwIfNoEntry: false });
+  if (stat && stat.isSymbolicLink()) {
+    throw new Error(`${label} is a symbolic link; init writes only regular files inside the project. Replace the link with a file, or remove it.`);
+  }
+  if (stat && !stat.isFile()) {
+    throw new Error(`${label} is not a regular file; init writes only regular files inside the project.`);
+  }
+  const root = fs.realpathSync.native(cwd);
+  // The nearest directory that exists, so the check runs before any mkdir.
+  let existing = path.dirname(targetPath);
+  while (!fs.existsSync(existing) && path.dirname(existing) !== existing) {
+    existing = path.dirname(existing);
+  }
+  const dir = fs.realpathSync.native(existing);
+  const relative = path.relative(root, dir);
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    throw new Error(`${label} resolves outside the project (${dir}); init writes only inside ${root}.`);
+  }
 }
 
 /** The target names in `selection`: comma-separated, `all` for the files Rhythmguard owns. */
@@ -331,6 +359,7 @@ function installAgents(selection, cwd = process.cwd()) {
     const { mode, source, target } = AGENT_TARGETS[name];
     const content = fs.readFileSync(path.join(packsDir, source), 'utf8');
     const targetPath = path.join(cwd, target);
+    assertProjectFile(cwd, targetPath, target.split(path.sep).join('/'));
     fs.mkdirSync(path.dirname(targetPath), { recursive: true });
 
     if (mode === 'block') {
@@ -468,6 +497,7 @@ async function run() {
     }
 
     const configPath = path.join(process.cwd(), targetFile);
+    assertProjectFile(process.cwd(), configPath, targetFile);
     fs.writeFileSync(configPath, nextText);
 
     process.stdout.write(`\n✓ Wrote ${configPath}\n`);
@@ -477,6 +507,7 @@ async function run() {
       const rcAnswer = await prompter.ask(`Write ${RC_FILE} so \`npx rhythmguard audit .\` uses the same scale? (y/n) `);
       if (rcAnswer === 'y' || rcAnswer === 'yes') {
         const rcPath = path.join(process.cwd(), RC_FILE);
+        assertProjectFile(process.cwd(), rcPath, RC_FILE);
         fs.writeFileSync(rcPath, JSON.stringify(rcFor({ tailwindConfig: inferred.tailwindConfig, tokenFiles: inferred.tokenFiles }), null, 2) + '\n');
         process.stdout.write(`✓ Wrote ${rcPath}\n`);
       }

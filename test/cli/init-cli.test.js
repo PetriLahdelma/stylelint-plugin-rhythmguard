@@ -220,3 +220,30 @@ test('init --yes writes the config and the rc without reading stdin, and never r
   assert.match(second.stdout, /Not overwritten: --yes never replaces an existing config/);
   assert.equal(fs.readFileSync(path.join(fixtureDir, '.stylelintrc.json'), 'utf8'), mine);
 });
+
+test('init never writes through a symbolic link or outside the project', { skip: process.platform === 'win32' && 'symbolic links need privileges on Windows' }, () => {
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-init-outside-'));
+  const victim = path.join(outside, 'bashrc');
+  fs.writeFileSync(victim, 'export PATH=/usr/bin\n');
+
+  const dir = makeFixture('symlink');
+  fs.symlinkSync(victim, path.join(dir, 'AGENTS.md'));
+  const agents = spawnSync(process.execPath, [cliPath, 'init', '--agents', 'agents'], { cwd: dir, encoding: 'utf8' });
+  assert.equal(agents.status, 1);
+  assert.match(agents.stderr, /AGENTS\.md is a symbolic link/);
+  assert.equal(fs.readFileSync(victim, 'utf8'), 'export PATH=/usr/bin\n', 'the link target is untouched');
+
+  // A directory on the way that leaves the project counts too.
+  const linked = makeFixture('symlink-dir');
+  fs.symlinkSync(outside, path.join(linked, '.claude'));
+  const claude = spawnSync(process.execPath, [cliPath, 'init', '--agents', 'claude'], { cwd: linked, encoding: 'utf8' });
+  assert.equal(claude.status, 1);
+  assert.match(claude.stderr, /resolves outside the project/);
+  assert.equal(fs.existsSync(path.join(outside, 'skills')), false, 'nothing was created through the link');
+
+  const config = makeFixture('symlink-config');
+  fs.symlinkSync(victim, path.join(config, '.stylelintrc.json'));
+  const init = runInit(config, 'y\ny\n');
+  assert.notEqual(init.status, 0);
+  assert.equal(fs.readFileSync(victim, 'utf8'), 'export PATH=/usr/bin\n');
+});
