@@ -22,7 +22,7 @@ function lint(code, parser, filename) {
     files: ['**/*.vue', '**/*.svelte'],
     languageOptions: { parser },
     plugins: { 'rhythmguard-tailwind': eslintPlugin },
-    rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { scale: SCALE }] },
+    rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { fixOffScale: 'nearest', scale: SCALE }] },
   }];
   return {
     fixed: linter.verifyAndFix(code, config, { filename }),

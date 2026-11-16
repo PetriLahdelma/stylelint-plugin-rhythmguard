@@ -71,7 +71,10 @@ test('the ESLint rule reports nothing on Tailwind\'s default steps and names its
   const { messages, fixed } = eslintMessages("const c = cn('p-[13px]');");
   assert.equal(messages.length, 1);
   assert.match(messages[0].message, /Use "p-3" \(12px\) or "p-3\.5" \(14px\)\. Scale: Tailwind default spacing\.$/);
-  assert.equal(fixed, "const c = cn('p-3');");
+  // Both steps move layout, so they are suggestions, not an autofix (cs-06).
+  assert.equal(fixed, "const c = cn('p-[13px]');");
+  assert.deepEqual(messages[0].suggestions.map(({ fix }) => fix.text), ['p-3', 'p-3.5']);
+  assert.equal(eslintMessages("const c = cn('p-[13px]');", { fixOffScale: 'nearest' }).fixed, "const c = cn('p-3');");
 });
 
 test('the ESLint rule names no scale when one is configured; messages keep their 3.19 text', () => {
@@ -80,7 +83,7 @@ test('the ESLint rule names no scale when one is configured; messages keep their
 });
 
 test('no fix past the top of the scale: 64px is not snapped to a 32px top step', () => {
-  const { messages, fixed } = eslintMessages("const c = 'p-[64px] p-[400px]';", { scale: [0, 4, 8, 12, 16, 24, 32] });
+  const { messages, fixed } = eslintMessages("const c = 'p-[64px] p-[400px]';", { fixOffScale: 'nearest', scale: [0, 4, 8, 12, 16, 24, 32] });
   assert.equal(messages.length, 2, 'both values are still reported');
   assert.equal(fixed, "const c = 'p-[64px] p-[400px]';");
 });

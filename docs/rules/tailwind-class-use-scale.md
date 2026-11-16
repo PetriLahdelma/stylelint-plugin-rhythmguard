@@ -1,8 +1,8 @@
 # `rhythmguard-tailwind/tailwind-class-use-scale`
 
-ESLint rule. Reports Tailwind arbitrary spacing values in class strings that are not on your scale, and autofixes to the utility class for the nearest scale step.
+ESLint rule. Reports Tailwind arbitrary spacing values in class strings that are not on your scale, at the class itself, and offers the utility classes for the two nearest scale steps as editor suggestions.
 
-Where `eslint-plugin-tailwindcss`'s `no-arbitrary-value` bans every arbitrary value, this rule is scale-aware: `p-[12px]` passes on a 4px scale, `p-[13px]` is reported with the two nearest steps as classes, and `p-[13px]` becomes `p-3` under `--fix`.
+Where `eslint-plugin-tailwindcss`'s `no-arbitrary-value` bans every arbitrary value, this rule is scale-aware: `p-[12px]` passes on a 4px scale, and `p-[13px]` is reported with the two nearest steps as classes and as suggestions (`p-3`, `p-4`). Either step changes the rendered padding, so `--fix` does not pick one for you unless you set `fixOffScale: "nearest"`.
 
 ```js
 // eslint.config.js
@@ -34,7 +34,7 @@ Under Oxlint, load the rule as a JS plugin:
 }
 ```
 
-CI runs this config on Oxlint 1.93.0, on TSX, for both findings and `--fix`. Oxlint's JS plugins are alpha, and in Vue, Svelte and Astro files Oxlint lints only the `<script>` blocks, so class strings in templates are not checked there; keep ESLint for those files.
+CI runs this config on Oxlint 1.93.0, on TSX, for findings, their locations, `--fix` and `--fix-suggestions` (which writes the nearest step). Oxlint's JS plugins are alpha, and in Vue, Svelte and Astro files Oxlint lints only the `<script>` blocks, so class strings in templates are not checked there; keep ESLint for those files.
 
 A `recommended` config is exported too: `rhythmguard.configs.recommended` enables this rule at `warn` and the motion rule `off`. It registers the plugin as `rhythmguard-tailwind`, so `export default [rhythmguard.configs.recommended]` works on its own; spreading `rhythmguard.configs.recommended.rules` into a block like the one above works as well.
 
@@ -94,7 +94,28 @@ Unexpected Tailwind arbitrary spacing value "p-[13px]". Use "p-3" (12px) or "p-4
 
 The message names the classes to write, with the px value each one stands for. When a nearest step is not a quarter step of the spacing unit, the message falls back to the px values: `Use scale values (nearest: 12px or 16px).`
 
-## Autofix
+Each finding is reported at its class token, not at the whole string, so five off-scale classes in one `className` are five squiggles in five places, and `eslint --format json` gives each one its own `column` and `endColumn`. That holds in string literals (escapes and JSX entities included), template literal chunks, and Vue and Svelte class attributes; where the source cannot be aligned with the string's value, the finding falls back to the whole string.
+
+Every finding has a `messageId`, so tools can key on it instead of parsing the text:
+
+| `messageId` | When |
+| --- | --- |
+| `offScaleUtilities` | Off-scale, both nearest steps are utility classes: `Use "p-3" (12px) or "p-4" (16px).` |
+| `offScaleUtility` | Off-scale, past the top or below the bottom step, one class: `Use "p-8" (32px).` |
+| `offScale` | Off-scale, a nearest step is not a utility class: `Use scale values (nearest: 12px or 16px).` |
+| `noNegativeForm` | `-p-[13px]`, `gap-[-13px]`: Tailwind has no negative padding or gap |
+| `negative` | A negative value with `allowNegative: false` |
+| `equivalent` | With `reportEquivalents: true`, an on-scale value a utility writes exactly |
+
+The message text is the 3.20 text. In 3.x it may only gain a suffix (the scale name, the `note`), so a pattern that matches the text before keeps matching.
+
+## Suggestions and autofix
+
+An off-scale value gets two editor suggestions, `Use "p-3" (12px).` and `Use "p-4" (16px).`, the nearest step first, and no autofix: either step changes the rendered spacing, and a fix that moves layout under `--fix` is how a lint run becomes a reverted pull request. In VS Code the suggestions are in the quick fix menu; `oxlint --fix-suggestions` applies the first one, the nearest step. A value past the top step gets one suggestion, the top step. Findings for negative values that cannot be written (`-p-[13px]`) or are disabled get none.
+
+Autofix rewrites a class only to one that renders the same value. With `reportEquivalents: true`, an on-scale arbitrary value that a utility class writes exactly is reported and fixed: `p-[12px]` and `p-[0.75rem]` become `p-3` on a 4px spacing unit, `m-[-8px]` becomes `-m-2`. `em` values are never equivalent to a utility, since utilities are root-relative. It is off by default in 3.x, so default findings do not grow.
+
+`fixOffScale: "nearest"` restores the 3.20 behaviour: `--fix` writes the nearest step. The rest of this section describes the class it writes, which is also the class each suggestion writes.
 
 Writes the utility class for the nearest scale step: `p-[13px]` becomes `p-3`, `md:-m-[13px]!` becomes `md:-m-3!`, `m-[-13px]` becomes `-m-3`, `-m-[-13px]` (two signs, a positive margin in Tailwind) becomes `m-3`, and `p-[0.8125rem]` becomes `p-3`. Variants, the negative sign and important markers are kept. The class number is the snapped px value divided by `spacingUnit` (Tailwind's `--spacing`, `0.25rem`: 4px by default, `baseFontSize / 4` when `baseFontSize` is set), so a scale of 4px multiples at a 16px root always produces a whole number and a 2px step produces `p-1.5`. At a 10px root a step is 2.5px, so `p-[1.3rem]` is fixed to `p-[1.2rem]` rather than `p-3`, which would be 7.5px there.
 
@@ -104,7 +125,7 @@ When the snapped value is not a quarter step of the unit, the fix keeps the arbi
 
 Tailwind has no negative padding, scroll padding or gap: it generates no `-p-3` or `-gap-3`, and `p-[-13px]` writes a declaration the browser drops. An off-scale `-p-[13px]`, `p-[-13px]`, `-gap-[13px]` or `gap-[-13px]` is reported with `Padding and gap cannot be negative, so this class has no effect.` and no fix; the rule never suggests `-p-3` or `-gap-3`. Margin, inset, `top`/`right`/`bottom`/`left`, translate, `scroll-m*` and `space-*` keep their negative forms.
 
-Template literal chunks are reported but not fixed. Negative values, written either way (`m-[-16px]` or `-m-[16px]`), are reported without a fix when `allowNegative` is `false`; `-m-[-16px]` is positive and is checked like `m-[16px]`.
+A template literal chunk is fixed and gets suggestions when its text has no escape sequence, so its raw source is its value: `` cn(`p-[13px] ${x}`) `` becomes `` cn(`p-3 ${x}`) ``. A chunk with an escape (`\n`, `\u00e9`) is reported at the token but not fixed. Before 3.21 no chunk was fixed. Negative values, written either way (`m-[-16px]` or `-m-[16px]`), are reported without a fix when `allowNegative` is `false`; `-m-[-16px]` is positive and is checked like `m-[16px]`.
 
 ## Options
 
@@ -118,6 +139,8 @@ Template literal chunks are reported but not fixed. Negative values, written eit
 | `allowHairlines` | `boolean` | `true` | Skips non-zero lengths of one CSS pixel or less (`translate-y-[0.5px]`, `-mt-[1px]`). See [Hairlines](#hairlines) |
 | `allowNegative` | `boolean` | `true` | Whether negative arbitrary values are allowed |
 | `spacingUnit` | `number \| false` | `baseFontSize / 4` (`4`) | Px per Tailwind spacing step (`--spacing`, `0.25rem`), used to name and write utility classes. `false` keeps the arbitrary-value fix |
+| `fixOffScale` | `"nearest" \| false` | `false` | `"nearest"` autofixes an off-scale value to the nearest step, as 3.20 did. By default an off-scale value gets suggestions only. See [Suggestions and autofix](#suggestions-and-autofix) |
+| `reportEquivalents` | `boolean` | `false` | Also report an on-scale arbitrary value that a utility class writes exactly (`p-[12px]` is `p-3`), with an autofix to the class |
 | `note` | `string` | `undefined` | Appended to every finding, after the built-in text. Up to 200 characters. Point agents and reviewers at your own rules: `"See docs/spacing.md for approved exceptions."` |
 
 ## Related

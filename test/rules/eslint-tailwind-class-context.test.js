@@ -31,7 +31,9 @@ function lint(code, options = {}, languageOptions = {}) {
       ...languageOptions,
     },
     plugins: { 'rhythmguard-tailwind': eslintPlugin },
-    rules: { [RULE]: ['error', { scale: SCALE, ...options }] },
+    // With the 3.20 autofix on, so the probes show that no fix reaches a
+    // string outside a class context.
+    rules: { [RULE]: ['error', { fixOffScale: 'nearest', scale: SCALE, ...options }] },
   }];
   const filename = languageOptions.parser ? 'probe.tsx' : 'probe.jsx';
   const messages = linter.verify(code, config, { filename });
@@ -93,8 +95,8 @@ test('class contexts: className, class, *ClassName and className properties', ()
     'export const B = () => <div class="m-3" />;',
     'export const C = () => <Dialog contentClassName="gap-4" />;',
     "export const D = () => <div className={'p-2'} />;",
-    // Template literal chunks are reported, not fixed (unchanged).
-    'export const E = () => <div className={`m-[7px] ${x}`} />;',
+    // A template literal chunk without an escape is fixed in place (fix-10).
+    'export const E = () => <div className={`m-2 ${x}`} />;',
     "export const F = () => <NavLink className={({ isActive }) => (isActive ? 'p-3' : '')} />;",
     "const props = { className: 'gap-2' };",
     '',
@@ -169,7 +171,14 @@ test('tw tagged templates, member tags and template literals are class contexts'
     '',
   ].join('\n'));
   assert.deepEqual(tokens, ['p-[13px]', 'm-[13px]', 'gap-[18px]']);
-  assert.equal(fixed.fixed, false, 'template chunks are reported, not fixed');
+  // A chunk without an escape is fixed in place (fix-10); `css` is not a class context.
+  assert.equal(fixed.output, [
+    'const A = tw`p-3`;',
+    'const B = tw.div`m-3`;',
+    'const C = tw(Button)`gap-4`;',
+    'const D = css`p-[13px]`;',
+    '',
+  ].join('\n'));
 });
 
 test('outside class contexts a string needs two utility-shaped tokens', () => {

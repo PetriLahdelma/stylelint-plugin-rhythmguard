@@ -26,7 +26,9 @@ function configFor(rule, options) {
   };
 }
 
-function lint(code, rule = 'tailwind-class-use-scale', options = { scale: SCALE }) {
+// The scale rule runs with `fixOffScale: "nearest"`, the opt-in 3.20 autofix,
+// so each case shows what a fix keeps around the class.
+function lint(code, rule = 'tailwind-class-use-scale', options = { fixOffScale: 'nearest', scale: SCALE }) {
   const linter = new Linter();
   const config = configFor(rule, options);
   const messages = linter.verify(code, config);

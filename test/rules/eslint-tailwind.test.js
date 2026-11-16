@@ -28,24 +28,27 @@ test('eslint tailwind class rule reports off-scale arbitrary values', () => {
   assert.match(messages[0].message, /p-\[13px\]/);
 });
 
-test('eslint tailwind class rule autofixes nearest value', () => {
+test('eslint tailwind class rule autofixes nearest value with fixOffScale "nearest"', () => {
   const linter = new Linter();
-
-  const fixResult = linter.verifyAndFix(
-    "const classes = cn('p-[13px]');",
-    {
-      languageOptions: { ecmaVersion: 2022, sourceType: 'module' },
-      plugins: { 'rhythmguard-tailwind': eslintPlugin },
-      rules: {
-        'rhythmguard-tailwind/tailwind-class-use-scale': ['error', {
-          scale: [0, 4, 8, 12, 16, 24, 32],
-        }],
-      },
+  const config = (extra) => ({
+    languageOptions: { ecmaVersion: 2022, sourceType: 'module' },
+    plugins: { 'rhythmguard-tailwind': eslintPlugin },
+    rules: {
+      'rhythmguard-tailwind/tailwind-class-use-scale': ['error', {
+        scale: [0, 4, 8, 12, 16, 24, 32],
+        ...extra,
+      }],
     },
-  );
+  });
 
+  const fixResult = linter.verifyAndFix("const classes = cn('p-[13px]');", config({ fixOffScale: 'nearest' }));
   assert.equal(fixResult.fixed, true);
   assert.equal(fixResult.output, "const classes = cn('p-3');");
+
+  // By default an off-scale value is not autofixed: both steps move layout (cs-06).
+  const unfixed = linter.verifyAndFix("const classes = cn('p-[13px]');", config({}));
+  assert.equal(unfixed.fixed, false);
+  assert.equal(unfixed.messages.length, 1);
 });
 
 test('eslint tailwind motion rule reports arbitrary duration and easing values', () => {
@@ -132,16 +135,18 @@ test('eslint tailwind motion rule reports raw easing curves only, not easing tok
   );
 });
 
+// `fixed` is the 3.20 autofix, now opt-in with `fixOffScale: "nearest"`;
+// these tests pin the class it writes. The default is suggestions only.
 function lintTailwind(code, options) {
   const linter = new Linter();
-  const config = {
+  const config = (ruleOptions) => ({
     languageOptions: { ecmaVersion: 2022, sourceType: 'module' },
     plugins: { 'rhythmguard-tailwind': eslintPlugin },
-    rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['error', options] },
-  };
+    rules: { 'rhythmguard-tailwind/tailwind-class-use-scale': ['error', ruleOptions] },
+  });
   return {
-    fixed: linter.verifyAndFix(code, config),
-    messages: linter.verify(code, config),
+    fixed: linter.verifyAndFix(code, config({ fixOffScale: 'nearest', ...options })),
+    messages: linter.verify(code, config(options)),
   };
 }
 
@@ -329,7 +334,7 @@ test('both rules declare meta.type so --fix-type applies their fixes (#278)', as
     overrideConfig: {
       plugins: { 'rhythmguard-tailwind': eslintPlugin },
       rules: {
-        'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { scale: [0, 4, 8, 12, 16, 24, 32] }],
+        'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { fixOffScale: 'nearest', scale: [0, 4, 8, 12, 16, 24, 32] }],
         'rhythmguard-tailwind/tailwind-class-use-motion-scale': 'error',
       },
     },
