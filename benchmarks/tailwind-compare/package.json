@@ -5,10 +5,13 @@
   "devDependencies": {
     "@shadcn/lint": "0.2.5",
     "@tailwindcss/cli": "4.3.4",
-    "@typescript-eslint/parser": "8.72.1",
-    "eslint": "10.14.0",
+    "@typescript-eslint/parser": "8.72.2",
+    "eslint": "10.15.0",
     "eslint-plugin-better-tailwindcss": "4.10.0",
     "eslint-plugin-tailwindcss": "4.4.0",
     "tailwindcss": "4.3.4"
+  },
+  "overrides": {
+    "minimatch": "^11.0.5"
   }
 }
