@@ -197,3 +197,53 @@ test('findActiveStylelintConfig follows Stylelint\'s search order (#257)', () =>
   fs.writeFileSync(path.join(fixtureDir, 'package.json'), '{"name":"x","stylelint":{}}\n');
   assert.deepEqual(findActiveStylelintConfig(fixtureDir), { file: 'package.json', kind: 'package' });
 });
+
+test('init --yes writes the config and the rc without reading stdin, and never replaces an existing config', () => {
+  const fixtureDir = makeFixture('yes');
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'package.json'), '{"name":"yes-app"}\n');
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'tokens.css'), ':root { --space-1: 4px; --space-2: 8px; --space-3: 12px; }\n');
+  // stdin says no; --yes is the answer that counts.
+  const runYes = () => spawnSync(process.execPath, [cliPath, 'init', '--yes'], { cwd: fixtureDir, encoding: 'utf8', input: 'n\nn\n' });
+
+  const first = runYes();
+  assert.equal(first.status, 0, first.stderr);
+  assert.match(first.stdout, /Write \.stylelintrc\.json\? \(y\/n\) y \(--yes\)/);
+  assert.deepEqual(readGeneratedConfig(fixtureDir).rules['rhythmguard/use-scale'], [true, { scale: 'auto', scaleSources: ['./src/tokens.css'] }]);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), 'utf8')), { audit: { scale: 'auto', tokenSources: ['./src/tokens.css'] } });
+
+  const mine = '{\n  "extends": ["stylelint-plugin-rhythmguard/configs/recommended"]\n}\n';
+  fs.writeFileSync(path.join(fixtureDir, '.stylelintrc.json'), mine);
+  const second = runYes();
+  assert.equal(second.status, 1, 'an agent sees that nothing was written');
+  assert.match(second.stdout, /Changes to \.stylelintrc\.json:/);
+  assert.match(second.stdout, /Not overwritten: --yes never replaces an existing config/);
+  assert.equal(fs.readFileSync(path.join(fixtureDir, '.stylelintrc.json'), 'utf8'), mine);
+});
+
+test('init never writes through a symbolic link or outside the project', { skip: process.platform === 'win32' && 'symbolic links need privileges on Windows' }, () => {
+  const outside = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-init-outside-'));
+  const victim = path.join(outside, 'bashrc');
+  fs.writeFileSync(victim, 'export PATH=/usr/bin\n');
+
+  const dir = makeFixture('symlink');
+  fs.symlinkSync(victim, path.join(dir, 'AGENTS.md'));
+  const agents = spawnSync(process.execPath, [cliPath, 'init', '--agents', 'agents'], { cwd: dir, encoding: 'utf8' });
+  assert.equal(agents.status, 1);
+  assert.match(agents.stderr, /AGENTS\.md is a symbolic link/);
+  assert.equal(fs.readFileSync(victim, 'utf8'), 'export PATH=/usr/bin\n', 'the link target is untouched');
+
+  // A directory on the way that leaves the project counts too.
+  const linked = makeFixture('symlink-dir');
+  fs.symlinkSync(outside, path.join(linked, '.claude'));
+  const claude = spawnSync(process.execPath, [cliPath, 'init', '--agents', 'claude'], { cwd: linked, encoding: 'utf8' });
+  assert.equal(claude.status, 1);
+  assert.match(claude.stderr, /resolves outside the project/);
+  assert.equal(fs.existsSync(path.join(outside, 'skills')), false, 'nothing was created through the link');
+
+  const config = makeFixture('symlink-config');
+  fs.symlinkSync(victim, path.join(config, '.stylelintrc.json'));
+  const init = runInit(config, 'y\ny\n');
+  assert.notEqual(init.status, 0);
+  assert.equal(fs.readFileSync(victim, 'utf8'), 'export PATH=/usr/bin\n');
+});

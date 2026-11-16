@@ -1,0 +1,37 @@
+# Rhythmguard
+
+> Catches off-scale spacing in CSS and Tailwind class strings and snaps it to the project's scale or tokens: Stylelint rules (`stylelint-plugin-rhythmguard`), an ESLint plugin for class strings (`eslint-plugin-rhythmguard`, no Stylelint needed) and an audit CLI (`npx rhythmguard`). Deterministic, no network, no telemetry.
+
+An agent setting Rhythmguard up in a project follows SETUP.md. An agent working in a project that has it reads FOR_AGENTS.md and runs `npx rhythmguard audit . --scale auto --format json`.
+
+## Start here
+
+- [Set up Rhythmguard](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/SETUP.md): Steps an agent runs to install, configure and gate Rhythmguard in a project
+- [Rhythmguard for coding agents](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/FOR_AGENTS.md): The instruction block, the agent packs and the commands that return JSON
+- [README](https://raw.githubusercontent.com/PetriLahdelma/stylelint-plugin-rhythmguard/main/README.md): What Rhythmguard checks, and the three packages
+
+## Rules
+
+- [use-scale](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/rules/use-scale.md): Off-scale spacing values in stylesheets
+- [prefer-token](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/rules/prefer-token.md): Raw values that a design token holds
+- [no-offscale-transform](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/rules/no-offscale-transform.md): Off-scale translate values
+- [tailwind-class-use-scale](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/rules/tailwind-class-use-scale.md): The ESLint rule for Tailwind arbitrary spacing in class strings
+- [eslint-plugin-rhythmguard](https://raw.githubusercontent.com/PetriLahdelma/stylelint-plugin-rhythmguard/main/packages/eslint-plugin-rhythmguard/README.md): Installing and configuring the ESLint plugin, which needs no Stylelint
+
+## Setup and CI
+
+- [Shared configs](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/CONFIGS.md): recommended, strict, tailwind, embed and motion
+- [Tailwind integration](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/TAILWIND.md): Tailwind v3 and v4 projects
+- [Framework integration](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/FRAMEWORKS.md): Next.js, Vue, Svelte, Astro and CSS Modules
+- [rhythmguard audit](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/AUDIT.md): The audit command and its JSON contract
+- [CI adoption](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/CI_ADOPTION.md): Write a baseline and gate only new drift
+- [Scale presets](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/SCALE_PRESETS.md): The built-in scales
+
+## Optional
+
+- [use-motion-scale](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/rules/use-motion-scale.md): Motion durations and easings
+- [tailwind-class-use-motion-scale](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/rules/tailwind-class-use-motion-scale.md): Motion classes in class strings
+- [Audit API examples](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/AUDIT_API_EXAMPLES.md): The audit from JavaScript
+- [Migrating to 3.0](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/MIGRATING_TO_3.md): Changes from 2.x
+- [Security](https://raw.githubusercontent.com/PetriLahdelma/stylelint-plugin-rhythmguard/main/SECURITY.md): What the packages read, run and write
+- [Changelog](https://raw.githubusercontent.com/PetriLahdelma/stylelint-plugin-rhythmguard/main/CHANGELOG.md): Every release

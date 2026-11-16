@@ -2,6 +2,14 @@
 
 Coding agents write fluent CSS and Tailwind without knowing a project's spacing scale, so they are the fastest source of off-scale values. Rhythmguard is deterministic, needs no configuration to give a first answer, and explains every finding with the two nearest on-scale values. This page is what an agent (or the person writing its instructions) needs.
 
+## Give your agent this prompt
+
+To set Rhythmguard up in a project, paste this to the coding agent:
+
+> Read https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/SETUP.md and set up Rhythmguard in this project.
+
+[`SETUP.md`](./SETUP.md) detects the stack, installs the right packages, writes the configs, tells the project's agents (below), records a baseline and adds the CI gate, with an ESLint-only branch. A test runs its commands in three scratch projects on every change. [`llms.txt`](https://petrilahdelma.github.io/stylelint-plugin-rhythmguard/llms.txt) lists the pages an agent should read.
+
 ## Paste into `AGENTS.md`
 
 ```md
@@ -22,12 +30,28 @@ This project enforces its spacing scale with stylelint-plugin-rhythmguard.
 
 Trim it to the lines that apply. The whole value of an agent instruction is that it is short and true.
 
-### Install it as a pack
+### Install it as a skill
 
-The same block ships in the package as ready-made files for the agents that read a fixed location:
+The block ships as an agent skill at [`skills/rhythmguard/SKILL.md`](../skills/rhythmguard/SKILL.md), where the [skills CLI](https://github.com/vercel-labs/skills) looks, for Claude Code, Codex, Cursor, Copilot, Gemini CLI and the other agents it supports:
 
 ```bash
-npx rhythmguard init --agents all       # or: claude, cursor, copilot
+npx skills add PetriLahdelma/stylelint-plugin-rhythmguard --skill rhythmguard
+```
+
+In Claude Code, the repository is also a plugin marketplace with one plugin, `rhythmguard`, whose skill loads for stylesheet and component files and may run the audit command without a prompt:
+
+```bash
+claude plugin marketplace add PetriLahdelma/stylelint-plugin-rhythmguard
+claude plugin install rhythmguard@rhythmguard
+```
+
+### Install it as a pack
+
+The same block ships in the package as ready-made files for the agents that read a fixed location, and as a block for `AGENTS.md` and `CLAUDE.md` that carries the project's own scale:
+
+```bash
+npx rhythmguard init --agents all              # claude, cursor and copilot
+npx rhythmguard init --agents agents,claude-md # the block in AGENTS.md and CLAUDE.md
 ```
 
 | Target | Written to | Notes |
@@ -35,8 +59,12 @@ npx rhythmguard init --agents all       # or: claude, cursor, copilot
 | `claude` | `.claude/skills/rhythmguard/SKILL.md` | Claude Code skill that loads for stylesheet and component files (`paths`) and may run `npx rhythmguard audit` without a prompt (`allowed-tools`); Stylelint, ESLint, `fix` and `init` runs still ask; overwritten on rerun |
 | `cursor` | `.cursor/rules/rhythmguard.mdc` | Cursor rule attached when a stylesheet or component file is in context (`alwaysApply: false` with `globs`); overwritten on rerun |
 | `copilot` | `.github/instructions/rhythmguard.instructions.md` | Copilot path-specific instructions with `applyTo` globs; overwritten on rerun. A block an older version appended to `.github/copilot-instructions.md` between `<!-- rhythmguard:agents -->` markers is removed |
+| `agents` | `AGENTS.md` | The block between `<!-- rhythmguard:agents:start -->` and `<!-- rhythmguard:agents:end -->`, then a "This project" section: the scale, its source, the token per step and the exact audit command, read from the project's files without running any of its code, and stamped with a scale hash. A rerun rewrites only the marked block; the rest of the file is kept byte for byte. `npx rhythmguard doctor` warns when the hash no longer matches the project's scale. Not in `all` |
+| `claude-md` | `CLAUDE.md` | The same block, for Claude Code projects that keep their instructions there. Not in `all` |
 
-The three files are generated from this page by `npm run build:agents` and a test fails if they drift, so what an agent reads is always the block above.
+`all` covers only the files Rhythmguard owns. `AGENTS.md` and `CLAUDE.md` are the project's own files, often shared by a team and several tools, so the block goes into them only when you name the target. Targets combine with commas: `--agents claude,agents`.
+
+Every pack, the skill and the plugin are generated from this page by `npm run build:agents`, and a test fails if they drift, so what an agent reads is always the block above.
 
 ## Commands and what they return
 

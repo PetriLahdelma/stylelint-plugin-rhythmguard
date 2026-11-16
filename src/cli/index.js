@@ -13,7 +13,9 @@ Commands:
                 tokens that hold each step (--format json for agents)
   fix <dir>     Replace one off-scale value everywhere, or execute snap decisions
   init          Scaffold a Rhythmguard config for your project
-                --agents <claude|cursor|copilot|all> installs the agent instruction packs instead
+                --agents <claude|cursor|copilot|agents|claude-md|all> installs the agent
+                instruction packs instead; agents and claude-md write a block with
+                the project's scale into AGENTS.md and CLAUDE.md
   doctor        Validate your Rhythmguard setup
 
 Options:
@@ -28,6 +30,7 @@ Examples:
   npx rhythmguard fix ./src --value 10px --to "var(--space-sm)" --write
   npx rhythmguard init
   npx rhythmguard init --agents all
+  npx rhythmguard init --agents agents,claude-md
   npx rhythmguard doctor
 `;
 
