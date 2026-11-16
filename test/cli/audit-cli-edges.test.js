@@ -96,7 +96,8 @@ test('buildDecisionPlan leaves nearest empty for a group whose scale is "auto", 
   assert.deepEqual(decided, [{ count: 2, decision: 'allow', nearest: ['14px', '16px'], value: '15px' }]);
 });
 
-test('Markdown keeps tables and code spans intact for file names with pipes and backticks (#285)', () => {
+// Windows forbids | in file names, so the file cannot exist there.
+test('Markdown keeps tables and code spans intact for file names with pipes and backticks (#285)', { skip: process.platform === 'win32' && 'Windows forbids | in file names' }, () => {
   const dir = tempDir('rhythmguard-markdown-');
   write(dir, 'src/a|b.css', ':root { --space-1: 4px; --space-2: 8px; --space-3: 12px; --space-4: 16px; }\n');
   write(dir, 'src/we`ird.css', '.x { margin: 13px; }\n');

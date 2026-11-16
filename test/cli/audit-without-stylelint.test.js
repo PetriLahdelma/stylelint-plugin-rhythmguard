@@ -11,6 +11,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const test = require('node:test');
 const { spawnSync } = require('node:child_process');
 
@@ -40,7 +41,7 @@ function fixture() {
 }
 
 function run(cwd, ...args) {
-  return spawnSync(process.execPath, ['--import', path.join(hooksDir, 'register.mjs'), cliPath, ...args], { cwd, encoding: 'utf8' });
+  return spawnSync(process.execPath, ['--import', pathToFileURL(path.join(hooksDir, 'register.mjs')).href, cliPath, ...args], { cwd, encoding: 'utf8' });
 }
 
 test('without Stylelint the audit reads class strings and lists the stylesheets as not audited', () => {

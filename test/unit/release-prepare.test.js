@@ -4,9 +4,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
+const { pathToFileURL } = require('node:url');
 const test = require('node:test');
 
-const load = () => import(path.join(__dirname, '..', '..', 'scripts', 'release', 'prepare.mjs'));
+const load = () => import(pathToFileURL(path.join(__dirname, '..', '..', 'scripts', 'release', 'prepare.mjs')).href);
 
 test('release versions must go up and the badge key drops the dots', async () => {
   const { badgeKey, isAbove } = await load();

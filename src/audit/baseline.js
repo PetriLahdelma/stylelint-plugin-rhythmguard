@@ -34,7 +34,7 @@ function createBaselineScope(report, scope = {}) {
   const scanRoot = path.resolve(scope.scanRoot || report.directory || '.');
   let realScanRoot = scanRoot;
   try {
-    realScanRoot = fs.realpathSync(scanRoot);
+    realScanRoot = fs.realpathSync.native(scanRoot);
   } catch {
     // The directory was audited, so it exists; keep the given form if not.
   }

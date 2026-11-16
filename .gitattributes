@@ -1,0 +1,8 @@
+# Check out with LF everywhere, so files the tests parse (docs, types, fixtures,
+# the playground bundle) read the same on Windows as elsewhere (#174).
+* text=auto eol=lf
+*.png binary
+*.gif binary
+*.jpg binary
+*.webp binary
+*.ico binary

@@ -183,7 +183,8 @@ jobs:
   # for a month; then README's compatibility line names Windows.
   windows:
     name: windows (GitHub-hosted, node-22)
-    if: github.event_name == 'push'
+    # Also on a manual run, to try a fix on a branch before it reaches main.
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: windows-latest
     continue-on-error: true
     timeout-minutes: 30
