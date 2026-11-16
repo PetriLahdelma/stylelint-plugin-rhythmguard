@@ -36,6 +36,7 @@ const {
 
 const {
   autoScaleFallbackNote,
+  detectUnitLadderFor,
   loaderWarningsNote,
   collectTokenDefinitions,
   withResolvedScale,
@@ -46,10 +47,17 @@ const { createTokenRegex, reportInvalidPreset, reportProblem, reportValueNode } 
 const { decisionFor, loadRcDecisionWarnings, loadRcDecisions } = require('../../core/decisions');
 const { replacementFor, tokenHoldsNote, tokenIndexFromDefinitions } = require('../../core/token-index');
 const { validatePrimary, validateUseScaleSecondaryOptions } = require('../validate');
+const { formatMultiplier, multiplierInCalc, onLadder } = require('../../core/unit-ladder');
 
 const ruleName = 'rhythmguard/use-scale';
 
 const messages = stylelint.utils.ruleMessages(ruleName, {
+  // A multiplier of a unit ladder's base that is not one of its steps (unitLadder).
+  rejectedMultiplier: (value, unit, lower, upper, note = '') =>
+    `Unexpected multiplier "${value}" of var(${unit}). Use a step of the var(${unit}) ladder (${nearestText(lower, upper)}).${note ? ` ${note}` : ''}`,
+  // A literal length where spacing is written as multiples of an unfixed unit (unitLadder).
+  rejectedLength: (value, unit, steps, note = '') =>
+    `Unexpected length "${value}". Spacing here is a multiple of var(${unit}); write calc(var(${unit}) * N) with N one of ${steps}.${note ? ` ${note}` : ''}`,
   invalidPreset: (presetName, presetNames) =>
     `Unknown scale preset "${presetName}". Available presets: ${presetNames.join(', ')}.`,
   rejected: (value, lower, upper, note = '', position = null, aside = '', group = null) =>
@@ -277,9 +285,21 @@ const ruleFunction = (primary, secondaryOptions) => {
       );
     }
 
+    // The scale as multiples of an unfixed unit, such as --gap: calc(1rlh - 1rex).
+    // With "auto" a fallback px scale is not the project's, so literal lengths
+    // are reported against the ladder instead of the fallback.
+    const ladder = resolveUnitLadder(options, root);
+
     // The fallback note and any loader warning ride on the first message in the file (cq-05).
     const rcWarnings = options.readDecisions ? loadRcDecisionWarnings(process.cwd(), { baseFontSize: options.baseFontSize }) : [];
-    let fallbackNote = [autoScaleFallbackNote(options.scaleInference), loaderWarningsNote(rcWarnings, options.scaleInference)].filter(Boolean).join(' ');
+    let fallbackNote = ladder && ladder.lengths
+      ? loaderWarningsNote(rcWarnings, null)
+      : [autoScaleFallbackNote(options.scaleInference), loaderWarningsNote(rcWarnings, options.scaleInference)].filter(Boolean).join(' ');
+    const takeNote = () => {
+      const note = [fallbackNote, options.note].filter(Boolean).join(' ');
+      fallbackNote = '';
+      return note;
+    };
     const getScaleStateForProperty = createPropertyScaleResolver(options);
 
     const report = (value, decl, node, nearest, fixedValue = null, nearestUnit = 'px', extraNote = '', position = null) => {
@@ -344,6 +364,41 @@ const ruleFunction = (primary, secondaryOptions) => {
       // functions as anywhere else (issue #272).
       const checkedBounds = new Set();
       const visit = (node, context) => {
+        if (node.type === 'function' && ladder) {
+          const found = multiplierInCalc(node, ladder.unit);
+          if (found) {
+            if (!onLadder(found.multiplier, ladder.multipliers)) {
+              const nearest = nearestScaleValues(Math.abs(found.multiplier), ladder.multipliers);
+              reportValueNode({
+                decl,
+                message: messages.rejectedMultiplier(found.label, ladder.unit, formatMultiplier(nearest.lower), formatMultiplier(nearest.upper), takeNote()),
+                node: found.numberNode,
+                // A snapped multiplier moves layout like a snapped length; division is reported, not rewritten.
+                replacement: options.fixToScale && found.fixable && !sassOperands.has(found.numberNode) ? formatMultiplier(nearest.nearest) : null,
+                result,
+                ruleName,
+              });
+            }
+            return true;
+          }
+        }
+
+        if (node.type === 'word' && ladder && ladder.lengths && !(context.tokenFallbackOf && context.tokenFallbackOf.length > 0)) {
+          const length = parseLengthToken(node.value);
+          if (length && length.number !== 0 && length.unit && length.unit !== '%' && options.units.includes(length.unit)
+            && !(options.allowHairlines && isHairlineLength(length, options.baseFontSize))
+            && !isKeyword(node.value, options.ignoreValues)) {
+            reportValueNode({
+              decl,
+              message: messages.rejectedLength(node.value, ladder.unit, ladder.multipliers.map(formatMultiplier).join(', '), takeNote()),
+              node,
+              result,
+              ruleName,
+            });
+          }
+          return false;
+        }
+
         if (node.type === 'function') {
           const skipToken = skipTokenFunction(node, options.tokenFunctions, tokenRegex);
           if (skipToken) {
@@ -410,6 +465,30 @@ const ruleFunction = (primary, secondaryOptions) => {
     });
   };
 };
+
+/**
+ * The unit ladder the rule checks, or null. "auto" reads it from the linted
+ * stylesheet, `scaleSources` and the rc's token sources; with `scale: "auto"`
+ * falling back (no px scale found), literal lengths are checked against it too.
+ */
+function resolveUnitLadder(options, root) {
+  if (!options.unitLadder) {
+    return null;
+  }
+  if (!options.unitLadder.auto) {
+    return options.unitLadder;
+  }
+  const inference = options.scaleInference || null;
+  const detected = (inference && inference.unitLadder) || detectUnitLadderFor({ root, scaleSources: options.scaleSources });
+  if (!detected) {
+    return null;
+  }
+  return {
+    lengths: Boolean(options.scaleAuto && inference && inference.source === 'fallback'),
+    multipliers: detected.multipliers,
+    unit: detected.unit,
+  };
+}
 
 ruleFunction.ruleName = ruleName;
 ruleFunction.messages = messages;

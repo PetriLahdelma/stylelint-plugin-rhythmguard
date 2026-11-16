@@ -101,7 +101,7 @@ test('an invalid tokenPattern on a token source warns instead of reading by name
 test('no catch in src drops an error without a comment, and the commented ones are counted', () => {
   // The lint rule (scripts/eslint/no-silent-catch.js) fails on an uncommented one;
   // this ratchet makes adding a commented one a visible change. Lower it when one goes.
-  const ALLOWED = 49;
+  const ALLOWED = 51;
   const files = [];
   const walk = (dir) => {
     for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {

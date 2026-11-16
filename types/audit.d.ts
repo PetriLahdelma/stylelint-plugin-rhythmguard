@@ -80,6 +80,8 @@ export interface AuditOptions {
   staged?: boolean;
   /** A Tailwind v3 config whose `theme.spacing` `scale: "auto"` reads, after the scanned stylesheets. Loaded with `require()`. */
   tailwindConfigPath?: string | null;
+  /** Check spacing written as multiples of an unfixed unit (`--gap: calc(1rlh - 1rex)`) against its ladder; with `--scale auto` falling back, literal lengths too. */
+  unitLadder?: boolean;
   tokenCandidateMinCount?: number;
   tokenKind?: AuditTokenKind;
   /** Format applied to `tokenSources` entries that do not declare their own. */
@@ -164,6 +166,7 @@ export interface AuditFinding {
   /**
    * "off-scale", "token-opportunity", "motion-duration", "motion-easing", "tailwind-arbitrary-spacing",
    * "tailwind-motion-duration", "tailwind-motion-easing", "missing-token" (with `reportMissingTokens`),
+   * "off-ladder" (with `unitLadder`) for a multiplier of a unit ladder's base that is not a step, or a literal length where spacing is a multiple of it,
    * "unclassified" for a Stylelint warning whose message the audit does not read (value null),
    * or "parse-error" for a stylesheet that could not be parsed.
    */
@@ -237,6 +240,20 @@ export interface AuditScaleRejected {
   values: Array<number | string>;
 }
 
+export interface AuditUnitLadder {
+  /** Whether the audit checked it (`--unit-ladder`). */
+  checked?: boolean;
+  files: string[];
+  /** The ladder's steps, as multipliers of the unit. */
+  multipliers: number[];
+  /** The token that holds each step, keyed by the multiplier. */
+  tokens: Record<string, string>;
+  /** The base custom property, such as `--gap`. */
+  unit: string;
+  /** Its value, such as `calc(1rlh - 1rex)`. */
+  value: string;
+}
+
 export interface AuditClassStringScale {
   /** "Tailwind default spacing". */
   name: string;
@@ -251,6 +268,8 @@ export interface AuditScale {
    * default or the fallback and template files were scanned.
    */
   classStrings?: AuditClassStringScale | null;
+  /** Spacing written as multiples of an unfixed unit, found when no px scale was. */
+  unitLadder?: AuditUnitLadder | null;
   /** Files the scale was derived from (token sources or scanned stylesheets). Empty for explicit, default and fallback. */
   files: string[];
   /** On a fallback, the preset it is: "tailwind" in a Tailwind project, else "rhythmic-4". */
@@ -326,6 +345,8 @@ export interface AuditContractReport {
       offScaleProperties?: Record<string, number>;
       offScaleValues?: unknown;
       preset: string | null;
+      /** Spacing written as multiples of an unfixed unit, found when no px scale was; null otherwise. */
+      unitLadder: AuditUnitLadder | null;
       rejected: AuditScaleRejected | null;
       source: AuditScaleSource;
       tokenOpportunities?: unknown;

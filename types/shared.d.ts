@@ -73,10 +73,24 @@ export interface RhythmguardLengthRuleOptions extends StylelintSecondaryOptions 
   tokenFunctions?: string[];
   /** Custom property names that count as spacing tokens. Default `"^--space-"`. */
   tokenPattern?: string;
+  /**
+   * Spacing written as multiples of a custom property with no fixed length (`--gap: calc(1rlh - 1rex)`).
+   * `"auto"` reads the ladder from the tokens; with `scale: "auto"` finding no px scale, literal lengths are reported too.
+   */
+  unitLadder?: "auto" | UnitLadder;
   /** `"convert"` (default) compares through px; `"exact"` compares against scale values in the same unit. */
   unitStrategy?: "convert" | "exact";
   /** Units checked. Default `["px", "rem", "em"]`. */
   units?: string[];
+}
+
+export interface UnitLadder {
+  /** The base custom property, such as `"--gap"`. */
+  unit: string;
+  /** The allowed multipliers, such as `[0.5, 1, 1.5, 2, 3, 4]`. */
+  multipliers: number[];
+  /** Report literal lengths (`13px`) too. Default `false`. */
+  lengths?: boolean;
 }
 
 /** Options for `rhythmguard/no-offscale-transform`. */

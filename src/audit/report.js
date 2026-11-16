@@ -20,6 +20,7 @@ const {
 const { buildReport, collectTokenDefinitions } = require('./contract');
 const { DEFAULT_SCALE, formatPath } = require('./shared');
 const { TAILWIND_SCALE_NAME, TAILWIND_SPACING_UNIT_REM, tailwindSpacingLadder } = require('../presets/default-scale');
+const { customPropertiesInText, detectUnitLadder, formatMultiplier } = require('../core/unit-ladder');
 
 const TAILWIND_CONFIG_FILES = ['tailwind.config.js', 'tailwind.config.cjs', 'tailwind.config.mjs', 'tailwind.config.ts'];
 
@@ -127,8 +128,21 @@ function prepareAuditRun(parsed) {
     scale.classStrings = classScale;
   }
 
+  // A unit ladder is checked when asked for (--unit-ladder); otherwise the run says it exists.
+  let unitLadder = null;
+  if (scale.unitLadder) {
+    scale.unitLadder.checked = parsed.unitLadder === true;
+    if (scale.unitLadder.checked) {
+      unitLadder = { lengths: scale.source === 'fallback', multipliers: scale.unitLadder.multipliers, unit: scale.unitLadder.unit };
+    } else {
+      const ladder = scale.unitLadder;
+      tokenSourceResult.warnings.push(`Spacing tokens${ladder.files.length > 0 ? ` in ${ladder.files.join(', ')}` : ''} are multiples of ${ladder.unit} (${ladder.value}), which has no fixed length: ${ladder.multipliers.map(formatMultiplier).join(', ')}. px values were checked against the fallback scale; pass --unit-ladder to check multipliers of var(${ladder.unit}) and literal lengths instead.`);
+    }
+  }
+
   return {
     classScale,
+    unitLadder,
     cssFiles,
     groupScales,
     isNonAuthored,
@@ -206,6 +220,7 @@ async function createAuditReport(options) {
     scanFiles,
     templateFiles,
     tokenSourceResult,
+    unitLadder,
   } = run;
   const { scanScope } = scanFiles;
 
@@ -216,6 +231,7 @@ async function createAuditReport(options) {
     readSource: scanFiles.readSource,
     scale: scale.values,
     scales: parsed.scales,
+    ...(unitLadder ? { unitLadder } : {}),
     tokenScaleSources: tokenScaleSources({
       baseFontSize: parsed.baseFontSize,
       cssFiles,
@@ -521,12 +537,32 @@ function resolveAuditScale({ baseFontSize, cssFiles, isNonAuthored = () => false
     }
   }
 
+  // Spacing written as multiples of an unfixed unit (--gap: calc(1rlh - 1rex))
+  // has no px scale to infer; name the ladder instead of falling back in silence.
+  const ladderDeclarations = [];
+  const ladderFiles = [
+    ...cssFiles.filter((file) => !isNonAuthored(file)),
+    ...tokenSourceResult.sources.map((source) => path.resolve(process.cwd(), source.file)).filter((file) => /\.(?:css|scss)$/i.test(file)),
+  ];
+  for (const filePath of new Set(ladderFiles)) {
+    let text;
+    try {
+      text = readSource(filePath);
+    } catch {
+      // Unreadable since the scan: this pass reads only what it can.
+      continue;
+    }
+    ladderDeclarations.push(...customPropertiesInText(text, formatPath(filePath)));
+  }
+  const unitLadder = detectUnitLadder(ladderDeclarations);
+
   // The fallback the rules use: configs/tailwind falls back to Tailwind's ladder, the rest to DEFAULT_SCALE.
   const tailwind = isTailwindProject(process.cwd());
   return {
     files: [],
     preset: tailwind ? 'tailwind' : 'rhythmic-4',
     ...(rejected ? { rejected } : {}),
+    ...(unitLadder ? { unitLadder } : {}),
     source: 'fallback',
     tokenCount: 0,
     values: tailwind ? tailwindSpacingLadder(baseFontSize * TAILWIND_SPACING_UNIT_REM) : DEFAULT_SCALE,

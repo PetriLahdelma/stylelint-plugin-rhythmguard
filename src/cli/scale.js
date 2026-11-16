@@ -127,6 +127,7 @@ function resolveScaleReport(parsedArgs) {
       classStrings: scale.classStrings || null,
       files: scale.files,
       rejected: scale.rejected || null,
+      unitLadder: scale.unitLadder || null,
       source: scale.source,
       tokenCount: scale.tokenCount,
       values: scale.values,
@@ -152,6 +153,13 @@ function renderScaleText(report) {
   }
   if (scale.rejected) {
     lines.push(`  Rejected       ${scale.rejected.source} (${scale.rejected.values.join(', ')}): ${scale.rejected.reasons.join(', ')}`);
+  }
+  if (scale.unitLadder) {
+    const ladder = scale.unitLadder;
+    lines.push(`  Unit ladder    ${ladder.unit} = ${ladder.value}: ${ladder.multipliers.join(', ')}${ladder.checked ? '' : ' (pass --unit-ladder to audit with it)'}`);
+    for (const [step, token] of Object.entries(ladder.tokens)) {
+      lines.push(`    ${step} x ${ladder.unit}`.padEnd(22) + token);
+    }
   }
   if (scale.classStrings) {
     lines.push(`  Class strings  ${scale.classStrings.name} (${scale.classStrings.values.join(', ')})`);
