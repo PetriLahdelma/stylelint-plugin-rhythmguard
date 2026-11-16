@@ -1,0 +1,15 @@
+{
+  "name": "rhythmguard",
+  "owner": {
+    "name": "Petri Lahdelma",
+    "url": "https://github.com/PetriLahdelma"
+  },
+  "description": "The Rhythmguard plugin for Claude Code.",
+  "plugins": [
+    {
+      "name": "rhythmguard",
+      "source": "./plugins/rhythmguard",
+      "description": "Keeps CSS and Tailwind spacing on the project scale: a skill that loads for stylesheet and component files and runs the Rhythmguard audit."
+    }
+  ]
+}

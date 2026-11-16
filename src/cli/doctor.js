@@ -20,6 +20,7 @@ const { pathToFileURL } = require('node:url');
 const postcss = require('postcss');
 
 const { applyAuditConfig, loadAuditConfig, resolveIgnorePatterns } = require('../audit/config');
+const { BLOCK_FILES, blockHash, projectContext } = require('./agent-context');
 const { eslintInstallLine, stylelintInstallLine } = require('../audit/next-steps');
 const { isNonAuthoredPath } = require('../audit/non-authored');
 const { walkFiles } = require('../audit/scan/files');
@@ -45,7 +46,9 @@ from. Loads the ESLint config through the project's own ESLint and compares
 the scale tailwind-class-use-scale checks with it. In a project that uses
 Rhythmguard through ESLint only (no Stylelint), checks ESLint and skips the
 Stylelint checks. Also checks .rhythmguardrc.json, token sources and the
-baseline. Exits 1 when a check fails; warnings do not change the exit code.
+baseline, and warns when the scale in a Rhythmguard block in AGENTS.md or
+CLAUDE.md (init --agents agents or claude-md) is out of date. Exits 1 when a
+check fails; warnings do not change the exit code.
 
 Options:
   --help        Show this help message
@@ -964,6 +967,42 @@ function checkRhythmguardBaseline({ cwd, fail, pass, skip }, audit) {
   }
 }
 
+// --- AGENTS.md and CLAUDE.md -------------------------------------------------------
+
+/**
+ * The Rhythmguard block `init --agents agents` or `claude-md` wrote carries the
+ * hash of the scale it describes. Recompute it the same way, without running
+ * any project code, and warn when the scale has moved on (ai-07). A file with
+ * no block is not checked.
+ */
+function checkAgentBlocks({ cwd, pass, warn }) {
+  let current = null;
+  for (const [target, file] of Object.entries(BLOCK_FILES)) {
+    const filePath = path.join(cwd, file);
+    // No AGENTS.md or CLAUDE.md: nothing was written there to check.
+    if (!fs.existsSync(filePath)) continue;
+    const written = blockHash(fs.readFileSync(filePath, 'utf8'));
+    if (!written) continue;
+    if (!current) {
+      try {
+        current = projectContext(cwd);
+      } catch (error) {
+        warn('agents-scale', `${file} Rhythmguard block not checked: the scale could not be resolved (${firstLine(error)})`, 'Run npx rhythmguard scale --scale auto to see why');
+        return;
+      }
+    }
+    if (written === current.hash) {
+      pass('agents-scale', `${file} Rhythmguard block matches the project scale (hash ${written})`);
+    } else {
+      warn(
+        'agents-scale',
+        `${file} Rhythmguard block describes a scale that changed (hash ${written}, now ${current.hash})`,
+        `Run npx rhythmguard init --agents ${target} to refresh it`,
+      );
+    }
+  }
+}
+
 // --- Entry points -----------------------------------------------------------------
 
 /**
@@ -1003,6 +1042,7 @@ async function runDoctor({ cwd = process.cwd() } = {}) {
     await checkEslint(ctx, { required: false });
   }
   checkRhythmguardConfig(ctx);
+  checkAgentBlocks(ctx);
 
   const issues = checks.filter((check) => check.status === 'fail').length;
   const warnings = checks.filter((check) => check.status === 'warn').length;

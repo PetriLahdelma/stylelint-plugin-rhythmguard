@@ -197,3 +197,26 @@ test('findActiveStylelintConfig follows Stylelint\'s search order (#257)', () =>
   fs.writeFileSync(path.join(fixtureDir, 'package.json'), '{"name":"x","stylelint":{}}\n');
   assert.deepEqual(findActiveStylelintConfig(fixtureDir), { file: 'package.json', kind: 'package' });
 });
+
+test('init --yes writes the config and the rc without reading stdin, and never replaces an existing config', () => {
+  const fixtureDir = makeFixture('yes');
+  fs.mkdirSync(path.join(fixtureDir, 'src'));
+  fs.writeFileSync(path.join(fixtureDir, 'package.json'), '{"name":"yes-app"}\n');
+  fs.writeFileSync(path.join(fixtureDir, 'src', 'tokens.css'), ':root { --space-1: 4px; --space-2: 8px; --space-3: 12px; }\n');
+  // stdin says no; --yes is the answer that counts.
+  const runYes = () => spawnSync(process.execPath, [cliPath, 'init', '--yes'], { cwd: fixtureDir, encoding: 'utf8', input: 'n\nn\n' });
+
+  const first = runYes();
+  assert.equal(first.status, 0, first.stderr);
+  assert.match(first.stdout, /Write \.stylelintrc\.json\? \(y\/n\) y \(--yes\)/);
+  assert.deepEqual(readGeneratedConfig(fixtureDir).rules['rhythmguard/use-scale'], [true, { scale: 'auto', scaleSources: ['./src/tokens.css'] }]);
+  assert.deepEqual(JSON.parse(fs.readFileSync(path.join(fixtureDir, '.rhythmguardrc.json'), 'utf8')), { audit: { scale: 'auto', tokenSources: ['./src/tokens.css'] } });
+
+  const mine = '{\n  "extends": ["stylelint-plugin-rhythmguard/configs/recommended"]\n}\n';
+  fs.writeFileSync(path.join(fixtureDir, '.stylelintrc.json'), mine);
+  const second = runYes();
+  assert.equal(second.status, 1, 'an agent sees that nothing was written');
+  assert.match(second.stdout, /Changes to \.stylelintrc\.json:/);
+  assert.match(second.stdout, /Not overwritten: --yes never replaces an existing config/);
+  assert.equal(fs.readFileSync(path.join(fixtureDir, '.stylelintrc.json'), 'utf8'), mine);
+});

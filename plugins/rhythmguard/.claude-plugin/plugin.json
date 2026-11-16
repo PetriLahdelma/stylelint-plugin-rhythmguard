@@ -1,0 +1,19 @@
+{
+  "name": "rhythmguard",
+  "description": "Keeps CSS and Tailwind spacing on the project scale: a skill that loads for stylesheet and component files and runs the Rhythmguard audit.",
+  "author": {
+    "name": "Petri Lahdelma",
+    "url": "https://github.com/PetriLahdelma"
+  },
+  "homepage": "https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard",
+  "repository": "https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard",
+  "license": "MIT",
+  "keywords": [
+    "css",
+    "tailwindcss",
+    "spacing",
+    "design-tokens",
+    "stylelint",
+    "eslint"
+  ]
+}

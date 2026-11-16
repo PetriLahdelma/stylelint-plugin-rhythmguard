@@ -6,7 +6,19 @@ const path = require('node:path');
 const { lintGlob, stylelintInstallLine } = require('../audit/next-steps');
 const readline = require('node:readline');
 
+const { BLOCK_END, BLOCK_FILES, BLOCK_START, agentsBlock, mergeBlock, projectContext } = require('./agent-context');
 const { RC_FILE, inferFirstRun, lineDiff, rcFor, stylelintConfigFor } = require('./first-run');
+
+/** `--yes`: every question answered yes, and the answer shown as if typed. */
+function createYesPrompter() {
+  return {
+    ask(question) {
+      process.stdout.write(`${question}y (--yes)\n`);
+      return Promise.resolve('y');
+    },
+    close() {},
+  };
+}
 
 function createPrompter() {
   if (!process.stdin.isTTY) {
@@ -201,13 +213,22 @@ function selectProfile(stack) {
   return 'recommended';
 }
 
+/**
+ * `write` targets are files Rhythmguard owns, overwritten on rerun. `block`
+ * targets are the user's own AGENTS.md and CLAUDE.md: only the marked
+ * Rhythmguard block in them is written, with a project section, and the rest
+ * of the file is kept byte for byte. `all` is the `write` targets only, so a
+ * bare `init --agents` never edits a file the user owns (ai-07).
+ */
 const AGENT_TARGETS = {
   claude: { source: 'claude-code/SKILL.md', target: path.join('.claude', 'skills', 'rhythmguard', 'SKILL.md'), mode: 'write' },
   cursor: { source: 'cursor/rhythmguard.mdc', target: path.join('.cursor', 'rules', 'rhythmguard.mdc'), mode: 'write' },
   copilot: { source: 'copilot/rhythmguard.instructions.md', target: path.join('.github', 'instructions', 'rhythmguard.instructions.md'), mode: 'write' },
+  agents: { source: 'agents-md/rhythmguard.md', target: BLOCK_FILES.agents, mode: 'block' },
+  'claude-md': { source: 'agents-md/rhythmguard.md', target: BLOCK_FILES['claude-md'], mode: 'block' },
 };
-const AGENT_BLOCK_START = '<!-- rhythmguard:agents:start -->';
-const AGENT_BLOCK_END = '<!-- rhythmguard:agents:end -->';
+const ALL_AGENT_TARGETS = Object.keys(AGENT_TARGETS).filter((name) => AGENT_TARGETS[name].mode === 'write');
+const AGENT_TARGET_LIST = `${Object.keys(AGENT_TARGETS).join(', ')} or all`;
 
 const HELP = `Usage: rhythmguard init [options]
 
@@ -217,8 +238,15 @@ writes. When Stylelint loads a config init cannot rewrite (package.json, YAML,
 JS or TS), it prints what to add and writes nothing.
 
 Options:
-  --agents [claude|cursor|copilot|all]  Install the agent instruction packs instead (default: all)
-  --help                                Show this help message
+  --agents [targets]  Install the agent instruction packs instead. Targets,
+                      comma-separated: claude, cursor, copilot (files
+                      Rhythmguard owns), agents and claude-md (a marked block
+                      with this project's scale in AGENTS.md or CLAUDE.md;
+                      the rest of the file is kept), or all (default: claude,
+                      cursor and copilot)
+  --yes, -y           Answer yes to every question. Never overwrites an
+                      existing Stylelint config: init stops and shows the diff
+  --help              Show this help message
 `;
 
 /**
@@ -227,11 +255,13 @@ Options:
  * init and write a config (#286).
  */
 function parseInitArgs(argv) {
-  const parsed = { agents: null, help: false };
+  const parsed = { agents: null, help: false, yes: false };
   for (let index = 0; index < argv.length; index += 1) {
     const arg = argv[index];
     if (arg === '--help' || arg === '-h') {
       parsed.help = true;
+    } else if (arg === '--yes' || arg === '-y') {
+      parsed.yes = true;
     } else if (arg === '--agents') {
       const next = argv[index + 1];
       parsed.agents = next !== undefined && !next.startsWith('-') ? argv[++index].toLowerCase() : 'all';
@@ -257,10 +287,10 @@ function removeLegacyCopilotBlock(cwd) {
   const legacyPath = path.join(cwd, legacy);
   if (!fs.existsSync(legacyPath)) return null;
   const existing = fs.readFileSync(legacyPath, 'utf8');
-  const start = existing.indexOf(AGENT_BLOCK_START);
-  const end = existing.indexOf(AGENT_BLOCK_END);
+  const start = existing.indexOf(BLOCK_START);
+  const end = existing.indexOf(BLOCK_END);
   if (start === -1 || end === -1 || end < start) return null;
-  const next = `${existing.slice(0, start).trimEnd()}\n${existing.slice(end + AGENT_BLOCK_END.length).replace(/^\n+/, '\n')}`.replace(/^\n+/, '');
+  const next = `${existing.slice(0, start).trimEnd()}\n${existing.slice(end + BLOCK_END.length).replace(/^\n+/, '\n')}`.replace(/^\n+/, '');
   if (next.trim() === '') {
     fs.rmSync(legacyPath);
   } else {
@@ -269,24 +299,49 @@ function removeLegacyCopilotBlock(cwd) {
   return legacy;
 }
 
+/** The target names in `selection`: comma-separated, `all` for the files Rhythmguard owns. */
+function agentTargetNames(selection) {
+  const names = [];
+  for (const part of String(selection).split(',').map((entry) => entry.trim()).filter(Boolean)) {
+    for (const name of part === 'all' ? ALL_AGENT_TARGETS : [part]) {
+      if (!AGENT_TARGETS[name]) {
+        throw new Error(`Unknown agents target "${name}". Use ${AGENT_TARGET_LIST}, comma-separated.`);
+      }
+      if (!names.includes(name)) names.push(name);
+    }
+  }
+  if (names.length === 0) {
+    throw new Error(`Missing agents target. Use ${AGENT_TARGET_LIST}.`);
+  }
+  return names;
+}
+
 /**
  * Copies the generated packs under <package>/agents into the locations each
- * agent reads. Every target is a file Rhythmguard owns, overwritten on rerun.
+ * agent reads. `write` targets are overwritten on rerun; `block` targets get
+ * the marked block, with the project section, merged into AGENTS.md or CLAUDE.md.
  */
 function installAgents(selection, cwd = process.cwd()) {
-  const names = selection === 'all' ? Object.keys(AGENT_TARGETS) : [selection];
-  const unknown = names.filter((name) => !AGENT_TARGETS[name]);
-  if (unknown.length > 0) {
-    throw new Error(`Unknown agents target "${unknown[0]}". Use claude, cursor, copilot or all.`);
-  }
+  const names = agentTargetNames(selection);
 
   const packsDir = path.join(__dirname, '..', '..', 'agents');
   const written = [];
+  let context = null;
   for (const name of names) {
-    const { source, target } = AGENT_TARGETS[name];
+    const { mode, source, target } = AGENT_TARGETS[name];
     const content = fs.readFileSync(path.join(packsDir, source), 'utf8');
     const targetPath = path.join(cwd, target);
     fs.mkdirSync(path.dirname(targetPath), { recursive: true });
+
+    if (mode === 'block') {
+      // Computed once for both block targets; no project code runs (SECURITY.md).
+      context = context || projectContext(cwd);
+      const existing = fs.existsSync(targetPath) ? fs.readFileSync(targetPath, 'utf8') : null;
+      const merged = mergeBlock(existing, agentsBlock(content, context, name));
+      fs.writeFileSync(targetPath, merged.text);
+      written.push(`${target} (Rhythmguard block ${merged.action}; scale hash ${context.hash})`);
+      continue;
+    }
 
     fs.writeFileSync(targetPath, content);
     // Named with / on every platform, as the docs name these files (#174).
@@ -325,11 +380,11 @@ async function run() {
     for (const file of written) {
       process.stdout.write(`✓ Wrote ${file}\n`);
     }
-    process.stdout.write('\nThe block is the one in docs/FOR_AGENTS.md. Trim it to the lines that apply.\n\n');
+    process.stdout.write('\nThe block is the one in docs/FOR_AGENTS.md. A rerun overwrites the files Rhythmguard owns; in AGENTS.md and CLAUDE.md it rewrites only the text between the rhythmguard markers.\n\n');
     return;
   }
 
-  const prompter = createPrompter();
+  const prompter = args.yes ? createYesPrompter() : createPrompter();
 
   try {
     process.stdout.write('\nRhythmguard Init\n\n');
@@ -390,6 +445,12 @@ async function run() {
       if (current) {
         process.stdout.write(`\nChanges to ${active.file}:\n\n${lineDiff(current, nextText).map((line) => `  ${line}`).join('\n')}\n\n`);
       }
+      // --yes is for scripts and agents: it never replaces a config someone wrote.
+      if (args.yes) {
+        process.stdout.write(`Not overwritten: --yes never replaces an existing config. Merge the lines marked + into ${active.file}, or run init without --yes.\n`);
+        process.exitCode = 1;
+        return;
+      }
       const answer = await prompter.ask('Overwrite? (y/n) ');
       if (answer !== 'y' && answer !== 'yes') {
         process.stdout.write('Aborted.\n');
@@ -428,7 +489,7 @@ async function run() {
   }
 }
 
-module.exports = { AGENT_TARGETS, HELP, detect, findActiveStylelintConfig, installAgents, parseInitArgs, run, selectProfile };
+module.exports = { AGENT_TARGETS, ALL_AGENT_TARGETS, HELP, agentTargetNames, detect, findActiveStylelintConfig, installAgents, parseInitArgs, run, selectProfile };
 
 if (require.main === module) {
   run();
