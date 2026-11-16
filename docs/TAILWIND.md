@@ -5,7 +5,7 @@ This guide describes the production setup for Rhythmguard in Tailwind-based code
 ## Scope Model
 
 - Rhythmguard Stylelint rules enforce CSS declaration values that Stylelint can parse.
-- Rhythmguard ESLint companion rules enforce Tailwind class-string arbitrary values in templates, and fix `p-[13px]` to the utility class `p-3`.
+- Rhythmguard ESLint companion rules enforce Tailwind class-string arbitrary values in templates, and offer the utility classes for the two nearest steps (`p-3`, `p-4` for `p-[13px]`) as editor suggestions; `fixOffScale: "nearest"` makes `--fix` write the nearest one.
 
 ## Tailwind v4 (@theme support)
 
@@ -84,7 +84,7 @@ If you run Oxlint instead, load the same rule as a JS plugin:
 }
 ```
 
-CI runs this config on Oxlint 1.93.0, on TSX, for both findings and `--fix`. Oxlint's JS plugins are alpha, and in Vue, Svelte and Astro files Oxlint lints only the `<script>` blocks, so class strings in templates are not checked there; keep ESLint for those files.
+CI runs this config on Oxlint 1.93.0, on TSX, for findings, their locations, `--fix` and `--fix-suggestions` (which writes the nearest step). Oxlint's JS plugins are alpha, and in Vue, Svelte and Astro files Oxlint lints only the `<script>` blocks, so class strings in templates are not checked there; keep ESLint for those files.
 
 Then layer on:
 

@@ -6,7 +6,7 @@
 
 Nobody chose 13px; Rhythmguard reads the spacing scale from your design tokens, reports off-scale spacing in CSS, SCSS and Tailwind class strings with the two nearest steps, and fails CI only on new drift.
 
-This package is the class-string half, for ESLint and Oxlint. It catches off-scale Tailwind arbitrary spacing in class strings, tells you the utility classes for the nearest steps on your scale, and writes the right class when you run `--fix`. It checks against the `scale` you set, or Tailwind's default ladder; [stylelint-plugin-rhythmguard](https://www.npmjs.com/package/stylelint-plugin-rhythmguard) and its audit read the scale from DTCG, Style Dictionary, Tailwind `@theme` and Sass token files.
+This package is the class-string half, for ESLint and Oxlint. It catches off-scale Tailwind arbitrary spacing in class strings, and points at each class with the utility classes for the two nearest steps on your scale, offered as one-click suggestions in your editor; `--fix` writes a class only when it renders the same value. It checks against the `scale` you set, or Tailwind's default ladder; [stylelint-plugin-rhythmguard](https://www.npmjs.com/package/stylelint-plugin-rhythmguard) and its audit read the scale from DTCG, Style Dictionary, Tailwind `@theme` and Sass token files.
 
 [![npm version](https://img.shields.io/npm/v/eslint-plugin-rhythmguard?label=npm&color=1f6feb)](https://www.npmjs.com/package/eslint-plugin-rhythmguard)
 [![npm downloads](https://img.shields.io/npm/dm/eslint-plugin-rhythmguard.svg)](https://www.npmjs.com/package/eslint-plugin-rhythmguard)
@@ -17,11 +17,11 @@ This package is the class-string half, for ESLint and Oxlint. It catches off-sca
 ```
 
 ```
-1:16  warning  Unexpected Tailwind arbitrary spacing value "p-[13px]". Use "p-3" (12px) or "p-4" (16px)
-1:16  warning  Unexpected Tailwind arbitrary spacing value "md:gap-[18px]". Use "gap-4" (16px) or "gap-6" (24px)
+1:17  warning  Unexpected Tailwind arbitrary spacing value "p-[13px]". Use "p-3" (12px) or "p-4" (16px)
+1:26  warning  Unexpected Tailwind arbitrary spacing value "md:gap-[18px]". Use "gap-4" (16px) or "gap-6" (24px)
 ```
 
-`--fix` writes `p-3` and `md:gap-4`. Variants, negative signs and important markers are kept: `md:-m-[13px]!` becomes `md:-m-3!`.
+Each finding underlines its own class and carries both classes as suggestions (`p-3` or `p-4`, the nearest first). Either one changes the rendered padding, so `--fix` leaves the choice to you; `fixOffScale: "nearest"` makes `--fix` write the nearest step (`p-3`, `md:gap-4`), as 3.20 did. Variants, negative signs and important markers are kept: `md:-m-[13px]!` becomes `md:-m-3!`.
 
 ## Why this and not a ban
 
@@ -110,11 +110,11 @@ The rules run unchanged through Oxlint's JS plugin support:
 }
 ```
 
-CI runs this config on Oxlint 1.93.0, on TSX, for both findings and `--fix`. Oxlint's JS plugins are alpha, and in Vue, Svelte and Astro files Oxlint lints only the `<script>` blocks, so class strings in templates are not checked there; keep ESLint for those files.
+CI runs this config on Oxlint 1.93.0, on TSX, for findings, their locations, `--fix` and `--fix-suggestions` (which writes the nearest step). Oxlint's JS plugins are alpha, and in Vue, Svelte and Astro files Oxlint lints only the `<script>` blocks, so class strings in templates are not checked there; keep ESLint for those files.
 
 ### In your editor
 
-The ESLint extension (`dbaeumer.vscode-eslint`) shows findings in VS Code and Cursor with a link to the rule page. It checks JavaScript, TypeScript, JSX, Vue and Astro by default; Svelte needs `eslint.validate`, and a list there replaces the defaults. Fix on save (`source.fixAll.eslint` in `editor.codeActionsOnSave`) writes the nearest step, which can move layout. [In your editor](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard#in-your-editor) has the settings for Stylelint and the Oxc extension too.
+The ESLint extension (`dbaeumer.vscode-eslint`) shows findings in VS Code and Cursor with a link to the rule page. It checks JavaScript, TypeScript, JSX, Vue and Astro by default; Svelte needs `eslint.validate`, and a list there replaces the defaults. The quick fix menu offers the two nearest steps for each finding. Fix on save (`source.fixAll.eslint` in `editor.codeActionsOnSave`) writes nothing for an off-scale value unless the rule sets `fixOffScale: "nearest"`, which writes the nearest step and can move layout. [In your editor](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard#in-your-editor) has the settings for Stylelint and the Oxc extension too.
 
 ## Adopting it on an existing codebase
 
@@ -130,7 +130,7 @@ That writes `eslint-suppressions.json` with a count per file and rule. Commit it
 
 | Rule | What it reports | Fix |
 | --- | --- | --- |
-| [`tailwind-class-use-scale`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/tailwind-class-use-scale.md) | Off-scale arbitrary spacing values (`p-[13px]`, `gap-[18px]`, `-m-[7px]`) in class strings | The utility class for the nearest step; none for negative padding or gap, which Tailwind does not generate |
+| [`tailwind-class-use-scale`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/tailwind-class-use-scale.md) | Off-scale arbitrary spacing values (`p-[13px]`, `gap-[18px]`, `-m-[7px]`) in class strings | Suggestions for the two nearest steps; an autofix only to a class that renders the same value, or to the nearest step with `fixOffScale: "nearest"`. None for negative padding or gap, which Tailwind does not generate |
 | [`tailwind-class-use-motion-scale`](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/tailwind-class-use-motion-scale.md) | Off-scale `duration-[...]` and `delay-[...]`, raw `ease-[...]`. Opt-in | Nearest duration |
 
 ### What gets checked
@@ -159,6 +159,8 @@ Padding, margin, gap, inset, space and translate utilities, with their axis and 
 | `allowHairlines` | `true` | Skips non-zero lengths of one CSS pixel or less (`translate-y-[0.5px]`, `-mt-[1px]`, `p-[0.0625rem]`), as the Stylelint rules do. `false` reports them |
 | `allowNegative` | `true` | Whether negative arbitrary values (`m-[-8px]`, `-m-[8px]`) are allowed |
 | `spacingUnit` | `baseFontSize / 4` (`4`) | Px per Tailwind spacing step (`0.25rem`), used to name and write classes. `false` keeps the fix in arbitrary form (`p-[12px]`) |
+| `fixOffScale` | `false` | `"nearest"` makes `--fix` write the nearest step, as 3.20 did. By default an off-scale value gets suggestions and no autofix |
+| `reportEquivalents` | `false` | Also report an on-scale arbitrary value a utility class writes exactly (`p-[12px]` is `p-3`), with an autofix to the class |
 | `note` | none | A sentence added to every finding, such as `"See docs/spacing.md for approved exceptions."` Up to 200 characters |
 
 Full reference, including how the fix chooses between `p-3` and `p-[12px]`: [rule docs](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/docs/rules/tailwind-class-use-scale.md).

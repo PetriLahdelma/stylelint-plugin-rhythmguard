@@ -2,8 +2,10 @@
 
 /**
  * The ESLint rules run unchanged under Oxlint's JS plugins (#327): the
- * documented `.oxlintrc.json` loads the plugin, reports the off-scale classes
- * in a TSX file, and `--fix` writes the nearest step. Oxlint is not a
+ * documented `.oxlintrc.json` loads the plugin and reports the off-scale
+ * classes in a TSX file at each class token; `--fix` writes nothing by
+ * default, `--fix-suggestions` writes the nearest step, and with
+ * `fixOffScale: "nearest"` `--fix` writes it as 3.20 did. Oxlint is not a
  * devDependency; the CI job "oxlint companion rules" installs the pinned
  * version, and the test skips where Oxlint is not installed.
  */
@@ -38,12 +40,12 @@ const SOURCE = [
   '',
 ].join('\n');
 
-function fixture() {
+function fixture(options = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'rhythmguard-oxlint-'));
   fs.writeFileSync(path.join(dir, '.oxlintrc.json'), JSON.stringify({
     jsPlugins: [{ name: 'rhythmguard-tailwind', specifier: path.join(root, 'src', 'eslint', 'index.js') }],
     rules: {
-      'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { scale: [0, 4, 8, 12, 16, 24, 32] }],
+      'rhythmguard-tailwind/tailwind-class-use-scale': ['error', { scale: [0, 4, 8, 12, 16, 24, 32], ...options }],
     },
   }));
   fs.writeFileSync(path.join(dir, 'a.tsx'), SOURCE);
@@ -65,17 +67,36 @@ test('tailwind-class-use-scale reports off-scale classes under Oxlint', { skip }
   ], `oxlint ${oxlint && oxlint.version}`);
 });
 
-test('tailwind-class-use-scale fixes to the nearest step under Oxlint', { skip }, () => {
-  const dir = fixture();
-  run(dir, ['--fix']);
-  const fixed = fs.readFileSync(path.join(dir, 'a.tsx'), 'utf8');
+test('under Oxlint each finding points at its class token (cs-09)', { skip }, () => {
+  const result = run(fixture(), ['-f', 'json']);
+  const spans = JSON.parse(result.stdout).diagnostics
+    .map((d) => d.labels[0].span)
+    .map(({ length, offset }) => SOURCE.slice(offset, offset + length))
+    .sort();
+  assert.deepEqual(spans, ['-m-[7px]', 'md:gap-[18px]', 'p-[13px]']);
+});
+
+test('under Oxlint, --fix writes nothing by default; --fix-suggestions and fixOffScale write the nearest step', { skip }, () => {
+  const unfixed = fixture();
+  run(unfixed, ['--fix']);
+  assert.equal(fs.readFileSync(path.join(unfixed, 'a.tsx'), 'utf8'), SOURCE, 'an off-scale value is not autofixed (cs-06)');
+
+  const suggested = fixture();
+  run(suggested, ['--fix-suggestions']);
+  const fromSuggestions = fs.readFileSync(path.join(suggested, 'a.tsx'), 'utf8');
+  assert.match(fromSuggestions, /className="p-3 md:gap-4"/);
+  assert.match(fromSuggestions, /cn\("p-\[12px\]", "-m-2"\)/);
+
+  const nearest = fixture({ fixOffScale: 'nearest' });
+  run(nearest, ['--fix']);
+  const fixed = fs.readFileSync(path.join(nearest, 'a.tsx'), 'utf8');
   assert.match(fixed, /className="p-3 md:gap-4"/);
   assert.match(fixed, /cn\("p-\[12px\]", "-m-2"\)/);
 });
 
 test('under Oxlint, --fix leaves type, enum and aria-label probes alone (cs-04)', { skip }, () => {
   const probes = path.join(root, 'test', 'fixtures', 'ts-class-context');
-  const dir = fixture();
+  const dir = fixture({ fixOffScale: 'nearest' });
   fs.copyFileSync(path.join(probes, 'probe.tsx'), path.join(dir, 'a.tsx'));
   const report = JSON.parse(run(dir, ['-f', 'json']).stdout).diagnostics
     .filter((d) => d.code.startsWith('rhythmguard-tailwind'))

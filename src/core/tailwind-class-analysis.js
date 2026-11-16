@@ -48,6 +48,7 @@ function normalizeTailwindClassOptions(option = {}) {
     allowHairlines: option.allowHairlines !== false,
     allowNegative: option.allowNegative !== false,
     baseFontSize,
+    reportEquivalents: option.reportEquivalents === true,
     scale: defaultScale ? tailwindSpacingLadder(spacingUnit || baseFontSize * SPACING_UNIT_REM) : option.scale,
     scaleName: defaultScale ? TAILWIND_SCALE_NAME : null,
     spacingUnit,
@@ -217,9 +218,35 @@ function analyzeClassToken(token, options, scalePx) {
     return null;
   }
 
+  const wrap = (candidate) =>
+    `${parsedToken.prefix}${parsedToken.leadingImportant}${candidate}${parsedToken.trailingImportant}`;
+  // Utility classes are root-relative; an `em` value follows the element's own
+  // font size, so it keeps the arbitrary form and its unit (#247).
+  const spacingUnit = parsedLength.unit === 'em' ? null : options.spacingUnit;
+
   const isOnScale = pxOnScale(scalePx, pxValue, parsedLength.unit, options.baseFontSize);
   if (isOnScale) {
-    return null;
+    // Opt-in (`reportEquivalents`): an on-scale arbitrary value that a utility
+    // class writes exactly, `p-[12px]` or `p-[0.75rem]` for `p-3` on a 4px
+    // unit. The rewrite renders the same value, so it is the one autofix the
+    // rule applies by default (cs-06). Off by default in 3.x: these were never
+    // reported, and default findings do not grow.
+    if (!options.reportEquivalents) {
+      return null;
+    }
+    const equivalent = utilityClassFor(match.groups.utility, pxValue, negative, spacingUnit);
+    if (!equivalent || equivalent === parsedToken.candidate) {
+      return null;
+    }
+    return {
+      fixedToken: wrap(equivalent),
+      nearest: { lower: pxValue, nearest: pxValue, upper: pxValue },
+      nearestUtilities: { lower: equivalent, upper: equivalent },
+      parsedLength,
+      reason: 'equivalent',
+      rawValue: match.groups.rawValue,
+      utility: match.groups.utility,
+    };
   }
 
   const nearest = nearestScaleValues(pxValue, scalePx);
@@ -247,35 +274,38 @@ function analyzeClassToken(token, options, scalePx) {
     };
   }
 
-  const signedNearest = parsedLength.number < 0
-    ? -Math.abs(nearest.nearest)
-    : nearest.nearest;
-
-  const replacementNumber = parsedLength.unit === 'px'
-    ? signedNearest
-    : signedNearest / options.baseFontSize;
-
-  const wrap = (candidate) =>
-    `${parsedToken.prefix}${parsedToken.leadingImportant}${candidate}${parsedToken.trailingImportant}`;
-  // Utility classes are root-relative; an `em` value follows the element's own
-  // font size, so it keeps the arbitrary form and its unit (#247).
-  const spacingUnit = parsedLength.unit === 'em' ? null : options.spacingUnit;
-  const utilityFix = utilityClassFor(match.groups.utility, nearest.nearest, negative, spacingUnit);
-  const lowerUtility = utilityClassFor(match.groups.utility, nearest.lower, negative, spacingUnit);
-  const upperUtility = utilityClassFor(match.groups.utility, nearest.upper, negative, spacingUnit);
-
-  const replacementValue = formatLength(replacementNumber, parsedLength.unit);
-  const fixedCandidate = utilityFix || parsedToken.candidate.replace(match.groups.rawValue, replacementValue);
+  // The class that writes a step: its utility when the step is a quarter step
+  // of the spacing unit, otherwise the arbitrary value in the token's unit.
+  const replacementFor = (stepPx) => {
+    const utilityClass = utilityClassFor(match.groups.utility, stepPx, negative, spacingUnit);
+    if (utilityClass) {
+      return { candidate: utilityClass, utility: utilityClass };
+    }
+    const signed = parsedLength.number < 0 ? -Math.abs(stepPx) : stepPx;
+    const number = parsedLength.unit === 'px' ? signed : signed / options.baseFontSize;
+    return {
+      candidate: parsedToken.candidate.replace(match.groups.rawValue, formatLength(number, parsedLength.unit)),
+      utility: null,
+    };
+  };
+  const fixed = replacementFor(nearest.nearest);
+  const lower = replacementFor(nearest.lower);
+  const upper = replacementFor(nearest.upper);
 
   return {
-    fixedToken: beyondScale ? null : wrap(fixedCandidate),
+    fixedToken: beyondScale ? null : wrap(fixed.candidate),
+    // The classes for the two nearest steps, offered as editor suggestions.
+    // Unlike `fixedToken`, the step past the top is offered too: a reader
+    // picks it, nothing writes it unasked.
+    lowerToken: wrap(lower.candidate),
     nearest,
     // The utility classes for the two nearest steps, when both are quarter
     // steps of the spacing unit; messages name these instead of px values.
-    nearestUtilities: lowerUtility && upperUtility ? { lower: lowerUtility, upper: upperUtility } : null,
+    nearestUtilities: lower.utility && upper.utility ? { lower: lower.utility, upper: upper.utility } : null,
     parsedLength,
     reason: 'off-scale',
     rawValue: match.groups.rawValue,
+    upperToken: wrap(upper.candidate),
     utility: match.groups.utility,
   };
 }
@@ -306,37 +336,72 @@ function createTailwindClassAnalyzer(option = {}) {
 }
 
 /**
+ * The message templates of `tailwind-class-use-scale`, by messageId. The
+ * audit and the ESLint rule both build their text from these, so the two
+ * cannot drift. `{{suffix}}` carries what follows the 3.20 text: the scale
+ * name, a theme token, the configured note. In 3.x an ESLint message may only
+ * gain a suffix; the text before `{{suffix}}` is a contract.
+ */
+const CLASS_MESSAGES = Object.freeze({
+  equivalent: 'Unexpected Tailwind arbitrary spacing value "{{token}}". "{{replacement}}" is the same value ({{px}}).{{suffix}}',
+  negative: 'Unexpected Tailwind arbitrary spacing value "{{token}}". Negative values are disabled for this rule.{{suffix}}',
+  noNegativeForm: 'Unexpected Tailwind arbitrary spacing value "{{token}}". Padding and gap cannot be negative, so this class has no effect.{{suffix}}',
+  offScale: 'Unexpected Tailwind arbitrary spacing value "{{token}}". Use scale values ({{nearest}}).{{suffix}}',
+  offScaleUtilities: 'Unexpected Tailwind arbitrary spacing value "{{token}}". Use "{{lower}}" ({{lowerPx}}) or "{{upper}}" ({{upperPx}}).{{suffix}}',
+  offScaleUtility: 'Unexpected Tailwind arbitrary spacing value "{{token}}". Use "{{lower}}" ({{lowerPx}}).{{suffix}}',
+});
+
+/** `{{name}}` placeholders filled from data, as ESLint fills a messageId's template. */
+function interpolateMessage(template, data) {
+  return template.replace(/\{\{\s*([^{}]+?)\s*\}\}/g, (whole, name) => (
+    Object.prototype.hasOwnProperty.call(data, name) ? String(data[name]) : whole
+  ));
+}
+
+/**
+ * The messageId and data for a finding. `suffix` is appended after the
+ * scale name, for the ESLint rule's note.
+ */
+function offScaleClassReport(token, analysis, scaleName = null, suffix = '') {
+  // The ESLint rule names the scale it fell back to, so a reader knows the
+  // verdict is Tailwind's default ladder and not the project's tokens.
+  const scaleSuffix = scaleName && analysis.reason === 'off-scale' ? ` Scale: ${scaleName}.` : '';
+  const data = { suffix: `${scaleSuffix}${suffix}`, token };
+  if (analysis.reason === 'negative') {
+    return { data, messageId: 'negative' };
+  }
+  if (analysis.reason === 'no-negative-form') {
+    return { data, messageId: 'noNegativeForm' };
+  }
+  const lowerPx = analysis.nearest ? formatLength(analysis.nearest.lower, 'px') : 'n/a';
+  const upperPx = analysis.nearest ? formatLength(analysis.nearest.upper, 'px') : 'n/a';
+  if (analysis.reason === 'equivalent') {
+    return { data: { ...data, px: lowerPx, replacement: analysis.fixedToken }, messageId: 'equivalent' };
+  }
+  if (analysis.nearestUtilities) {
+    const { lower, upper } = analysis.nearestUtilities;
+    return lower === upper
+      ? { data: { ...data, lower, lowerPx }, messageId: 'offScaleUtility' }
+      : { data: { ...data, lower, lowerPx, upper, upperPx }, messageId: 'offScaleUtilities' };
+  }
+  return { data: { ...data, nearest: nearestText(lowerPx, upperPx) }, messageId: 'offScale' };
+}
+
+/**
  * The message text for an off-scale class: the two nearest utility classes
  * with their px values when the unit makes them, the px steps otherwise.
  */
 function offScaleClassMessage(token, analysis, scaleName = null) {
-  const message = offScaleClassText(token, analysis);
-  // The ESLint rule names the scale it fell back to, so a reader knows the
-  // verdict is Tailwind's default ladder and not the project's tokens.
-  return scaleName && analysis.reason === 'off-scale' ? `${message} Scale: ${scaleName}.` : message;
-}
-
-function offScaleClassText(token, analysis) {
-  if (analysis.reason === 'negative') {
-    return `Unexpected Tailwind arbitrary spacing value "${token}". Negative values are disabled for this rule.`;
-  }
-  if (analysis.reason === 'no-negative-form') {
-    return `Unexpected Tailwind arbitrary spacing value "${token}". Padding and gap cannot be negative, so this class has no effect.`;
-  }
-  const lowerPx = analysis.nearest ? formatLength(analysis.nearest.lower, 'px') : 'n/a';
-  const upperPx = analysis.nearest ? formatLength(analysis.nearest.upper, 'px') : 'n/a';
-  if (analysis.nearestUtilities) {
-    const { lower, upper } = analysis.nearestUtilities;
-    return lower === upper
-      ? `Unexpected Tailwind arbitrary spacing value "${token}". Use "${lower}" (${lowerPx}).`
-      : `Unexpected Tailwind arbitrary spacing value "${token}". Use "${lower}" (${lowerPx}) or "${upper}" (${upperPx}).`;
-  }
-  return `Unexpected Tailwind arbitrary spacing value "${token}". Use scale values (${nearestText(lowerPx, upperPx)}).`;
+  const { data, messageId } = offScaleClassReport(token, analysis, scaleName);
+  return interpolateMessage(CLASS_MESSAGES[messageId], data);
 }
 
 module.exports = {
+  CLASS_MESSAGES,
   createTailwindClassAnalyzer,
   findClassSegments,
   normalizeTailwindClassOptions,
+  interpolateMessage,
   offScaleClassMessage,
+  offScaleClassReport,
 };

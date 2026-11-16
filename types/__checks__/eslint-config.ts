@@ -14,6 +14,8 @@ const classOptions: RhythmguardTailwindClassOptions = {
   allowHairlines: false,
   classContexts: ['tw', '*Classes'],
   classFunctions: ['classNames'],
+  fixOffScale: 'nearest',
+  reportEquivalents: true,
   scale: [0, 4, 8, 12, 16, 24, 32],
   spacingUnit: false,
 };

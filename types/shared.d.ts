@@ -216,6 +216,10 @@ export type EslintRuleVisitor = Record<string, ((...args: any[]) => void) | unde
 export interface EslintRuleMeta {
   docs?: { description?: string; url?: string };
   fixable?: "code" | "whitespace";
+  /** True when reports carry editor suggestions (`tailwind-class-use-scale`). */
+  hasSuggestions?: boolean;
+  /** Message templates by messageId; `{{name}}` is filled from the report's data. */
+  messages?: Record<string, string>;
   schema?: Array<Record<string, unknown>>;
   type?: "problem" | "suggestion" | "layout";
 }
@@ -243,9 +247,19 @@ export interface RhythmguardTailwindClassOptions {
    * `["cn", "clsx", "classnames", "cx", "cva", "tv", "twMerge", "twJoin", "tw"]`.
    */
   classFunctions?: string[];
+  /**
+   * `"nearest"` autofixes an off-scale value to the nearest step, as 3.20 did. Default `false`: an off-scale value
+   * gets the two nearest steps as editor suggestions and no autofix, since either step changes the rendered spacing.
+   */
+  fixOffScale?: "nearest" | false;
   /** A sentence of up to 200 characters appended to every finding, after the built-in text. */
   note?: string;
-  /** Allowed values. Default `[0, 4, 8, 12, 16, 24, 32]`. */
+  /**
+   * Also report an on-scale arbitrary value that a utility class writes exactly (`p-[12px]` and `p-[0.75rem]` are
+   * `p-3` on a 4px spacing unit), with an autofix to that class. Default false.
+   */
+  reportEquivalents?: boolean;
+  /** Allowed values. Default Tailwind's default spacing ladder on `spacingUnit` (`0, 2, 4, 6, 8, ... 384` on a 16px root). */
   scale?: ScaleValue[];
   /** px per Tailwind spacing step, used to write utility classes in messages and fixes. Default a quarter of `baseFontSize`; `false` keeps arbitrary values. */
   spacingUnit?: number | false;

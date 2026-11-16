@@ -147,7 +147,7 @@ npx rhythmguard fix ./src --value 10px --to "var(--space-sm)"
 npx rhythmguard fix ./src --value 10px --to "var(--space-sm)" --write
 ```
 
-`--plan` turns the report into a proposed `decisions` section: adopt a value onto the scale, allow it, or snap it. `fix` executes one decision as one reviewable change; it is a dry run that lists every line it would change until you add `--write`. See [decisions](docs/AUDIT.md#decisions). `stylelint --fix` and `eslint --fix` write the nearest step wherever a rule has a fix, all at once; `fixToScale: false` on `use-scale` and `no-offscale-transform` keeps the findings and drops that fix.
+`--plan` turns the report into a proposed `decisions` section: adopt a value onto the scale, allow it, or snap it. `fix` executes one decision as one reviewable change; it is a dry run that lists every line it would change until you add `--write`. See [decisions](docs/AUDIT.md#decisions). `stylelint --fix` writes the nearest step wherever a rule has a fix, all at once; `fixToScale: false` on `use-scale` and `no-offscale-transform` keeps the findings and drops that fix. `eslint --fix` rewrites a class only to one that renders the same value: the ESLint rule offers the two nearest steps as editor suggestions, and `fixOffScale: "nearest"` makes `--fix` write the nearest step.
 
 ## Rules
 
