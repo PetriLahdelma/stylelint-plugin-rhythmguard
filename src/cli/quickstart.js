@@ -59,6 +59,14 @@ function suggestedStylelintConfig({ fallbackScale = null, nextjs = false, profil
 // Written this way so the snippet's import lines are not read as imports of this file.
 const quoted = (name) => `'${name}'`;
 
+const SNIPPET_KEYS = ['scale', 'scaleSources', 'tailwindCss'];
+
+/** A single-quoted JavaScript string literal for any text: JSON's escapes, with ' escaped instead of ". */
+function jsString(value) {
+  const escaped = JSON.stringify(String(value)).slice(1, -1).replace(/\\"/g, '"').replace(/'/g, "\\'");
+  return `'${escaped}'`;
+}
+
 function eslintSnippet(scaleValues, { typescript = false } = {}) {
   // No project scale: the rule's default, Tailwind's ladder, which the audit
   // also checked class strings against (cs-05). A project scale is named by
@@ -67,8 +75,12 @@ function eslintSnippet(scaleValues, { typescript = false } = {}) {
   if (Array.isArray(scaleValues)) {
     options = `, { scale: [${scaleValues.filter((value) => typeof value === 'number').join(', ')}] }`;
   } else if (scaleValues && typeof scaleValues === 'object') {
-    const entries = Object.entries(scaleValues).map(([key, value]) => `${key}: ${Array.isArray(value) ? `[${value.map(quoted).join(', ')}]` : quoted(value)}`);
-    options = `, { ${entries.join(', ')} }`;
+    // Paths come from file names in the project, and the snippet is pasted
+    // into a JavaScript file: escape every value, and name only known keys.
+    const entries = SNIPPET_KEYS
+      .filter((key) => scaleValues[key] !== undefined)
+      .map((key) => `${key}: ${Array.isArray(scaleValues[key]) ? `[${scaleValues[key].map(jsString).join(', ')}]` : jsString(scaleValues[key])}`);
+    options = entries.length > 0 ? `, { ${entries.join(', ')} }` : '';
   }
   return [
     "// eslint.config.js",

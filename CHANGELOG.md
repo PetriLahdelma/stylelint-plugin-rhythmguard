@@ -27,6 +27,7 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ### Security
 
+- The quickstart's ESLint snippet escapes the file names it prints and names only `scale`, `scaleSources` and `tailwindCss`, so a token file whose name holds a quote cannot put code into the `eslint.config.js` you paste.
 - `init` never writes through a symbolic link or outside the project: a target (`AGENTS.md`, `CLAUDE.md`, a pack file, `.stylelintrc.json`, `.rhythmguardrc.json`) that is a link, or whose directory resolves outside the project, is refused before anything is read, created or written. A cloned repository could otherwise ship `AGENTS.md` as a link to a file in your home directory.
 
 ### Changed
