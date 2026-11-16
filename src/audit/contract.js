@@ -531,6 +531,9 @@ function toAuditContractReport(report) {
         files: report.scale ? report.scale.files : [],
         offScaleProperties: report.offScaleProperties || {},
         offScaleValues: report.offScaleValues,
+        // Spacing written as multiples of an unfixed unit (--gap: calc(1rlh - 1rex)), found
+        // when no px scale was: the unit, its value, the multipliers and whether they were checked.
+        unitLadder: report.scale && report.scale.unitLadder ? report.scale.unitLadder : null,
         // The preset a fallback is: "tailwind" in a Tailwind project, else "rhythmic-4"; null otherwise.
         preset: report.scale && report.scale.preset ? report.scale.preset : null,
         rejected: report.scale && report.scale.rejected ? report.scale.rejected : null,

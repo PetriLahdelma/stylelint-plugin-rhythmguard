@@ -60,6 +60,12 @@ function samples() {
     }
   }
 
+  // unitLadder (use-scale only): spacing written as multiples of an unfixed unit.
+  for (const note of NOTES) {
+    add('use-scale', 'rejectedMultiplier', useScale.messages.rejectedMultiplier('1.3', '--gap', '1', '2', note), 'off-ladder', '1.3');
+    add('use-scale', 'rejectedLength', useScale.messages.rejectedLength('13px', '--gap', '0.5, 1, 2, 3', note), 'off-ladder', '13px');
+  }
+
   const tokenMessages = preferToken.messages;
   add('prefer-token', 'invalidPreset', tokenMessages.invalidPreset('nope', ['rhythmic-4']), 'unclassified', null);
   for (const position of POSITIONS) {

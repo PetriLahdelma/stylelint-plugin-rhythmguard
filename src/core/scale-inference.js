@@ -36,6 +36,7 @@ const MIN_INFERRED_SCALE_LENGTH = 4;
 const RC_FILE = '.rhythmguardrc.json';
 
 const { cachedByFiles } = require('./fs-cache');
+const { customPropertiesInText, detectUnitLadder, formatMultiplier } = require('./unit-ladder');
 
 const TOKEN_PACKAGES = require('./token-packages.json').packages;
 
@@ -512,7 +513,13 @@ function resolveAutoScale({
     return { source: 'token-package', ...fromPackages, warnings: [...warnings] };
   }
 
-  return fallbackInference(rejected, warnings, fallbackPreset);
+  // Tokens that are multiples of an unfixed unit (calc(1rlh - 1rex)) are a
+  // scale a px list cannot hold: say so instead of falling back in silence.
+  const ladder = detectUnitLadderFor({ cwd, root, scaleSources });
+  if (ladder) {
+    warnings.push(unitLadderHint(ladder));
+  }
+  return { ...fallbackInference(rejected, warnings, fallbackPreset), ...(ladder ? { unitLadder: ladder } : {}) };
 }
 
 /**
@@ -533,6 +540,54 @@ function scaleFromTailwindConfig(tailwindConfigPath, baseFontSize = 16, { root =
     warnings,
   });
   return scaleFromTokenMap(tailwindMap, baseFontSize);
+}
+
+/** The file a scaleSources or token source entry names, resolved. */
+function sourceEntryPath(entry, cwd) {
+  if (typeof entry === 'string') return path.resolve(cwd, entry);
+  if (entry && typeof entry === 'object') {
+    const file = entry.path || entry.file;
+    return typeof file === 'string' && file ? path.resolve(entry.baseDir || cwd, file) : null;
+  }
+  return null;
+}
+
+const STYLESHEET_SOURCE = /\.(?:css|scss|sass|less|pcss)$/i;
+
+/**
+ * A unit ladder (see core/unit-ladder.js) stated by the linted stylesheet's
+ * custom properties and the stylesheets `scaleSources` and the rc's token
+ * sources name. Every custom property counts, not only spacing names: the
+ * base is usually named for what it is (`--gap`, `--line`), not `--space`.
+ */
+function detectUnitLadderFor({ root = null, scaleSources = [], cwd = process.cwd() } = {}) {
+  const declarations = [];
+  if (root) {
+    root.walkDecls((decl) => {
+      if (decl.prop.startsWith('--')) declarations.push([decl.prop, decl.value, null]);
+    });
+  }
+  const files = [...scaleSources, ...rcTokenSources(cwd).sources]
+    .map((entry) => sourceEntryPath(entry, cwd))
+    .filter((file) => file && STYLESHEET_SOURCE.test(file));
+  for (const file of new Set(files)) {
+    const text = cachedByFiles(`unit-ladder:${file}`, (consult) => {
+      consult(file);
+      try {
+        return fs.readFileSync(file, 'utf8');
+      } catch {
+        // A missing source is already named by the token source warnings.
+        return '';
+      }
+    });
+    declarations.push(...customPropertiesInText(text, path.relative(cwd, file).split(path.sep).join('/')));
+  }
+  return detectUnitLadder(declarations);
+}
+
+/** The note naming a unit ladder the px scale cannot hold, for the fallback note. */
+function unitLadderHint(ladder) {
+  return `Spacing tokens${ladder.files.length > 0 ? ` in ${ladder.files.join(', ')}` : ''} are multiples of ${ladder.unit} (${ladder.value}), which has no fixed length: ${ladder.multipliers.map(formatMultiplier).join(', ')}. Set unitLadder: "auto" on rhythmguard/use-scale to check multipliers of var(${ladder.unit}) instead of px values.`;
 }
 
 const TRUSTED_SCALE_SOURCES = new Set(['scaleSources', 'rhythmguardrc', 'token-sources', 'tailwind', 'token-package', 'explicit', 'default']);
@@ -696,8 +751,9 @@ module.exports = {
   assessScale,
   autoScaleFallbackNote,
   collectTokenDefinitions,
-  loaderWarningsNote,
+  detectUnitLadderFor,
   discoverTokenPackages,
+  loaderWarningsNote,
   inferScaleFromDefinitions,
   resolveAutoScale,
   scaleFromDefinitions,

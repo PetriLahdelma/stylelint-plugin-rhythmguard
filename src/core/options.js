@@ -503,8 +503,31 @@ const SCALE_VALIDATION_SCHEMA = Object.freeze({
   }),
 });
 
+/** `unitLadder`: "auto", or { unit: "--gap", multipliers: [0.5, 1, 2], lengths?: boolean }. */
+function isUnitLadderEntry(value) {
+  return isPlainObject(value)
+    && typeof value.unit === 'string' && /^--[\w-]+$/.test(value.unit)
+    && Array.isArray(value.multipliers) && value.multipliers.length > 0
+    && value.multipliers.every((step) => typeof step === 'number' && Number.isFinite(step) && step > 0)
+    && (value.lengths === undefined || typeof value.lengths === 'boolean')
+    && Object.keys(value).every((key) => ['lengths', 'multipliers', 'unit'].includes(key));
+}
+
+/** The unit ladder a rule checks: { auto: true }, the configured one, or null. */
+function normalizeUnitLadder(value) {
+  if (value === 'auto') return { auto: true };
+  if (isUnitLadderEntry(value)) {
+    return { auto: false, lengths: value.lengths === true, multipliers: [...value.multipliers].sort((a, b) => a - b), unit: value.unit };
+  }
+  return null;
+}
+
 const USE_SCALE_VALIDATION_SCHEMA = Object.freeze({
   ...SCALE_VALIDATION_SCHEMA,
+  unitLadder: Object.freeze({
+    allowLiterals: ['auto'],
+    entryValidator: isUnitLadderEntry,
+  }),
   ignoreValues: Object.freeze({
     entryValidator: isNonEmptyString,
     expectsArray: true,
@@ -687,6 +710,7 @@ function buildScaleOptions(rawOptions) {
         ? options.tailwindConfigPath
         : null,
     tokenPatternExplicit: typeof options.tokenPattern === 'string' && options.tokenPattern.length > 0,
+    unitLadder: normalizeUnitLadder(options.unitLadder),
     tokenFunctions: Array.isArray(options.tokenFunctions)
       ? options.tokenFunctions.map((value) => String(value).toLowerCase())
       : ['var', 'theme', 'token'],

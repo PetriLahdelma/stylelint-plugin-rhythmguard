@@ -51,6 +51,10 @@ function renderText(report, options = {}) {
         lines.push(`  ! ${warning}`);
       }
     }
+    if (report.scale.unitLadder) {
+      const ladder = report.scale.unitLadder;
+      lines.push(`  Unit ladder              ${ladder.unit} = ${ladder.value}: ${ladder.multipliers.join(', ')}${ladder.checked ? '' : ' (not checked; pass --unit-ladder)'}`);
+    }
     if (report.scale.classStrings) {
       lines.push(`  Class-string scale       ${report.scale.classStrings.name} (${report.scale.classStrings.values.join(', ')})`);
     }
@@ -69,6 +73,7 @@ function renderText(report, options = {}) {
   appendHistogram(lines, 'TAILWIND CLASS-STRING DRIFT', report.tailwindArbitraryValues);
   appendHistogram(lines, 'MOTION RHYTHM DRIFT', report.motion.values);
   appendFindingList(lines, 'MISSING TOKENS IN USE', report.findings.css.filter((finding) => finding.type === 'missing-token'));
+  appendFindingList(lines, 'OFF-LADDER VALUES', report.findings.css.filter((finding) => finding.type === 'off-ladder'));
   appendFindingList(lines, 'UNCLASSIFIED WARNINGS', report.findings.css.filter((finding) => finding.type === 'unclassified'));
   appendTokenContractText(lines, report.tokenContract);
   if (report.tokenContract.chains && report.tokenContract.chains.summary.total > 0) {

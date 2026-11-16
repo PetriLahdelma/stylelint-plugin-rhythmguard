@@ -75,6 +75,8 @@ const OPTIONS = [
     apply: (p, raw) => { p.tokenCandidateMinCount = parsePositiveInteger(raw, '--token-candidate-min-count'); setFrom(p, 'tokenCandidateMinCount'); } },
   { flag: '--scale', kind: 'value', value: '<values|auto>', help: ['Comma-separated scale values (default: 0,4,8,12,16,24,32,40,48,64);', 'auto infers the scale from token sources, then --space-*/--spacing-*', 'custom properties and Sass variables in scanned CSS/SCSS, then', '--tailwind-config, then installed design-token packages,', 'and reports where it came from'],
     apply: (p, raw) => { p.scale = parseScale(raw); setFrom(p, 'scale'); } },
+  { flag: '--unit-ladder', kind: 'flag', help: ['Check spacing written as multiples of an unfixed unit, such as', '--gap: calc(1rlh - 1rex), against its ladder of multipliers'],
+    apply: (p) => { p.unitLadder = true; setFrom(p, 'unitLadder'); } },
   { flag: '--tailwind-config', kind: 'value', value: '<file>', help: ['Tailwind v3 config whose theme.spacing --scale auto reads', '(loaded with require(), so it runs as code; only when given)'],
     apply: (p, raw) => { p.tailwindConfigPath = parsePathOption(raw, '--tailwind-config'); setFrom(p, 'tailwindConfigPath'); } },
   { flag: '--base-font-size', kind: 'value', value: '<number>', help: 'px base for rem/em conversion (default: 16)',

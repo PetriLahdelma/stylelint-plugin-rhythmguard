@@ -6,6 +6,10 @@ The format follows Keep a Changelog principles and semantic versioning.
 
 ## [Unreleased]
 
+### Added
+
+- Unit ladders: spacing written as multiples of a custom property with no fixed length, as a font-metric system does (`--gap: calc(1rlh - 1rex)` with `calc(var(--gap) * 0.5 | 1 | 2 | 3)`). `scale: "auto"` and `--scale auto` found no px scale there and fell back without a word, so `calc(var(--gap) * 1.3)`, off the ladder, passed while `13px` was judged against a px scale the project does not use. Now the fallback note and the audit name the ladder (`contracts.scale.unitLadder`, a "Unit ladder" line and a warning), and `rhythmguard scale` lists its steps and tokens. `unitLadder: "auto"` on `use-scale` and `rhythmguard audit --unit-ladder` check it: a multiplier that is not a step is reported with the two nearest and snapped by `--fix`, and with no px scale a literal length is reported too (type `off-ladder` in the audit). Opt-in in 3.x, since it adds findings.
+
 ## [3.20.1] - 2026-11-16
 
 ### Fixed

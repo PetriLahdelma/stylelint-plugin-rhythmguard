@@ -80,6 +80,7 @@ async function runStylelintAudit(cssFiles, options) {
         baseFontSize: options.baseFontSize,
         checkMathBounds: options.checkMathBounds === true,
         scale: options.scale,
+        ...(options.unitLadder ? { unitLadder: options.unitLadder } : {}),
         // audit.scales adds the groups it names, each checked against its own scale.
         ...(options.scales ? { propertyGroups: ['spacing', ...Object.keys(options.scales)], scales: options.scales } : {}),
         severity: 'warning',
@@ -319,6 +320,9 @@ function positionToOffset(source, line, column) {
 const FINDING_PATTERNS = Object.freeze([
   ['motion-duration', /Unexpected (?:motion duration|negative motion duration) "([^"]+)"/],
   ['motion-easing', /Unexpected raw motion easing "([^"]+)"/],
+  // Spacing written as multiples of an unfixed unit (--unit-ladder): a multiplier off the ladder, or a literal length.
+  ['off-ladder', /Unexpected multiplier "([^"]+)" of var\(/],
+  ['off-ladder', /Unexpected length "([^"]+)"\. Spacing here is a multiple of var\(/],
   ['token-opportunity', /Unexpected raw (?:scale value|(?:clamp|min|max)\(\) (?:minimum|maximum|argument)) "([^"]+)"/],
   // Followed by the advice, so a forbidden negative or percentage, which names no scale step, is not read as off-scale.
   ['off-scale', /Unexpected (?:off-scale|transform translation) (?:value|(?:clamp|min|max)\(\) (?:minimum|maximum|argument)) "([^"]+)"(?: \([^)]*\))?\. Use /],

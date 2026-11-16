@@ -107,6 +107,30 @@ Unexpected off-scale value "$spacer * .3". Use scale values (nearest: 4px or 8px
 
 Variables resolve from the linted file first, then from `scaleSources`, the config file's token sources and installed token packages. `* / + -`, parentheses, negation and `math.div()` are understood; a term that does not resolve (an unknown variable, another function, a keyword) is left alone, as it always was. The hairline allowance and decisions apply to the evaluated value. Expressions are reported, never rewritten: `--fix` does not know whether `$spacer * .3` should become a literal or a different multiplier. The same holds when an expression does not resolve: a literal next to a Sass operator (`$gap * 13px`, `13px / $n`) or inside a Sass module function (`math.div(13px, $n)`) is still reported, but never fixed, since rewriting an operand changes what the expression computes.
 
+## Unit ladders
+
+Some systems write spacing as multiples of one unit whose length is not fixed, such as the visible gap between lines of text:
+
+```css
+:root {
+  --gap: calc(1rlh - 1rex);
+  --space-half: calc(var(--gap) * 0.5);
+  --space-1: var(--gap);
+  --space-2: calc(var(--gap) * 2);
+}
+
+.card { padding: calc(var(--gap) * 1.3); }
+```
+
+No px value can be computed for `--gap`, so `scale: "auto"` finds no px scale and falls back. It says so: the note on the first message in the file names the ladder (`Spacing tokens are multiples of --gap (calc(1rlh - 1rex)), which has no fixed length: 0.5, 1, 2.`) and suggests `unitLadder`. A unit with no fixed length is a custom property whose value uses `rlh`, `lh`, `rex`, `ex`, `cap`, `ic` or `ch`; a ladder needs at least two tokens that are `var(--unit)`, `calc(var(--unit) * N)` or `calc(N * var(--unit))`. The linted stylesheet, `scaleSources` and the CSS token sources of `.rhythmguardrc.json` are read, and every custom property counts, not only spacing names.
+
+With `unitLadder: "auto"` the rule checks the ladder:
+
+- a multiplier that is not a step is reported with the two nearest steps, and `--fix` writes the nearest one: `calc(var(--gap) * 1.3)` becomes `calc(var(--gap) * 1)`. A division (`calc(var(--gap) / 3)`) is reported as `1/3` and not rewritten.
+- when `scale: "auto"` found no px scale, a literal length (`13px`, `0.5rem`) is reported too, with no fix, since the scale is the ladder. Hairlines and percentages are not.
+
+`unitLadder` also takes the ladder itself, `{ "unit": "--gap", "multipliers": [0.5, 1, 1.5, 2, 3], "lengths": true }`, for a project whose tokens live elsewhere. `rhythmguard audit --unit-ladder` (or `"unitLadder": true` under `audit` in `.rhythmguardrc.json`) checks the same in the audit, where the findings have the type `off-ladder`.
+
 ## A scale per property group
 
 Spacing and type rarely share a ladder. `scales` gives a property group its own scale next to `scale`, in one rule block:
@@ -156,6 +180,7 @@ The message names the position: `clamp() minimum`, `clamp() maximum`, `min() arg
 | `scale` | `Array<number\|string> \| "auto"` | `[0,4,8,12,16,24,32,40,48,64]` | Allowed values, or `"auto"` to infer them from tokens (see above). An empty list, or `"auto"` inside a list, is an invalid option |
 | `scaleSources` | `Array<string \| { path, format? }>` | `[]` | Token files consulted first when `scale` is `"auto"`. `format` is `auto`, `css`, `flat-json`, `style-dictionary` or `dtcg`; any other value is an invalid option |
 | `tailwindConfigPath` | `string` | `null` | Tailwind v3 config whose `theme.spacing` feeds `scale: "auto"`. Loaded with `require()`, so its code runs; one that uses top-level await is not read |
+| `unitLadder` | `"auto" \| { unit, multipliers, lengths? }` | `undefined` | Check spacing written as multiples of a custom property with no fixed length. See [unit ladders](#unit-ladders) |
 | `units` | `string[]` | `['px','rem','em']` | Units considered for scale enforcement |
 | `unitStrategy` | `'convert' \| 'exact'` | `'convert'` | `convert` compares through px conversion. `exact` compares against same-unit scale values (for `vw`, `cqi`, and similar) |
 | `baseFontSize` | `number` | `16` | Used for `rem` and `em` conversion |
