@@ -192,7 +192,8 @@ function getGitChangedScanFiles(rootDir, ignorePatterns, parsed) {
     }
 
     seen.add(fullPath);
-    const fileRealPath = realPathOf(fullPath) || fullPath;
+    // A staged file gone from the working tree has no real path on disk; git's own path is the real form.
+    const fileRealPath = realPathOf(fullPath) || realPath;
     // A link that resolves outside the scanned directory is not followed (#289).
     if (!isPathInside(realRootDir, fileRealPath)) {
       linksOutsideRoot.push(relativePath);

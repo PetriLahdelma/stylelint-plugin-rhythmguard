@@ -253,7 +253,7 @@ function parseInitArgs(argv) {
  * which this command wrote and owns, is taken out to leave one copy.
  */
 function removeLegacyCopilotBlock(cwd) {
-  const legacy = path.join('.github', 'copilot-instructions.md');
+  const legacy = '.github/copilot-instructions.md';
   const legacyPath = path.join(cwd, legacy);
   if (!fs.existsSync(legacyPath)) return null;
   const existing = fs.readFileSync(legacyPath, 'utf8');
@@ -289,7 +289,8 @@ function installAgents(selection, cwd = process.cwd()) {
     fs.mkdirSync(path.dirname(targetPath), { recursive: true });
 
     fs.writeFileSync(targetPath, content);
-    written.push(target);
+    // Named with / on every platform, as the docs name these files (#174).
+    written.push(target.split(path.sep).join('/'));
     if (name === 'copilot') {
       const moved = removeLegacyCopilotBlock(cwd);
       if (moved) written.push(`${moved} (the block an older version appended there was removed)`);
