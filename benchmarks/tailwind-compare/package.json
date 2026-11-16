@@ -9,6 +9,8 @@
     "eslint": "10.15.0",
     "eslint-plugin-better-tailwindcss": "4.10.0",
     "eslint-plugin-tailwindcss": "4.4.0",
+    "oxlint": "1.93.0",
+    "oxlint-tailwindcss": "1.17.1",
     "tailwindcss": "4.3.4"
   },
   "overrides": {

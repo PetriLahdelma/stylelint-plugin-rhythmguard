@@ -19,6 +19,18 @@ node scripts/release/prepare.mjs X.Y.Z
 
 It refuses a version that is not above the current one, an empty `[Unreleased]` section, and a release within 24 hours of the last one on npm: seven versions in four days read as churn. `--allow-within-24h` is for a fix to a broken release only. `--no-gate` makes the edits without the gate, `--date` and `--notes <file>` override the defaults. If your change could move benchmark findings, run `npm run bench:quiet -- --check` too.
 
+### Bump the Oxlint pin
+
+Oxlint is pinned in one CI job, and its JS plugins are alpha, so each release moves the pin to the newest Oxlint and proves the rules still run there:
+
+```bash
+npm view oxlint version --registry https://registry.npmjs.org
+npm install --no-save oxlint@<version> --registry https://registry.npmjs.org
+node --test test/contracts/oxlint-jsplugin.test.js
+```
+
+When the four tests pass, put the version in `.github/workflows/ci.yml` (the `oxlint@` install and the job name) and in the sentence "CI runs this config on Oxlint ..." or "tested in CI on Oxlint ..." in `README.md`, `packages/eslint-plugin-rhythmguard/README.md`, `docs/TAILWIND.md` and `docs/rules/tailwind-class-use-scale.md`. `test/contracts/oxlint-pin.test.js` fails until all of them name the same version. When a test fails on the new Oxlint, keep the old pin, file an issue in this repository with the failure, and release anyway. `npm ci` afterwards removes the unsaved Oxlint.
+
 ## 3. Write the notes
 
 Edit `.release-notes.md` into notes for a reader who has not followed the repository, with an upgrade line at the end. It is ignored by git.

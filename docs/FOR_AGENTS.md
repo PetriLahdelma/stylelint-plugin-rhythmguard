@@ -1,5 +1,7 @@
 # Rhythmguard for coding agents
 
+Nobody chose 13px; Rhythmguard reads the spacing scale from your design tokens, reports off-scale spacing in CSS, SCSS and Tailwind class strings with the two nearest steps, and fails CI only on new drift.
+
 Coding agents write fluent CSS and Tailwind without knowing a project's spacing scale, so they are the fastest source of off-scale values. Rhythmguard is deterministic, needs no configuration to give a first answer, and explains every finding with the two nearest on-scale values. This page is what an agent (or the person writing its instructions) needs.
 
 ## Give your agent this prompt

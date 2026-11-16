@@ -4,7 +4,9 @@
 
 # eslint-plugin-rhythmguard
 
-Nobody chose 13px. This plugin catches off-scale Tailwind arbitrary spacing in class strings, tells you the utility classes for the nearest steps on your scale, and writes the right class when you run `--fix`.
+Nobody chose 13px; Rhythmguard reads the spacing scale from your design tokens, reports off-scale spacing in CSS, SCSS and Tailwind class strings with the two nearest steps, and fails CI only on new drift.
+
+This package is the class-string half, for ESLint and Oxlint. It catches off-scale Tailwind arbitrary spacing in class strings, tells you the utility classes for the nearest steps on your scale, and writes the right class when you run `--fix`. It checks against the `scale` you set, or Tailwind's default ladder; [stylelint-plugin-rhythmguard](https://www.npmjs.com/package/stylelint-plugin-rhythmguard) and its audit read the scale from DTCG, Style Dictionary, Tailwind `@theme` and Sass token files.
 
 [![npm version](https://img.shields.io/npm/v/eslint-plugin-rhythmguard?label=npm&color=1f6feb)](https://www.npmjs.com/package/eslint-plugin-rhythmguard)
 [![npm downloads](https://img.shields.io/npm/dm/eslint-plugin-rhythmguard.svg)](https://www.npmjs.com/package/eslint-plugin-rhythmguard)
@@ -27,12 +29,14 @@ Most Tailwind lint rules either forbid arbitrary values outright or rewrite them
 
 The same TSX file through each tool, default Tailwind theme, scale `[0, 4, 8, 12, 16, 24, 32]` for Rhythmguard:
 
-| Class | better-tailwindcss 4.10.0 | eslint-plugin-tailwindcss 4.4.0 | @shadcn/lint 0.2.5 | Rhythmguard |
-| --- | --- | --- | --- | --- |
-| `p-[13px]` | no finding | no finding | Use `p-3.25` "(same value, on the scale)" | Use `p-3` (12px) or `p-4` (16px) |
-| `p-[0.8125rem]` | Simplify to `p-3.25` | Write as `p-3.25` | Use a theme token or scale value | Use `p-3` (12px) or `p-4` (16px) |
-| `p-[12px]` | no finding | Use `p-3` | Use `p-3` | no finding (on the scale) |
-| `p-3.25` | no finding | no finding | no finding | no finding |
+| Class | better-tailwindcss 4.10.0 | eslint-plugin-tailwindcss 4.4.0 | @shadcn/lint 0.2.5 | oxlint-tailwindcss 1.17.1 | Rhythmguard |
+| --- | --- | --- | --- | --- | --- |
+| `p-[13px]` | no finding | no finding | Use `p-3.25` "(same value, on the scale)" | Closest in your theme: `p-3` (12px) or `p-3.5` (14px) | Use `p-3` (12px) or `p-4` (16px) |
+| `p-[0.8125rem]` | Simplify to `p-3.25` | Write as `p-3.25` | Use a theme token or scale value | Closest in your theme: `p-3` or `p-3.5` | Use `p-3` (12px) or `p-4` (16px) |
+| `p-[12px]` | no finding | Use `p-3` | Use `p-3` | Same value as `p-3` | no finding (on the scale) |
+| `p-3.25` | no finding | no finding | no finding | no finding | no finding |
+
+oxlint-tailwindcss runs under Oxlint 1.93.0 with `no-arbitrary-value`, `prefer-scale-token`, `no-unnecessary-arbitrary-value` and `enforce-canonical` on. It offers the nearest steps of your Tailwind theme (`p-3` or `p-3.5` for 13px); Rhythmguard offers the nearest steps of the scale you set.
 
 The last row is the gap every tool shares, this one included: Tailwind v4 accepts any quarter step as a plain class, and nothing checks `p-3.25` against a scale. Rhythmguard catches the value before it is rewritten. Rerun the comparison with `node scripts/bench/tailwind-compare.mjs` in the repository; [full table](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard/blob/main/benchmarks/tailwind-compare/RESULTS.md).
 
@@ -106,7 +110,11 @@ The rules run unchanged through Oxlint's JS plugin support:
 }
 ```
 
-CI runs this config on Oxlint 1.88.0, on TSX, for both findings and `--fix`. Oxlint's JS plugins are alpha, and Oxlint does not lint Vue or Svelte templates, so keep ESLint for those files.
+CI runs this config on Oxlint 1.93.0, on TSX, for both findings and `--fix`. Oxlint's JS plugins are alpha, and in Vue, Svelte and Astro files Oxlint lints only the `<script>` blocks, so class strings in templates are not checked there; keep ESLint for those files.
+
+### In your editor
+
+The ESLint extension (`dbaeumer.vscode-eslint`) shows findings in VS Code and Cursor with a link to the rule page. It checks JavaScript, TypeScript, JSX, Vue and Astro by default; Svelte needs `eslint.validate`, and a list there replaces the defaults. Fix on save (`source.fixAll.eslint` in `editor.codeActionsOnSave`) writes the nearest step, which can move layout. [In your editor](https://github.com/PetriLahdelma/stylelint-plugin-rhythmguard#in-your-editor) has the settings for Stylelint and the Oxc extension too.
 
 ## Adopting it on an existing codebase
 

@@ -34,7 +34,7 @@ Under Oxlint, load the rule as a JS plugin:
 }
 ```
 
-CI runs this config on Oxlint 1.88.0, on TSX, for both findings and `--fix`. Oxlint's JS plugins are alpha, and Oxlint does not lint Vue or Svelte templates, so keep ESLint for those files.
+CI runs this config on Oxlint 1.93.0, on TSX, for both findings and `--fix`. Oxlint's JS plugins are alpha, and in Vue, Svelte and Astro files Oxlint lints only the `<script>` blocks, so class strings in templates are not checked there; keep ESLint for those files.
 
 A `recommended` config is exported too: `rhythmguard.configs.recommended` enables this rule at `warn` and the motion rule `off`. It registers the plugin as `rhythmguard-tailwind`, so `export default [rhythmguard.configs.recommended]` works on its own; spreading `rhythmguard.configs.recommended.rules` into a block like the one above works as well.
 

@@ -6,9 +6,9 @@ Kept current so the descriptions people meet elsewhere match the product.
 
 | Place | Text | Status |
 | --- | --- | --- |
-| GitHub about | "Nobody chose 13px. Catches off-scale spacing in CSS and Tailwind and snaps it to your scale." | current |
-| npm description | same first sentence, plus what ships (Stylelint rules, ESLint companion, audit CLI) | current from the next publish; the npm page shows the README of the last published version |
-| Browser playground | `docs/index.html` on GitHub Pages | updated alongside the README |
+| GitHub about | "Nobody chose 13px; Rhythmguard reads the spacing scale from your design tokens, reports off-scale spacing in CSS, SCSS and Tailwind class strings with the two nearest steps, and fails CI only on new drift." | proposed for 3.21.0, set by hand by the maintainer; until then the live text is the September wording |
+| npm description | the GitHub about sentence, plus the token formats it reads and what each package ships, in all three `package.json` files | current from the next publish; the npm page shows the README of the last published version |
+| Browser playground | `docs/index.html` on GitHub Pages; its meta description is the GitHub about sentence | updated alongside the README |
 | GitHub Marketplace | [Rhythmguard Audit](https://github.com/marketplace/actions/rhythmguard-audit), from `PetriLahdelma/rhythmguard-action` v1.1.1: "Check CSS, SCSS and Tailwind spacing against your scale, annotate the diff, and fail on new drift against a baseline." Categories: Code quality, Continuous integration | listed 2026-11-05; the description is `action.yml`'s and must stay under 125 characters |
 
 ## Listings maintained by others
