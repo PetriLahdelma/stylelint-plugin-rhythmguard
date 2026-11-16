@@ -40,7 +40,10 @@ function configSamples(markdown) {
   const fence = /```(?:js|javascript)\n([\s\S]*?)```/g;
   let match;
   while ((match = fence.exec(markdown)) !== null) {
-    if (/export default/.test(match[1]) && /'rhythmguard-tailwind'/.test(match[1])) {
+    // A sample that also loads another plugin (the @shadcn/lint pairing in
+    // TAILWIND.md) is run by scripts/bench/tailwind-compare.mjs, where that
+    // plugin is installed at a pinned version.
+    if (/export default/.test(match[1]) && /'rhythmguard-tailwind'/.test(match[1]) && !/from '@shadcn\/lint'/.test(match[1])) {
       blocks.push(match[1]);
     }
   }

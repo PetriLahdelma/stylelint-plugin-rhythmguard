@@ -1,7 +1,7 @@
 {
   "name": "rhythmguard",
   "version": "3.20.1",
-  "description": "The rhythmguard command: zero-config spacing-scale audit for CSS, SCSS and Tailwind. `npx rhythmguard` runs the CLI of stylelint-plugin-rhythmguard.",
+  "description": "Nobody chose 13px; Rhythmguard reads the spacing scale from your design tokens, reports off-scale spacing in CSS, SCSS and Tailwind class strings with the two nearest steps, and fails CI only on new drift. The rhythmguard command: a zero-config audit that reads DTCG, Style Dictionary, Tailwind v4 @theme and Sass tokens; the class-string rules for ESLint and Oxlint are in eslint-plugin-rhythmguard.",
   "license": "MIT",
   "author": "Petri Lahdelma",
   "bin": {
@@ -22,7 +22,18 @@
     "spacing-scale",
     "spacing",
     "audit",
-    "cli"
+    "cli",
+    "dtcg",
+    "w3c-design-tokens",
+    "style-dictionary",
+    "tokens-studio",
+    "tailwind-v4",
+    "sass",
+    "oxlint",
+    "design-token-lint",
+    "spacing-lint",
+    "css-linter",
+    "8pt-grid"
   ],
   "dependencies": {
     "postcss-scss": "^4.0.0",

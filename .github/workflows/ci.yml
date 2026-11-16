@@ -137,7 +137,7 @@ jobs:
   # Oxlint version (#327). The test skips everywhere else, where Oxlint is not
   # installed. Bump the pin deliberately and update the version in the docs.
   oxlint:
-    name: oxlint companion rules (oxlint-1.88.0, node-22)
+    name: oxlint companion rules (oxlint-1.93.0, node-22)
     if: github.event_name == 'push' || (github.event.pull_request.head.repo.full_name == github.repository && vars.HOSTED_GATE != 'true')
     runs-on: [self-hosted, stylelint-plugin-rhythmguard]
     steps:
@@ -150,7 +150,7 @@ jobs:
           cache: npm
       - run: npm ci
       - name: Install Oxlint
-        run: npm install --no-save oxlint@1.88.0
+        run: npm install --no-save oxlint@1.93.0
       - name: Oxlint JS plugin tests
         run: node --test test/contracts/oxlint-jsplugin.test.js
 

@@ -4,7 +4,9 @@
 
 # rhythmguard
 
-Nobody chose 13px. `rhythmguard` measures off-scale spacing in your CSS, SCSS and Tailwind class strings against the scale your project already defines, and tells you the nearest steps.
+Nobody chose 13px; Rhythmguard reads the spacing scale from your design tokens, reports off-scale spacing in CSS, SCSS and Tailwind class strings with the two nearest steps, and fails CI only on new drift.
+
+`rhythmguard` is the command: it measures off-scale spacing in your CSS, SCSS and Tailwind class strings against the scale your project already defines, and tells you the nearest steps.
 
 [![npm version](https://img.shields.io/npm/v/rhythmguard?label=npm&color=1f6feb)](https://www.npmjs.com/package/rhythmguard)
 [![npm downloads](https://img.shields.io/npm/dm/rhythmguard.svg)](https://www.npmjs.com/package/rhythmguard)
@@ -39,7 +41,7 @@ Reports come as text, Markdown, JSON, HTML, GitHub annotations or a README badge
 
 ## Where the scale comes from
 
-Your own tokens, in this order: token files you name, spacing custom properties and Tailwind v4 `@theme` in your stylesheets, Sass variables and maps, and installed design-token packages (Bootstrap, Carbon, Primer, PatternFly, Radix, Mantine and others). The report says which source it used. When nothing is found it falls back to a 4px scale and says so.
+Your own tokens, in this order: token files you name (DTCG, Style Dictionary, Tokens Studio or flat JSON, CSS, SCSS), spacing custom properties and Tailwind v4 `@theme` in your stylesheets, Sass variables and maps, and installed design-token packages (Bootstrap, Carbon, Primer, PatternFly, Radix, Mantine and others). The report says which source it used. When nothing is found it falls back to a 4px scale and says so.
 
 ## What this package is
 

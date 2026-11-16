@@ -1,7 +1,7 @@
 {
   "name": "eslint-plugin-rhythmguard",
   "version": "3.20.1",
-  "description": "ESLint rules that keep Tailwind arbitrary spacing and motion values in class strings on your design scale. The ESLint companion of stylelint-plugin-rhythmguard, as its own package.",
+  "description": "Nobody chose 13px; Rhythmguard reads the spacing scale from your design tokens, reports off-scale spacing in CSS, SCSS and Tailwind class strings with the two nearest steps, and fails CI only on new drift. This package holds the Tailwind v4 class-string rules for ESLint and Oxlint; the Stylelint rules and the audit, which read DTCG, Style Dictionary, Tailwind @theme and Sass tokens, are in stylelint-plugin-rhythmguard.",
   "license": "MIT",
   "author": "Petri Lahdelma",
   "main": "index.js",
@@ -30,7 +30,14 @@
     "design-tokens",
     "spacing-scale",
     "spacing",
-    "linting"
+    "linting",
+    "tailwind-v4",
+    "oxlint",
+    "oxlint-plugin",
+    "spacing-lint",
+    "design-token-lint",
+    "dtcg",
+    "style-dictionary"
   ],
   "peerDependencies": {
     "eslint": ">=8.0.0"
