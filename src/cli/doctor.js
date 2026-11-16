@@ -31,6 +31,7 @@ const { normalizeScale } = require('../core/length');
 const { buildScaleOptions } = require('../core/options');
 const { DEFAULT_AUTO_TOKEN_PATTERN, resolveAutoScale } = require('../core/scale-inference');
 const { createTailwindClassAnalyzer } = require('../core/tailwind-class-analysis');
+const { resolveTailwindProjectOptions } = require('../core/tailwind-project-scale');
 const { normalizeTokenSourceEntry } = require('../core/token-source-entries');
 const { normalizeTokenSourceFormat, parseTokenSources } = require('../core/token-sources');
 const { DEFAULT_SCALE, TAILWIND_SCALE_NAME } = require('../presets/default-scale');
@@ -768,11 +769,15 @@ async function lintOneClassFile({ cwd, fail, pass, project, skip, warn }, linter
  */
 function compareEslintScale(ctx, found) {
   const { pass, warn } = ctx;
-  const analyzer = createTailwindClassAnalyzer(found.option);
+  // Resolved as the rule resolves it: `scale: "auto"`, `scaleSources`, `tailwindCss` and `preset` (3.21).
+  const project = resolveTailwindProjectOptions(found.option, { cwd: ctx.cwd });
+  const analyzer = createTailwindClassAnalyzer({ ...found.option, ...project.analyzerOptions });
   const values = [...analyzer.scalePx];
-  const defaultLadder = !Array.isArray(found.option.scale);
-  const label = defaultLadder ? TAILWIND_SCALE_NAME : `the "scale" option of ${found.name}`;
-  ctx.eslintScale = { files: [], isDefault: defaultLadder, label, source: defaultLadder ? 'tailwind-default' : 'explicit', values, warnings: [] };
+  const defaultLadder = project.source === 'default' || (project.source === 'fallback' && analyzer.options.scaleName === TAILWIND_SCALE_NAME);
+  const label = defaultLadder
+    ? TAILWIND_SCALE_NAME
+    : Array.isArray(found.option.scale) ? `the "scale" option of ${found.name}` : `the project scale ${found.name} reads (${project.source})`;
+  ctx.eslintScale = { files: [], isDefault: defaultLadder, label, source: defaultLadder ? 'tailwind-default' : project.source, values, warnings: [] };
   const message = `class-string scale ${defaultLadder && values.length > 12 ? `${values.slice(0, 12).join(', ')}, ... ${values[values.length - 1]}px` : formatScale(values)}, from ${label}`;
 
   const stylesheet = ctx.scale;

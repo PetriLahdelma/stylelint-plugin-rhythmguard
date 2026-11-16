@@ -113,7 +113,7 @@ Two Stylelint plugins solve problems next to spacing and run alongside Rhythmgua
 
 ```js
 // eslint.config.js
-import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';
+import rhythmguard from 'eslint-plugin-rhythmguard';
 
 export default [
   {

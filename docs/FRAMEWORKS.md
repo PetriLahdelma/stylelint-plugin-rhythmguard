@@ -22,11 +22,11 @@ This gives you:
 - Expanded enforcement (spacing + radius) on CSS Modules (`*.module.css`)
 - `.next/` and `out/` build directories ignored
 
-Pair with the ESLint companion to check Tailwind class strings in JSX:
+Pair with the ESLint companion (`npm install --save-dev eslint eslint-plugin-rhythmguard`) to check Tailwind class strings in JSX:
 
 ```js
 // eslint.config.js
-import rhythmguard from 'stylelint-plugin-rhythmguard/eslint';
+import rhythmguard from 'eslint-plugin-rhythmguard';
 
 export default [
   {
