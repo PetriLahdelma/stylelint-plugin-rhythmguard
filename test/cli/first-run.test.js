@@ -139,6 +139,26 @@ for (const [name, files] of Object.entries(STACKS)) {
       assert.deepEqual(blocks.stylelint.rules['rhythmguard/use-scale'], [true, { scale: 'auto', tailwindConfigPath: './tailwind.config.js' }]);
       assert.match(stdout, /--tailwind-config \.\/tailwind\.config\.js --plan/);
     }
+    // The ESLint snippet names the files the scale came from, so class strings
+    // are judged by the same scale as stylesheets (3.21).
+    if (name === 'Tailwind v4 TSX') {
+      assert.match(blocks.eslint, /\['error', \{ tailwindCss: '\.\/src\/app\.css' \}\]/);
+      const { Linter } = require('eslint');
+      const plugin = require(path.join(root, 'src', 'eslint'));
+      const cwd = process.cwd();
+      process.chdir(dir);
+      try {
+        const messages = new Linter().verify('export const B = () => <button className="p-[13px] p-[12px]" />;', {
+          languageOptions: { parserOptions: { ecmaFeatures: { jsx: true } } },
+          plugins: { r: plugin },
+          rules: { 'r/tailwind-class-use-scale': ['error', { tailwindCss: './src/app.css' }] },
+        });
+        assert.deepEqual(messages.map((message) => /"([^"]+)"/.exec(message.message)[1]), ['p-[13px]']);
+      } finally {
+        process.chdir(cwd);
+      }
+    }
+
     // A bare `npx rhythmguard audit .` gets the same scale from the suggested rc (ai-01).
     const rc = JSON.parse(stdout.split('And this into .rhythmguardrc.json')[1].split('\n\n')[1]);
     assert.equal(rc.audit.scale, 'auto');

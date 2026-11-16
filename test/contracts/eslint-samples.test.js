@@ -73,10 +73,11 @@ for (const doc of DOCS) {
   found.forEach((source, index) => samples.push({ name: `${doc} sample ${index + 1}`, source }));
 }
 samples.push({ name: 'quickstart eslintSnippet', source: eslintSnippet([0, 4, 8, 12, 16, 24, 32]) });
+samples.push({ name: 'quickstart eslintSnippet with token files', source: eslintSnippet({ scaleSources: ['./tokens/tokens.json'] }) });
 
 test('every documented ESLint sample is found', () => {
-  // README 1, package README 2, COMPARISON 1, FRAMEWORKS 1, TAILWIND 1, rule docs 2 + 1, quickstart 1.
-  assert.equal(samples.length, 10, samples.map(({ name }) => name).join('\n'));
+  // README 1, package README 2, COMPARISON 1, FRAMEWORKS 1, TAILWIND 1, rule docs 2 + 1, quickstart 2.
+  assert.equal(samples.length, 11, samples.map(({ name }) => name).join('\n'));
 });
 
 test('every ESLint sample uses one import and one severity (pos-07, pos-10)', () => {

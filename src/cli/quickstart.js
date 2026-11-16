@@ -19,6 +19,7 @@ const {
   findTokenFiles,
   inferFirstRun,
   rcFor,
+  scaleSourcesFor,
   stylelintConfigFor,
   tailwindMajor,
   toPosix,
@@ -60,10 +61,15 @@ const quoted = (name) => `'${name}'`;
 
 function eslintSnippet(scaleValues, { typescript = false } = {}) {
   // No project scale: the rule's default, Tailwind's ladder, which the audit
-  // also checked class strings against (cs-05).
-  const options = Array.isArray(scaleValues)
-    ? `, { scale: [${scaleValues.filter((value) => typeof value === 'number').join(', ')}] }`
-    : '';
+  // also checked class strings against (cs-05). A project scale is named by
+  // the files it lives in, so the ESLint rule reads what the audit read.
+  let options = '';
+  if (Array.isArray(scaleValues)) {
+    options = `, { scale: [${scaleValues.filter((value) => typeof value === 'number').join(', ')}] }`;
+  } else if (scaleValues && typeof scaleValues === 'object') {
+    const entries = Object.entries(scaleValues).map(([key, value]) => `${key}: ${Array.isArray(value) ? `[${value.map(quoted).join(', ')}]` : quoted(value)}`);
+    options = `, { ${entries.join(', ')} }`;
+  }
   return [
     "// eslint.config.js",
     `import rhythmguard from ${quoted('eslint-plugin-rhythmguard')};`,
@@ -82,6 +88,25 @@ function eslintSnippet(scaleValues, { typescript = false } = {}) {
     '  },',
     '];',
   ].join('\n');
+}
+
+/**
+ * What the ESLint snippet names as the scale: the stylesheet with Tailwind
+ * v4's `@theme` as `tailwindCss`, the token files as `scaleSources`, `"auto"`
+ * when an rc names them, or null for the Tailwind ladder default (3.21).
+ */
+function eslintScaleSpec({ rcPresent, scale, tokenFiles, twMajor }) {
+  if (scale.classStrings || scale.source === 'fallback' || scale.source === 'default') {
+    return null;
+  }
+  if (scale.source === 'scanned-css' && twMajor === 4 && scale.files.length === 1) {
+    return { tailwindCss: toPosix(scale.files[0]) };
+  }
+  const sources = scaleSourcesFor(scale, tokenFiles);
+  if (sources.length > 0) {
+    return { scaleSources: sources };
+  }
+  return rcPresent || scale.source === 'token-package' ? { scale: 'auto' } : scale.values;
 }
 
 /**
@@ -242,7 +267,7 @@ async function run() {
     out.push('  Tailwind class strings need the ESLint companion. Install:', '');
     out.push(`    ${eslintInstallLine({ typescript })}`, '');
     out.push('  Then paste this into eslint.config.js:', '');
-    out.push(eslintSnippet(scale.classStrings ? null : scale.values, { typescript }).replace(/^/gm, '    '));
+    out.push(eslintSnippet(eslintScaleSpec({ rcPresent, scale, tokenFiles, twMajor }), { typescript }).replace(/^/gm, '    '));
     if (otherTemplates.length > 0) {
       out.push('', `    ${otherTemplates.join(', ')} files need their parser in a block of their own; see the`);
       out.push('    eslint-plugin-rhythmguard README, "Other file types".');
